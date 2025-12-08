@@ -1,10 +1,6 @@
-import type { ContentBlock, StyleConfig, BlockType } from '@/types'
-import type { ImageTemplates } from '@/types/templates'
-// @ts-expect-error - JS 模块需要完整的重构，暂时使用 any
-declare module '../styles/templates.js' {
-  export const IMAGE_TEMPLATES: ImageTemplates
-}
+// @ts-expect-error - templates.js 尚未迁移到 TypeScript，遵循最简原则忽略类型
 import { IMAGE_TEMPLATES } from '../styles/templates.js'
+import type { ContentBlock, StyleConfig, BlockType, StyleTemplate } from '@/types'
 
 // HTML 头部常量
 const HTML_HEADER = `
@@ -150,9 +146,9 @@ function buildStyledBlock(block: ContentBlock, styleConfig: StyleConfig): string
     case 'outro':
       return applyStyle(content, styleConfig.intro || null)
     case 'image_single':
-      return IMAGE_TEMPLATES.single as unknown as string
+      return IMAGE_TEMPLATES.single
     case 'image_double':
-      return IMAGE_TEMPLATES.double as unknown as string
+      return IMAGE_TEMPLATES.double
     default:
       console.warn(`未知的内容块类型: ${block.type}，跳过该内容块`)
       return ''
