@@ -1,11 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 import Step1TextInput from '../views/Step1TextInput.vue'
 import Step2Curtain from '../views/Step2Curtain.vue'
 import Step3Preview from '../views/Step3Preview.vue'
 import StyleConfig from '../views/StyleConfig.vue'
-import { useAppStore } from '../stores/appStore.js'
+import { useAppStore } from '../stores/appStore'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     redirect: '/step1'
