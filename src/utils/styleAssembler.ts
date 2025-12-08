@@ -1,5 +1,5 @@
 // @ts-expect-error - templates.js 尚未迁移到 TypeScript，遵循最简原则忽略类型
-import { IMAGE_TEMPLATES } from '../styles/templates.js'
+import { IMAGE_TEMPLATES } from '../styles/templates'
 import type { ContentBlock, StyleConfig, BlockType, StyleTemplate } from '@/types'
 
 // HTML 头部常量

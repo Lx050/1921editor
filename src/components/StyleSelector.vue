@@ -76,8 +76,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAppStore } from '../stores/appStore.js'
-import { getAllStyles } from '../styles/styleStorage.js'
+import { useAppStore } from '../stores/appStore'
+import { getAllStyles } from '../styles/styleStorage'
 
 const router = useRouter()
 const appStore = useAppStore()

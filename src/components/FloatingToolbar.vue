@@ -31,7 +31,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { getBlockTypeOptions } from '../utils/styleAssembler.js'
+import { getBlockTypeOptions } from '../utils/styleAssembler'
 
 const props = defineProps({
   blockType: {

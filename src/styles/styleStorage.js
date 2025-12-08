@@ -3,7 +3,7 @@
  * 混合存储方案：默认样式（代码） + 用户自定义样式（LocalStorage）
  */
 
-import { titleDecorations, bodyDecorations, introDecorations } from './styleTemplates.js'
+import { titleDecorations, bodyDecorations, introDecorations } from './styleTemplates'
 
 const STORAGE_KEY = 'custom_style_templates'
 
