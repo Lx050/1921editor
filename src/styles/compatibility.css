@@ -1,0 +1,184 @@
+/* CSS兼容性修复和优化 */
+
+/* 修复text-size-adjust兼容性 - 使用标准属性和厂商前缀 */
+html {
+  text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 防止移动端双击缩放 - 移除不兼容的属性 */
+body {
+  touch-action: manipulation;
+}
+
+/* 允许文本选择 */
+p, h1, h2, h3, h4, h5, h6, span, div {
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* 确保字体渲染一致性 */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 修复表单元素的样式一致性 */
+input, textarea, button, select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* 确保图片响应式和优化 */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 滚动条样式优化 - 仅支持webkit浏览器，添加Firefox支持 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Firefox滚动条样式 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Safari滚动条样式 - 使用条件注释 */
+@supports (-webkit-appearance: none) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* 焦点样式优化 - 移除不支持的outline-offset */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #3b82f6;
+}
+
+/* 修复CSS Grid和Flexbox的兼容性 */
+@supports (display: grid) {
+  .grid-fallback {
+    display: grid;
+  }
+}
+
+@supports not (display: grid) {
+  .grid-fallback {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+/* 防止内容溢出 */
+.overflow-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 响应式媒体查询优化 */
+@media screen and (max-width: 640px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* 性能优化 */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* GPU加速优化 */
+.gpu-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 防止闪烁 */
+.preload {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* 隐藏不支持的theme-color */
+@supports not (color: color(display-p3 1 0 0)) {
+  /* Safari不支持theme-color时的备用方案 */
+}
+
+/* 移动端优化 */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  button, input, textarea, select {
+    border: 2px solid currentColor;
+  }
+}
+
+/* 暗黑模式支持 */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-track {
+    background: #2d3748;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #4a5568;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+  }
+
+  html {
+    scrollbar-color: #4a5568 #2d3748;
+  }
+}
+
+/* 减少动画以改善可访问性 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
