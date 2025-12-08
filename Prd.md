@@ -1,11 +1,12 @@
 产品需求文档 (PRD)
 
-项目：版式装配引擎 V1.0
+项目：版式装配引擎 V2.0
 
-版本： 1.0 (MVP)
-状态： 已确认，等待开发
-首席产品设计师： (你的AI助手)
+版本： 2.0 (并行工作流)
+状态： 开发中
+首席产品设计师： Claude Code
 产品负责人： (你)
+最后更新： 2025-12-09
 
 1. 核心产品路线图 (Product Roadmap)
 
@@ -130,108 +131,237 @@ ASCII 原型图：
 
 flowchart TD
     subgraph 步骤1: 输入
-        A[用户粘贴纯文本] --> B(点击"下一步")
-    end
-
-    subgraph 步骤2: 编辑
+        A[用户粘贴纯文本 或 拖拽ZIP/7Z压缩包] --> B(自动解析并提取)
         B --> C{智能文本解析器}
-        C -- 清理/分块 --> D[幕布工作区]
-        D -- 点击内容块 --> E[浮动工具栏]
-        E -- 选择类型 --> D(标记类型: 引言/标题/正文/结尾)
-        D -- 点击+号 --> F[版式插入器]
-        F -- 选择模板 --> D(插入图片模板)
-        D --> G(点击 "下一步: 生成样式")
+        C -- 压缩包处理 --> D[提取.docx并解析]
+        C -- 直接粘贴 --> E[清理/分割文本]
+        D --> F[获取文本内容]
+        E --> F
+        D --> G[提取所有图片]
+        G --> H[并行上传至微信素材库]
+        F --> I(自动进入下一步)
+        H --> I[图片上传持续进行中...]
     end
 
-    subgraph 步骤3: 输出
-        G --> H{样式组装引擎}
-        I[样式模板库 .html] --> H
-        J[图片模板库 .html] --> H
-        H -- 组装HTML --> K[生成 final_html 字符串]
-        K --> L[预览窗口 (iframe)]
-        L --> M[复制HTML按钮]
-        M --> N[用户粘贴到135编辑器]
+    subgraph 步骤2: 并行编辑（核心改进）
+        I --> J[初始化内容块]
+        J --> K[幕布工作区]
+
+        subgraph 内容块编辑线程
+            K --> L[浮动工具栏]
+            L -- 标记类型 --> K
+            K -- 点击+号 --> M[版式插入器]
+            M -- 插入 --> K
+        end
+
+        subgraph 样式选择线程
+            N[样式选择面板] -- 点击 --> O[选择装饰样式]
+            O -- 实时预览 --> P[应用样式到内容块]
+        end
+
+        subgraph 图片上传线程
+            H -- 上传成功 --> Q[添加到图片库]
+            Q -- 更新 --> R[上传进度: 5/10 完成]
+        end
+
+        K -- 上传完成 --> S(下一步: 生成预览)
+        R -- 全部成功 --> S
+        R -- 部分失败 --> S
+        R -- 全部失败 --> T[提示: 是否继续纯文本模式]
+    end
+
+    subgraph 步骤3: 图片替换与输出
+        S --> U[样式组装引擎]
+        V[样式模板库] --> U
+        Q --> U[微信图片库 (media_id + url)]
+        U -- 组装HTML --> W[final_html]
+        W --> X[左右分栏预览]
+
+        subgraph 左栏: 微信图片
+            Y[图片列表]
+            Y -- 点击 --> Z[选中图片]
+        end
+
+        subgraph 右栏: HTML预览
+            AA[iframe预览]
+            AA -- 点击图片 --> AB[选中占位符]
+        end
+
+        Z -- 替换 --> AC[更新final_html]
+        AB -- 点击左栏图片 --> AC
+        AC --> AA[实时刷新预览]
+        AA --> AD[复制HTML代码]
+        AD --> AE[粘贴到135编辑器]
     end
 
 
-4.3. 组件交互说明 (V1 架构)
+4.3. 组件交互说明 (V2 并行架构)
 
-为实现V1的最高速度，我们采用纯前端架构，所有样式模板将作为JS/TS中的字符串常量。
+为实现V2的并行工作流程，我们采用Vue 3 + Pinia架构，实现三线程并行处理。
 
-App.js (主应用):
+App.vue (主应用):
 
 管理核心状态 currentStep (值为 1, 2, 3)。
 
-管理数据状态 rawText (来自步骤1) 和 contentBlocks (来自步骤2)。
+管理数据状态 rawText, contentBlocks, wechatImages, uploadStatus。
 
 根据 currentStep 渲染对应的步骤组件。
 
-Step1_TextInput.js:
+Step1_TextInput.vue:
 
-包含一个大型 <textarea>。
+支持文本粘贴、Word文档上传（.docx）、压缩包上传（.zip/.7z）。
 
-“下一步”按钮：将 <textarea> 的值存入 App 的 rawText 状态，并设置 currentStep = 2。
+“下一步”按钮：触发以下并行操作：
+  - 解析文本内容 → 存入 rawText
+  - 解压并提取图片 → 调用 uploadImagesToWechat()
+  - 立即跳转到 Step2（不等待上传完成）
 
-Step2_Curtain.js:
+Step2_Curtain.vue（核心并行组件）:
 
-Props: 接收 rawText。
+Props: 接收 contentBlocks, wechatImages, uploadStatus。
 
-State: contentBlocks: Array<{id: string, text: string, type: string}>。
+Layout: 三栏布局
+  - 顶部栏：UploadProgress 组件（显示上传进度，不阻塞操作）
+  - 左栏：ContentEditor（内容块编辑）
+  - 右栏：StyleSelector（样式选择面板）
+  - 底部：NextStepButton（上传完成前禁用）
 
 Logic:
+  - useEffect (依赖 rawText): 调用 smartTextParser(rawText)
+  - handleTypeChange(id, newType): 更新 contentBlocks
+  - handleInsertImage(index, imageType): 插入图片占位符
+  - handleStyleChange(type, style): 实时预览样式效果
 
-useEffect (依赖 rawText): 调用 smartTextParser(rawText)，将结果设置到 contentBlocks 状态中。
+并行机制：
+  - 图片上传在后台线程连续进行
+  - 内容编辑与样式选择可同时进行，互不阻塞
+  - 只有"下一步"按钮状态与上传进度耦合
 
-handleTypeChange(id, newType): 更新 contentBlocks 中对应块的 type。
+Step3_Preview.vue:
 
-handleInsertImage(index, imageType): 在 contentBlocks 数组的指定位置插入一个新的 type: 'image_single' 或 type: 'image_double' 的块。
+Props: 接收 contentBlocks, wechatImages, styleConfig。
 
-Render: 循环渲染 contentBlocks 数组，为每个块附加 FloatingToolbar 和 LayoutInserter。
+Layout: 左右分栏
+  - 左栏：WechatImageGallery（微信图片列表，可点击选择）
+  - 右栏：HtmlPreview（iframe预览，可点击图片选中占位符）
 
-Step3_Preview.js:
-
-Props: 接收 contentBlocks。
-
-Logic (核心):
-
-buildHtml(contentBlocks): 这是“样式组装引擎”。它 import { STYLE_TITLE, STYLE_BODY, ... } from './style_templates.js'。
-
-它循环遍历 contentBlocks，根据每个块的 type，抓取对应的样式字符串，并将 block.text 插入到模板的占位符中。
-
-最后将所有字符串拼接成 final_html。
+Logic:
+  - buildHtml(contentBlocks, styleConfig): 样式组装引擎
+  - handleImageClickInPreview(imageId): 选中占位符
+  - handleImageClickInGallery(image): 替换选中的占位符
+  - updateHtml(): 实时更新final_html
 
 Render:
+  - iframe 预览实时反映替换结果
+  - 提供"复制HTML代码"按钮
 
-使用 <iframe srcdoc={final_html}> 来安全地预览渲染效果。
+4.4. 技术架构升级 (V2)
 
-“复制”按钮：使用 navigator.clipboard.writeText(final_html)。
+前端框架: Vue 3 + TypeScript + Vite
+  - 理由：支持TypeScript保证代码质量，Vite提供极速开发体验
+  - Pinia：状态管理，支持图片上传状态的跨组件共享
 
-4.4. 技术选型与风险
+样式框架: TailwindCSS
+  - 快速构建响应式UI，保持视觉一致性
 
-技术选型 (V1 MVP):
+核心逻辑:
+  - smartTextParser.ts: 智能文本解析
+  - styleAssembler.ts: 样式组装引擎
+  - wechatApi.ts: 微信API服务层（上传图片、获取token）
+  - zipProcessor.ts: 压缩包处理（JSZip）
 
-框架: Vanilla JavaScript (ES6 Modules)。理由：V1是一个纯粹的工具，功能单一。使用Vanilla JS可以避免React/Vue的打包开销，实现最快的加载和执行速度，完美契合“高速”的定位。
+并行处理机制:
+  - Upload Manager: 管理图片上传队列
+  - Pinia Store: 实时同步上传进度
+  - Web Worker (可选): 解压大尺寸压缩包}
 
-UI / CSS: TailwindCSS。理由：用于快速构建“向导式”的UI界面，提供一致的视觉风格。
+4.4. 技术选型与风险 (V2)
 
-核心逻辑: 纯JS函数 (smartTextParser.js, styleAssembler.js)。
+技术选型:
 
-潜在风险与规避：
+框架: Vue 3 + TypeScript + Vite + Pinia
+  - Vue 3: Composition API提供灵活的代码组织方式
+  - TypeScript: 类型安全，减少运行时错误
+  - Vite: 极速的开发和构建体验
+  - Pinia: Vue官方状态管理，支持TypeScript
 
-风险 1 (高): "智能文本解析器" 的鲁棒性。
+核心库:
+  - JSZip: 处理zip/7z压缩包解压
+  - Mammoth: 解析Word文档(docx)提取文本
+  - Axios: HTTP请求库，调用微信API
 
-描述： 用户粘贴的文本可能包含各种不可见的字符、诡异的换行（\n vs \r\n vs \n\n）和空格。
+UI框架: TailwindCSS
+  - 快速构建一致的UI界面
+  - 支持响应式设计
 
-规避： 必须进行严格的单元测试。V1的解析规则应保持简单：1. 移除首尾空格。 2. 将2个以上连续换行视作“分块”。 3. 将1个换行符替换为<br>（如果目标平台支持）。
+风险与规避:
 
-风险 2 (中): 样式模板的CSS污染。
+风险 1 (高): 图片上传到微信的并发限制
 
-描述： 产品负责人提供的<section>样式代码必须是完全自包含的。如果依赖外部CSS，在135编辑器中将丢失样式。
+描述: 微信素材API有调用频率限制（约5000次/天，并发限制）
 
-规避： 硬性要求： 所有样式必须是内联样式 (inline style) 或包含在 <section> 内部的 <style scoped> 标签（如果平台支持）或非scoped的 <style> 标签（如果样式类名足够独特）。
+规避:
+  - 实现上传队列，限制并发数为3
+  - 添加指数退避重试机制
+  - 提供错误提示和手动重试选项
+  - 必要时实现服务器端代理上传
 
-风险 3 (低): 预览窗口 (iframe) 的保真度。
+风险 2 (高): 压缩包解压性能
 
-描述： iframe 中的预览效果可能与135编辑器的最终效果有细微差别。
+描述: 大尺寸压缩包（>50MB）在浏览器解压会阻塞主线程
 
-规避： 这是可接受的。V1的“预览”功能主要是为了确认内容结构和样式的大致应用，最终效果以粘贴到目标平台为准。
+规避:
+  - 使用Web Worker进行解压
+  - 显示解压进度条
+  - 限制单个压缩包大小（50MB）
+  - 提供服务器端解压备选方案
+
+风险 3 (中): 并行处理的复杂性
+
+描述: 图片上传、内容编辑、样式选择三线程并行可能导致状态不一致
+
+规避:
+  - Pinia集中管理状态，确保单向数据流
+  - 严格的TypeScript类型约束
+  - 单元测试覆盖状态变化逻辑
+  - 上传状态与编辑状态解耦设计
+
+风险 4 (中): 微信API凭证安全
+
+描述: APPID和APPSECRET在前端暴露存在安全风险
+
+规避:
+  - 实现后端代理服务，前端不直接接触凭证
+  - 使用环境变量存储敏感信息
+  - 实现IP白名单限制
+  - 定期轮换凭证
+
+风险 5 (低): 浏览器兼容性
+
+描述: JSZip、File API、Clipboard API等在现代浏览器支持良好，但旧版浏览器可能不支持
+
+规避:
+  - 明确支持浏览器版本（Chrome 80+, Firefox 75+, Edge 80+）
+  - 提供不兼容提示和降级方案
+  - 核心功能保证兼容性，高级功能可降级
+
+5. 附录
+
+5.1. 版本迭代记录
+
+V1.0 (MVP - 当前):
+  - 核心功能：文本解析、三向导流程、样式组装
+  - 技术栈：Vanilla JS + TailwindCSS
+
+V2.0 (开发中):
+  - 新增：压缩包上传、并行工作流、微信图片上传
+  - 改进：Vue 3 + TypeScript + Pinia 重构
+  - 体验：左右分栏编辑、实时预览替换
+
+5.2. 术语表
+
+  - **内容块 (Content Block)**: 文本或图片的最小编辑单元
+  - **占位符 (Placeholder)**: &单图、&&双图等图片位置标记
+  - **装饰样式 (Decoration Style)**: 标题、正文、引言的视觉样式
+  - **并行工作流 (Concurrent Workflow)**: 图片上传、内容编辑、样式选择同时进行
+  - **微信素材库 (Wechat Material)**: 微信公众号的图片和媒体资源库
