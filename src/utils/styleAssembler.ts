@@ -1,3 +1,9 @@
+import type { ContentBlock, StyleConfig, BlockType } from '@/types'
+import type { ImageTemplates } from '@/types/templates'
+// @ts-expect-error - JS 模块需要完整的重构，暂时使用 any
+declare module '../styles/templates.js' {
+  export const IMAGE_TEMPLATES: ImageTemplates
+}
 import { IMAGE_TEMPLATES } from '../styles/templates.js'
 
 // HTML 头部常量
@@ -50,7 +56,7 @@ const HTML_FOOTER = `
 			<span style="letter-spacing: 0.54px;text-indent: 0em;">图片：</span>
 		</section>
 		<section style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;text-align: center;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;font-family:微软雅黑;" class="" data-doubao-translate-traverse-mark="1">
-			<span style="letter-spacing: 0.54px;text-indent: 0em;">编辑：</span>
+			<span style="letter-spacing: 0px;text-indent: 0em;">编辑：</span>
 		</section>
 		<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;" class="" data-doubao-translate-traverse-mark="1">
 			<section style="outline: 0px;letter-spacing: 0.54px;text-indent: 0em;line-height: 1.75em;min-height: 14px;font-stretch: normal;" class="" data-doubao-translate-traverse-mark="1">
@@ -89,16 +95,23 @@ const HTML_FOOTER = `
 /**
  * 样式组装引擎
  * 根据内容块类型和装饰样式配置生成最终的HTML
+ * @param contentBlocks - 内容块数组
+ * @param styleConfig - 装饰样式配置（可选）
+ * @returns 完整的HTML字符串
  */
-export function buildHtml(contentBlocks, styleConfig = null) {
-  let htmlParts = []
+export function buildHtml(contentBlocks: ContentBlock[], styleConfig: StyleConfig | null = null): string {
+  if (!Array.isArray(contentBlocks)) {
+    throw new Error('Invalid contentBlocks: must be an array')
+  }
+
+  const htmlParts: string[] = []
 
   // 添加HTML头部
   htmlParts.push(HTML_HEADER)
 
   // 遍历内容块并应用装饰样式（只使用用户选择的装饰样式，不使用默认模板）
-  contentBlocks.forEach(block => {
-    let blockHtml = ''
+  contentBlocks.forEach((block: ContentBlock): void => {
+    let blockHtml: string = ''
 
     // 只有有装饰样式配置时才生成内容
     if (styleConfig) {
@@ -116,22 +129,30 @@ export function buildHtml(contentBlocks, styleConfig = null) {
 
 /**
  * 使用装饰样式构建内容块
+ * @private
+ * @param block - 内容块
+ * @param styleConfig - 样式配置
+ * @returns 样式化后的HTML字符串
  */
-function buildStyledBlock(block, styleConfig) {
-  const content = block.text || ''
+function buildStyledBlock(block: ContentBlock, styleConfig: StyleConfig): string {
+  if (!block || typeof block !== 'object') {
+    throw new Error('Invalid block: must be an object')
+  }
+
+  const content: string = block.text || ''
 
   switch (block.type) {
     case 'title':
-      return applyStyle(content, styleConfig.title)
+      return applyStyle(content, styleConfig.title || null)
     case 'body':
-      return applyStyle(content, styleConfig.body)
+      return applyStyle(content, styleConfig.body || null)
     case 'intro':
     case 'outro':
-      return applyStyle(content, styleConfig.intro)
+      return applyStyle(content, styleConfig.intro || null)
     case 'image_single':
-      return IMAGE_TEMPLATES.single
+      return IMAGE_TEMPLATES.single as unknown as string
     case 'image_double':
-      return IMAGE_TEMPLATES.double
+      return IMAGE_TEMPLATES.double as unknown as string
     default:
       console.warn(`未知的内容块类型: ${block.type}，跳过该内容块`)
       return ''
@@ -141,10 +162,14 @@ function buildStyledBlock(block, styleConfig) {
 /**
  * 通用样式应用函数 - 使用占位符替换
  * 将 {{CONTENT}} 替换为用户内容
+ * @private
+ * @param content - 要插入的内容
+ * @param styleObj - 样式对象（可选）
+ * @returns 应用样式后的HTML字符串
  */
-function applyStyle(content, styleObj) {
+function applyStyle(content: string, styleObj: StyleTemplate | null | undefined): string {
   // 必须有有效的装饰样式才能应用
-  if (!styleObj || !styleObj.fullExample) {
+  if (!styleObj || typeof styleObj !== 'object' || !styleObj.fullExample) {
     console.warn('缺少有效的装饰样式，跳过该内容块')
     return ''
   }
@@ -162,9 +187,15 @@ function applyStyle(content, styleObj) {
 
 /**
  * 获取块类型的中文显示名称
+ * @param type - 块类型
+ * @returns 中文名称
  */
-export function getBlockTypeDisplayName(type) {
-  const typeNames = {
+export function getBlockTypeDisplayName(type: BlockType): string {
+  if (typeof type !== 'string') {
+    throw new Error('Invalid type: must be a string')
+  }
+
+  const typeNames: Record<BlockType, string> = {
     'intro': '引言',
     'title': '小标题',
     'body': '正文',
@@ -172,13 +203,15 @@ export function getBlockTypeDisplayName(type) {
     'image_single': '单图',
     'image_double': '双图'
   }
+
   return typeNames[type] || '正文'
 }
 
 /**
  * 获取所有可用的块类型选项
+ * @returns 块类型选项数组
  */
-export function getBlockTypeOptions() {
+export function getBlockTypeOptions(): Array<{ value: BlockType; label: string }> {
   return [
     { value: 'intro', label: '引言' },
     { value: 'title', label: '小标题' },

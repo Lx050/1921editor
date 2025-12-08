@@ -183,8 +183,8 @@ function isLikelyTitle(text, index, allBlocks) {
   }
 
   // 短小精悍且不含结束标点
-  if (text.length < 50 && text.length > 2 &&
-      !text.endsWith('。') && !text.endsWith('！') && !text.endsWith('？')) {
+  if (text.length < 36 && text.length > 2 &&
+    !text.endsWith('。') && !text.endsWith('！') && !text.endsWith('？')) {
     return true
   }
 
