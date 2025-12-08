@@ -327,9 +327,9 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAppStore } from '../stores/appStore.js'
-import { smartTextParser, cleanBlockText } from '../utils/textParser.js'
-import { getBlockTypeDisplayName } from '../utils/styleAssembler.js'
+import { useAppStore } from '../stores/appStore'
+import { smartTextParser, cleanBlockText } from '../utils/textParser'
+import { getBlockTypeDisplayName } from '../utils/styleAssembler'
 import StyleSelector from '../components/StyleSelector.vue'
 import LayoutInserter from '../components/LayoutInserter.vue'
 

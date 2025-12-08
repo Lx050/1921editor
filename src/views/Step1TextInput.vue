@@ -139,7 +139,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAppStore } from '../stores/appStore.js'
+import { useAppStore } from '../stores/appStore'
 import mammoth from 'mammoth'
 
 const router = useRouter()

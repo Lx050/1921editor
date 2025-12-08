@@ -139,8 +139,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAppStore } from '../stores/appStore.js'
-import { buildHtml } from '../utils/styleAssembler.js'
+import { useAppStore } from '../stores/appStore'
+import { buildHtml } from '../utils/styleAssembler'
 
 const router = useRouter()
 const appStore = useAppStore()

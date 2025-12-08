@@ -310,7 +310,7 @@ import {
   exportCustomStyles,
   importCustomStyles,
   clearCustomStyles
-} from '../styles/styleStorage.js'
+} from '../styles/styleStorage'
 
 const router = useRouter()
 
