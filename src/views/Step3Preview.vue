@@ -811,8 +811,8 @@ const generatePreviewLink = async () => {
     const encoded = btoa(encodeURIComponent(jsonStr))
 
     // 生成预览链接（整个数据在URL中，可分享）
-    // 使用腾讯云服务器地址：http://101.42.158.32:1921
-    const serverUrl = 'http://101.42.158.32:1921'
+    // 使用相对路径，自动适配当前域名
+    const serverUrl = window.location.origin
     const link = `${serverUrl}/preview?data=${encoded}`
     previewLink.value = link
 
