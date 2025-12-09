@@ -3,10 +3,14 @@
 项目：版式装配引擎 V2.0
 
 版本： 2.0 (并行工作流)
-状态： 开发中
+状态： 开发中（基于V1架构升级）
 首席产品设计师： Claude Code
 产品负责人： (你)
 最后更新： 2025-12-09
+
+版本历史：
+- V1.0: 基础三向导流程（Vue 3 + TypeScript + Pinia）✅ 已实现
+- V2.0: 并行工作流 + 微信图片上传（开发中）
 
 1. 核心产品路线图 (Product Roadmap)
 
@@ -60,41 +64,53 @@
 
 1.4. V2 及以后版本 (Future Releases)
 
-主题包 (Theme Packs) (V2): 引入“色系”概念。用户可以选择不同的主题包（如“科技蓝”、“商务灰”），系统会自动切换所有（引言、标题、正文）的<section>样式。
+并行工作流 (V2): 实现图片上传、内容编辑、样式选择三线程并行处理，互不干涉。支持压缩包上传(.zip/.7z)自动解压，图片上传至微信素材库。
 
-Docx 文件上传 (V2): 支持上传.docx文件，并自动解析其原有的标题和段落结构。
+主题包 (Theme Packs) (V3): 引入“色系”概念。用户可以选择不同的主题包（如“科技蓝”、“商务灰”），系统会自动切换所有（引言、标题、正文）的<section>样式。
 
-样式随机化引擎 (V3): 重新引入“随机”概念。在V2的“主题包”基础上，一个主题包内含3种标题、3种正文样式，系统在应用时进行随机搭配。
+样式随机化引擎 (V3): 在V2的“主题包”基础上，一个主题包内含3种标题、3种正文样式，系统在应用时进行随机搭配。
 
 自定义模板库 (V3): 允许高级用户上传和管理他们自己的<section>样式代码片段。
 
-2. 关键业务逻辑 (Business Rules) (MVP V1)
+2. 关键业务逻辑 (Business Rules) (V2)
 
 类型优先级： 如果用户没有标记类型，所有块默认为 [正文]。
 
 样式一致性 (核心)：
 
-所有被标记为 [引言] 或 [结尾] 的块，必须使用同一个 style_intro_outro.html 模板包裹。
+所有被标记为 [引言] 或 [结尾] 的块，必须使用同一个 style_intro.html 模板包裹。
 
 所有被标记为 [小标题] 的块，必须使用 style_title.html 模板包裹。
 
 所有被标记为 [正文] 的块，必须使用 style_body.html 模板包裹。
 
-占位符逻辑： 插入的“图片模板”是静态HTML代码。本系统不处理任何图片上传或URL替换。
+图片占位符逻辑：
 
-3. 数据契约 (Data Contract) (MVP V1)
+插入的"图片模板"使用占位符（&单图 / &&双图）标记位置。
+
+图片上传与微信素材库：
+
+上传的zip/7z压缩包中的图片自动上传至微信素材库，返回media_id和永久URL。
+
+图片上传与内容编辑、样式选择并行进行，互不阻塞。
+
+文件名匹配规则：image1.jpg → 第一个&单图位置，image2.jpg → 第二个&单图位置，double1-1.jpg + double1-2.jpg → 第一个&&双图位置。
+
+3. 数据契约 (Data Contract) (V2)
 
 输入 (Input):
 
-raw_text: string (用户粘贴的纯文本)。
+raw_text: string (用户粘贴的纯文本或从docx解析的文本)。
 
-config_styles: { intro_outro: string, title: string, body: string } (由产品负责人提供的三种 <section> HTML代码片段)。
+config_styles: { intro: StyleTemplate, title: StyleTemplate, body: StyleTemplate } (用户选择的装饰样式配置，包含完整的HTML模板)。
 
-config_images: { single: string, double: string } (由产品负责人提供的两种图片 <section> HTML代码片段)。
+wechat_images: Array<{ id: string, media_id: string, url: string, originalName: string, status: 'uploading' | 'completed' | 'failed' }> (上传到微信素材库的图片信息)。
+
+upload_status: { total: number, completed: number, failed: number, status: 'idle' | 'uploading' | 'completed' | 'failed', errors: Array } (图片上传状态)。
 
 输出 (Output):
 
-final_html: string (一个完整的HTML字符串，由固定的头部、结尾和中间组装的（样式+内容）所构成)。
+final_html: string (一个完整的HTML字符串，由固定的头部、结尾、样式包裹的内容块、以及微信图片URL组成，可直接复制到135编辑器使用)。
 
 4. 选定原型与架构蓝图
 
@@ -195,17 +211,89 @@ flowchart TD
     end
 
 
-4.3. 组件交互说明 (V2 并行架构)
+4.3. 组件交互说明 (当前实现架构 V1→V2 升级)
 
-为实现V2的并行工作流程，我们采用Vue 3 + Pinia架构，实现三线程并行处理。
+当前技术栈：Vue 3 + TypeScript + Pinia + Vite + TailwindCSS
 
-App.vue (主应用):
+App.vue (主应用 - 已实现):
 
-管理核心状态 currentStep (值为 1, 2, 3)。
+管理核心状态 currentStep (值为 1, 2, 3)
 
-管理数据状态 rawText, contentBlocks, wechatImages, uploadStatus。
+管理数据状态 rawText, contentBlocks, styleConfig
 
-根据 currentStep 渲染对应的步骤组件。
+根据 currentStep 渲染对应的步骤组件
+
+监听路由变化，更新步骤状态
+
+Step1TextInput.vue (已部分实现):
+
+现有功能：
+  - 大型 <textarea> 用于文本粘贴
+  - 支持 Word文档(.docx) 上传和解析
+  - 智能示例和标注示例插入
+
+待增强功能：
+  - 支持 zip/7z 压缩包拖拽上传
+  - JSZip 解压并提取 docx 和图片
+  - 解压后立即启动图片上传线程
+  - 上传完成后自动跳转到 Step2
+
+Step2Curtain.vue (已部分实现):
+
+现有布局：垂直内容块列表 + 浮动工具栏 + 图片插入器
+
+现有功能：
+  - 点击内容块弹出 FloatingToolbar 标记类型
+  - 块之间显示 LayoutInserter (+按钮) 插入图片占位符
+  - 内容块文本可编辑、可删除
+
+待增强功能：
+  - 顶部添加 UploadProgress 组件显示上传进度
+  - 左右分栏布局：左侧 ContentEditor，右侧 StyleSelector
+  - StyleSelector 面板实时选择装饰样式
+  - 上传进度与UI操作解耦（只禁用“下一步”按钮）
+
+Step3Preview.vue (已实现基础版本):
+
+现有功能：
+  - 左右标签页切换（预览/代码）
+  - iframe 预览 final_html
+  - 复制HTML功能
+
+待增强功能：
+  - 左右分栏布局（左：微信图片列表，右：HTML预览）
+  - 点击图片占位符选中（蓝色边框）
+  - 点击左栏图片替换选中的占位符
+  - 实时更新 final_html
+
+StyleConfig.vue (已存在):
+
+现有功能：选择标题、正文、引言的装饰样式
+
+待增强功能：
+  - 微信配置入口
+  - 管理 APPID 和 APPSECRET
+
+stores/appStore.ts (已部分实现):
+
+现有状态：
+  - currentStep, rawText, contentBlocks, styleConfig
+
+待扩展状态：
+  - wechatImages: 微信图片列表
+  - uploadStatus: 上传进度状态
+
+utils/ 目录结构：
+  - textParser.ts: 智能文本解析（已实现）
+  - styleAssembler.ts: 样式组装引擎（已实现）
+  - wechatApi.ts: 微信API服务层（待创建）
+  - zipProcessor.ts: 压缩包处理（待创建）
+
+components/ 待创建组件：
+  - UploadProgress.vue: 上传进度显示
+  - ContentEditor.vue: 内容块编辑区（抽取现有逻辑）
+  - StyleSelector.vue: 样式选择面板
+  - WechatImageGallery.vue: 微信图片列表
 
 Step1_TextInput.vue:
 
@@ -349,19 +437,23 @@ UI框架: TailwindCSS
 
 5.1. 版本迭代记录
 
-V1.0 (MVP - 当前):
-  - 核心功能：文本解析、三向导流程、样式组装
-  - 技术栈：Vanilla JS + TailwindCSS
+V1.0 (MVP - 已实现):
+  - 核心功能：文本解析、三向导流程、样式组装、样式配置
+  - 技术栈：Vue 3 + TypeScript + Pinia + Vite + TailwindCSS
+  - 组件：Step1输入、Step2编辑、Step3预览、StyleConfig配置
+  - 实现：智能文本解析、浮动工具栏、版式插入器、样式组装
 
 V2.0 (开发中):
-  - 新增：压缩包上传、并行工作流、微信图片上传
-  - 改进：Vue 3 + TypeScript + Pinia 重构
-  - 体验：左右分栏编辑、实时预览替换
+  - 新增：并行工作流、压缩包上传、微信图片上传、图片替换
+  - 改进：Step2左右分栏、实时进度显示、后台上传不阻塞
+  - 体验：三线程并行、一键上传所有图片、选中替换视觉反馈
 
 5.2. 术语表
 
-  - **内容块 (Content Block)**: 文本或图片的最小编辑单元
-  - **占位符 (Placeholder)**: &单图、&&双图等图片位置标记
-  - **装饰样式 (Decoration Style)**: 标题、正文、引言的视觉样式
-  - **并行工作流 (Concurrent Workflow)**: 图片上传、内容编辑、样式选择同时进行
-  - **微信素材库 (Wechat Material)**: 微信公众号的图片和媒体资源库
+  - **内容块 (Content Block)**: 文本或图片的最小编辑单元，存储在Pinia store的contentBlocks数组中
+  - **占位符 (Placeholder)**: &单图、&&双图等图片位置标记，在Step2显示为静态模板
+  - **装饰样式 (Decoration Style)**: 标题、正文、引言的视觉样式，存储在styleConfig对象中
+  - **并行工作流 (Concurrent Workflow)**: 图片上传、内容编辑、样式选择三线程同时进行，互不阻塞
+  - **微信素材库 (Wechat Material)**: 微信公众号的图片和媒体资源库，上传后返回media_id和永久URL
+  - **Blob URL**: 浏览器内存中的临时URL，用于本地预览上传的图片
+  - **PINIA**: Vue官方状态管理库，用于跨组件共享上传状态和图片数据

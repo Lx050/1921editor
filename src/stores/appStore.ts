@@ -3,12 +3,40 @@ import { ref } from 'vue'
 import type { Ref } from 'vue'
 import type { ContentBlock, StyleConfig, BlockType } from '@/types'
 
+// V2新增：微信图片接口
+export interface WechatImage {
+  id: string
+  mediaId: string
+  url: string
+  originalName: string
+  status: 'uploading' | 'completed' | 'failed'
+}
+
+// V2新增：上传状态接口
+export interface UploadStatus {
+  total: number
+  completed: number
+  failed: number
+  status: 'idle' | 'uploading' | 'completed' | 'failed'
+  errors: Array<{ fileName: string; error: string }>
+}
+
 export const useAppStore = defineStore('app', () => {
   // 状态（明确类型注解，无向后兼容）
   const currentStep: Ref<number> = ref(1)
   const rawText: Ref<string> = ref('')
   const contentBlocks: Ref<ContentBlock[]> = ref([])
   const styleConfig: Ref<StyleConfig | null> = ref(null)
+
+  // V2新增：微信图片状态
+  const wechatImages: Ref<WechatImage[]> = ref([])
+  const uploadStatus: Ref<UploadStatus> = ref({
+    total: 0,
+    completed: 0,
+    failed: 0,
+    status: 'idle',
+    errors: []
+  })
 
   // 操作（严格类型注解）
   const setStep = (step: number): void => {
@@ -108,6 +136,59 @@ export const useAppStore = defineStore('app', () => {
     rawText.value = ''
     contentBlocks.value = []
     styleConfig.value = null
+    wechatImages.value = []
+    uploadStatus.value = {
+      total: 0,
+      completed: 0,
+      failed: 0,
+      status: 'idle',
+      errors: []
+    }
+  }
+
+  // V2新增：设置微信图片列表
+  const setWechatImages = (images: WechatImage[]): void => {
+    if (!Array.isArray(images)) {
+      throw new Error('Invalid images: must be an array')
+    }
+    wechatImages.value = images
+  }
+
+  // V2新增：添加微信图片
+  const addWechatImage = (image: WechatImage): void => {
+    if (typeof image !== 'object' || !image.id) {
+      throw new Error('Invalid image: must be an object with id')
+    }
+    wechatImages.value.push(image)
+  }
+
+  // V2新增：更新微信图片状态
+  const updateWechatImage = (id: string, updates: Partial<WechatImage>): void => {
+    const index = wechatImages.value.findIndex(img => img.id === id)
+    if (index !== -1) {
+      wechatImages.value[index] = { ...wechatImages.value[index], ...updates }
+    }
+  }
+
+  // V2新增：设置上传状态
+  const setUploadStatus = (status: Partial<UploadStatus>): void => {
+    uploadStatus.value = { ...uploadStatus.value, ...status }
+  }
+
+  // V2新增：重置上传状态
+  const resetUploadStatus = (): void => {
+    uploadStatus.value = {
+      total: 0,
+      completed: 0,
+      failed: 0,
+      status: 'idle',
+      errors: []
+    }
+  }
+
+  // V2新增：清除所有微信图片
+  const clearWechatImages = (): void => {
+    wechatImages.value = []
   }
 
   return {
@@ -116,6 +197,8 @@ export const useAppStore = defineStore('app', () => {
     rawText,
     contentBlocks,
     styleConfig,
+    wechatImages,
+    uploadStatus,
     // 操作
     setStep,
     setRawText,
@@ -125,6 +208,13 @@ export const useAppStore = defineStore('app', () => {
     insertImageBlock,
     insertTextBlock,
     setStyleConfig,
-    resetApp
+    resetApp,
+    // V2新增
+    setWechatImages,
+    addWechatImage,
+    updateWechatImage,
+    setUploadStatus,
+    resetUploadStatus,
+    clearWechatImages
   }
 })
