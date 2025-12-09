@@ -67,7 +67,7 @@ const HTML_FOOTER = `
 				</p>
 			</section>
 			<p style="margin-top: 5px;margin-bottom: 5px;outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1">
-				<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><img src="https://image2.135editor.com/cache/remote/aHR0cHM6Ly9tbWJpei5xbG9nby5jbi9zel9tbWJpel9qcGcvdmlhY3R5Z2lhczlXMmxaOHFuRVdKR08wMWZ3RlpBRnVXWFgwM0tJYjI2bmJjTFFydXNkWHJRS0ZoaWNkZWtldXMxc2I0UlJRS1VlMGhCTDl2b2JkcjZRSlEvNjQw" class="rich_pages wxw-img" style="outline: 0px; background-color: rgb(197, 64, 114); line-height: 25.6px; width: 233px; vertical-align: baseline; visibility: visible !important; height: auto !important;box-sizing:border-box;" data-cropselx1="0" data-cropselx2="233" data-cropsely1="0" data-cropsely2="233" data-imgfileid="503969660" data-ratio="1" data-w="430"/></span>
+				<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><img src="https://mmbiz.qlogo.cn/sz_mmbiz_jpg/viactygias9W2lZ8qnEWJGO01fwFZAFuWXX03KIb26nbcLQrusdXrQKFhicdekeus1sb4RRQKUe0hBL9vobdr6QJQ/640" class="rich_pages wxw-img" style="outline: 0px; background-color: rgb(197, 64, 114); line-height: 25.6px; width: 233px; vertical-align: baseline; visibility: visible !important; height: auto !important;box-sizing:border-box;" data-cropselx1="0" data-cropselx2="233" data-cropsely1="0" data-cropsely2="233" data-imgfileid="503969660" data-ratio="1" data-w="430"/></span>
 			</p>
 			<p style="margin-top: 5px;margin-bottom: 5px;outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1">
 				<br/>
@@ -93,34 +93,46 @@ const HTML_FOOTER = `
  * 根据内容块类型和装饰样式配置生成最终的HTML
  * @param contentBlocks - 内容块数组
  * @param styleConfig - 装饰样式配置（可选）
+ * @param addPlaceholderMarkers - V2: 是否添加图片占位符标记（用于图片替换功能）
  * @returns 完整的HTML字符串
  */
-export function buildHtml(contentBlocks: ContentBlock[], styleConfig: StyleConfig | null = null): string {
-  if (!Array.isArray(contentBlocks)) {
-    throw new Error('Invalid contentBlocks: must be an array')
-  }
+export function buildHtml(
+	contentBlocks: ContentBlock[],
+	styleConfig: StyleConfig | null = null,
+	addPlaceholderMarkers: boolean = false
+): string {
+	if (!Array.isArray(contentBlocks)) {
+		throw new Error('Invalid contentBlocks: must be an array')
+	}
 
-  const htmlParts: string[] = []
+	const htmlParts: string[] = []
 
-  // 添加HTML头部
-  htmlParts.push(HTML_HEADER)
+	// 添加HTML头部
+	htmlParts.push(HTML_HEADER)
 
-  // 遍历内容块并应用装饰样式（只使用用户选择的装饰样式，不使用默认模板）
-  contentBlocks.forEach((block: ContentBlock): void => {
-    let blockHtml: string = ''
+	// 遍历内容块并应用装饰样式（只使用用户选择的装饰样式，不使用默认模板）
+	let imageCounter = 0  // V2: 图片计数器，用于生成占位符ID
 
-    // 只有有装饰样式配置时才生成内容
-    if (styleConfig) {
-      blockHtml = buildStyledBlock(block, styleConfig)
-      htmlParts.push(blockHtml)
-    }
-    // 如果没有样式配置，跳过该内容块
-  })
+	contentBlocks.forEach((block: ContentBlock): void => {
+		let blockHtml: string = ''
 
-  // 添加HTML尾部
-  htmlParts.push(HTML_FOOTER)
+		// 只有有装饰样式配置时才生成内容
+		if (styleConfig) {
+			blockHtml = buildStyledBlock(block, styleConfig, addPlaceholderMarkers, imageCounter)
+			htmlParts.push(blockHtml)
 
-  return htmlParts.join('\n')
+			// V2: 更新图片计数器
+			if (block.type === 'image_single' || block.type === 'image_double') {
+				imageCounter++
+			}
+		}
+		// 如果没有样式配置，跳过该内容块
+	})
+
+	// 添加HTML尾部
+	htmlParts.push(HTML_FOOTER)
+
+	return htmlParts.join('\n')
 }
 
 /**
@@ -128,31 +140,66 @@ export function buildHtml(contentBlocks: ContentBlock[], styleConfig: StyleConfi
  * @private
  * @param block - 内容块
  * @param styleConfig - 样式配置
+ * @param addPlaceholderMarkers - V2: 是否添加占位符标记
+ * @param imageIndex - V2: 图片索引
  * @returns 样式化后的HTML字符串
  */
-function buildStyledBlock(block: ContentBlock, styleConfig: StyleConfig): string {
-  if (!block || typeof block !== 'object') {
-    throw new Error('Invalid block: must be an object')
-  }
+function buildStyledBlock(
+	block: ContentBlock,
+	styleConfig: StyleConfig,
+	addPlaceholderMarkers: boolean = false,
+	imageIndex: number = 0
+): string {
+	if (!block || typeof block !== 'object') {
+		throw new Error('Invalid block: must be an object')
+	}
 
-  const content: string = block.text || ''
+	const content: string = block.text || ''
 
-  switch (block.type) {
-    case 'title':
-      return applyStyle(content, styleConfig.title || null)
-    case 'body':
-      return applyStyle(content, styleConfig.body || null)
-    case 'intro':
-    case 'outro':
-      return applyStyle(content, styleConfig.intro || null)
-    case 'image_single':
-      return IMAGE_TEMPLATES.single
-    case 'image_double':
-      return IMAGE_TEMPLATES.double
-    default:
-      console.warn(`未知的内容块类型: ${block.type}，跳过该内容块`)
-      return ''
-  }
+	switch (block.type) {
+		case 'title':
+			return applyStyle(content, styleConfig.title || null)
+		case 'body':
+			return applyStyle(content, styleConfig.body || null)
+		case 'intro':
+		case 'outro':
+			return applyStyle(content, styleConfig.intro || null)
+		case 'image_single': {
+			let html = IMAGE_TEMPLATES.single
+			// V2: 添加占位符标记
+			if (addPlaceholderMarkers) {
+				html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
+			}
+			return html
+		}
+		case 'image_double': {
+			let html = IMAGE_TEMPLATES.double
+			// V2: 添加占位符标记
+			if (addPlaceholderMarkers) {
+				html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
+			}
+			return html
+		}
+		default:
+			console.warn(`未知的内容块类型: ${block.type}，跳过该内容块`)
+			return ''
+	}
+}
+
+/**
+ * V2: 为图片模板添加占位符标记
+ * @private
+ * @param html - 原始HTML
+ * @param placeholderId - 占位符ID
+ * @returns 添加标记后的HTML
+ */
+function addImagePlaceholderMarker(html: string, placeholderId: string): string {
+	// 查找所有img标签并添加 data-placeholder 属性
+	// 不添加默认边框，边框仅在悬停/选中时通过 JavaScript 添加
+	return html.replace(
+		/<img([^>]*)>/g,
+		`<img$1 data-placeholder="${placeholderId}">`
+	)
 }
 
 /**
@@ -164,21 +211,21 @@ function buildStyledBlock(block: ContentBlock, styleConfig: StyleConfig): string
  * @returns 应用样式后的HTML字符串
  */
 function applyStyle(content: string, styleObj: StyleTemplate | null | undefined): string {
-  // 必须有有效的装饰样式才能应用
-  if (!styleObj || typeof styleObj !== 'object' || !styleObj.fullExample) {
-    console.warn('缺少有效的装饰样式，跳过该内容块')
-    return ''
-  }
+	// 必须有有效的装饰样式才能应用
+	if (!styleObj || typeof styleObj !== 'object' || !styleObj.fullExample) {
+		console.warn('缺少有效的装饰样式，跳过该内容块')
+		return ''
+	}
 
-  // 检查模板是否包含占位符
-  if (!styleObj.fullExample.includes('{{CONTENT}}')) {
-    console.warn('样式模板缺少 {{CONTENT}} 占位符，可能导致内容无法正确插入')
-    // 降级处理：如果没有占位符，尝试直接返回模板（虽然这通常不是预期的行为）
-    return styleObj.fullExample
-  }
+	// 检查模板是否包含占位符
+	if (!styleObj.fullExample.includes('{{CONTENT}}')) {
+		console.warn('样式模板缺少 {{CONTENT}} 占位符，可能导致内容无法正确插入')
+		// 降级处理：如果没有占位符，尝试直接返回模板（虽然这通常不是预期的行为）
+		return styleObj.fullExample
+	}
 
-  // 直接替换占位符
-  return styleObj.fullExample.replace('{{CONTENT}}', content)
+	// 直接替换占位符
+	return styleObj.fullExample.replace('{{CONTENT}}', content)
 }
 
 /**
@@ -187,20 +234,20 @@ function applyStyle(content: string, styleObj: StyleTemplate | null | undefined)
  * @returns 中文名称
  */
 export function getBlockTypeDisplayName(type: BlockType): string {
-  if (typeof type !== 'string') {
-    throw new Error('Invalid type: must be a string')
-  }
+	if (typeof type !== 'string') {
+		throw new Error('Invalid type: must be a string')
+	}
 
-  const typeNames: Record<BlockType, string> = {
-    'intro': '引言',
-    'title': '小标题',
-    'body': '正文',
-    'outro': '结尾',
-    'image_single': '单图',
-    'image_double': '双图'
-  }
+	const typeNames: Record<BlockType, string> = {
+		'intro': '引言',
+		'title': '小标题',
+		'body': '正文',
+		'outro': '结尾',
+		'image_single': '单图',
+		'image_double': '双图'
+	}
 
-  return typeNames[type] || '正文'
+	return typeNames[type] || '正文'
 }
 
 /**
@@ -208,10 +255,10 @@ export function getBlockTypeDisplayName(type: BlockType): string {
  * @returns 块类型选项数组
  */
 export function getBlockTypeOptions(): Array<{ value: BlockType; label: string }> {
-  return [
-    { value: 'intro', label: '引言' },
-    { value: 'title', label: '小标题' },
-    { value: 'body', label: '正文' },
-    { value: 'outro', label: '结尾' }
-  ]
+	return [
+		{ value: 'intro', label: '引言' },
+		{ value: 'title', label: '小标题' },
+		{ value: 'body', label: '正文' },
+		{ value: 'outro', label: '结尾' }
+	]
 }

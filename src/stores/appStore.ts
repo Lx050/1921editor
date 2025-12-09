@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Ref } from 'vue'
-import type { ContentBlock, StyleConfig, BlockType } from '@/types'
+import type { ContentBlock, StyleConfig, BlockType, WechatImage, UploadProgress } from '@/types'
 
 export const useAppStore = defineStore('app', () => {
   // 状态（明确类型注解，无向后兼容）
@@ -9,6 +9,16 @@ export const useAppStore = defineStore('app', () => {
   const rawText: Ref<string> = ref('')
   const contentBlocks: Ref<ContentBlock[]> = ref([])
   const styleConfig: Ref<StyleConfig | null> = ref(null)
+
+  // V2 新增状态：微信图片上传相关
+  const wechatImages: Ref<WechatImage[]> = ref([])
+  const uploadProgress: Ref<UploadProgress> = ref({
+    total: 0,
+    completed: 0,
+    failed: 0,
+    uploading: 0,
+  })
+  const isUploading: Ref<boolean> = ref(false)
 
   // 操作（严格类型注解）
   const setStep = (step: number): void => {
@@ -103,11 +113,39 @@ export const useAppStore = defineStore('app', () => {
     styleConfig.value = { ...(styleConfig.value || {}), ...config }
   }
 
+  // V2 新增方法：微信图片管理
+  const addWechatImage = (image: WechatImage): void => {
+    wechatImages.value.push(image)
+  }
+
+  const addWechatImages = (images: WechatImage[]): void => {
+    wechatImages.value.push(...images)
+  }
+
+  const updateUploadProgress = (progress: UploadProgress): void => {
+    uploadProgress.value = { ...progress }
+    isUploading.value = progress.uploading > 0
+  }
+
+  const setIsUploading = (status: boolean): void => {
+    isUploading.value = status
+  }
+
+  const clearWechatImages = (): void => {
+    wechatImages.value = []
+    uploadProgress.value = { total: 0, completed: 0, failed: 0, uploading: 0 }
+    isUploading.value = false
+  }
+
   const resetApp = (): void => {
     currentStep.value = 1
     rawText.value = ''
     contentBlocks.value = []
     styleConfig.value = null
+    // V2: 重置微信图片状态
+    wechatImages.value = []
+    uploadProgress.value = { total: 0, completed: 0, failed: 0, uploading: 0 }
+    isUploading.value = false
   }
 
   return {
@@ -116,6 +154,10 @@ export const useAppStore = defineStore('app', () => {
     rawText,
     contentBlocks,
     styleConfig,
+    // V2 新增状态
+    wechatImages,
+    uploadProgress,
+    isUploading,
     // 操作
     setStep,
     setRawText,
@@ -125,6 +167,13 @@ export const useAppStore = defineStore('app', () => {
     insertImageBlock,
     insertTextBlock,
     setStyleConfig,
+    // V2 新增操作
+    addWechatImage,
+    addWechatImages,
+    updateUploadProgress,
+    setIsUploading,
+    clearWechatImages,
     resetApp
   }
 })
+

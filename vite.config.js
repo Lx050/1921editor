@@ -5,7 +5,19 @@ export default defineConfig({
   plugins: [vue()],
   root: './src',
   server: {
-    port: 1921
+    port: 1921,
+    // 代理配置：解决微信 API 跨域问题
+    proxy: {
+      '/wechat-api': {
+        target: 'https://api.weixin.qq.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/wechat-api/, ''),
+        secure: true,
+        headers: {
+          'Origin': 'https://api.weixin.qq.com'
+        }
+      }
+    }
   },
   build: {
     // 优化构建配置

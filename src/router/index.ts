@@ -4,6 +4,7 @@ import Step1TextInput from '../views/Step1TextInput.vue'
 import Step2Curtain from '../views/Step2Curtain.vue'
 import Step3Preview from '../views/Step3Preview.vue'
 import StyleConfig from '../views/StyleConfig.vue'
+import DraftPreview from '../views/DraftPreview.vue'
 import { useAppStore } from '../stores/appStore'
 
 const routes: RouteRecordRaw[] = [
@@ -44,6 +45,14 @@ const routes: RouteRecordRaw[] = [
     component: StyleConfig,
     meta: {
       title: '样式配置'
+    }
+  },
+  {
+    path: '/preview',
+    name: 'DraftPreview',
+    component: DraftPreview,
+    meta: {
+      title: '草稿预览'
     }
   }
 ]

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh -o StrictHostKeyChecking=no -i \"c:/Users/Lx050/.ssh/editor135.pem\" root@101.42.158.32 \"cat /etc/nginx/conf.d/default.conf 2>/dev/null || cat /etc/nginx/nginx.conf 2>/dev/null | grep -A20 ''server {'' | head -40\")",
+      "Bash(\"C:\\Users\\Lx050\\Desktop\\排版\\node_modules\\.bin\\vite.cmd\" build)",
+      "Bash(tar -czpf \"C:\\Users\\Lx050\\Desktop\\排版\\dist.tar.gz\" -C:*)"
+    ]
+  }
+}

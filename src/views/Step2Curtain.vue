@@ -33,9 +33,15 @@
       <!-- 头部 - 固定不滚动 -->
       <div class="flex-shrink-0 p-6 pb-4">
         <h2 class="text-2xl font-bold text-gray-900 mb-2">步骤 2/3: 编辑内容</h2>
-        <p class="text-gray-600">
+        <p class="text-gray-600 mb-3">
           左侧选择样式，点击文本块进行编辑，调整内容块的类型和顺序。
         </p>
+        <!-- V2: 上传进度条 -->
+        <UploadProgress 
+          :progress="uploadProgress" 
+          :isUploading="isUploading"
+          @retry="retryFailedUploads"
+        />
       </div>
 
       <!-- 幕布工作区 - 可滚动，底部留出按钮空间 -->
@@ -286,14 +292,16 @@
         <div class="w-full sm:w-auto">
           <button
             @click="goToNextStep"
-            class="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg transition-colors shadow-lg flex items-center justify-center space-x-3"
-            :disabled="contentBlocks.length === 0"
-            title="进入下一步预览效果"
+            class="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg transition-colors shadow-lg flex items-center justify-center space-x-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            :disabled="contentBlocks.length === 0 || isUploading"
+            :title="isUploading ? '请等待图片上传完成' : '进入下一步预览效果'"
           >
-            <span>下一步：预览效果</span>
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span v-if="isUploading">图片上传中...</span>
+            <span v-else>下一步：预览效果</span>
+            <svg v-if="!isUploading" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
             </svg>
+            <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </button>
         </div>
       </div>
@@ -330,8 +338,10 @@ import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { smartTextParser, cleanBlockText } from '../utils/textParser'
 import { getBlockTypeDisplayName } from '../utils/styleAssembler'
+import { uploadManager } from '../utils/uploadManager'
 import StyleSelector from '../components/StyleSelector.vue'
 import LayoutInserter from '../components/LayoutInserter.vue'
+import UploadProgress from '../components/UploadProgress.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -346,6 +356,15 @@ const showMobileSidebar = ref(false)
 
 // 计算属性
 const contentBlocks = computed(() => appStore.contentBlocks)
+
+// V2: 上传状态计算属性
+const uploadProgress = computed(() => appStore.uploadProgress)
+const isUploading = computed(() => appStore.isUploading)
+
+// V2: 重试失败的上传
+const retryFailedUploads = () => {
+  uploadManager.retryFailed()
+}
 
 // 监听原始文本变化，解析内容块
 watch(() => appStore.rawText, (newText) => {

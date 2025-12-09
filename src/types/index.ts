@@ -83,3 +83,7 @@ export function isImageBlock(type: BlockType): boolean {
 export function isTextBlock(type: BlockType): boolean {
   return !isImageBlock(type);
 }
+
+// 导出微信相关类型
+export * from './wechat';
+

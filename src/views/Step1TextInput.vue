@@ -76,7 +76,7 @@
         <input 
           type="file" 
           ref="fileInput" 
-          accept=".docx" 
+          accept=".docx,.zip,.rar,.7z" 
           class="hidden" 
           @change="handleFileUpload"
         >
@@ -84,7 +84,7 @@
           @click="triggerFileUpload"
           class="px-4 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors flex items-center"
         >
-          <span class="mr-1">📄</span> 导入 Word
+          <span class="mr-1">📄</span> 导入 Word/zip/7z
         </button>
         <button
           @click="insertSampleText"
@@ -105,6 +105,13 @@
         >
           清空文本
         </button>
+        <!-- 显示已提取图片数量 -->
+        <div v-if="extractedImages.length > 0" class="flex items-center text-sm text-green-600 bg-green-50 px-3 py-1 rounded ml-2">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          已提取 {{ extractedImages.length }} 张图片
+        </div>
       </div>
 
       <!-- 错误提示 -->
@@ -141,12 +148,15 @@ import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import mammoth from 'mammoth'
+import { extractZip, isZipFile } from '../utils/zipProcessor'
+import { uploadManager } from '../utils/uploadManager'
 
 const router = useRouter()
 const appStore = useAppStore()
 const localText = ref('')
 const errorMessage = ref('')
 const fileInput = ref(null)
+const extractedImages = ref([])  // V2: 存储从ZIP中提取的图片
 
 // 监听store中的文本变化
 watch(() => appStore.rawText, (newText) => {
@@ -195,13 +205,55 @@ const handleDragLeave = () => {
   isDragging.value = false
 }
 
-// 统一的文件处理逻辑
+// 统一的文件处理逻辑 (V2: 支持 ZIP 和 DOCX)
 const processFile = async (file) => {
-  if (!file.name.endsWith('.docx')) {
-    errorMessage.value = '请上传 .docx 格式的 Word 文档'
+  errorMessage.value = ''
+  
+  // V2: 检查是否是 ZIP 文件
+  if (isZipFile(file)) {
+    await processZipFile(file)
     return
   }
 
+  // 原有的 DOCX 处理逻辑
+  if (!file.name.endsWith('.docx')) {
+    errorMessage.value = '请上传 .docx 格式的 Word 文档或 .zip/.rar/.7z 压缩包'
+    return
+  }
+
+  await processDocxFile(file)
+}
+
+// V2: 处理 ZIP 文件
+const processZipFile = async (file) => {
+  try {
+    console.log('[Step1] 处理 ZIP 文件:', file.name)
+    const result = await extractZip(file)
+    
+    // 累加提取的图片 (V2: 允许图片重复/累加)
+    extractedImages.value = [...extractedImages.value, ...result.imageFiles]
+    console.log('[Step1] 新增', result.imageFiles.length, '张图片，总计', extractedImages.value.length)
+    
+    // 如果有 docx 文件，处理第一个 (V2: 文档直接替换)
+    if (result.docxFiles.length > 0) {
+      console.log('[Step1] ZIP 中发现 Word 文档:', result.docxFiles[0].name)
+      await processDocxFile(result.docxFiles[0])
+    } else {
+      // 仅提示图片提取成功，不报错
+      if (result.imageFiles.length > 0) {
+        // errorMessage.value = `已提取 ${result.imageFiles.length} 张图片`
+      } else {
+        errorMessage.value = '压缩包中未找到图片或 Word 文档'
+      }
+    }
+  } catch (error) {
+    console.error('[Step1] ZIP 处理失败:', error)
+    errorMessage.value = error instanceof Error ? error.message : 'ZIP 文件处理失败'
+  }
+}
+
+// 处理 DOCX 文件
+const processDocxFile = async (file) => {
   try {
     const arrayBuffer = await file.arrayBuffer()
     
@@ -350,9 +402,10 @@ const clearText = () => {
   localText.value = ''
   appStore.setRawText('')
   errorMessage.value = ''
+  extractedImages.value = []  // V2: 清空提取的图片
 }
 
-// 前往下一步
+// 前往下一步 (V2: 并行启动图片上传)
 const goToNextStep = () => {
   if (!localText.value.trim()) {
     errorMessage.value = '请输入文本内容'
@@ -365,7 +418,32 @@ const goToNextStep = () => {
   // 清空之前的内容块
   appStore.setContentBlocks([])
 
-  // 导航到下一步
+  // V2: 如果有提取的图片，启动后台上传
+  if (extractedImages.value.length > 0) {
+    console.log('[Step1] 启动图片上传,', extractedImages.value.length, '张图片')
+    
+    // 清空之前的微信图片
+    appStore.clearWechatImages()
+    
+    // 设置上传管理器回调
+    uploadManager
+      .onProgress((progress) => {
+        appStore.updateUploadProgress(progress)
+      })
+      .onImageUploaded((image) => {
+        appStore.addWechatImage(image)
+      })
+      .onComplete((results) => {
+        console.log('[Step1] 所有图片上传完成:', results.length)
+        appStore.setIsUploading(false)
+      })
+    
+    // 启动上传
+    appStore.setIsUploading(true)
+    uploadManager.addFiles(extractedImages.value)
+  }
+
+  // 导航到下一步（不等待上传完成）
   router.push('/step2')
 }
 </script>
