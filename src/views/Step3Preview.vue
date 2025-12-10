@@ -94,63 +94,75 @@
         </div>
       </div>
 
-      <!-- V2: 响应式内容区域 - md+: 双栏布局, md-: 单栏布局（图片库在上） -->
-      <div v-else-if="finalHtml && !errorMessage" class="h-full overflow-hidden flex flex-col md:flex-row">
-        <!-- 上/左：微信图片库 -->
+      <!-- V3: 响应式内容区域 -->
+      <!-- 移动端：顶部横向图片选择器（固定高度）+ 下方预览区（占据剩余空间） -->
+      <!-- 桌面端：左侧图片列表 + 右侧预览区 -->
+      <div v-else-if="finalHtml && !errorMessage" class="h-full overflow-hidden flex flex-col">
+        <!-- 顶部：微信图片库（移动端横向滚动，桌面端独立侧边栏）-->
         <div
-          class="md:w-[520px] w-full flex-shrink-0 border-r-0 md:border-r border-b md:border-b-0 bg-gray-50 flex flex-col overflow-hidden md:order-none order-first"
+          class="md:w-[520px] flex-shrink-0 bg-gray-50 border-r-0 md:border-r border-b md:border-b-0"
+          v-if="hasWechatImages"
         >
-          <!-- 移动端：更紧凑的头部 -->
-          <div class="flex-shrink-0 px-3 py-2 md:p-4 border-b bg-white">
-            <h3 class="font-semibold text-sm md:text-base text-gray-900">微信图片库</h3>
-            <p class="text-xs md:text-sm text-gray-600 mt-0.5 md:mt-1">
-              {{ hasWechatImages ? '点击图片，再点预览中的占位符替换' : '暂无图片，可在第二步上传' }}
-            </p>
-          </div>
-          <!-- 移动端：横向滚动图片 -->
-          <div class="flex-1 overflow-y-auto md:overflow-y-auto overflow-x-hidden md:overflow-x-hidden">
-            <div v-if="hasWechatImages">
+          <!-- 桌面端左侧图片库（纵向）-->
+          <div class="hidden md:block h-full overflow-hidden flex flex-col">
+            <div class="flex-shrink-0 p-4 border-b bg-white">
+              <h3 class="font-semibold text-gray-900">微信图片库</h3>
+              <p class="text-sm text-gray-600 mt-1">
+                点击预览中的占位符图片，再从左侧选择图片替换
+              </p>
+            </div>
+            <div class="flex-1 overflow-y-auto">
               <WechatImageGallery
                 :images="wechatImages"
                 :selectedPlaceholder="selectedPlaceholder"
                 @select="handleImageSelect"
               />
             </div>
-            <div v-else class="p-6 md:p-8 text-center text-gray-500">
-              <p class="text-base md:text-lg mb-1 md:mb-2">🖼️</p>
-              <p class="text-xs md:text-sm">暂无图片</p>
-              <p class="text-xs mt-1 md:mt-2 text-gray-400">可在第二步插入图片模板并上传</p>
+          </div>
+
+          <!-- 移动端顶部横向图片库 -->
+          <div class="md:hidden h-28 w-full overflow-hidden border-b">
+            <div class="bg-blue-50 border-b px-3 py-2">
+              <p class="text-xs text-blue-700 font-medium">👇 选择图片后，点击预览中的占位符</p>
+            </div>
+            <div class="overflow-x-auto overflow-y-hidden h-full bg-gray-50">
+              <WechatImageGallery
+                :images="wechatImages"
+                :selectedPlaceholder="selectedPlaceholder"
+                @select="handleImageSelect"
+                mobile-layout
+              />
             </div>
           </div>
         </div>
 
-        <!-- 下/右：预览与代码区 -->
-        <div class="flex-1 h-full overflow-y-auto">
-          <!-- 预览模式 -->
-          <div v-if="activeTab === 'preview'" class="min-h-full bg-gray-100 md:bg-gray-200 flex justify-center p-2 md:py-4">
-            <!-- 响应式：手机宽度容器 (移动端: 95%宽度，最大400px; 桌面: 375px固定) -->
-            <div class="w-full md:w-[375px] max-w-md md:max-w-none bg-white shadow md:shadow-lg rounded md:rounded-lg flex-shrink-0">
-              <iframe
-                ref="previewFrame"
-                :srcdoc="previewHtml"
-                class="w-full border-0 rounded md:rounded-lg"
-                style="min-height: 600px;"
-                title="版式预览"
-                @load="setupIframeClickHandler"
-              ></iframe>
-            </div>
-          </div>
-
-          <!-- 代码模式 -->
-          <div v-else class="min-h-full p-3 md:p-4">
-            <div class="flex justify-between items-center mb-2">
-              <div class="text-xs md:text-sm text-gray-600">
-                HTML代码 ({{ finalHtml.length }} 字符)
+        <!-- 主内容区：预览与代码 -->
+        <div class="flex-1 flex flex-row md:h-full">
+          <!-- 预览与代码区 -->
+          <div class="flex-1 h-full overflow-y-auto">
+            <!-- 预览模式 -->
+            <div v-if="activeTab === 'preview'" class="min-h-full bg-gray-100 md:bg-gray-200 flex justify-center p-2 md:py-4">
+              <!-- 响应式：手机宽度容器 -->
+              <div class="w-full md:w-[375px] max-w-md md:max-w-none bg-white shadow md:shadow-lg rounded md:rounded-lg flex-shrink-0">
+                <iframe
+                  ref="previewFrame"
+                  :srcdoc="previewHtml"
+                  class="w-full border-0 rounded md:rounded-lg"
+                  style="min-height: 600px;"
+                  title="版式预览"
+                  @load="setupIframeClickHandler"
+                ></iframe>
               </div>
             </div>
 
-            <div class="bg-gray-900 text-gray-100 rounded md:rounded-lg p-3 md:p-4">
-              <pre class="text-xs md:text-sm font-mono whitespace-pre-wrap">{{ finalHtml }}</pre>
+            <!-- 代码模式 -->
+            <div v-else class="min-h-full p-3 md:p-4">
+              <div class="flex justify-between items-center mb-2">
+                <div class="text-xs md:text-sm text-gray-600">HTML代码 ({{ finalHtml.length }} 字符)</div>
+              </div>
+              <div class="bg-gray-900 text-gray-100 rounded md:rounded-lg p-3 md:p-4">
+                <pre class="text-xs md:text-sm font-mono whitespace-pre-wrap">{{ finalHtml }}</pre>
+              </div>
             </div>
           </div>
         </div>

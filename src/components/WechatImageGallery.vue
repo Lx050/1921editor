@@ -1,5 +1,6 @@
 <template>
-  <div class="h-full flex flex-col bg-gray-50">
+  <!-- 桌面端（纵向布局）-->
+  <div v-if="!mobileLayout" class="h-full flex flex-col bg-gray-50">
     <!-- 标题栏 -->
     <div class="flex-shrink-0 px-4 py-3 bg-white border-b">
       <h3 class="text-sm font-semibold text-gray-700">微信图片库</h3>
@@ -16,7 +17,7 @@
       <!-- 空状态 -->
       <div v-if="successfulImages.length === 0" class="flex flex-col items-center justify-center h-full text-gray-400">
         <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
         <p class="text-sm">暂无可用图片</p>
@@ -31,8 +32,8 @@
           @click="selectImage(image)"
           :class="[
             'relative rounded-lg overflow-hidden cursor-pointer transition-all',
-            selectedPlaceholder 
-              ? 'hover:ring-4 hover:ring-blue-400 hover:shadow-lg transform hover:scale-[1.02]' 
+            selectedPlaceholder
+              ? 'hover:ring-4 hover:ring-blue-400 hover:shadow-lg transform hover:scale-[1.02]'
               : 'opacity-60 cursor-not-allowed'
           ]"
         >
@@ -50,16 +51,6 @@
           <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
             <p class="text-xs text-white truncate">{{ image.name }}</p>
           </div>
-          
-          <!-- 点击提示 -->
-          <div 
-            v-if="selectedPlaceholder"
-            class="absolute inset-0 bg-blue-500/0 hover:bg-blue-500/20 transition-colors flex items-center justify-center"
-          >
-            <div class="opacity-0 hover:opacity-100 transition-opacity bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-lg text-sm">
-              替换
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -71,20 +62,49 @@
       </p>
     </div>
   </div>
+
+  <!-- 移动端（横向布局）-->
+  <div v-else class="h-full flex flex-row items-center gap-2 px-3 py-2 overflow-x-auto overflow-y-hidden bg-gray-50">
+    <div
+      v-for="image in successfulImages"
+      :key="image.id"
+      @click="selectImage(image)"
+      class="flex-shrink-0 w-20 h-24 rounded-lg overflow-hidden cursor-pointer transition-all bg-gray-200"
+      :class="{
+        'ring-2 ring-blue-500 shadow-lg': selectedPlaceholder,
+        'opacity-60 cursor-not-allowed': !selectedPlaceholder,
+        'hover:ring-4 hover:ring-blue-400 hover:shadow-lg': selectedPlaceholder
+      }"
+    >
+      <img
+        :src="image.localPreviewUrl || image.url"
+        :alt="image.name"
+        class="w-full h-full object-cover"
+        loading="lazy"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { WechatImage } from '@/types'
 
-const props = defineProps<{
+interface Props {
   images: WechatImage[]
   selectedPlaceholder?: string | null
-}>()
+  mobileLayout?: boolean
+}
 
-const emit = defineEmits<{
+interface Emits {
   (e: 'select', image: WechatImage): void
-}>()
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  mobileLayout: false
+})
+
+const emit = defineEmits<Emits>()
 
 // 只显示上传成功的图片
 const successfulImages = computed(() => {
