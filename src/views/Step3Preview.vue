@@ -411,12 +411,10 @@ import { buildHtml } from '../utils/styleAssembler'
 import { createDraft, uploadImage } from '../utils/wechatApi'
 import WechatImageGallery from '../components/WechatImageGallery.vue'
 import QRCode from 'qrcode'
-
-import { useConfigStore } from '../stores/configStore'
+import { getConfig } from '../config'
 
 const router = useRouter()
 const appStore = useAppStore()
-const configStore = useConfigStore()
 
 const isGenerating = ref(false)
 const finalHtml = ref('')
@@ -863,8 +861,9 @@ const generatePreviewLink = async () => {
     const encoded = btoa(encodeURIComponent(jsonStr))
 
     // 生成预览链接（整个数据在URL中，可分享）
-    // 使用相对路径，自动适配当前域名
-    const serverUrl = window.location.origin
+    // 从配置文件获取服务器URL，可覆盖默认的window.location.origin
+    const config = getConfig()
+    const serverUrl = config.apiBaseUrl
     const link = `${serverUrl}/preview?data=${encoded}`
     previewLink.value = link
 

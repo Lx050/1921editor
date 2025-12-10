@@ -65,10 +65,15 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['insertImage', 'insertText'])
+interface EmitEvents {
+  insertImage: [imageType: string]
+  insertText: [textType: string]
+}
+
+const emit = defineEmits<EmitEvents>()
 
 const menuVisible = ref(false)
 

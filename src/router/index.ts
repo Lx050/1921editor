@@ -63,36 +63,60 @@ const routes: RouteRecordRaw[] = [
   }
 ]
 
+
+// 路由保护规则配置 - 集中管理所有路由保护逻辑
+interface RouteGuard {
+  validator: (appStore: ReturnType<typeof useAppStore>) => boolean
+  redirect: string
+  description: string
+}
+
+const routeGuards: Record<string, RouteGuard> = {
+  '/step2': {
+    validator: (appStore) => Boolean(appStore.rawText),
+    redirect: '/step1',
+    description: 'step2需要文本内容'
+  },
+  '/step3': {
+    validator: (appStore) => Boolean(appStore.contentBlocks?.length),
+    redirect: '/step2',
+    description: 'step3需要内容块'
+  },
+  '/style-config': {
+    validator: (appStore) => Boolean(appStore.rawText),
+    redirect: '/step1',
+    description: '样式配置需要文本内容'
+  }
+}
+
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
 
-// 导航守卫 - 确保步骤流程正确
+// 统一的错误记录函数
+const logRouteGuard = (to: string, passed: boolean, message: string): void => {
+  console.log(`[RouteGuard] ${passed ? '✅ 通过' : '⛔ 拦截'} | ${to}: ${message}`)
+}
+
+// 导航守卫 - 确保正确的步骤流程
 router.beforeEach((to, from, next) => {
   const appStore = useAppStore()
 
-  // 如果直接访问step2或step3，检查是否有前置条件
-  if (to.path === '/step2' && from.path !== '/step1') {
-    // 从非step1页面过来，需要检查是否有文本内容
-    if (!appStore.rawText) {
-      next('/step1')
+  // 检查目标路由是否有保护规则
+  const guard = routeGuards[to.path]
+  if (guard) {
+    // 验证条件
+    const isValid = guard.validator(appStore)
+
+    // 记录日志
+    logRouteGuard(to.path, isValid, guard.description)
+
+    if (!isValid) {
+      console.warn(`[RouteGuard] 跳转到 ${guard.redirect}`)
+      next(guard.redirect)
       return
     }
-  }
-
-  if (to.path === '/step3' && from.path !== '/step2') {
-    // 从非step2页面过来，需要检查是否有内容块
-    if (!appStore.contentBlocks || appStore.contentBlocks.length === 0) {
-      next('/step2')
-      return
-    }
-  }
-
-  // 样式配置页面需要有内容才能访问
-  if (to.path === '/style-config' && !appStore.rawText) {
-    next('/step1')
-    return
   }
 
   next()

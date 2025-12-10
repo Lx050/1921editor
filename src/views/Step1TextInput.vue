@@ -14,13 +14,15 @@
       </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
         <div>
-          <p class="font-medium mb-1">智能识别（推荐）：</p>
-          <p>• 使用空行分隔不同内容块</p>
-          <p>• 系统自动识别标题、引言、结尾</p>
+          <p class="font-medium mb-1">图片标注：</p>
+          <p>• <code class="bg-blue-100 px-1">&单图</code> 或 <code class="bg-blue-100 px-1">&图片说明</code></p>
+          <p>• <code class="bg-blue-100 px-1">&&双图</code> 或 <code class="bg-blue-100 px-1">&&左图说明 右图说明</code></p>
+          <p class="text-xs text-blue-600 mt-1">注：双图说明请用空格分隔</p>
         </div>
         <div>
-          <p class="font-medium mb-1">标注语法：</p>
-          <p>• <code class="bg-blue-100 px-1"># 标题</code></p>
+          <p class="font-medium mb-1">文字标注：</p>
+          <p>• <code class="bg-blue-100 px-1"># 标题</code> (一级标题)</p>
+          <p>• <code class="bg-blue-100 px-1">## 小标题</code> (二级标题)</p>
           <p>• <code class="bg-blue-100 px-1">> 引言内容</code></p>
         </div>
       </div>
@@ -52,12 +54,12 @@
 ## 第一章：概述
 # 这是正文第一段内容，系统会智能识别或使用#标注。
 
-&单图
+&这是一张单图的说明
 
 ## 技术要点
 # 这是正文第二段内容。
 
-&&双图
+&&左边的图片说明 右边的图片说明
 
 ## 总结
 # 这是结尾内容。
@@ -381,13 +383,13 @@ const insertMarkedSampleText = () => {
 
 # 在实际应用中，我们需要根据不同的平台和受众来调整版式策略。例如，在微信公众号中，需要考虑移动设备的显示效果。
 
-&单图
+&这是一张单图的说明
 
 ## 第三章：工具推荐
 
 # 市面上有许多优秀的版式设计工具，从专业的Adobe系列到轻量级的在线编辑器。
 
-&&双图
+&&左边的图片说明 右边的图片说明
 
 ## 总结
 

@@ -70,7 +70,7 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  const insertImageBlock = (index: number, imageType: 'single' | 'double' | 'double_caption'): void => {
+  const insertImageBlock = (index: number, imageType: 'single' | 'single_caption' | 'double' | 'double_caption'): void => {
     if (typeof index !== 'number' || index < 0) {
       throw new Error('Invalid index: must be a non-negative number')
     }
@@ -78,6 +78,7 @@ export const useAppStore = defineStore('app', () => {
     // 转换图片类型名称
     let blockType: BlockType;
     if (imageType === 'single') blockType = 'image_single';
+    else if (imageType === 'single_caption') blockType = 'image_single_caption';
     else if (imageType === 'double') blockType = 'image_double';
     else blockType = 'image_double_caption';
 
