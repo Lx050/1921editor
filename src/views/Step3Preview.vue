@@ -1,27 +1,29 @@
 <template>
   <div class="h-screen w-full flex flex-col overflow-hidden fixed inset-0">
     <!-- 精简头部 - 绝对固定 -->
-    <div class="flex-shrink-0 w-full bg-white border-b p-4">
-      <div class="flex justify-between items-center">
-        <div>
-          <h2 class="text-xl font-bold text-gray-900">步骤 3/3: 生成预览</h2>
-          <p class="text-sm text-gray-600 mt-1">
-            {{ hasWechatImages ? '点击右侧预览中的占位符图片，再点击左侧图片直接替换' : '预览最终效果，并复制HTML代码' }}
+    <div class="flex-shrink-0 w-full bg-white border-b p-3 md:p-4">
+      <div class="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
+        <div class="flex-1 min-w-0">
+          <h2 class="text-lg md:text-xl font-bold text-gray-900 truncate">步骤 3/3: 生成预览</h2>
+          <p class="text-xs md:text-sm text-gray-600 mt-0.5 md:mt-1 truncate">
+            {{ hasWechatImages ? '点击预览中的占位符图片，再点击下方图片替换' : '预览最终效果，并复制HTML代码' }}
           </p>
         </div>
         <!-- 快速操作按钮 -->
-        <div class="flex space-x-2">
+        <div class="flex flex-wrap gap-1 md:gap-2 justify-end">
+          <!-- 移动端：只显示图标 -->
           <button
             @click="goToStyleConfig"
-            class="px-3 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-700 text-sm rounded-md transition-colors flex items-center space-x-1"
+            class="md:px-3 px-2 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-700 text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0"
+            title="装饰样式"
           >
-            🎨
-            <span>装饰样式</span>
+            <span class="text-sm">🎨</span>
+            <span class="hidden md:inline">装饰样式</span>
           </button>
           <button
             @click="activeTab = 'preview'"
             :class="[
-              'px-3 py-1.5 text-sm rounded-md transition-colors',
+              'px-2 md:px-3 py-1.5 text-xs md:text-sm rounded-md transition-colors flex-shrink-0',
               activeTab === 'preview'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -32,7 +34,7 @@
           <button
             @click="activeTab = 'code'"
             :class="[
-              'px-3 py-1.5 text-sm rounded-md transition-colors',
+              'px-2 md:px-3 py-1.5 text-xs md:text-sm rounded-md transition-colors flex-shrink-0',
               activeTab === 'code'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -42,17 +44,18 @@
           </button>
           <button
             @click="copyHtml"
-            class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors flex items-center space-x-1"
+            class="md:px-3 px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0"
           >
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
             </svg>
-            <span>{{ copyButtonText }}</span>
+            <span class="hidden md:inline">{{ copyButtonText }}</span>
+            <span class="md:hidden">复制</span>
           </button>
           <!-- 生成预览按钮 -->
           <button
             @click="generatePreviewLink"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="md:px-4 px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="isCreatingPreview || !finalHtml"
             title="生成可分享的预览链接"
           >
@@ -61,19 +64,21 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
             </svg>
-            <span>{{ isCreatingPreview ? '生成中...' : '生成预览' }}</span>
+            <span class="hidden md:inline">{{ isCreatingPreview ? '生成中...' : '生成预览' }}</span>
+            <span class="md:hidden">{{ isCreatingPreview ? '生成中' : '预览' }}</span>
           </button>
 
           <!-- 创建草稿按钮 -->
           <button
             @click="openDraftModal"
-            class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md transition-colors flex items-center space-x-1"
+            class="md:px-3 px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0"
             title="上传到微信草稿箱"
           >
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
             </svg>
-            <span>创建草稿</span>
+            <span class="hidden md:inline">创建草稿</span>
+            <span class="md:hidden">草稿</span>
           </button>
         </div>
       </div>
@@ -89,19 +94,21 @@
         </div>
       </div>
 
-      <!-- V2: 双栏内容区域 - 可独立滚动 -->
-      <div v-else-if="finalHtml && !errorMessage" class="flex h-full overflow-hidden">
-        <!-- 左栏：微信图片库 (宽度520px，固定结构) -->
+      <!-- V2: 响应式内容区域 - md+: 双栏布局, md-: 单栏布局（图片库在上） -->
+      <div v-else-if="finalHtml && !errorMessage" class="h-full overflow-hidden flex flex-col md:flex-row">
+        <!-- 上/左：微信图片库 -->
         <div
-          class="w-[520px] flex-shrink-0 h-full border-r bg-gray-50 flex flex-col overflow-hidden"
+          class="md:w-[520px] w-full flex-shrink-0 border-r-0 md:border-r border-b md:border-b-0 bg-gray-50 flex flex-col overflow-hidden md:order-none order-first"
         >
-          <div class="flex-shrink-0 p-4 border-b bg-white">
-            <h3 class="font-semibold text-gray-900">微信图片库</h3>
-            <p class="text-sm text-gray-600 mt-1">
-              {{ hasWechatImages ? '选择图片替换右侧占位符' : '暂无图片，可在第二步上传图片' }}
+          <!-- 移动端：更紧凑的头部 -->
+          <div class="flex-shrink-0 px-3 py-2 md:p-4 border-b bg-white">
+            <h3 class="font-semibold text-sm md:text-base text-gray-900">微信图片库</h3>
+            <p class="text-xs md:text-sm text-gray-600 mt-0.5 md:mt-1">
+              {{ hasWechatImages ? '点击图片，再点预览中的占位符替换' : '暂无图片，可在第二步上传' }}
             </p>
           </div>
-          <div class="flex-1 overflow-y-auto">
+          <!-- 移动端：横向滚动图片 -->
+          <div class="flex-1 overflow-y-auto md:overflow-y-auto overflow-x-hidden md:overflow-x-hidden">
             <div v-if="hasWechatImages">
               <WechatImageGallery
                 :images="wechatImages"
@@ -109,25 +116,25 @@
                 @select="handleImageSelect"
               />
             </div>
-            <div v-else class="p-8 text-center text-gray-500">
-              <p class="text-lg mb-2">🖼️</p>
-              <p class="text-sm">暂无图片</p>
-              <p class="text-xs mt-2 text-gray-400">可在第二步插入图片模板并上传</p>
+            <div v-else class="p-6 md:p-8 text-center text-gray-500">
+              <p class="text-base md:text-lg mb-1 md:mb-2">🖼️</p>
+              <p class="text-xs md:text-sm">暂无图片</p>
+              <p class="text-xs mt-1 md:mt-2 text-gray-400">可在第二步插入图片模板并上传</p>
             </div>
           </div>
         </div>
 
-        <!-- 右栏：预览与代码区 -->
+        <!-- 下/右：预览与代码区 -->
         <div class="flex-1 h-full overflow-y-auto">
           <!-- 预览模式 -->
-          <div v-if="activeTab === 'preview'" class="min-h-full bg-gray-200 flex justify-center py-4">
-            <!-- 手机宽度容器 (375px) -->
-            <div class="w-[375px] bg-white shadow-lg rounded-lg flex-shrink-0">
+          <div v-if="activeTab === 'preview'" class="min-h-full bg-gray-100 md:bg-gray-200 flex justify-center p-2 md:py-4">
+            <!-- 响应式：手机宽度容器 (移动端: 95%宽度，最大400px; 桌面: 375px固定) -->
+            <div class="w-full md:w-[375px] max-w-md md:max-w-none bg-white shadow md:shadow-lg rounded md:rounded-lg flex-shrink-0">
               <iframe
                 ref="previewFrame"
                 :srcdoc="previewHtml"
-                class="w-full border-0 rounded-lg"
-                style="min-height: 800px;"
+                class="w-full border-0 rounded md:rounded-lg"
+                style="min-height: 600px;"
                 title="版式预览"
                 @load="setupIframeClickHandler"
               ></iframe>
@@ -135,15 +142,15 @@
           </div>
 
           <!-- 代码模式 -->
-          <div v-else class="min-h-full p-4">
+          <div v-else class="min-h-full p-3 md:p-4">
             <div class="flex justify-between items-center mb-2">
-              <div class="text-sm text-gray-600">
+              <div class="text-xs md:text-sm text-gray-600">
                 HTML代码 ({{ finalHtml.length }} 字符)
               </div>
             </div>
 
-            <div class="bg-gray-900 text-gray-100 rounded-lg p-4">
-              <pre class="text-sm font-mono whitespace-pre-wrap">{{ finalHtml }}</pre>
+            <div class="bg-gray-900 text-gray-100 rounded md:rounded-lg p-3 md:p-4">
+              <pre class="text-xs md:text-sm font-mono whitespace-pre-wrap">{{ finalHtml }}</pre>
             </div>
           </div>
         </div>
