@@ -5,12 +5,10 @@
 
 import type { WechatTokenResponse, WechatUploadResponse, WechatImage } from '@/types';
 
-// 微信 API 配置
-const WECHAT_CONFIG = {
-    appId: 'wxc75aebc24fb0d06a',
-    appSecret: '16e0edfc579fd560a0c0f8e9e44bc711',
+import { useConfigStore } from '../stores/configStore';
+// 移除静态配置，保留 tokenUrl 和 uploadUrl 常量
+const API_ENDPOINTS = {
     // API 端点 - 使用 Vite 代理路径 /wechat-api 来解决 CORS 问题
-    // 代理配置在 vite.config.js 中，将 /wechat-api/* 转发到 https://api.weixin.qq.com/*
     tokenUrl: '/wechat-api/cgi-bin/stable_token',
     uploadUrl: '/wechat-api/cgi-bin/material/add_material',
 };
@@ -31,15 +29,18 @@ export async function getAccessToken(): Promise<string> {
     }
 
     try {
-        const response = await fetch(WECHAT_CONFIG.tokenUrl, {
+        const configStore = useConfigStore();
+        const { appId, appSecret } = configStore.wechatConfig;
+
+        const response = await fetch(API_ENDPOINTS.tokenUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 grant_type: 'client_credential',
-                appid: WECHAT_CONFIG.appId,
-                secret: WECHAT_CONFIG.appSecret,
+                appid: appId,
+                secret: appSecret,
                 force_refresh: false,
             }),
         });
@@ -74,7 +75,7 @@ export async function getAccessToken(): Promise<string> {
 export async function uploadImage(file: File): Promise<WechatUploadResponse> {
     try {
         const token = await getAccessToken();
-        const url = `${WECHAT_CONFIG.uploadUrl}?access_token=${token}&type=image`;
+        const url = `${API_ENDPOINTS.uploadUrl}?access_token=${token}&type=image`;
 
         const formData = new FormData();
         formData.append('media', file);

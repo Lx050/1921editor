@@ -131,20 +131,53 @@ function parseMarkedContent(text: string): ParseResult {
   // 图片模板标记 - 去除前后空格后进行匹配
   const trimmedText: string = text.trim()
 
-  if (trimmedText === '&单图' || trimmedText === '单图') {
+  // 单图标记：& 或 &单图
+  if (trimmedText.startsWith('&')) {
+    const content = trimmedText.substring(1).trim()
+
+    // 处理 && 
+    if (trimmedText.startsWith('&&')) {
+      const doubleContent = trimmedText.substring(2).trim()
+
+      if (doubleContent === '双图+注' || doubleContent === 'double_caption') {
+        // 兼容旧的完整标记
+        return { hasMark: true, text: '', type: 'image_double_caption' }
+      }
+
+      if (doubleContent === '双图' || doubleContent === '') {
+        return { hasMark: true, text: '', type: 'image_double' }
+      }
+
+      // &&后有其他内容，视为带图注
+      return {
+        hasMark: true,
+        text: doubleContent,
+        type: 'image_double_caption'
+      }
+    }
+
+    // 处理 &
+    if (content === '单图' || content === '') {
+      return { hasMark: true, text: '', type: 'image_single' }
+    }
+
+    // &后有其他内容，视为带图注
     return {
       hasMark: true,
-      text: '',
-      type: 'image_single'
+      text: content,
+      type: 'image_single_caption'
     }
   }
 
-  if (trimmedText === '&&双图' || trimmedText === '双图') {
-    return {
-      hasMark: true,
-      text: '',
-      type: 'image_double'
-    }
+  // 兼容旧的文字标记 "双图" 和 "双图+注" (不带符号的情况)
+  if (trimmedText === '单图') {
+    return { hasMark: true, text: '', type: 'image_single' }
+  }
+  if (trimmedText === '双图') {
+    return { hasMark: true, text: '', type: 'image_double' }
+  }
+  if (trimmedText === '双图+注') {
+    return { hasMark: true, text: '', type: 'image_double_caption' }
   }
 
   // 小标题标记：##

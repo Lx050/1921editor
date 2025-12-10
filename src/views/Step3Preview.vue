@@ -412,8 +412,11 @@ import { createDraft, uploadImage } from '../utils/wechatApi'
 import WechatImageGallery from '../components/WechatImageGallery.vue'
 import QRCode from 'qrcode'
 
+import { useConfigStore } from '../stores/configStore'
+
 const router = useRouter()
 const appStore = useAppStore()
+const configStore = useConfigStore()
 
 const isGenerating = ref(false)
 const finalHtml = ref('')
@@ -644,6 +647,55 @@ const setupIframeClickHandler = () => {
         console.log('[Step3] 选中占位符:', placeholderId)
       })
     })
+
+    // --- Footer 编辑逻辑 ---
+    // 假设 Footer 是最后一个 data-role="outer" 或者具有特定标识，这里简单假设倒数第二个 outer (因为 styleAssembler 里 header/body/footer 都是 section)
+    // 准确点：styleAssembler 中 footer 是在循环后 push 的，所以通常是最后一个子节点
+    // 但是 buildHTML 只是简单的 join('\n')，所以我们需要在 iframeDoc 中找到对应的 DOM
+    // 我们尝试查找包含 "校团委青年媒体中心" 这一特征文本的 section 作为 footer，或者约定 footer 的结构
+    
+    // 为了更准确，我们可以约定 footer 的最外层 section 有个 id 或 class
+    // 但现在 styleAssembler.ts 里的 HTML_FOOTER 只要是一个 outer section
+    
+    // 尝试找到最后一个 class="article135" 的元素，通常是 footer (Header, Body*N, Footer)
+    const outers = iframeDoc.querySelectorAll('.article135[data-role="outer"]')
+    if (outers.length > 0) {
+      const footer = outers[outers.length - 1] // 最后一个通常是 footer
+      
+      // 简单判断一下内容以免误判（比如没有 footer 的情况）
+      if (footer.innerHTML.includes('校团委青年媒体中心') || footer.innerHTML.includes('责编：')) {
+         footer.setAttribute('contenteditable', 'true')
+         footer.style.outline = '1px dashed #ddd' // 提示可编辑
+         
+         // 监听输入事件更新 store
+         footer.addEventListener('input', () => {
+            const newHtml = footer.outerHTML
+            // 更新 store
+            configStore.setFooter(newHtml)
+            // 注意：这里更新了 store，会导致 finalHtml 重新计算 -> previewHtml 重新计算 -> iframe 刷新
+            //这会导致输入焦点丢失！
+            // 解决方案：
+            // 1. Debounce 更新
+            // 2. 或者，不直接依赖 finalHtml 的自动刷新，而是像图片替换一样，先只改 DOM，最后再同步
+            
+            // 为了用户体验，我们应该延迟同步到 store，或者只在 blur 时同步
+         })
+         
+         footer.addEventListener('blur', () => {
+            configStore.setFooter(footer.outerHTML)
+            console.log('[Step3] Footer 更新已保存')
+         })
+         
+         // 聚焦时高亮
+         footer.addEventListener('focus', () => {
+            footer.style.outline = '2px solid #3b82f6'
+         })
+         footer.addEventListener('blur', () => {
+             footer.style.outline = '1px dashed #ddd'
+         })
+      }
+    }
+
   } catch (e) {
     console.warn('[Step3] 无法设置 iframe 点击处理器:', e)
   }

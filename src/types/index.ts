@@ -7,7 +7,9 @@ export type BlockType =
   | 'intro'
   | 'outro'
   | 'image_single'
-  | 'image_double';
+  | 'image_single_caption'
+  | 'image_double'
+  | 'image_double_caption';
 
 /**
  * 内容块数据接口
@@ -74,7 +76,7 @@ export interface ImageTemplates {
  * 图片类型守卫
  */
 export function isImageBlock(type: BlockType): boolean {
-  return type === 'image_single' || type === 'image_double';
+  return type === 'image_single' || type === 'image_single_caption' || type === 'image_double' || type === 'image_double_caption';
 }
 
 /**

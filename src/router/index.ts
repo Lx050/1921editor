@@ -7,10 +7,16 @@ import StyleConfig from '../views/StyleConfig.vue'
 import DraftPreview from '../views/DraftPreview.vue'
 import { useAppStore } from '../stores/appStore'
 
+import UserConfig from '../views/UserConfig.vue'
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/step1'
+    name: 'UserConfig',
+    component: UserConfig,
+    meta: {
+      title: '主页'
+    }
   },
   {
     path: '/step1',

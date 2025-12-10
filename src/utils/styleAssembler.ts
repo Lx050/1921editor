@@ -1,92 +1,9 @@
 // @ts-expect-error - templates.js 尚未迁移到 TypeScript，遵循最简原则忽略类型
 import { IMAGE_TEMPLATES } from '../styles/templates'
 import type { ContentBlock, StyleConfig, BlockType, StyleTemplate } from '@/types'
+import { useConfigStore } from '../stores/configStore'
 
-// HTML 头部常量
-const HTML_HEADER = `
-   <section data-role="outer" class="article135" label="edit by 135editor" style="font-size:14px;letter-spacing:1.75px;line-height:0.75;font-family:微软雅黑, Microsoft YaHe;" >
-	<section data-tplid="340986" data-tools="135编辑器">
-		<section data-id="undefined" class="_135editor">
-			<p style="text-align:center;" align="center">
-				<img src="https://mmbiz.qpic.cn/sz_mmbiz_gif/viactygias9W3ibK2JncMo0Bd5MgbKt7Wzg05h7zjF4IVGQzFJfZSxiaErzeGUgQxgV7iaD4p9OQ8icuiaTmvVgjgABaA/0?wx_fmt=gif&from=appmsg" class="rich_pages wxw-img js_insertlocalimg" data-s="300,640" data-type="gif" type="block" data-imgfileid="504015157" data-imgqrcoded="1" data-upload="1" style="vertical-align: baseline; width: 100%;box-sizing:border-box;max-width:100% !important;" draggable="false" data-ratio="0.3531047265987025" data-w="1079"/>
-			</p>
-		</section>
-	</section>
-	<section class="_135editor" data-tools="135编辑器" data-id="165701">
-		<section style="margin: 10px auto;"></section>
-	</section>
-	<section data-tplid="340988" data-tools="135编辑器">
-		<section data-tplid="333569" data-tools="135编辑器">
-			<section class="article135" style="line-height:0.75;font-size:14px;background:none 50% 50% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0);padding:0px;box-sizing:border-box;letter-spacing:1.75px;font-family:微软雅黑,MicrosoftYaHe;" data-role="outer" data-doubao-translate-traverse-mark="1">
-				<p style="display: none;" data-doubao-translate-traverse-mark="1">
-					<br/>
-				</p>
-				<section class="_135editor" data-doubao-translate-traverse-mark="1">
-					<mp-style-type data-value="10000"></mp-style-type>
-				</section>
-			</section>
-		</section>
-	</section>
-</section>
-`
 
-// HTML 尾部常量
-const HTML_FOOTER = `
-      <section data-tplid="333569" data-tools="135编辑器">
-	<section class="article135" style="line-height:0.75;font-size:14px;background:none 50% 50% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0);padding:0px;box-sizing:border-box;letter-spacing:1.75px;font-family:微软雅黑,MicrosoftYaHe;" data-role="outer" data-doubao-translate-traverse-mark="1">
-		<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;font-family:微软雅黑;" class="" data-doubao-translate-traverse-mark="1">
-			<p style="outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;" draggable="true" data-doubao-translate-traverse-mark="1">
-				<br/>
-			</p>
-			<p style="outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;" data-doubao-translate-traverse-mark="1">
-				<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><strong style="outline: 0px;"><span style="padding: 10px 15px;outline: 0px;border-color: #fbfbfb;border-style: solid;border-width: 1px;line-height: 42px;">校团委青年媒体中心</span></strong></span>
-			</p>
-		</section>
-		<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: rgb(255, 255, 255);line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: rgb(211, 42, 99);text-align:center;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1" align="center">
-			<br/>
-		</p>
-		<section style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;text-align: center;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1">
-			<span style="letter-spacing: 0.54px;text-indent: 0em;">文案：</span>
-		</section>
-		<section style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;text-align: center;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;font-family:微软雅黑;" class="" data-doubao-translate-traverse-mark="1">
-			<span style="letter-spacing: 0.54px;text-indent: 0em;">图片：</span>
-		</section>
-		<section style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;text-align: center;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;font-family:微软雅黑;" class="" data-doubao-translate-traverse-mark="1">
-			<span style="letter-spacing: 0px;text-indent: 0em;">编辑：</span>
-		</section>
-		<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;" class="" data-doubao-translate-traverse-mark="1">
-			<section style="outline: 0px;letter-spacing: 0.54px;text-indent: 0em;line-height: 1.75em;min-height: 14px;font-stretch: normal;" class="" data-doubao-translate-traverse-mark="1">
-				<section style="line-height: 1.75em;" class="" data-doubao-translate-traverse-mark="1">
-					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：王雪 宋欣翼</span>
-				</section>
-				<section style="line-height: 1.75em;" class="" data-doubao-translate-traverse-mark="1">
-					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：朱梦鹤</span>
-				</section>
-				<p style="line-height: 1.75em;" data-doubao-translate-traverse-mark="1">
-					<br/>
-				</p>
-			</section>
-			<p style="margin-top: 5px;margin-bottom: 5px;outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1">
-				<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><img src="https://mmbiz.qlogo.cn/sz_mmbiz_jpg/viactygias9W2lZ8qnEWJGO01fwFZAFuWXX03KIb26nbcLQrusdXrQKFhicdekeus1sb4RRQKUe0hBL9vobdr6QJQ/640" class="rich_pages wxw-img" style="outline: 0px; background-color: rgb(197, 64, 114); line-height: 25.6px; width: 233px; vertical-align: baseline; visibility: visible !important; height: auto !important;box-sizing:border-box;" data-cropselx1="0" data-cropselx2="233" data-cropsely1="0" data-cropsely2="233" data-imgfileid="503969660" data-ratio="1" data-w="430"/></span>
-			</p>
-			<p style="margin-top: 5px;margin-bottom: 5px;outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1">
-				<br/>
-			</p>
-		</section>
-		<section data-doubao-translate-traverse-mark="1">
-			<p>
-				<br/>
-			</p>
-		</section>
-		<p style="display: none;" data-doubao-translate-traverse-mark="1">
-			<br/>
-		</p>
-		<section class="_135editor" data-doubao-translate-traverse-mark="1">
-			<mp-style-type data-value="10000"></mp-style-type>
-		</section>
-	</section>
-</section>
-`
 
 /**
  * 样式组装引擎
@@ -108,7 +25,8 @@ export function buildHtml(
 	const htmlParts: string[] = []
 
 	// 添加HTML头部
-	htmlParts.push(HTML_HEADER)
+	const configStore = useConfigStore()
+	htmlParts.push(configStore.currentHeader)
 
 	// 遍历内容块并应用装饰样式（只使用用户选择的装饰样式，不使用默认模板）
 	let imageCounter = 0  // V2: 图片计数器，用于生成占位符ID
@@ -122,7 +40,7 @@ export function buildHtml(
 			htmlParts.push(blockHtml)
 
 			// V2: 更新图片计数器
-			if (block.type === 'image_single' || block.type === 'image_double') {
+			if (block.type.startsWith('image_')) {
 				imageCounter++
 			}
 		}
@@ -130,7 +48,7 @@ export function buildHtml(
 	})
 
 	// 添加HTML尾部
-	htmlParts.push(HTML_FOOTER)
+	htmlParts.push(configStore.currentFooter)
 
 	return htmlParts.join('\n')
 }
@@ -172,11 +90,53 @@ function buildStyledBlock(
 			}
 			return html
 		}
-		case 'image_double': {
-			let html = IMAGE_TEMPLATES.double
+		case 'image_single_caption': {
+			let html = IMAGE_TEMPLATES.single_caption
+			// 替换图注
+			html = html.replace('{{caption}}', content)
+
 			// V2: 添加占位符标记
 			if (addPlaceholderMarkers) {
 				html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
+			}
+			return html
+		}
+		case 'image_double': {
+			let html = IMAGE_TEMPLATES.double
+			// V2: 添加占位符标记 - 双图分别标记为 _1 和 _2
+			if (addPlaceholderMarkers) {
+				html = addDoubleImagePlaceholderMarkers(html, `image_${imageIndex}`)
+			}
+			return html
+		}
+		case 'image_double_caption': {
+			let html = IMAGE_TEMPLATES.double_caption
+
+			// 替换图注 (简单的分割逻辑，或者直接把内容给两个)
+			// 支持使用 | 或 ｜ 分隔左右图片的说明
+			// V3: 支持使用空格分隔
+			let c1 = content;
+			let c2 = content;
+
+			if (content.includes('|') || content.includes('｜')) {
+				const parts = content.split(/[|｜]/)
+				c1 = parts[0] ? parts[0].trim() : ''
+				c2 = parts[1] ? parts[1].trim() : ''
+			} else if (content.trim().includes(' ')) {
+				// 找到第一个空格的位置
+				const parts = content.trim().split(/\s+/)
+				if (parts.length >= 2) {
+					c1 = parts[0]
+					// 将剩余部分作为第二部分的说明
+					c2 = parts.slice(1).join(' ')
+				}
+			}
+
+			html = html.replace('{{caption1}}', c1).replace('{{caption2}}', c2)
+
+			// V2: 添加占位符标记 - 双图分别标记为 _1 和 _2
+			if (addPlaceholderMarkers) {
+				html = addDoubleImagePlaceholderMarkers(html, `image_${imageIndex}`)
 			}
 			return html
 		}
@@ -184,6 +144,51 @@ function buildStyledBlock(
 			console.warn(`未知的内容块类型: ${block.type}，跳过该内容块`)
 			return ''
 	}
+}
+
+/**
+ * V2: 为双图模板添加占位符标记
+ * @private
+ * @param html - 原始HTML
+ * @param placeholderIdBase - 占位符ID基准
+ * @returns 添加标记后的HTML
+ */
+function addDoubleImagePlaceholderMarkers(html: string, placeholderIdBase: string): string {
+	// 第一次替换
+	let newHtml = html.replace(
+		/<img([^>]*)>/,
+		`<img$1 data-placeholder="${placeholderIdBase}_1">`
+	)
+	// 第二次替换（如果存在第二个img）
+	newHtml = newHtml.replace(
+		/<img([^>]*)>/,
+		//这里必须小心，因为第一个已经替换过了，正则会再次匹配到第一个吗？
+		//上面的正则 /<img([^>]*)>/ 匹配 <img 开头，直到 >。如果第一次替换后，img标签内多了 data-placeholder，但仍然符合 <img...> 格式。
+		//所以必须使用 replace 的特性：它只替换第一个匹配项。
+		//但是我们这里是第二次调用 replace，针对的是已经替换了一次的字符串。
+		//如果不带 g 标志，replace 只替换第一个。
+		//所以我们需要一种方法跳过第一个。
+
+		//更好的方法可能是使用回调函数或者 split/join
+		//或者，我们可以利用 data-placeholder 属性的存在来区分
+
+		//简易方案：先替换第一个，产生的字符串中第一个img有了data-placeholder。
+		//再次对新字符串replace，如果正则不匹配已经含有的，可以吗？
+		//正则：/<img(?!.*data-placeholder)([^>]*)>/ 
+		`<img$1 data-placeholder="${placeholderIdBase}_2">`
+	)
+
+	//修正逻辑：使用带回调的 replace 或者更精确的正则
+	//为了稳健，我们重写逻辑：
+	let counter = 1;
+	return html.replace(/<img([^>]*)>/g, (match, p1) => {
+		if (counter <= 2) {
+			const replacement = `<img${p1} data-placeholder="${placeholderIdBase}_${counter}">`;
+			counter++;
+			return replacement;
+		}
+		return match;
+	});
 }
 
 /**
@@ -244,7 +249,9 @@ export function getBlockTypeDisplayName(type: BlockType): string {
 		'body': '正文',
 		'outro': '结尾',
 		'image_single': '单图',
-		'image_double': '双图'
+		'image_single_caption': '单图+注',
+		'image_double': '双图',
+		'image_double_caption': '双图+注'
 	}
 
 	return typeNames[type] || '正文'

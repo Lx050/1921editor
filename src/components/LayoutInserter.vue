@@ -109,9 +109,21 @@ const imageOptions = [
     type: 'image'
   },
   {
+    value: 'single_caption',
+    label: '单图+注',
+    icon: '🖼️📝',
+    type: 'image'
+  },
+  {
     value: 'double',
     label: '双图',
     icon: '🖼️🖼️',
+    type: 'image'
+  },
+  {
+    value: 'double_caption',
+    label: '双图+注',
+    icon: '🖼️📝',
     type: 'image'
   }
 ]

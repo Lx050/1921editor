@@ -242,14 +242,49 @@
             v-else-if="isImageBlock(block.type)"
             class="py-4 text-center"
           >
-            <div class="flex items-center justify-center space-x-3">
-              <span class="text-2xl">
-                <span v-if="block.type === 'image_single'">🖼️</span>
-                <span v-else-if="block.type === 'image_double'">🖼️🖼️</span>
-              </span>
-              <span class="text-sm text-gray-600 font-medium">
-                {{ getImagePlaceholder(block.type) }}
-              </span>
+            <div class="flex flex-col items-center justify-center space-y-3">
+              <div class="flex items-center space-x-3">
+                  <span class="text-2xl">
+                    <span v-if="block.type === 'image_single' || block.type === 'image_single_caption'">🖼️</span>
+                    <span v-else-if="block.type === 'image_double' || block.type === 'image_double_caption'">🖼️🖼️</span>
+                  </span>
+                  <span class="text-sm text-gray-600 font-medium">
+                    {{ getImagePlaceholder(block.type) }}
+                  </span>
+              </div>
+              
+              <!-- 单图注编辑区 -->
+              <div v-if="block.type === 'image_single_caption'" class="w-full max-w-lg">
+                   <input 
+                      type="text" 
+                      v-model="block.text"
+                      class="w-full px-3 py-2 border rounded-md text-sm text-center focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="请输入图片说明"
+                      @click.stop
+                   />
+              </div>
+
+              <!-- 双图注编辑区 (分别编辑) -->
+              <div v-if="block.type === 'image_double_caption'" class="w-full max-w-lg flex space-x-2">
+                   <!-- 左图注 -->
+                   <input 
+                      type="text" 
+                      :value="getCaptionParts(block.text)[0]"
+                      @input="updateDoubleCaption(block, 0, $event.target.value)"
+                      class="w-1/2 px-3 py-2 border rounded-md text-sm text-center focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="左图说明"
+                      @click.stop
+                   />
+                   <!-- 右图注 -->
+                   <input 
+                      type="text" 
+                      :value="getCaptionParts(block.text)[1]"
+                      @input="updateDoubleCaption(block, 1, $event.target.value)"
+                      class="w-1/2 px-3 py-2 border rounded-md text-sm text-center focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="右图说明"
+                      @click.stop
+                   />
+              </div>
             </div>
           </div>
           <!-- 其他空内容的块 -->
@@ -386,7 +421,9 @@ const slashCommands = [
   { value: 'intro', label: '引言', icon: '💭', description: '引言/开篇' },
   { value: 'outro', label: '结尾', icon: '🏁', description: '结尾/总结' },
   { value: 'image_single', label: '单图', icon: '🖼️', description: '插入单图模板' },
-  { value: 'image_double', label: '双图', icon: '🖼️🖼️', description: '插入双图模板' }
+  { value: 'image_single_caption', label: '单图+注', icon: '🖼️📝', description: '插入带图注的单图模板' },
+  { value: 'image_double', label: '双图', icon: '🖼️🖼️', description: '插入双图模板' },
+  { value: 'image_double_caption', label: '双图+注', icon: '🖼️📝', description: '插入带图注的双图模板' }
 ]
 
 // 获取块类型图标
@@ -531,7 +568,9 @@ const getTypeLabelClass = (type) => {
     'body': 'bg-green-100 text-green-800',
     'outro': 'bg-purple-100 text-purple-800',
     'image_single': 'bg-yellow-100 text-yellow-800',
-    'image_double': 'bg-orange-100 text-orange-800'
+    'image_single_caption': 'bg-yellow-100 text-yellow-800',
+    'image_double': 'bg-orange-100 text-orange-800',
+    'image_double_caption': 'bg-orange-100 text-orange-800'
   }
   return classMap[type] || 'bg-gray-100 text-gray-800'
 }
@@ -540,14 +579,16 @@ const getTypeLabelClass = (type) => {
 const getImagePlaceholder = (type) => {
   const placeholders = {
     'image_single': '[单图模板]',
-    'image_double': '[双图模板]'
+    'image_single_caption': '[单图+注模板]',
+    'image_double': '[双图模板]',
+    'image_double_caption': '[双图+注模板]'
   }
   return placeholders[type] || '[图片]'
 }
 
 // 判断是否为图片块
 const isImageBlock = (type) => {
-  return ['image_single', 'image_double'].includes(type)
+  return ['image_single', 'image_single_caption', 'image_double', 'image_double_caption'].includes(type)
 }
 
 // 编辑功能相关方法
@@ -647,6 +688,42 @@ const goToNextStep = () => {
     }
     router.push('/step3')
   }
+}
+
+// 获取双图注的分隔部分
+const getCaptionParts = (text) => {
+  if (!text) return ['', '']
+  
+  // 优先支持原来的 | 分隔 (用于兼容)
+  if (text.includes('|') || text.includes('｜')) {
+    const parts = text.split(/[|｜]/)
+    return [parts[0] ? parts[0].trim() : '', parts[1] ? parts[1].trim() : '']
+  }
+  
+  // 支持空格分隔
+  if (text.trim().includes(' ')) {
+      const parts = text.trim().split(/\s+/)
+      if (parts.length >= 2) {
+          return [parts[0], parts.slice(1).join(' ')]
+      }
+  }
+
+  return [text, text] // 如果没有分隔符，默认相同？
+}
+
+// 更新双图注
+const updateDoubleCaption = (block, index, newValue) => {
+  const parts = getCaptionParts(block.text)
+  // 如果原始是相同的（即没有分隔），则不仅更新当前部分，还要明确这是两个部分了
+  // 但这里 parts 已经是数组了
+  parts[index] = newValue
+  
+  // 使用空格连接 (如果其中一个是空的，怎么办？)
+  // 如果两个都是空的，就是空字符串
+  // 如果只有一个，就是那个
+  // 强制用空格连接
+  const newText = `${parts[0]} ${parts[1]}`
+  appStore.updateBlockText(block.id, newText)
 }
 
 // 组件挂载时如果没有内容块，返回第一步
