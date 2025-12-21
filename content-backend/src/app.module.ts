@@ -31,14 +31,14 @@ import { WebhookModule } from './webhook/webhook.module';
     ScheduleModule.forRoot(), // 启用定时任务
     ThrottlerModule.forRoot([
       {
-        // 🔒 开发环境非常宽松的限流配置
+        // 🔒 开发环境宽松的限流配置
         ttl: 60000, // 60秒
-        limit: 2000, // 每60秒最多2000个请求
+        limit: 1000, // 每60秒最多1000个请求
       },
       {
-        // 🔒 对敏感接口稍微严格但足够测试的限制
+        // 🔒 对敏感接口更严格的限制
         ttl: 60000,
-        limit: 100, // 从 10 增加到 100
+        limit: 10,
         name: 'sensitive',
       },
     ]),
