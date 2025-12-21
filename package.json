@@ -8,9 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit",
-    "type-check:watch": "vue-tsc --noEmit --watch"
+    "type-check:watch": "vue-tsc --noEmit --watch",
+    "lighthouse": "node scripts/run-lighthouse.js",
+    "lighthouse:quick": "npx lighthouse http://localhost:5173 --output=html --output-path=./lighthouse-reports/quick-report.html --quiet --preset=desktop"
   },
   "dependencies": {
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.3.1",
     "jszip": "^3.10.1",
     "mammoth": "^1.11.0",
     "pinia": "^2.1.6",
@@ -25,8 +29,10 @@
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.27",
     "tailwindcss": "^3.3.3",
+    "terser": "^5.44.1",
     "typescript": "^5.9.3",
     "vite": "^4.4.5",
+    "vite-plugin-compression2": "^2.4.0",
     "vue-tsc": "^3.1.7"
   }
 }
