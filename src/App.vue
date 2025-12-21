@@ -1,5 +1,11 @@
 <template>
   <div id="app" class="h-screen bg-gray-50 flex flex-col">
+    <!-- 资源预加载器 -->
+    <ResourcePreloader />
+
+    <!-- 性能监控器（开发环境） -->
+    <PerformanceMonitor v-if="isDev" />
+
     <!-- 顶部导航栏 -->
     <header class="bg-white shadow-sm border-b">
       <div class="max-w-6xl mx-auto px-4 py-4">
@@ -95,11 +101,16 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from './stores/appStore'
 import { useConfigStore } from './stores/configStore'
+import ResourcePreloader from './components/ResourcePreloader.vue'
+import PerformanceMonitor from './components/PerformanceMonitor.vue'
 
 const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
 const configStore = useConfigStore()
+
+// 检测是否为开发环境
+const isDev = import.meta.env.DEV
 
 // 根据当前路由更新步骤
 const currentStep = computed(() => {

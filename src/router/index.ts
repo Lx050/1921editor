@@ -1,19 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import Step1TextInput from '../views/Step1TextInput.vue'
-import Step2Curtain from '../views/Step2Curtain.vue'
-import Step3Preview from '../views/Step3Preview.vue'
-import StyleConfig from '../views/StyleConfig.vue'
-import DraftPreview from '../views/DraftPreview.vue'
 import { useAppStore } from '../stores/appStore'
 
-import UserConfig from '../views/UserConfig.vue'
-
+// 使用动态导入以优化加载
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'UserConfig',
-    component: UserConfig,
+    component: () => import('../views/UserConfig.vue'),
     meta: {
       title: '主页'
     }
@@ -21,7 +15,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/step1',
     name: 'Step1',
-    component: Step1TextInput,
+    component: () => import(/* webpackPrefetch: true */ '../views/Step1TextInput.vue'),
     meta: {
       step: 1,
       title: '步骤 1/3: 输入文本'
@@ -30,7 +24,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/step2',
     name: 'Step2',
-    component: Step2Curtain,
+    component: () => import(/* webpackPrefetch: true */ '../views/Step2Curtain.vue'),
     meta: {
       step: 2,
       title: '步骤 2/3: 编辑内容'
@@ -39,7 +33,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/step3',
     name: 'Step3',
-    component: Step3Preview,
+    component: () => import(/* webpackPrefetch: true */ '../views/Step3Preview.vue'),
     meta: {
       step: 3,
       title: '步骤 3/3: 生成预览'
@@ -48,7 +42,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/style-config',
     name: 'StyleConfig',
-    component: StyleConfig,
+    component: () => import(/* webpackPrefetch: true */ '../views/StyleConfig.vue'),
     meta: {
       title: '样式配置'
     }
@@ -56,9 +50,33 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/preview',
     name: 'DraftPreview',
-    component: DraftPreview,
+    component: () => import(/* webpackPrefetch: true */ '../views/DraftPreview.vue'),
     meta: {
       title: '草稿预览'
+    }
+  },
+  {
+    path: '/articles/:id/config',
+    name: 'ArticleConfig',
+    component: () => import(/* webpackPrefetch: true */ '../views/ArticleConfig.vue'),
+    meta: {
+      title: '配置文章'
+    }
+  },
+  {
+    path: '/auth/callback',
+    name: 'LoginCallback',
+    component: () => import(/* webpackPrefetch: true */ '../views/LoginCallback.vue'),
+    meta: {
+      title: '飞书登录回调'
+    }
+  },
+  {
+    path: '/tenant-select',
+    name: 'TenantSelect',
+    component: () => import(/* webpackPrefetch: true */ '../views/TenantSelect.vue'),
+    meta: {
+      title: '选择组织'
     }
   }
 ]

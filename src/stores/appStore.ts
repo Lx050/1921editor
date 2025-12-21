@@ -70,6 +70,13 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  const updateBlockMeta = (id: string, meta: Record<string, unknown>): void => {
+    const block = contentBlocks.value.find(b => b.id === id)
+    if (block) {
+      block.meta = { ...block.meta, ...meta }
+    }
+  }
+
   const insertImageBlock = (index: number, imageType: 'single' | 'single_caption' | 'double' | 'double_caption'): void => {
     if (typeof index !== 'number' || index < 0) {
       throw new Error('Invalid index: must be a non-negative number')
@@ -167,6 +174,7 @@ export const useAppStore = defineStore('app', () => {
     setContentBlocks,
     updateBlockType,
     updateBlockText,
+    updateBlockMeta,
     insertImageBlock,
     insertTextBlock,
     setStyleConfig,
