@@ -1,0 +1,117 @@
+import { Controller, Post, Get, Body, Query, Res, HttpStatus } from '@nestjs/common';
+import { Response } from 'express';
+import { WechatTokenService } from './wechat-token.service';
+
+@Controller('api/wechat/token')
+export class WechatTokenController {
+  constructor(private readonly wechatTokenService: WechatTokenService) {}
+
+  /**
+   * 刷新微信token
+   * 这是核心的续期接口，使用refresh_token获取新的access_token
+   */
+  @Post('refresh')
+  async refreshToken(@Body() body: { refresh_token: string; openid: string }): Promise<any> {
+    try {
+      console.log(`[微信Token] 开始刷新token, openid: ${body.openid}`);
+
+      const result = await this.wechatTokenService.refreshToken(body.refresh_token);
+
+      console.log(`[微信Token] token刷新成功`);
+
+      return {
+        success: true,
+        access_token: result.access_token,
+        expires_in: result.expires_in,
+        refresh_token: result.refresh_token, // 微信会返回新的refresh_token
+        openid: result.openid || body.openid,
+        unionid: result.unionid,
+      };
+
+    } catch (error) {
+      console.error('[微信Token] token刷新失败:', error);
+
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * 验证token有效性
+   */
+  @Post('validate')
+  async validateToken(@Body() body: { access_token: string }): Promise<any> {
+    try {
+      const isValid = await this.wechatTokenService.validateToken(body.access_token);
+
+      return {
+        success: true,
+        valid: isValid,
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        valid: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * 检查所有用户的token状态
+   */
+  @Get('status')
+  async checkAllTokensStatus(): Promise<any> {
+    try {
+      const status = await this.wechatTokenService.getAllTokensStatus();
+
+      return {
+        success: true,
+        data: status,
+        total: status.length,
+        expired: status.filter(s => s.status === 'expired').length,
+        expiring_soon: status.filter(s => s.status === 'expiring_soon').length,
+        valid: status.filter(s => s.status === 'valid').length,
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * 手动触发所有token检查和刷新
+   */
+  @Post('check-and-refresh')
+  async checkAndRefreshAll(): Promise<any> {
+    try {
+      console.log('[微信Token] 开始检查和刷新所有token...');
+
+      const results = await this.wechatTokenService.checkAndRefreshAllTokens();
+
+      console.log(`[微信Token] 检查完成，处理了 ${results.total} 个token`);
+
+      return {
+        success: true,
+        results: {
+          total: results.total,
+          refreshed: results.refreshed,
+          failed: results.failed,
+          errors: results.errors,
+        },
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+}

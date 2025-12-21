@@ -1,0 +1,180 @@
+# Layout Engine 部署SOP
+
+## 概述
+
+本文档记录了 Layout Engine 项目从本地构建到服务器部署的完整操作流程（Standard Operating Procedure）。
+
+## 服务器信息
+
+- **服务器地址**: 101.42.158.32
+- **SSH密钥**: `c:/Users/Lx050/.ssh/editor135.pem`
+- **用户**: root
+- **项目目录**: `/root/layout-engine`
+- **服务运行目录**: `/var/www/layout-engine`
+- **服务端口**: 1921
+- **域名**: https://layout.lx05.art
+- **PM2应用名**: layout-engine
+
+## 部署流程
+
+### 1. 本地构建
+
+```bash
+# 在项目根目录执行
+npm run build
+```
+
+构建输出说明：
+- 构建产物位于 `src/dist` 目录（因 vite.config.js 中设置了 `root: './src'`）
+- 构建完成后会生成带哈希值的文件名，用于缓存更新
+
+### 2. 上传到服务器
+
+```bash
+# 使用scp上传dist目录到服务器
+scp -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" -r src/dist root@101.42.158.32:/root/layout-engine/
+```
+
+### 3. 更新服务器文件
+
+```bash
+# 通过SSH连接服务器
+ssh -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" root@101.42.158.32
+
+# 清理旧文件并复制新文件
+rm -rf /var/www/layout-engine/*
+cp -r /root/layout-engine/dist/* /var/www/layout-engine/
+
+# 设置正确的文件权限
+chown -R nginx:nginx /var/www/layout-engine/
+```
+
+### 4. 重启服务
+
+```bash
+# 重启PM2服务
+pm2 restart layout-engine
+
+# 查看服务状态
+pm2 list
+
+# 查看服务日志（可选）
+pm2 logs layout-engine --lines 10
+```
+
+## Nginx配置
+
+配置文件位置：`/etc/nginx/conf.d/lx05.art.conf`
+
+```nginx
+# 子域名 - 排版工程
+server {
+    listen 80;
+    server_name layout.lx05.art;
+    client_max_body_size 10M;
+
+    # API请求代理到微信服务器
+    location /wechat-api/ {
+        proxy_pass https://api.weixin.qq.com/;
+        proxy_set_header Host api.weixin.qq.com;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_ssl_server_name on;
+        proxy_ssl_verify off;
+    }
+
+    # 其他请求转发到layout engine服务
+    location / {
+        proxy_pass http://127.0.0.1:1921;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## PM2配置
+
+查看PM2管理的应用：
+```bash
+pm2 list
+```
+
+常用PM2命令：
+```bash
+# 启动服务
+pm2 start <app_name>
+
+# 停止服务
+pm2 stop <app_name>
+
+# 重启服务
+pm2 restart <app_name>
+
+# 查看日志
+pm2 logs <app_name>
+
+# 查看实时日志
+pm2 logs <app_name> --lines 0
+
+# 更新PM2（当提示版本不匹配时）
+pm2 update
+```
+
+## 快速部署命令汇总
+
+```bash
+# 1. 本地构建
+npm run build
+
+# 2. 上传dist
+scp -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" -r src/dist root@101.42.158.32:/root/layout-engine/
+
+# 3. 更新服务器文件（一步到位）
+ssh -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" root@101.42.158.32 "rm -rf /var/www/layout-engine/* && cp -r /root/layout-engine/dist/* /var/www/layout-engine/ && chown -R nginx:nginx /var/www/layout-engine/"
+
+# 4. 重启服务
+ssh -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" root@101.42.158.32 "pm2 restart layout-engine"
+```
+
+## 注意事项
+
+1. **vite配置特殊性**:
+   - 由于 `vite.config.js` 中设置了 `root: './src'`，构建产物在 `src/dist` 而非项目根目录的 `dist`
+
+2. **文件权限**:
+   - 确保上传后的文件所有者为 `nginx:nginx`，避免权限问题
+
+3. **服务目录**:
+   - 实际服务运行在 `/var/www/layout-engine`，而非 `/root/layout-engine`
+
+4. **PM2版本**:
+   - 如遇到 PM2 版本不匹配提示，可执行 `pm2 update` 更新
+
+5. **备份建议**:
+   - 在部署前可以备份旧版本：
+   ```bash
+   cp -r /var/www/layout-engine /var/www/layout-engine.bak.$(date +%Y%m%d_%H%M%S)
+   ```
+
+6. **故障排查**:
+   - 查看服务日志：`pm2 logs layout-engine`
+   - 查看Nginx错误日志：`tail -f /var/log/nginx/error.log`
+   - 检查端口占用：`netstat -tlnp | grep 1921`
+
+## 部署历史
+
+| 部署时间 | 操作人 | 版本 | 备注 |
+|---------|--------|------|------|
+| 2024-12-09 23:57 | Claude | v1.0 | 初始部署 |
+| 2024-12-10 18:22 | Claude | v1.1 | 更新dist，修复构建路径问题 |
+| 2024-12-10 18:32 | Claude | v1.2 | 重新构建并部署，文件哈希更新 |
+| 2024-12-10 21:28 | Claude | v1.3 | 更新dist部署（CSS: e0d8bce3, JS: bec26c73） |
+| 2024-12-10 22:32 | Claude | v1.4 | 重新构建并部署（CSS: eae2ac98, JS: 474ca241） |
+
+## 联系方式
+
+如有部署相关问题，请联系：
+- 技术支持：[在此处填写联系方式]
