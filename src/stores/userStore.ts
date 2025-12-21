@@ -53,6 +53,7 @@ export const useUserStore = defineStore('user', () => {
         // 🔒 使用安全的方法清除认证信息
         tokenStorage.clearAuth()
         localStorage.removeItem('currentTenant')
+        localStorage.removeItem('userInfo') // Fix: Explicitly remove userInfo
     }
 
     return {

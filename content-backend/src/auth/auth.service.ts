@@ -2,9 +2,10 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { FeishuService } from '../feishu/feishu.service';
 import { TenantService } from '../tenant/tenant.service';
+import { FeishuTableSyncService } from '../sync/feishu-table-sync.service';
 import * as Lark from '@larksuiteoapi/node-sdk';
 
 @Injectable()
@@ -17,7 +18,8 @@ export class AuthService {
     private jwtService: JwtService,
     private feishuService: FeishuService,
     private tenantService: TenantService,
-  ) {}
+    private feishuTableSyncService: FeishuTableSyncService,
+  ) { }
 
   /**
    * 多租户飞书登录
@@ -117,7 +119,7 @@ export class AuthService {
         `查找用户 - TenantID: ${tenantId}, FeishuID: ${feishuUser.open_id}`,
       );
 
-      const user = await this.userRepository.findOne({
+      let user = await this.userRepository.findOne({
         where: {
           tenantId: tenantId,
           feishuId: feishuUser.open_id,
@@ -126,27 +128,58 @@ export class AuthService {
       });
 
       if (!user) {
-        // ❌ 用户不在白名单中，拒绝登录
-        this.logger.warn('❌ 用户不在白名单中');
-        this.logger.warn(`FeishuID: ${feishuUser.open_id}`);
-        this.logger.warn(
-          `Tenant: ${tenantSlug || 'default'} (ID: ${tenantId})`,
-        );
-        this.logger.warn(`用户名称: ${feishuUser.name}`);
-        throw new UnauthorizedException(
-          '您没有使用此系统的权限，请联系管理员添加授权',
-        );
-      }
+        // ✨ 自动注册：用户通过了飞书验证，自动加入该租户
+        this.logger.log(`🆕 新用户首次登录，自动注册: ${feishuUser.name}`);
 
-      // ✅ 用户在白名单中，更新用户信息
-      this.logger.log(`✅ 用户在白名单中: ${user.name} (${user.role})`);
-      this.logger.log(`更新用户信息...`);
-      user.name = feishuUser.name || user.name;
-      await this.userRepository.save(user);
+        user = this.userRepository.create({
+          tenantId: tenantId,
+          feishuId: feishuUser.open_id,
+          name: feishuUser.name || 'Unknown',
+          email: feishuUser.email || '',
+          role: UserRole.EDITOR, // 默认角色
+          isActive: true,
+          lastLoginAt: new Date(),
+        });
+
+        await this.userRepository.save(user);
+        this.logger.log(`✅ 用户已创建: ${user.name} (ID: ${user.id})`);
+
+        // 重新查询以确保包含关联关系
+        user = await this.userRepository.findOne({
+          where: { id: user.id },
+          relations: ['tenant']
+        });
+
+        if (!user) {
+          throw new Error('Failed to create user');
+        }
+      } else {
+        // ✅ 用户存在，检查状态
+        if (!user.isActive) {
+          this.logger.warn(`❌ 用户 ${user.name} 已被禁用，拒绝登录`);
+          throw new UnauthorizedException('该账号已被禁用或已离职');
+        }
+
+        this.logger.log(`✅ 用户回归: ${user.name} (${user.role})`);
+        user.name = feishuUser.name || user.name;
+        user.lastLoginAt = new Date(); // 更新最后登录时间
+        await this.userRepository.save(user);
+      }
 
       this.logger.log(
         `用户 ${user.name} 登录到租户 ${user.tenant?.name || 'Default'}`,
       );
+
+      // 🔄 同步用户信息到飞书表格
+      this.logger.log('步骤 4.5: 同步用户到飞书表格...');
+      try {
+        const tenantForSync = user.tenant || tenant;
+        await this.feishuTableSyncService.syncUserToFeishuTable(user, tenantForSync);
+        this.logger.log('✅ 用户信息已同步到飞书表格');
+      } catch (syncError) {
+        // 同步失败不影响登录
+        this.logger.warn(`⚠️ 同步到飞书表格失败: ${syncError.message}`);
+      }
 
       // 5. Issue JWT
       this.logger.log('步骤 5: 签发 JWT Token...');

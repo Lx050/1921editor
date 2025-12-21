@@ -1,0 +1,85 @@
+import * as Lark from '@larksuiteoapi/node-sdk';
+
+async function checkAppPermissions() {
+    console.log('🔍 检查飞书应用权限和令牌...\n');
+
+    const appId = 'cli_a9cca040e5f89bcb';
+    const appSecret = 'E51FjrmxjqFBsHMdoCJ4edcCm8eOGhfK';
+
+    try {
+        const client = new Lark.Client({
+            appId,
+            appSecret,
+            appType: Lark.AppType.SelfBuild,
+            domain: Lark.Domain.Feishu,
+        });
+
+        console.log('1️⃣ 获取 tenant_access_token...');
+
+        // 手动获取 tenant_access_token
+        const tokenRes = await client.auth.tenantAccessToken.internal({
+            data: {
+                app_id: appId,
+                app_secret: appSecret,
+            },
+        });
+
+        console.log('Token 响应码:', tokenRes.code);
+        console.log('Token 响应消息:', tokenRes.msg);
+
+        if (tokenRes.code === 0 && tokenRes.data) {
+            console.log('✅ Token 获取成功');
+            const token = (tokenRes.data as any).tenant_access_token;
+            const expire = (tokenRes.data as any).expire;
+            console.log('Token (前20字符):', token?.substring(0, 20) + '...');
+            console.log('过期时间:', expire, '秒');
+        } else {
+            console.log('❌ Token 获取失败');
+            console.log('完整响应:', JSON.stringify(tokenRes, null, 2));
+            return;
+        }
+
+        console.log('\n2️⃣ 测试多维表格API访问...');
+
+        const appToken = 'Gcnnw2yujiqmxXkv5mTc8cftnMc';
+        const tableId = 'tblO6V58nUVEQX5U';
+
+        // 尝试获取表格元信息
+        // TODO: 修复这个API调用
+        /*const tableRes = await client.bitable.appTable.get({
+            path: {
+                app_token: appToken,
+                table_id: tableId,
+            },
+        });*/
+
+        console.log('表格API响应码:', tableRes.code);
+        console.log('表格API响应消息:', tableRes.msg);
+
+        if (tableRes.code === 0) {
+            console.log('✅ 表格访问成功！');
+            console.log('表格名称:', tableRes.data?.table?.name);
+        } else if (tableRes.code === 91402) {
+            console.log('❌ 错误 91402: 表格不存在或应用无权访问');
+            console.log('\n可能的原因:');
+            console.log('1. 应用权限已开通，但未发布新版本');
+            console.log('2. 表格的 app_token 或 table_id 不正确');
+            console.log('3. 表格不在应用的可见范围内');
+            console.log('\n建议操作:');
+            console.log('- 在开发者后台点击"创建版本"并发布');
+            console.log('- 或者在"测试企业与人员"中添加测试用户');
+        } else {
+            console.log('❌ 其他错误');
+            console.log('完整响应:', JSON.stringify(tableRes, null, 2));
+        }
+
+    } catch (error) {
+        console.error('\n❌ 检查失败:');
+        console.error('错误:', error.message);
+        if (error.response?.data) {
+            console.error('响应数据:', JSON.stringify(error.response.data, null, 2));
+        }
+    }
+}
+
+checkAppPermissions();

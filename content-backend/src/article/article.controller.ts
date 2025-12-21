@@ -40,7 +40,11 @@ export class ArticleController {
   @ApiResponse({ status: 400, description: '参数验证失败' })
   @ApiResponse({ status: 401, description: '未授权' })
   create(@Body() dto: CreateArticleDto, @Request() req: { user: any }) {
-    return this.articleService.create(dto.title, req.user);
+    return this.articleService.create(dto.title, {
+      ...dto,
+      ownerId: req.user.id,
+      tenantId: req.user.tenantId
+    });
   }
 
   @Get()
@@ -93,30 +97,49 @@ export class ArticleController {
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '更新文章配置' })
-  updateConfig(@Param('id') id: string, @Body() dto: UpdateArticleConfigDto) {
-    return this.articleService.updateStep1(id, dto.config);
+  updateConfig(@Param('id') id: string, @Body() dto: UpdateArticleConfigDto, @Request() req: { user: any }) {
+    return this.articleService.updateStep1(id, dto.config, req.user.id);
   }
 
   @Put(':id/content')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '更新文章内容' })
-  updateContent(@Param('id') id: string, @Body() dto: UpdateArticleContentDto) {
-    return this.articleService.updateStep2(id, dto.content);
+  updateContent(@Param('id') id: string, @Body() dto: UpdateArticleContentDto, @Request() req: { user: any }) {
+    return this.articleService.updateStep2(id, dto.content, req.user.id);
   }
 
   @Put(':id/images')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '更新文章图片' })
-  updateImages(@Param('id') id: string, @Body() dto: UpdateArticleImagesDto) {
-    return this.articleService.updateStep3(id, dto.images);
+  updateImages(@Param('id') id: string, @Body() dto: UpdateArticleImagesDto, @Request() req: { user: any }) {
+    return this.articleService.updateStep3(id, dto.images, req.user.id);
+  }
+
+  @Put(':id/step3-content')
+  @UseGuards(AuthGuard('jwt'))
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @ApiOperation({ summary: '从Step3保存文章内容（设置状态为ADJUSTED）' })
+  updateStep3Content(@Param('id') id: string, @Body() dto: UpdateArticleContentDto, @Request() req: { user: any }) {
+    return this.articleService.updateStep3Content(id, dto.content, req.user.id);
   }
 
   @Post(':id/publish')
   @UseGuards(AuthGuard('jwt'))
-  publish(@Param('id') id: string) {
-    return this.articleService.publish(id);
+  publish(@Param('id') id: string, @Request() req: { user: any }) {
+    return this.articleService.publish(id, req.user.id);
+  }
+
+  @Post(':id/save-draft')
+  @UseGuards(AuthGuard('jwt'))
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @ApiOperation({ summary: '保存文章草稿' })
+  @ApiResponse({ status: 200, description: '草稿保存成功' })
+  @ApiResponse({ status: 401, description: '未授权' })
+  @ApiResponse({ status: 404, description: '文章不存在' })
+  async saveDraft(@Param('id') id: string, @Request() req: { user: any }) {
+    return this.articleService.saveDraft(id, req.user);
   }
 
   @Delete(':id')

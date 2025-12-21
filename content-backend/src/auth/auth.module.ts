@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FeishuModule } from '../feishu/feishu.module';
 import { TenantModule } from '../tenant/tenant.module';
+import { SyncModule } from '../sync/sync.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -15,6 +16,7 @@ import { AuthController } from './auth.controller';
     TypeOrmModule.forFeature([User]),
     FeishuModule,
     TenantModule,
+    SyncModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -39,4 +41,4 @@ import { AuthController } from './auth.controller';
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }

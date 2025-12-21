@@ -52,7 +52,7 @@ export const getArticles = async (): Promise<Article[]> => {
  * 更新文章配置 (Step 1)
  */
 export const updateArticleConfig = async (id: string, config: any): Promise<Article> => {
-    const response = await api.put(`/articles/${id}/config`, config)
+    const response = await api.put(`/articles/${id}/config`, { config })
     return response.data
 }
 
@@ -77,5 +77,13 @@ export const updateArticleImages = async (id: string, images: any[]): Promise<Ar
  */
 export const publishArticle = async (id: string): Promise<Article> => {
     const response = await api.post(`/articles/${id}/publish`)
+    return response.data
+}
+
+/**
+ * 保存文章草稿
+ */
+export const saveArticleDraft = async (id: string): Promise<Article> => {
+    const response = await api.post(`/articles/${id}/save-draft`)
     return response.data
 }

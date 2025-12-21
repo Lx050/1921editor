@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MaxLength, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, IsOptional, IsObject, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateArticleDto {
@@ -11,6 +11,33 @@ export class CreateArticleDto {
   @IsNotEmpty({ message: '标题不能为空' })
   @MaxLength(200, { message: '标题不能超过200个字符' })
   title: string;
+
+  @ApiProperty({
+    description: '内容策划人员 ID 列表',
+    required: false,
+    example: ['user-uuid-1'],
+  })
+  @IsOptional()
+  @IsArray()
+  planners?: string[];
+
+  @ApiProperty({
+    description: '文案撰稿人员 ID 列表',
+    required: false,
+    example: ['user-uuid-2'],
+  })
+  @IsOptional()
+  @IsArray()
+  copywriters?: string[];
+
+  @ApiProperty({
+    description: '文章编辑人员 ID 列表',
+    required: false,
+    example: ['user-uuid-3'],
+  })
+  @IsOptional()
+  @IsArray()
+  editors?: string[];
 
   @ApiProperty({
     description: '样式配置',

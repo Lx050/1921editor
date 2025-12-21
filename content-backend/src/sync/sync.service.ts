@@ -14,17 +14,22 @@ export class SyncService {
     private userRepository: Repository<User>,
     private feishuService: FeishuService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   async syncUsersFromBase() {
     this.logger.log('Starting User Sync from Feishu Base...');
     const client = this.feishuService.getClient();
-    const appToken = this.configService.get<string>('FEISHU_BASE_APP_TOKEN');
-    const tableId = this.configService.get<string>('FEISHU_BASE_TABLE_ID');
+
+    // 使用人员管理表配置
+    const appToken = this.configService.get<string>('FEISHU_USER_BASE_APP_TOKEN');
+    const tableId = this.configService.get<string>('FEISHU_USER_BASE_TABLE_ID');
 
     if (!appToken || !tableId) {
       this.logger.error(
-        'Missing FEISHU_BASE_APP_TOKEN or FEISHU_BASE_TABLE_ID',
+        'Missing FEISHU_USER_BASE_APP_TOKEN or FEISHU_USER_BASE_TABLE_ID',
+      );
+      this.logger.warn(
+        'Please configure the user management table in .env file',
       );
       return;
     }

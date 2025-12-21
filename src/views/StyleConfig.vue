@@ -31,6 +31,14 @@
             🗑️ 清除自定义
           </button>
           <button
+            @click="saveDraftAndGoHome"
+            :disabled="isSaving"
+            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors whitespace-nowrap disabled:bg-gray-400"
+            title="保存草稿并返回首页"
+          >
+            {{ isSaving ? '保存中...' : '💾 保存并返回首页' }}
+          </button>
+          <button
             @click="goBack"
             class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors whitespace-nowrap"
           >
@@ -302,6 +310,8 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { sanitizeHtml } from '../utils/sanitizeHtml'
+import { useAppStore } from '../stores/appStore'
+import toast from '../composables/useToast'
 import {
   getAllStyles,
   addCustomStyle,
@@ -314,6 +324,7 @@ import {
 } from '../styles/styleStorage'
 
 const router = useRouter()
+const appStore = useAppStore()
 
 // Tab 配置
 const tabs = [
@@ -328,9 +339,109 @@ const activeTab = ref('title')
 // 样式数据（默认 + 自定义）
 const allStyles = ref({ title: [], body: [], intro: [] })
 
+// 保存状态
+const isSaving = ref(false)
+
 // 加载所有样式
 const loadStyles = () => {
   allStyles.value = getAllStyles()
+}
+
+// 保存草稿并返回首页
+const saveDraftAndGoHome = async () => {
+  if (isSaving.value) return
+  
+  isSaving.value = true
+  
+  try {
+    const articleId = appStore.currentArticleId
+    const contentBlocks = appStore.contentBlocks
+    
+    if (!articleId && (!contentBlocks || contentBlocks.length === 0)) {
+      // 没有文章也没有内容，直接返回
+      router.push('/')
+      return
+    }
+    
+    // 清理内容块
+    const cleanedBlocks = contentBlocks.map(block => ({
+      type: block.type,
+      text: block.text || '',
+      ...(block.meta?.aiImageUrl && { aiImageUrl: block.meta.aiImageUrl })
+    }))
+    const cleanContent = JSON.stringify(cleanedBlocks)
+    
+    if (articleId) {
+      // 更新现有文章的内容
+      const contentResponse = await fetch(`/api/articles/${articleId}/content`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ content: cleanContent })
+      })
+      
+      if (!contentResponse.ok) {
+        throw new Error('保存内容失败')
+      }
+      
+      // 同时保存样式配置
+      if (appStore.styleConfig) {
+        await fetch(`/api/articles/${articleId}/config`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({ config: appStore.styleConfig })
+        })
+      }
+      
+      toast.success('草稿已保存！')
+    } else if (contentBlocks.length > 0) {
+      // 创建新文章
+      const title = contentBlocks.find(b => b.type === 'title')?.text || '未命名文章'
+      
+      const createResponse = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ 
+          title,
+          config: appStore.styleConfig
+        })
+      })
+      
+      if (!createResponse.ok) {
+        throw new Error('创建文章失败')
+      }
+      
+      const data = await createResponse.json()
+      appStore.setCurrentArticleId(data.id)
+      
+      // 更新内容
+      await fetch(`/api/articles/${data.id}/content`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ content: cleanContent })
+      })
+      
+      toast.success('文章已创建并保存！')
+    }
+    
+    router.push('/')
+  } catch (error) {
+    console.error('保存失败:', error)
+    toast.error('保存失败: ' + error.message)
+  } finally {
+    isSaving.value = false
+  }
 }
 
 // 当前显示的样式列表

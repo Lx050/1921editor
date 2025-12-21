@@ -13,31 +13,21 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
+import imagePreloader from '../utils/imagePreloader'
 
-// 关键资源列表 - 这些资源将被预加载
-const criticalResources = [
-  // 预加载关键字体
-  {
-    rel: 'preload',
-    href: '/fonts/inter-var.woff2',
-    as: 'font',
-    type: 'font/woff2',
-    crossorigin: 'anonymous'
-  },
-  // 预加载关键 CSS
-  {
-    rel: 'preload',
-    href: '/src/styles/main.css',
-    as: 'style'
-  },
-  // 预加载 Vue 核心库
-  {
-    rel: 'modulepreload',
-    href: '/node_modules/vue/dist/vue.runtime.esm-bundler.js',
-    as: 'script'
-  }
+// 关键资源列表 - 暂时禁用无效的预加载配置
+// 这些资源在开发环境中不存在或路径不正确
+const criticalResources: Array<{
+  rel: string
+  href: string
+  as?: string
+  type?: string
+  crossorigin?: string
+}> = [
+  // 注意：以下资源预加载在开发环境中暂时禁用
+  // 生产环境构建后可根据实际资源路径重新配置
 ]
 
 onMounted(() => {
@@ -48,35 +38,49 @@ onMounted(() => {
     'https://api.weixin.qq.com'
   ]
 
-  preconnectDomains.forEach(domain => {
-    const link = document.createElement('link')
-    link.rel = 'preconnect'
-    link.href = domain
-    link.crossOrigin = 'anonymous'
-    document.head.appendChild(link)
-  })
+  // 使用图片预加载器进行预连接
+  imagePreloader.preconnectToImageDomains(preconnectDomains)
+
+  // DNS预解析
+  const dnsPrefetchDomains = [
+    'https://res.wx.qq.com',
+    'https://thirdwx.qlogo.cn'
+  ]
+  imagePreloader.dnsPrefetch(dnsPrefetchDomains)
+
+  // 预加载关键图片
+  preloadCriticalImages()
 
   // 预加载下一页可能需要的资源
   preloadNextPageResources()
 })
 
-function preloadNextPageResources() {
-  // 根据当前路由预加载下一页的资源
+function preloadCriticalImages() {
+  // 根据当前页面预加载关键图片
   const currentPath = window.location.pathname
 
-  if (currentPath === '/' || currentPath === '/step1') {
-    // 在首页预加载第二步的资源
-    const link = document.createElement('link')
-    link.rel = 'prefetch'
-    link.href = '/src/views/Step2Curtain.vue'
-    document.head.appendChild(link)
-  } else if (currentPath === '/step2') {
-    // 在第二步预加载第三步的资源
-    const link = document.createElement('link')
-    link.rel = 'prefetch'
-    link.href = '/src/views/Step3Preview.vue'
-    document.head.appendChild(link)
+  if (currentPath === '/') {
+    // 首页的关键图片
+    const criticalImages = [
+      // 添加首页可能需要的图片资源
+    ]
+
+    if (criticalImages.length > 0) {
+      imagePreloader.preloadImages(criticalImages, {
+        priority: 'high',
+        fetchPriority: 'high'
+      }).catch(console.error)
+    }
   }
+}
+
+function preloadNextPageResources() {
+  // 暂时禁用手动预取 - Vite 和 Vue Router 会自动处理组件的按需加载
+  // 直接使用 src 路径预取 .vue 文件在开发环境中不起作用
+  // 生产环境中 Vite 会自动为动态导入的路由组件生成合适的预取标签
+  
+  // 如果需要手动优化，可以考虑使用 Vue Router 的内置预取功能
+  // 或在构建配置中启用 Vite 的动态导入预加载插件
 }
 </script>
 

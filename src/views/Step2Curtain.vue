@@ -241,7 +241,16 @@
               >
                 <!-- AI 生成的图片展示 -->
                 <div v-if="block.meta?.aiImageUrl" class="mb-3 relative group/image">
-                  <img :src="block.meta.aiImageUrl" class="w-full rounded-lg shadow-sm border border-gray-200" alt="AI Generated" />
+                  <LazyImage
+                    :src="block.meta.aiImageUrl"
+                    alt="AI Generated"
+                    :width="400"
+                    :height="300"
+                    class="w-full rounded-lg shadow-sm border border-gray-200"
+                    img-class="w-full rounded-lg shadow-sm border border-gray-200"
+                    :placeholder="true"
+                    :threshold="0.3"
+                  />
                   <div class="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
                     <span class="bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">AI Visualized</span>
                   </div>
@@ -363,6 +372,21 @@
           </button>
         </div>
 
+        <!-- 保存草稿按钮 -->
+        <div class="w-full sm:w-auto">
+          <button
+            @click="saveDraft"
+            :disabled="isSaving || contentBlocks.length === 0"
+            class="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors shadow-md flex items-center justify-center space-x-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            <svg v-if="!isSaving" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+            </svg>
+            <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span>{{ isSaving ? '保存中...' : '💾 保存草稿' }}</span>
+          </button>
+        </div>
+
         <div class="w-full sm:w-auto">
           <button
             @click="goToNextStep"
@@ -437,6 +461,8 @@ import { uploadManager } from '../utils/uploadManager'
 import StyleSelector from '../components/StyleSelector.vue'
 import LayoutInserter from '../components/LayoutInserter.vue'
 import UploadProgress from '../components/UploadProgress.vue'
+import LazyImage from '../components/LazyImage.vue'
+import toast from '../composables/useToast'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -449,6 +475,7 @@ const slashMenuPosition = ref({ top: 0, left: 0 })
 const slashMenuBlockId = ref(null)
 const showMobileSidebar = ref(false)
 const generatingBlockId = ref(null)
+const isSaving = ref(false)
 
 // 计算属性
 const contentBlocks = computed(() => appStore.contentBlocks)
@@ -464,7 +491,13 @@ const retryFailedUploads = () => {
 
 // 监听原始文本变化，解析内容块
 watch(() => appStore.rawText, (newText) => {
+  console.log('[Step2] watch triggered:', {
+    rawTextLength: newText?.length || 0,
+    contentBlocksLength: contentBlocks.value.length,
+    willParse: newText && contentBlocks.value.length === 0
+  })
   if (newText && contentBlocks.value.length === 0) {
+    console.log('[Step2] ⚠️ contentBlocks为空，从rawText重新解析')
     const parsedBlocks = smartTextParser(newText)
     appStore.setContentBlocks(parsedBlocks)
   }
@@ -843,6 +876,93 @@ const generateAiImage = async (block) => {
     alert('火山引擎生成失败: ' + e.message)
   } finally {
     generatingBlockId.value = null
+  }
+}
+
+// 保存草稿到后端 - 清理数据，只保存必要字段
+const saveDraft = async () => {
+  if (contentBlocks.value.length === 0 || isSaving.value) return
+  
+  isSaving.value = true
+  
+  try {
+    // 清理内容块，移除编辑器内部字段，只保留必要数据
+    const cleanedBlocks = contentBlocks.value.map(block => ({
+      type: block.type,
+      text: block.text || '',
+      // 只保留必要的 meta 信息（如 AI 生成的图片）
+      ...(block.meta?.aiImageUrl && { aiImageUrl: block.meta.aiImageUrl })
+    }))
+    
+    // 组装干净的文章内容
+    const cleanContent = JSON.stringify(cleanedBlocks)
+    
+    // 检查是否有现有文章 ID
+    const articleId = appStore.currentArticleId
+    
+    if (articleId) {
+      // 更新现有文章
+      const response = await fetch(`/api/articles/${articleId}/content`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ content: cleanContent })
+      })
+      
+      if (!response.ok) {
+        throw new Error('保存失败')
+      }
+      
+      toast.success('草稿已保存！')
+    } else {
+      // 创建新文章 - 先创建，再更新内容
+      const title = contentBlocks.value.find(b => b.type === 'title')?.text || '未命名文章'
+      
+      // Step 1: 创建文章（只传 title 和 config）
+      const createResponse = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ 
+          title,
+          config: appStore.styleConfig
+        })
+      })
+      
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json().catch(() => ({}))
+        throw new Error(errorData.message || '创建文章失败')
+      }
+      
+      const data = await createResponse.json()
+      appStore.setCurrentArticleId(data.id)
+      
+      // Step 2: 更新内容
+      const updateResponse = await fetch(`/api/articles/${data.id}/content`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ content: cleanContent })
+      })
+      
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json().catch(() => ({}))
+        throw new Error(errorData.message || '保存内容失败')
+      }
+      
+      toast.success('文章已创建并保存！')
+    }
+  } catch (error) {
+    console.error('保存失败:', error)
+    toast.error('保存失败: ' + error.message)
+  } finally {
+    isSaving.value = false
   }
 }
 

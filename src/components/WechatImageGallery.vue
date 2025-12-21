@@ -37,15 +37,17 @@
               : 'opacity-60 cursor-not-allowed'
           ]"
         >
-          <!-- 图片 - 4:3 比例，使用本地预览 URL -->
-          <div class="aspect-[4/3] bg-gray-200">
-            <img
-              :src="image.localPreviewUrl || image.url"
-              :alt="image.name"
-              class="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </div>
+          <!-- 图片 - 4:3 比例，使用懒加载 -->
+          <LazyImage
+            :src="image.localPreviewUrl || image.url"
+            :alt="image.name"
+            :width="200"
+            :height="150"
+            class="aspect-[4/3]"
+            img-class="w-full h-full object-cover"
+            :placeholder="true"
+            :threshold="0.1"
+          />
 
           <!-- 图片名称 -->
           <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
@@ -76,11 +78,15 @@
         'hover:ring-4 hover:ring-blue-400 hover:shadow-lg': selectedPlaceholder
       }"
     >
-      <img
+      <LazyImage
         :src="image.localPreviewUrl || image.url"
         :alt="image.name"
-        class="w-full h-full object-cover"
-        loading="lazy"
+        width="80"
+        height="96"
+        class="w-full h-full"
+        img-class="w-full h-full object-cover"
+        :placeholder="true"
+        :threshold="0.1"
       />
     </div>
   </div>
@@ -89,6 +95,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { WechatImage } from '@/types'
+import LazyImage from './LazyImage.vue'
 
 interface Props {
   images: WechatImage[]

@@ -166,6 +166,24 @@ export const contentApi = {
   },
 }
 
+// 📦 文章 API (后端逻辑)
+export const articleApi = {
+  // 获取文章列表
+  getArticles: () => {
+    return api.get('/articles')
+  },
+
+  // 获取单个文章详情
+  getArticleById: (id: string) => {
+    return api.get(`/articles/${id}`)
+  },
+
+  // 保存文章草稿
+  saveDraft: (id: string) => {
+    return api.post(`/articles/${id}/save-draft`)
+  },
+}
+
 // Webhook API
 export const webhookApi = {
   // 测试 Webhook

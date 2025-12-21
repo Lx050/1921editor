@@ -80,43 +80,12 @@
       <!-- 移动端：顶部横向图片选择器（固定高度）+ 下方预览区（占据剩余空间） -->
       <!-- 桌面端：左侧图片列表 + 右侧预览区 -->
       <div v-else-if="finalHtml && !errorMessage" class="h-full overflow-hidden flex flex-col">
-        <!-- 顶部：微信图片库（移动端横向滚动，桌面端独立侧边栏）-->
-        <div
-          class="md:w-[520px] flex-shrink-0 bg-gray-50 border-r-0 md:border-r border-b md:border-b-0"
-          v-if="hasWechatImages"
-        >
-          <!-- 桌面端左侧图片库（纵向）-->
-          <div class="hidden md:block h-full overflow-hidden flex flex-col">
-            <div class="flex-shrink-0 p-4 border-b bg-white">
-              <h3 class="font-semibold text-gray-900">微信图片库</h3>
-              <p class="text-sm text-gray-600 mt-1">
-                点击预览中的占位符图片，再从左侧选择图片替换
-              </p>
-            </div>
-            <div class="flex-1 overflow-y-auto">
-              <WechatImageGallery
-                :images="wechatImages"
-                :selectedPlaceholder="selectedPlaceholder"
-                @select="handleImageSelect"
-              />
-            </div>
-          </div>
-
-          <!-- 移动端顶部横向图片库 -->
-          <div class="md:hidden h-28 w-full overflow-hidden border-b">
-            <div class="bg-blue-50 border-b px-3 py-2">
-              <p class="text-xs text-blue-700 font-medium">👇 选择图片后，点击预览中的占位符</p>
-            </div>
-            <div class="overflow-x-auto overflow-y-hidden h-full bg-gray-50">
-              <WechatImageGallery
-                :images="wechatImages"
-                :selectedPlaceholder="selectedPlaceholder"
-                @select="handleImageSelect"
-                mobile-layout
-              />
-            </div>
-          </div>
-        </div>
+        <!-- 使用新的 ImageReplacer 组件 -->
+        <ImageReplacer
+          :wechat-images="wechatImages"
+          :selected-placeholder="selectedPlaceholder"
+          @select="handleImageSelect"
+        />
 
         <!-- 主内容区：预览与代码 -->
         <div class="flex-1 flex flex-row md:h-full">
@@ -253,6 +222,21 @@
           title="清空当前内容重新开始"
         >
           重新开始
+        </button>
+      </div>
+
+      <!-- 中间：保存草稿按钮 -->
+      <div class="flex items-center">
+        <button
+          @click="saveDraftAndGoHome"
+          :disabled="isSaving"
+          class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-md flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg v-if="!isSaving" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+          </svg>
+          <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>{{ isSaving ? '保存中...' : '💾 保存并返回首页' }}</span>
         </button>
       </div>
 
@@ -440,9 +424,12 @@ import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { buildHtml } from '../utils/styleAssembler'
 import { createDraft, uploadImage } from '../utils/wechatApi'
-import WechatImageGallery from '../components/WechatImageGallery.vue'
-import QRCode from 'qrcode'
+import ImageReplacer from '../components/ImageReplacer.vue'
+import PreviewFrame from '../components/PreviewFrame.vue'
+import DraftModal from '../components/DraftModal.vue'
 import { getConfig } from '../config'
+import { articleApi } from '../utils/api'
+import toast from '../composables/useToast'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -468,6 +455,7 @@ const isUploadingCover = ref(false)
 const draftError = ref('')
 const draftSuccess = ref('')
 const aiImageProgress = ref('') // 新增：AI 图片上传进度提示
+const isSaving = ref(false)
 const draftForm = ref({
   title: '',
   coverImageId: '',
@@ -1045,7 +1033,34 @@ const goToPreviousStep = () => {
 
 
 
-onMounted(() => {
+// 🚀 V3: 获取文章参与者姓名并同步到 Store
+const fetchParticipants = async () => {
+  const articleId = appStore.currentArticleId
+  if (!articleId) return
+
+  try {
+    const response = await articleApi.getArticleById(articleId)
+    const data = response.data
+    
+    // 同步到 AppStore
+    appStore.plannerNames = data.plannerNames || []
+    appStore.copywriterNames = data.copywriterNames || []
+    appStore.editorNames = data.editorNames || []
+    
+    console.log('[Step3] 获取参与者成功:', {
+      planners: appStore.plannerNames,
+      copywriters: appStore.copywriterNames,
+      editors: appStore.editorNames
+    })
+    
+    // 加载完名字后，需要重新生成 HTML 以应用这些名字
+    generateHtml()
+  } catch (error) {
+    console.error('[Step3] 获取参与者详情失败:', error)
+  }
+}
+
+onMounted(async () => {
   if (contentBlocks.value.length === 0) {
     router.push('/step2')
     return
@@ -1062,8 +1077,132 @@ onMounted(() => {
     return
   }
 
-  generateHtml()
+  // 先生成一次初始版（可能为空名字）
+  await generateHtml()
+  
+  // 然后获取真实姓名并重新生成
+  fetchParticipants()
 })
+
+// 保存草稿到后端 - 保存内容和样式配置
+const saveDraft = async () => {
+  if (isSaving.value) return
+  
+  isSaving.value = true
+  console.log('=== [Step3] 开始保存草稿 ===')
+  
+  try {
+    // 清理内容块，移除编辑器内部字段
+    const cleanedBlocks = contentBlocks.value.map(block => ({
+      type: block.type,
+      text: block.text || '',
+      ...(block.meta?.aiImageUrl && { aiImageUrl: block.meta.aiImageUrl })
+    }))
+    
+    const cleanContent = JSON.stringify(cleanedBlocks)
+    const articleId = appStore.currentArticleId
+    
+    console.log('[Step3] 当前文章ID:', articleId)
+    console.log('[Step3] 清理后的内容块数量:', cleanedBlocks.length)
+    console.log('[Step3] 内容预览:', cleanContent.substring(0, 200) + '...')
+    console.log('[Step3] 样式配置:', appStore.styleConfig)
+    console.log('[Step3] Auth Token:', localStorage.getItem('auth_token') ? '存在' : '不存在')
+    
+    if (articleId) {
+      // 更新现有文章 - 使用 Step3 专用端点（设置状态为 ADJUSTED）
+      console.log('[Step3] 正在更新文章内容（使用 step3-content 端点）...')
+      const response = await fetch(`/api/articles/${articleId}/step3-content`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ content: cleanContent })
+      })
+      
+      console.log('[Step3] 内容保存响应状态:', response.status)
+      const responseData = await response.json().catch(() => null)
+      console.log('[Step3] 内容保存响应数据:', responseData)
+      
+      if (!response.ok) {
+        throw new Error(`保存内容失败: ${response.status} - ${responseData?.message || 'Unknown error'}`)
+      }
+      
+      // 保存样式配置
+      const configResponse = await fetch(`/api/articles/${articleId}/config`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ config: appStore.styleConfig })
+      })
+      
+      if (!configResponse.ok) {
+        console.warn('样式配置保存失败')
+      }
+      
+      toast.success('草稿已保存（包含内容和样式）')
+    } else {
+      // 创建新文章 - 先创建，再更新内容
+      const title = contentBlocks.value.find(b => b.type === 'title')?.text || '未命名文章'
+      
+      // Step 1: 创建文章（只传 title 和 config）
+      const createResponse = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ 
+          title,
+          config: appStore.styleConfig
+        })
+      })
+      
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json().catch(() => ({}))
+        throw new Error(errorData.message || '创建文章失败')
+      }
+      
+      const data = await createResponse.json()
+      appStore.setCurrentArticleId(data.id)
+      
+      // Step 2: 更新内容
+      const updateResponse = await fetch(`/api/articles/${data.id}/content`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ content: cleanContent })
+      })
+      
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json().catch(() => ({}))
+        throw new Error(errorData.message || '保存内容失败')
+      }
+      
+      toast.success('文章已创建并保存！')
+    }
+    
+    return true // 返回成功状态
+  } catch (error) {
+    console.error('保存失败:', error)
+    toast.error('保存失败: ' + error.message)
+    return false
+  } finally {
+    isSaving.value = false
+  }
+}
+
+// 保存并返回首页
+const saveDraftAndGoHome = async () => {
+  const success = await saveDraft()
+  if (success) {
+    router.push('/')
+  }
+}
 </script>
 
 <style scoped>

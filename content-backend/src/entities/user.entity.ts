@@ -48,6 +48,12 @@ export class User {
   @Column({ nullable: true })
   email: string; // From Feishu or manual match
 
+  @Column({ name: 'isactive', default: true })
+  isActive: boolean;
+
+  @Column({ name: 'lastloginat', nullable: true })
+  lastLoginAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

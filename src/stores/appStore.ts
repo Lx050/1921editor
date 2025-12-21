@@ -6,9 +6,15 @@ import type { ContentBlock, StyleConfig, BlockType, WechatImage, UploadProgress 
 export const useAppStore = defineStore('app', () => {
   // 状态（明确类型注解，无向后兼容）
   const currentStep: Ref<number> = ref(1)
+  const currentArticleId: Ref<string | null> = ref(null)
   const rawText: Ref<string> = ref('')
   const contentBlocks: Ref<ContentBlock[]> = ref([])
   const styleConfig: Ref<StyleConfig | null> = ref(null)
+
+  // V3 新增状态：参与者姓名（用于自动化尾部）
+  const plannerNames: Ref<string[]> = ref([])
+  const copywriterNames: Ref<string[]> = ref([])
+  const editorNames: Ref<string[]> = ref([])
 
   // V2 新增状态：微信图片上传相关
   const wechatImages: Ref<WechatImage[]> = ref([])
@@ -26,6 +32,13 @@ export const useAppStore = defineStore('app', () => {
       throw new Error('Invalid step: must be a number between 1 and 3')
     }
     currentStep.value = step
+  }
+
+  const setCurrentArticleId = (id: string | null): void => {
+    if (id !== null && typeof id !== 'string') {
+      throw new Error('Invalid article ID: must be a string or null')
+    }
+    currentArticleId.value = id
   }
 
   const setRawText = (text: string): void => {
@@ -149,6 +162,7 @@ export const useAppStore = defineStore('app', () => {
 
   const resetApp = (): void => {
     currentStep.value = 1
+    currentArticleId.value = null
     rawText.value = ''
     contentBlocks.value = []
     styleConfig.value = null
@@ -156,11 +170,16 @@ export const useAppStore = defineStore('app', () => {
     wechatImages.value = []
     uploadProgress.value = { total: 0, completed: 0, failed: 0, uploading: 0 }
     isUploading.value = false
+    // V3: 重置参与者名称
+    plannerNames.value = []
+    copywriterNames.value = []
+    editorNames.value = []
   }
 
   return {
     // 状态
     currentStep,
+    currentArticleId,
     rawText,
     contentBlocks,
     styleConfig,
@@ -168,8 +187,12 @@ export const useAppStore = defineStore('app', () => {
     wechatImages,
     uploadProgress,
     isUploading,
+    plannerNames,
+    copywriterNames,
+    editorNames,
     // 操作
     setStep,
+    setCurrentArticleId,
     setRawText,
     setContentBlocks,
     updateBlockType,

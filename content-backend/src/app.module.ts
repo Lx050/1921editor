@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -19,7 +19,9 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { SecurityLoggerService } from './common/services/security-logger.service';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { join } from 'path';
+import { WebhookModule } from './webhook/webhook.module';
 
 @Module({
   imports: [
@@ -29,14 +31,14 @@ import { join } from 'path';
     ScheduleModule.forRoot(), // 启用定时任务
     ThrottlerModule.forRoot([
       {
-        // 🔒 开发环境宽松的限流配置
+        // 🔒 开发环境非常宽松的限流配置
         ttl: 60000, // 60秒
-        limit: 1000, // 每60秒最多1000个请求
+        limit: 2000, // 每60秒最多2000个请求
       },
       {
-        // 🔒 对敏感接口更严格的限制
+        // 🔒 对敏感接口稍微严格但足够测试的限制
         ttl: 60000,
-        limit: 10,
+        limit: 100, // 从 10 增加到 100
         name: 'sensitive',
       },
     ]),
@@ -61,14 +63,11 @@ import { join } from 'path';
     EmailModule,
     SyncModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'client'),
-      exclude: ['/api/(.*)'],
-    }),
-    ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
     NanoBananaModule,
+    WebhookModule,
   ],
   controllers: [AppController],
   providers: [
@@ -94,4 +93,8 @@ import { join } from 'path';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

@@ -174,7 +174,6 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
-import mammoth from 'mammoth'
 import { extractZip, isZipFile } from '../utils/zipProcessor'
 import { uploadManager } from '../utils/uploadManager'
 
@@ -283,6 +282,9 @@ const processZipFile = async (file) => {
 // 处理 DOCX 文件
 const processDocxFile = async (file) => {
   try {
+    // 动态导入 mammoth（仅在需要时加载）
+    const { default: mammoth } = await import('mammoth')
+
     const arrayBuffer = await file.arrayBuffer()
 
     // 配置 mammoth 选项 - 增强版：保留样式信息

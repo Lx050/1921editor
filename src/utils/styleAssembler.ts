@@ -2,6 +2,7 @@
 import { IMAGE_TEMPLATES } from '../styles/templates'
 import type { ContentBlock, StyleConfig, BlockType, StyleTemplate } from '@/types'
 import { useConfigStore } from '../stores/configStore'
+import { useAppStore } from '../stores/appStore'
 
 
 
@@ -48,7 +49,16 @@ export function buildHtml(
 	})
 
 	// 添加HTML尾部
-	htmlParts.push(configStore.currentFooter)
+	let footer = configStore.currentFooter
+	const appStore = useAppStore()
+
+	// 替换参与者占位符
+	footer = footer
+		.replace(/{{PLANNERS}}/g, appStore.plannerNames.join(' ') || ' ')
+		.replace(/{{COPYWRITERS}}/g, appStore.copywriterNames.join(' ') || ' ')
+		.replace(/{{EDITORS}}/g, appStore.editorNames.join(' ') || ' ')
+
+	htmlParts.push(footer)
 
 	return htmlParts.join('\n')
 }

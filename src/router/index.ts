@@ -6,16 +6,25 @@ import { useAppStore } from '../stores/appStore'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    name: 'UserConfig',
-    component: () => import('../views/UserConfig.vue'),
+    name: 'Home',
+    component: () => import('../views/Home/index.vue'),
     meta: {
       title: '主页'
     }
   },
   {
+    path: '/settings/wechat',
+    name: 'WechatSettings',
+    component: () => import('../views/Settings/WechatSettings.vue'),
+    meta: {
+      title: '公众号管理',
+      requiresAuth: true
+    }
+  },
+  {
     path: '/step1',
     name: 'Step1',
-    component: () => import(/* webpackPrefetch: true */ '../views/Step1TextInput.vue'),
+    component: () => import('../views/Step1TextInput.vue'),
     meta: {
       step: 1,
       title: '步骤 1/3: 输入文本'
@@ -24,7 +33,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/step2',
     name: 'Step2',
-    component: () => import(/* webpackPrefetch: true */ '../views/Step2Curtain.vue'),
+    component: () => import('../views/Step2Curtain.vue'),
     meta: {
       step: 2,
       title: '步骤 2/3: 编辑内容'
@@ -33,7 +42,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/step3',
     name: 'Step3',
-    component: () => import(/* webpackPrefetch: true */ '../views/Step3Preview.vue'),
+    component: () => import('../views/Step3Preview.vue'),
     meta: {
       step: 3,
       title: '步骤 3/3: 生成预览'
@@ -42,7 +51,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/style-config',
     name: 'StyleConfig',
-    component: () => import(/* webpackPrefetch: true */ '../views/StyleConfig.vue'),
+    component: () => import('../views/StyleConfig.vue'),
     meta: {
       title: '样式配置'
     }
@@ -50,7 +59,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/preview',
     name: 'DraftPreview',
-    component: () => import(/* webpackPrefetch: true */ '../views/DraftPreview.vue'),
+    component: () => import('../views/DraftPreview.vue'),
     meta: {
       title: '草稿预览'
     }
@@ -58,7 +67,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/articles/:id/config',
     name: 'ArticleConfig',
-    component: () => import(/* webpackPrefetch: true */ '../views/ArticleConfig.vue'),
+    component: () => import('../views/ArticleConfig.vue'),
     meta: {
       title: '配置文章'
     }
@@ -66,7 +75,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/auth/callback',
     name: 'LoginCallback',
-    component: () => import(/* webpackPrefetch: true */ '../views/LoginCallback.vue'),
+    component: () => import('../views/LoginCallback.vue'),
     meta: {
       title: '飞书登录回调'
     }
@@ -74,9 +83,19 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/tenant-select',
     name: 'TenantSelect',
-    component: () => import(/* webpackPrefetch: true */ '../views/TenantSelect.vue'),
+    component: () => import('../views/TenantSelect.vue'),
     meta: {
       title: '选择组织'
+    }
+  },
+  {
+    path: '/settings/tenant',
+    name: 'TenantSettings',
+    component: () => import('../views/TenantSettings.vue'),
+    meta: {
+      title: '租户配置',
+      requiresAuth: true,
+      description: '配置飞书多维表格实现多租户自助管理'
     }
   }
 ]
@@ -91,9 +110,10 @@ interface RouteGuard {
 
 const routeGuards: Record<string, RouteGuard> = {
   '/step2': {
-    validator: (appStore) => Boolean(appStore.rawText),
+    // 允许有 rawText 或 contentBlocks（从保存的文章恢复时只有 contentBlocks）
+    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length),
     redirect: '/step1',
-    description: 'step2需要文本内容'
+    description: 'step2需要文本内容或内容块'
   },
   '/step3': {
     validator: (appStore) => Boolean(appStore.contentBlocks?.length),
@@ -101,9 +121,10 @@ const routeGuards: Record<string, RouteGuard> = {
     description: 'step3需要内容块'
   },
   '/style-config': {
-    validator: (appStore) => Boolean(appStore.rawText),
+    // 同样允许有 rawText 或 contentBlocks
+    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length),
     redirect: '/step1',
-    description: '样式配置需要文本内容'
+    description: '样式配置需要文本内容或内容块'
   }
 }
 

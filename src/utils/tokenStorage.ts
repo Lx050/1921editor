@@ -107,6 +107,7 @@ class TokenStorage {
     this.removeToken();
     // 清除其他可能的认证数据
     localStorage.removeItem('user_info');
+    localStorage.removeItem('userInfo'); // Fix: Add userInfo
     localStorage.removeItem('feishu_user');
     sessionStorage.clear();
   }

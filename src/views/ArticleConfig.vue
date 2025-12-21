@@ -118,7 +118,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '../stores/configStore'
 import { useUserStore } from '../stores/userStore'
 import { useAppStore } from '../stores/appStore'
-import { getArticle, getArticleFileUrl, type Article } from '../api/article'
+import { getArticle, type Article } from '../api/article'
 
 const route = useRoute()
 const router = useRouter()
@@ -163,18 +163,44 @@ const startProcessing = async () => {
     
     // 加载 Article 数据到 appStore
     if (article.value) {
-      // 1. 加载文本内容
-      if (article.value.content) {
-        appStore.setRawText(article.value.content)
-        console.log('[ArticleConfig] Loaded text content:', article.value.content.substring(0, 100) + '...')
+      // 0. 设置当前文章 ID
+      appStore.setCurrentArticleId(article.value.id)
+      
+      // 1. 加载样式配置（如果有）
+      if (article.value.config) {
+        appStore.setStyleConfig(article.value.config)
+        console.log('[ArticleConfig] Loaded style config')
       }
       
-      // 2. 加载图片（如果有）
+      // 2. 解析保存的内容并恢复到 contentBlocks
+      if (article.value.content) {
+        try {
+          const savedBlocks = JSON.parse(article.value.content)
+          if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
+            // 重新生成 block IDs 并恢复到 appStore
+            const restoredBlocks = savedBlocks.map((block: any, index: number) => ({
+              id: `restored_${index}_${Date.now()}`,
+              type: block.type || 'body',
+              text: block.text || '',
+              source: 'restored',
+              meta: block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}
+            }))
+            
+            appStore.setContentBlocks(restoredBlocks)
+            console.log('[ArticleConfig] Restored contentBlocks:', restoredBlocks.length)
+          }
+        } catch (parseError) {
+          // 如果不是 JSON，当作原始文本处理
+          console.log('[ArticleConfig] Content is raw text, setting as rawText')
+          appStore.setRawText(article.value.content)
+        }
+      }
+      
+      // 3. 加载图片（如果有）
       if (article.value.images && Array.isArray(article.value.images)) {
-        // 将后端存储的图片转换为前端需要的 WechatImage 格式
         const wechatImages = article.value.images.map((img: any, index: number) => ({
           id: `article_img_${index}_${Date.now()}`,
-          mediaId: '', // 暂时为空，后续上传微信时会填充
+          mediaId: '',
           url: img.url || img.path || '',
           name: img.name || `image_${index + 1}`,
           status: 'success' as const,
@@ -185,24 +211,26 @@ const startProcessing = async () => {
         console.log('[ArticleConfig] Loaded images:', wechatImages.length)
       }
       
-      // 3. 如果有 config 中的 imageUrls，也加载进来
-      if (article.value.config?.imageUrls && Array.isArray(article.value.config.imageUrls)) {
-        const additionalImages = article.value.config.imageUrls.map((url: string, index: number) => ({
-          id: `config_img_${index}_${Date.now()}`,
-          mediaId: '',
-          url,
-          name: `uploaded_image_${index + 1}`,
-          status: 'success' as const,
-          localPreviewUrl: url
-        }))
-        
-        appStore.addWechatImages(additionalImages)
-        console.log('[ArticleConfig] Loaded additional images from config:', additionalImages.length)
+      // 4. 根据文章状态决定跳转到哪个步骤
+      const status = article.value.status
+      const hasContentBlocks = appStore.contentBlocks && appStore.contentBlocks.length > 0
+      
+      if (status === 'ADJUSTED' || status === 'PUBLISHED') {
+        // 已调整或已发布 -> 跳转到 Step3 预览
+        console.log('[ArticleConfig] Status is', status, '-> jumping to Step3')
+        router.push('/step3')
+      } else if (status === 'PARSED' || hasContentBlocks) {
+        // 已解析或有内容块 -> 跳转到 Step2 编辑
+        console.log('[ArticleConfig] Status is', status, 'or has contentBlocks -> jumping to Step2')
+        router.push('/step2')
+      } else {
+        // 草稿状态且无内容 -> 跳转到 Step1
+        console.log('[ArticleConfig] Status is DRAFT without content -> jumping to Step1')
+        router.push('/step1')
       }
+    } else {
+      router.push('/step1')
     }
-    
-    // 跳转到 Step 1（内容已预填充）
-    router.push('/step1')
   } catch (err: any) {
     console.error('[ArticleConfig] Failed to load article data:', err)
     error.value = err.message || '加载文章数据失败'

@@ -137,6 +137,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { TenantInfo } from '../stores/userStore'
+import api from '../utils/api'
 
 const router = useRouter()
 
@@ -170,23 +171,13 @@ const filteredTenants = computed(() => {
   )
 })
 
-// 模拟数据
-const mockTenants: TenantInfo[] = [
-  { id: '1', name: '医疗科技集团', slug: 'medical-corp' },
-  { id: '2', name: '卓越教育中心', slug: 'education-org' },
-  { id: '3', name: '环球零售品牌', slug: 'retail-brand' },
-  { id: '4', name: '科技创新实验室', slug: 'tech-lab' },
-  { id: '5', name: '创意设计工作室', slug: 'design-studio' }
-]
-
 const loadTenants = async () => {
   loading.value = true
   error.value = null
   
   try {
-    // 模拟接口调用的延迟
-    await new Promise(resolve => setTimeout(resolve, 800))
-    tenants.value = mockTenants
+    const response = await api.get('/tenants')
+    tenants.value = response.data
   } catch (e) {
     error.value = '加载组织列表失败，请重试'
     console.error('Failed to load tenants:', e)

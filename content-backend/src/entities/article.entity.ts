@@ -61,6 +61,18 @@ export class Article {
   @Column({ nullable: true })
   ownerId: string;
 
+  @Column('jsonb', { default: [] }) // 策划人员
+  planners: string[];
+
+  @Column('jsonb', { default: [] }) // 文案撰稿
+  copywriters: string[];
+
+  @Column('jsonb', { default: [] }) // 文章编辑
+  editors: string[];
+
+  @Column({ nullable: true, name: 'feishurecordid' }) // 飞书多维表格记录ID
+  feishuRecordId: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
