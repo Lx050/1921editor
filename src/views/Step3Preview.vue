@@ -12,14 +12,7 @@
         <!-- 快速操作按钮 -->
         <div class="flex flex-wrap gap-1 md:gap-2 justify-end">
           <!-- 移动端：只显示图标 -->
-          <button
-            @click="goToStyleConfig"
-            class="md:px-3 px-2 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-700 text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0"
-            title="装饰样式"
-          >
-            <span class="text-sm">🎨</span>
-            <span class="hidden md:inline">装饰样式</span>
-          </button>
+
           <button
             @click="activeTab = 'preview'"
             :class="[
@@ -42,6 +35,23 @@
           >
             代码
           </button>
+          
+          <!-- 真机预览开关 (仅在预览Tab显示) -->
+          <button
+            v-if="activeTab === 'preview'"
+            @click="showMobileFrame = !showMobileFrame"
+            :class="[
+              'px-2 md:px-3 py-1.5 text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0',
+              showMobileFrame
+                ? 'bg-gray-800 text-white shadow-md'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            ]"
+            title="切换真机外壳预览"
+          >
+            <span>📱</span>
+            <span class="hidden md:inline">{{ showMobileFrame ? '关闭真机' : '真机预览' }}</span>
+          </button>
+
           <button
             @click="copyHtml"
             class="md:px-3 px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0"
@@ -51,34 +61,6 @@
             </svg>
             <span class="hidden md:inline">{{ copyButtonText }}</span>
             <span class="md:hidden">复制</span>
-          </button>
-          <!-- 生成预览按钮 -->
-          <button
-            @click="generatePreviewLink"
-            class="md:px-4 px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="isCreatingPreview || !finalHtml"
-            title="生成可分享的预览链接"
-          >
-            <div v-if="isCreatingPreview" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-            </svg>
-            <span class="hidden md:inline">{{ isCreatingPreview ? '生成中...' : '生成预览' }}</span>
-            <span class="md:hidden">{{ isCreatingPreview ? '生成中' : '预览' }}</span>
-          </button>
-
-          <!-- 创建草稿按钮 -->
-          <button
-            @click="openDraftModal"
-            class="md:px-3 px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs md:text-sm rounded-md transition-colors flex items-center space-x-1 flex-shrink-0"
-            title="上传到微信草稿箱"
-          >
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-            </svg>
-            <span class="hidden md:inline">创建草稿</span>
-            <span class="md:hidden">草稿</span>
           </button>
         </div>
       </div>
@@ -141,17 +123,68 @@
           <!-- 预览与代码区 -->
           <div class="flex-1 h-full overflow-y-auto">
             <!-- 预览模式 -->
-            <div v-if="activeTab === 'preview'" class="min-h-full bg-gray-100 md:bg-gray-200 flex justify-center p-2 md:py-4">
-              <!-- 响应式：手机宽度容器 -->
-              <div class="w-full md:w-[375px] max-w-md md:max-w-none bg-white shadow md:shadow-lg rounded md:rounded-lg flex-shrink-0">
-                <iframe
-                  ref="previewFrame"
-                  :srcdoc="previewHtml"
-                  class="w-full border-0 rounded md:rounded-lg"
-                  style="min-height: 600px;"
-                  title="版式预览"
-                  @load="setupIframeClickHandler"
-                ></iframe>
+            <div v-if="activeTab === 'preview'" class="min-h-full bg-gray-100 md:bg-gray-200 flex justify-center p-2 md:py-4 overflow-y-auto">
+              <!-- 模式 A: 沉浸式真机外壳 -->
+              <div v-if="showMobileFrame" class="relative w-[375px] h-[812px] bg-black rounded-[50px] shadow-2xl border-[8px] border-gray-900 flex flex-col overflow-hidden shrink-0 transform scale-90 sm:scale-100 origin-top">
+                <!-- 顶部刘海/状态栏 -->
+                <div class="absolute top-0 w-full h-11 bg-black z-20 flex justify-between px-6 items-center pointer-events-none">
+                    <div class="w-12 h-full flex items-center text-white text-[10px] font-medium pl-2">9:41</div>
+                     <!-- 灵动岛区域 -->
+                    <div class="w-[120px] h-[34px] bg-black rounded-3xl absolute left-1/2 -translate-x-1/2 top-2"></div>
+                    <div class="w-16 flex space-x-1.5 justify-end items-center pr-2">
+                       <svg class="w-4 h-3 text-white" viewBox="0 0 18 12" fill="currentColor"><path d="M1 9.5C1 10.3284 1.67157 11 2.5 11H13.5C14.3284 11 15 10.3284 15 9.5V2.5C15 1.67157 14.3284 1 13.5 1H2.5C1.67157 1 1 1.67157 1 2.5V9.5Z" stroke="white"/><path d="M16.5 4V8" stroke="white" stroke-linecap="round"/></svg>
+                    </div>
+                </div>
+
+                <!-- 模拟微信顶部栏 -->
+                <div class="mt-11 h-11 bg-[#ededed] flex items-center justify-between px-4 border-b border-gray-300 z-10 shrink-0 select-none">
+                    <div class="flex items-center text-gray-800 font-medium text-[16px]">
+                        <span class="mr-1 text-2xl leading-none" style="margin-top: -2px;">‹</span> 公众号
+                    </div>
+                    <div class="text-gray-800 font-semibold text-[16px] tracking-wide">
+                        {{ draftForm.title || '文章预览' }}
+                    </div>
+                    <div class="w-12 flex justify-end">
+                        <div class="w-8 h-6 bg-white border border-gray-300 rounded-full flex justify-center items-center space-x-0.5">
+                             <div class="w-0.5 h-0.5 bg-black rounded-full"></div>
+                             <div class="w-1 h-0.5 bg-black rounded-full"></div>
+                             <div class="w-0.5 h-0.5 bg-black rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- iframe 容器 -->
+                <div class="flex-1 bg-white relative overflow-hidden">
+                   <iframe
+                    ref="previewFrame"
+                    :srcdoc="previewHtml"
+                    class="w-full h-full border-0"
+                    title="版式预览"
+                    @load="setupIframeClickHandler"
+                  ></iframe>
+                </div>
+
+                <!-- 底部 Home Indicator (覆盖在iframe之上但允许点击穿透或者位于底部区域) -->
+                <div class="h-8 bg-white w-full flex justify-center items-end pb-2 shrink-0 z-10 pointer-events-none">
+                    <div class="w-36 h-1 bg-gray-800 rounded-full opacity-20"></div>
+                </div>
+              </div>
+
+              <!-- 模式 B: 默认简洁框 (适合快速编辑) -->
+              <div v-else class="w-full md:w-[375px] max-w-md md:max-w-none bg-white shadow md:shadow-lg rounded md:rounded-lg flex-shrink-0 h-[calc(100vh-200px)] flex flex-col">
+                 <!-- 简单的顶部示意 -->
+                 <div class="h-8 bg-gray-50 border-b flex items-center justify-center text-xs text-gray-400 rounded-t-lg">
+                    预览视图
+                 </div>
+                 <div class="flex-1 overflow-hidden relative">
+                    <iframe
+                      ref="previewFrame"
+                      :srcdoc="previewHtml"
+                      class="w-full h-full border-0 absolute inset-0"
+                      title="版式预览"
+                      @load="setupIframeClickHandler"
+                    ></iframe>
+                 </div>
               </div>
             </div>
 
@@ -206,28 +239,39 @@
     </div>
 
     <!-- 底部操作栏 - 固定不动 -->
-    <div v-if="finalHtml && !errorMessage" class="flex-shrink-0 flex flex-wrap gap-2 justify-between items-center p-4 border-t bg-white">
-      <button
-        @click="goToPreviousStep"
-        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors"
-      >
-        ← 上一步
-      </button>
-
-      <div class="flex gap-2">
+    <div v-if="finalHtml && !errorMessage" class="flex-shrink-0 flex flex-wrap gap-2 justify-between items-center p-4 border-t bg-white z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <div class="flex items-center space-x-2">
         <button
-          @click="regenerate"
-          class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors"
-          :disabled="isGenerating"
+          @click="goToPreviousStep"
+          class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors"
         >
-          重新生成
+          ← 上一步
         </button>
-
         <button
           @click="startNew"
-          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+          class="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 text-sm font-medium rounded-lg transition-colors"
+          title="清空当前内容重新开始"
         >
-          开始新的排版
+          重新开始
+        </button>
+      </div>
+
+      <div class="flex gap-3">
+        <button
+          @click="regenerate"
+          class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors"
+          :disabled="isGenerating"
+        >
+          <span v-if="isGenerating">生成中...</span>
+          <span v-else>↻ 重新生成</span>
+        </button>
+
+        <!-- Primary Action -->
+        <button
+          @click="openDraftModal"
+          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center space-x-2 transform hover:-translate-y-0.5"
+        >
+          <span>🚀 创建微信草稿</span>
         </button>
       </div>
     </div>
@@ -235,48 +279,7 @@
     <!-- 如果没有finalHtml，显示一个空的底部占位符保持布局 -->
     <div v-else-if="contentBlocks.length > 0" class="flex-shrink-0 p-4 border-t bg-white"></div>
 
-    <!-- 预览结果展示区域 -->
-    <div v-if="previewLink" class="flex-shrink-0 p-4 border-t bg-white border-blue-200">
-      <div class="bg-blue-50 rounded-lg p-4">
-        <h3 class="font-semibold text-blue-900 mb-3 flex items-center">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          预览链接已生成（可复制分享给他人）
-        </h3>
 
-        <!-- 链接和操作 -->
-        <div class="flex items-center space-x-2">
-          <input
-            type="text"
-            :value="previewLink"
-            readonly
-            class="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg font-mono text-blue-600"
-            @click="$event.target.select()"
-          >
-          <button
-            @click="copyPreviewLink"
-            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors whitespace-nowrap"
-          >
-            复制链接
-          </button>
-          <a
-            :href="previewLink"
-            target="_blank"
-            class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors inline-flex items-center"
-          >
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-            </svg>
-            测试打开
-          </a>
-        </div>
-
-        <p class="text-xs text-gray-500 mt-2">
-          💡 提示：将此链接发送给任何人，他们都可以查看文章预览
-        </p>
-      </div>
-    </div>
 
     <!-- 创建草稿弹窗 -->
     <div 
@@ -397,6 +400,15 @@
               </div>
             </div>
           </div>
+
+          <!-- AI 图片上传进度提示 -->
+          <div v-if="aiImageProgress" class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+            <div class="flex items-center space-x-2">
+              <div v-if="!aiImageProgress.includes('✓')" class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div v-else class="text-lg">✓</div>
+              <div class="flex-1">{{ aiImageProgress }}</div>
+            </div>
+          </div>
         </div>
 
         <!-- 弹窗底部 -->
@@ -450,13 +462,12 @@ const lastScrollTop = ref(0) // 记录 iframe 滚动位置
 
 // V2: 草稿创建相关状态
 const showDraftModal = ref(false)
+const showMobileFrame = ref(false)
 const isCreatingDraft = ref(false)
-const isCreatingPreview = ref(false) // 生成预览中
 const isUploadingCover = ref(false)
 const draftError = ref('')
 const draftSuccess = ref('')
-const previewLink = ref('')
-const qrCodeDataUrl = ref('')
+const aiImageProgress = ref('') // 新增：AI 图片上传进度提示
 const draftForm = ref({
   title: '',
   coverImageId: '',
@@ -857,59 +868,7 @@ const showCopySuccess = () => {
   }, 2000)
 }
 
-// V2: 生成预览链接（可分享给别人）
-const generatePreviewLink = async () => {
-  isCreatingPreview.value = true
-  draftError.value = ''
 
-  try {
-    const content = getOutputHtml()
-    const title = extractTitleFromContent()
-
-    // 准备预览数据 - 使用自动提取的标题，其他字段可选
-    const previewData = {
-      title: title,
-      author: draftForm.value.author || '',
-      digest: draftForm.value.digest || '',
-      content: content,
-      timestamp: Date.now()
-    }
-
-    // 转换为JSON并编码
-    const jsonStr = JSON.stringify(previewData)
-    const encoded = btoa(encodeURIComponent(jsonStr))
-
-    // 生成预览链接（整个数据在URL中，可分享）
-    // 从配置文件获取服务器URL，可覆盖默认的window.location.origin
-    const config = getConfig()
-    const serverUrl = config.apiBaseUrl
-    const link = `${serverUrl}/preview?data=${encoded}`
-    previewLink.value = link
-
-    // 保存到sessionStorage（用于在新标签页打开）
-    sessionStorage.setItem('wechat_preview_data', JSON.stringify(previewData))
-    sessionStorage.setItem('wechat_preview_link', link)
-
-    // 显示成功消息
-    draftSuccess.value = 'preview_generated'
-    setTimeout(() => {
-      draftSuccess.value = ''
-    }, 3000)
-
-    return link
-  } catch (error) {
-    console.error('[Step3] 生成预览链接失败:', error)
-    // 如果是数据过大，给出明确提示
-    if (error.message && error.message.includes('too big')) {
-      draftError.value = '内容过多，无法生成分享链接。请减少内容或直接使用草稿功能'
-    } else {
-      draftError.value = '生成预览链接失败，请重试'
-    }
-    return null
-  } finally {
-    isCreatingPreview.value = false
-  }
-}
 
 // V2: 生成草稿编辑链接（用于预览）
 const generateDraftEditLink = (draftId) => {
@@ -918,37 +877,7 @@ const generateDraftEditLink = (draftId) => {
   return `https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&action=edit&type=10&appmsgid=${draftId}&lang=zh_CN`
 }
 
-// V2: 复制预览链接
-const copyPreviewLink = async () => {
-  if (!previewLink.value) return
 
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(previewLink.value)
-    } else {
-      const textarea = document.createElement('textarea')
-      textarea.value = previewLink.value
-      textarea.style.position = 'fixed'
-      textarea.style.left = '-9999px'
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-    }
-
-    // 显示复制成功提示
-    const btn = event.target
-    const originalText = btn.textContent
-    btn.textContent = '已复制!'
-    btn.classList.add('bg-green-600')
-    setTimeout(() => {
-      btn.textContent = originalText
-      btn.classList.remove('bg-green-600')
-    }, 2000)
-  } catch (error) {
-    console.error('[Step3] 复制链接失败:', error)
-  }
-}
 
 // V2: 提交草稿
 const submitDraft = async () => {
@@ -959,7 +888,97 @@ const submitDraft = async () => {
   draftSuccess.value = ''
 
   try {
-    const content = getOutputHtml()
+    let content = getOutputHtml()
+
+    // ========== 新增：处理 AI 生成的外部图片 URL ==========
+    // 检测内容中的外部图片 URL（火山引擎、Pollinations 等）
+    const externalImageRegex = new RegExp(
+      '<img[^>]+src="(https:\\/\\/(?:ark\\.cn-beijing\\.volces\\.com|image\\.pollinations\\.ai)[^"]+)"[^>]*>',
+      'g'
+    )
+    const externalImages = []
+    
+    let match = null
+    while ((match = externalImageRegex.exec(content)) !== null) {
+      externalImages.push({
+        original: match[1],  // URL
+        tag: match[0]        // 完整的 img 标签
+      })
+    }
+
+    if (externalImages.length > 0) {
+      console.log(`[Step3] 检测到 ${externalImages.length} 张外部AI图片，开始优化并发上传...`)
+      aiImageProgress.value = `初始化上传管理器...`
+
+      try {
+        // 动态导入并发上传管理器
+        const { ConcurrentUploadManager } = await import('../utils/concurrentUpload')
+
+        // 创建上传管理器实例（优化配置）
+        const uploadManager = new ConcurrentUploadManager({
+          maxConcurrent: 3, // 最大3个并发
+          timeout: 45000,   // 45秒超时
+          enableRetry: true,
+          maxRetries: 2,    // 最多重试2次
+          retryDelay: 1000  // 1秒重试延迟
+        })
+
+        // 设置进度监听
+        uploadManager.onProgress((progress) => {
+          const stats = uploadManager.getStats()
+          const overallProgress = Math.round((stats.completed / stats.total) * 100)
+
+          aiImageProgress.value = `${progress.message} (${stats.completed}/${stats.total}) - ${overallProgress}%`
+
+          console.log(`[Step3] ${progress.taskId}: ${progress.message}`)
+        })
+
+        // 提取所有图片URL
+        const imageUrls = externalImages.map(img => img.original)
+
+        aiImageProgress.value = `开始并发下载和上传 ${imageUrls.length} 张图片...`
+
+        // 执行并发下载和上传
+        const { results, errors } = await uploadManager.downloadAndUpload(
+          imageUrls,
+          async (file) => {
+            // 上传到微信素材库
+            return await uploadImage(file)
+          }
+        )
+
+        // 处理结果
+        if (results.length > 0) {
+          // 创建URL映射表
+          const urlMap = new Map(results.map(r => [r.original, r.newUrl]))
+
+          // 批量替换URL
+          let replacedCount = 0
+          externalImages.forEach(({ original, tag }) => {
+            const newUrl = urlMap.get(original)
+            if (newUrl) {
+              const newTag = tag.replace(original, newUrl)
+              content = content.replace(tag, newTag)
+              replacedCount++
+            }
+          })
+
+          aiImageProgress.value = `✓ AI图片处理完成: ${replacedCount}/${imageUrls.length} 张成功`
+          console.log(`[Step3] AI图片处理完成 - 成功: ${replacedCount}, 失败: ${errors.length}`)
+        }
+
+        // 处理错误（如果有部分失败）
+        if (errors.length > 0) {
+          console.error(`[Step3] 部分AI图片处理失败:`, errors)
+          // 不抛出错误，允许部分成功的情况
+        }
+
+      } catch (uploadError) {
+        console.error('[Step3] AI图片批量处理失败:', uploadError)
+        throw new Error(`AI图片处理失败: ${uploadError.message}`)
+      }
+    }
+    // ========== 处理完毕 ==========
 
     // 构建文章对象
     const article = {
@@ -1000,8 +1019,13 @@ const submitDraft = async () => {
   } catch (error) {
     console.error('[Step3] 创建草稿失败:', error)
     draftError.value = error.message || '创建草稿失败，请检查网络或配置'
+    aiImageProgress.value = '' // 清除进度提示
   } finally {
     isCreatingDraft.value = false
+    // 延迟清除进度提示（让用户看到完成状态）
+    setTimeout(() => {
+      aiImageProgress.value = ''
+    }, 2000)
   }
 }
 
@@ -1019,9 +1043,7 @@ const goToPreviousStep = () => {
   router.push('/step2')
 }
 
-const goToStyleConfig = () => {
-  router.push('/style-config')
-}
+
 
 onMounted(() => {
   if (contentBlocks.value.length === 0) {

@@ -76,7 +76,7 @@
         >
           <!-- 样式预览 -->
           <div class="h-24 overflow-hidden rounded bg-gray-50 mb-3 flex items-center justify-center">
-            <div v-html="style.preview" class="transform scale-90"></div>
+            <div v-html="sanitizeHtml(style.preview)" class="transform scale-90"></div>
           </div>
 
           <!-- 样式信息 -->
@@ -271,7 +271,7 @@
               <div v-if="editForm.preview">
                 <label class="block text-sm font-medium text-gray-700 mb-1">实时预览</label>
                 <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <div v-html="editForm.preview"></div>
+                  <div v-html="sanitizeHtml(editForm.preview)"></div>
                 </div>
               </div>
             </div>
@@ -301,6 +301,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { sanitizeHtml } from '../utils/sanitizeHtml'
 import {
   getAllStyles,
   addCustomStyle,

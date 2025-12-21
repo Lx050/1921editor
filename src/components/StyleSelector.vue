@@ -37,7 +37,7 @@
         >
           <!-- 缩略图预览 -->
           <div class="h-16 overflow-hidden rounded bg-white flex items-center justify-center">
-            <div v-html="style.preview" class="transform scale-90"></div>
+            <div v-html="sanitizeHtml(style.preview)" class="transform scale-90"></div>
           </div>
           
           <!-- 样式名称 -->
@@ -77,6 +77,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { sanitizeHtml } from '../utils/sanitizeHtml'
 import { getAllStyles } from '../styles/styleStorage'
 
 const router = useRouter()

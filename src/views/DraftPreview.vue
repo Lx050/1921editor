@@ -27,7 +27,7 @@
 
         <!-- 文章内容 -->
         <div class="p-6">
-          <div v-if="article.content" v-html="article.content" class="prose max-w-none"></div>
+          <div v-if="article.content" v-html="sanitizeHtml(article.content)" class="prose max-w-none"></div>
           <div v-else class="text-center py-12">
             <div class="text-gray-400 text-lg mb-2">无预览内容</div>
             <p class="text-gray-500">草稿内容为空或已过期</p>
@@ -51,6 +51,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { sanitizeHtml } from '../utils/sanitizeHtml'
 
 const router = useRouter()
 const article = ref({

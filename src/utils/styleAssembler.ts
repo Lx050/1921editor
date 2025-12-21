@@ -40,7 +40,7 @@ export function buildHtml(
 			htmlParts.push(blockHtml)
 
 			// V2: 更新图片计数器
-			if (block.type.startsWith('image_')) {
+			if (block.type.startsWith('image_') || (block.meta && block.meta.aiImageUrl)) {
 				imageCounter++
 			}
 		}
@@ -73,6 +73,18 @@ function buildStyledBlock(
 	}
 
 	const content: string = block.text || ''
+
+	// AI 生成图片优先渲染
+	if (block.meta && block.meta.aiImageUrl) {
+		let html = IMAGE_TEMPLATES.single
+		// 替换默认图片 src
+		html = html.replace(/src="[^"]*"/, `src="${block.meta.aiImageUrl}"`)
+		// V2: 添加占位符标记
+		if (addPlaceholderMarkers) {
+			html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
+		}
+		return html
+	}
 
 	switch (block.type) {
 		case 'title':

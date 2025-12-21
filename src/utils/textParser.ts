@@ -49,7 +49,8 @@ export function smartTextParser(rawText: string): ContentBlock[] {
   // 生成内容块数组，支持标注识别和智能识别
   const contentBlocks: ContentBlock[] = []
 
-  blocks.forEach((block: string, index: number): void => {
+  for (let index = 0; index < blocks.length; index++) {
+    const block = blocks[index]
     const trimmedBlock: string = block.trim()
 
     // 优先尝试标注识别
@@ -61,10 +62,24 @@ export function smartTextParser(rawText: string): ContentBlock[] {
         type: markedResult.type,
         meta: { source: 'mark' } // 标记来源
       })
-      return
+      continue
     }
 
     // 无标注时进行智能识别
+    // 特殊处理：检查当前块和下一块是否构成双图
+    const doubleImageResult = tryRecognizeDoubleImage(blocks, index, trimmedBlock)
+    if (doubleImageResult && doubleImageResult.isDouble) {
+      // 识别为双图，处理跳过下一张图片
+      contentBlocks.push({
+        id: `block_${Date.now()}_${index}`,
+        text: doubleImageResult.text,
+        type: doubleImageResult.type,
+        meta: { source: 'smart', doubleImage: true, skipNext: true } // 标记为双图
+      })
+      index++ // 跳过下一块（因为已经合并处理了）
+      continue
+    }
+
     const smartType: IdentifyResult = smartIdentifyType(trimmedBlock, index, blocks)
 
     contentBlocks.push({
@@ -73,7 +88,7 @@ export function smartTextParser(rawText: string): ContentBlock[] {
       type: smartType.type,
       meta: { source: 'smart' } // 智能识别来源
     })
-  })
+  }
 
   // 过滤掉真正的空块，但保留图片模板块
   return contentBlocks.filter((block: ContentBlock): boolean =>
@@ -149,9 +164,11 @@ function parseMarkedContent(text: string): ParseResult {
       }
 
       // &&后有其他内容，视为带图注
+      // 移除可能存在的"双图"前缀
+      const cleanContent = doubleContent.replace(/^双图\s*/, '')
       return {
         hasMark: true,
-        text: doubleContent,
+        text: cleanContent,
         type: 'image_double_caption'
       }
     }
@@ -162,9 +179,11 @@ function parseMarkedContent(text: string): ParseResult {
     }
 
     // &后有其他内容，视为带图注
+    // 移除可能存在的"单图"前缀
+    const cleanContent = content.replace(/^单图\s*/, '')
     return {
       hasMark: true,
-      text: content,
+      text: cleanContent,
       type: 'image_single_caption'
     }
   }
@@ -234,6 +253,11 @@ const INTRO_KEYWORDS: string[] = ['引言', '前言', '概述', '简介', '介�
 const OUTRO_KEYWORDS: string[] = ['总结', '结论', '结束', '结语', '最后', '综上所述', '总的来说', '总之', '最终']
 
 /**
+ * 图片/图注关键词
+ */
+const IMAGE_KEYWORDS: string[] = ['图', '图片', '图注', '如图所示', '上图', '下图', '左图', '右图', '照片', '图像', '截图']
+
+/**
  * 智能识别内容类型
  * @param text - 文本内容
  * @param index - 在整体中的索引
@@ -241,7 +265,7 @@ const OUTRO_KEYWORDS: string[] = ['总结', '结论', '结束', '结语', '最�
  * @returns 识别结果
  */
 function smartIdentifyType(text: string, index: number, allBlocks: string[]): IdentifyResult {
-  // 1. 标题识别
+  // 1. 标题识别（优先级最高，避免被图注重叠）
   if (isLikelyTitle(text, index, allBlocks)) {
     return { type: 'title' }
   }
@@ -251,12 +275,17 @@ function smartIdentifyType(text: string, index: number, allBlocks: string[]): Id
     return { type: 'intro' }
   }
 
-  // 3. 结尾识别（最后一段）
+  // 3. 图片/图注识别
+  if (isLikelyImageCaption(text)) {
+    return { type: 'image_single_caption' }
+  }
+
+  // 4. 结尾识别（最后一段）
   if (index === allBlocks.length - 1 && isLikelyOutro(text)) {
     return { type: 'outro' }
   }
 
-  // 4. 默认为正文
+  // 5. 默认为正文
   return { type: 'body' }
 }
 
@@ -308,6 +337,122 @@ function isLikelyIntro(text: string): boolean {
  */
 function isLikelyOutro(text: string): boolean {
   return OUTRO_KEYWORDS.some((keyword: string): boolean => text.includes(keyword))
+}
+
+/**
+ * 判断是否为图片/图注
+ * @param text - 文本内容
+ * @returns 是否为图片/图注
+ */
+function isLikelyImageCaption(text: string): boolean {
+  // 移除首尾空格
+  const trimmedText = text.trim()
+
+  // 图注通常较短，但可能比想象的要长（放宽到100字符）
+  if (trimmedText.length > 100) {
+    return false
+  }
+
+  // 强特征1：以"图"字开头，后面跟数字编号（如图1、图2）
+  if (/^图\d+/.test(trimmedText)) {
+    return true
+  }
+
+  // 强特征2：符合"图注："或"图："格式
+  if (/^(图注|图)[:：]/.test(trimmedText)) {
+    return true
+  }
+
+  // 强特征3：看起来像图片文件名，包含常见图片格式
+  if (/\.(jpg|jpeg|png|gif|bmp|webp|tiff|svg)$/i.test(trimmedText)) {
+    return true
+  }
+
+  // 中等特征：包含"图"等关键词，且整体较短（小于30字符）
+  // 并且关键词必须在开头，避免将正文中"如图所示"误判为图注
+  if (trimmedText.length < 30 && IMAGE_KEYWORDS.some(keyword => {
+    // 检查关键词是否在开头（更可能是图注）
+    return trimmedText.startsWith(keyword)
+  })) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * 双图识别结果接口
+ */
+interface DoubleImageResult {
+  isDouble: boolean;
+  type: BlockType;
+  text: string;
+  skipCount?: number; // 需要跳过的块数
+}
+
+/**
+ * 尝试识别双图
+ * 支持多种双图模式：
+ * 1. 连续两个图片（如标注的 &&双图）
+ * 2. 图片-图注-图片模式
+ * 3. 图片-图片-图注模式
+ * @param blocks - 所有文本块
+ * @param currentIndex - 当前块索引
+ * @param currentBlock - 当前块内容
+ * @returns 双图识别结果
+ */
+function tryRecognizeDoubleImage(blocks: string[], currentIndex: number, currentBlock: string): DoubleImageResult | null {
+  // 模式1：显式标记的双图
+  // 当前块包含"双图"关键词
+  if (/双图/.test(currentBlock)) {
+    return {
+      isDouble: true,
+      type: 'image_double',
+      text: currentBlock
+    }
+  }
+
+  // 当前块包含"双图+注"关键词
+  if (/双图\+注/.test(currentBlock)) {
+    return {
+      isDouble: true,
+      type: 'image_double_caption',
+      text: currentBlock
+    }
+  }
+
+  // 模式2：检查连续的图片/图注（已标注的情况，如 &&双图）
+  if (currentIndex < blocks.length - 1) {
+    const nextBlock = blocks[currentIndex + 1]?.trim() || ''
+    const currentIsImage = isLikelyImageCaption(currentBlock)
+    const nextIsImage = isLikelyImageCaption(nextBlock)
+
+    if (currentIsImage && nextIsImage) {
+      // 两个都是图片，可能是双图
+      const combinedText = `${currentBlock} ${nextBlock}`
+
+      // 检查是否有图注关键词
+      if (IMAGE_KEYWORDS.some(keyword => currentBlock.includes(keyword) && keyword.includes('图'))) {
+        return {
+          isDouble: true,
+          type: 'image_double_caption',
+          text: combinedText
+        }
+      }
+
+      return {
+        isDouble: true,
+        type: 'image_double',
+        text: combinedText
+      }
+    }
+  }
+
+  // 模式3：从标记文本中识别双图（如 &单图 图注1\n\n&单图 图注2）
+  // 这种情况由 Step1 的 convertConsecutiveImagesToDouble 处理，已经合并成 &&双图
+  // 所以这里不需要额外处理
+
+  return null
 }
 
 /**

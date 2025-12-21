@@ -47,19 +47,20 @@
       <!-- 幕布工作区 - 可滚动，底部留出按钮空间 -->
       <div class="flex-1 overflow-y-auto px-6 pb-40">
         <div class="space-y-3 pb-4">
-          <div
-            v-for="(block, index) in contentBlocks"
-            :key="block.id"
-            class="relative group"
-          >
+          <TransitionGroup name="block-list" tag="div" class="space-y-3">
+            <div
+              v-for="(block, index) in contentBlocks" 
+              :key="block.id"
+              class="relative group"
+            >
         <!-- 内容块 -->
         <div
           @click="selectBlock(block.id)"
           :class="[
-            'p-4 border rounded-lg cursor-pointer transition-all relative',
+            'p-4 border rounded-xl cursor-pointer transition-all duration-300 ease-out relative',
             selectedBlockId === block.id
-              ? 'border-blue-500 bg-blue-50 shadow-md'
-              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm'
+              ? 'border-blue-500 bg-white shadow-lg scale-[1.01] z-10'
+              : 'border-transparent hover:bg-gray-50'
           ]"
         >
           <!-- 块操作工具栏 - 选中时显示更丰富 -->
@@ -131,7 +132,21 @@
                   <span class="text-sm italic">“</span>
                 </button>
               </div>
-            </div>
+              </div>
+
+              <!-- AI Generation Button -->
+              <div class="flex space-x-1 border-l border-gray-300 pl-2 ml-2">
+                 <button 
+                   @click.stop="generateAiImage(block)"
+                   class="p-1.5 rounded hover:bg-purple-100 text-purple-600 transition-colors"
+                   :class="{ 'animate-pulse': generatingBlockId === block.id }"
+                   :disabled="generatingBlockId === block.id"
+                   title="AI 图像化 (Nano Banana Pro)"
+                 >
+                   <span v-if="generatingBlockId === block.id" class="text-xs">⏳</span>
+                   <span v-else class="font-bold">✨</span>
+                 </button>
+              </div>
 
             <!-- 右侧操作 -->
             <div class="flex items-center space-x-2">
@@ -147,11 +162,23 @@
             </div>
           </div>
 
-          <!-- 非选中状态下的简略标签 -->
+          <!-- 非选中状态下的简略标签 + AI 按钮 -->
           <div v-else class="flex items-center justify-between mb-2 opacity-60 hover:opacity-100 transition-opacity">
              <div class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
                 {{ getBlockTypeDisplayName(block.type) }}
              </div>
+
+             <!-- 即使未选中，也能直接 AI 化 -->
+             <button 
+                @click.stop="generateAiImage(block)"
+                class="p-1 rounded hover:bg-purple-100 text-purple-600 transition-colors"
+                :class="{ 'animate-pulse': generatingBlockId === block.id }"
+                :disabled="generatingBlockId === block.id"
+                title="AI 图像化 (Nano Banana Pro)"
+             >
+                <span v-if="generatingBlockId === block.id" class="text-xs">⏳</span>
+                <span v-else class="font-bold">✨</span>
+             </button>
           </div>
 
           <!-- 块内容 -->
@@ -212,7 +239,17 @@
                 @click="startEditBlock(block.id)"
                 class="cursor-pointer hover:bg-blue-50 p-4 rounded-lg transition-all border border-transparent hover:border-blue-200"
               >
-                <div v-html="formatBlockText(block.text)"></div>
+                <!-- AI 生成的图片展示 -->
+                <div v-if="block.meta?.aiImageUrl" class="mb-3 relative group/image">
+                  <img :src="block.meta.aiImageUrl" class="w-full rounded-lg shadow-sm border border-gray-200" alt="AI Generated" />
+                  <div class="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
+                    <span class="bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">AI Visualized</span>
+                  </div>
+                </div>
+
+                <div :class="{ 'text-gray-400 text-sm': block.meta?.aiImageUrl }">
+                   {{ formatBlockText(block.text) }}
+                </div>
               </div>
 
               <!-- 大编辑按钮 - 减少误触 -->
@@ -287,6 +324,7 @@
               </div>
             </div>
           </div>
+
           <!-- 其他空内容的块 -->
           <div
             v-else
@@ -296,6 +334,7 @@
           </div>
         </div>
 
+
         <!-- 版式插入器 -->
         <div class="flex justify-center mt-2">
           <LayoutInserter
@@ -304,15 +343,15 @@
           />
         </div>
       </div>
+          </TransitionGroup>
+        </div>
 
-      <!-- 空状态 -->
       <div v-if="contentBlocks.length === 0" class="text-center py-12">
         <div class="text-gray-400 text-lg mb-2">没有内容块</div>
         <div class="text-gray-500">请返回上一步重新输入文本</div>
       </div>
-        </div>
       </div>
-
+    
       <!-- 操作按钮 - 固定在底部，左边距为左侧面板宽度 -->
       <div class="fixed bottom-0 left-0 md:left-64 right-0 flex flex-col sm:flex-row justify-between items-center p-4 sm:p-6 pt-4 border-t bg-white z-10 shadow-lg space-y-3 sm:space-y-0">
         <div class="w-full sm:w-auto">
@@ -367,6 +406,27 @@
   </div>
 </template>
 
+<style scoped>
+/* List Transitions for Silky Smooth Movements */
+.block-list-move,
+.block-list-enter-active,
+.block-list-leave-active {
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.block-list-enter-from,
+.block-list-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Ensure leaving items are taken out of layout flow so others move up smoothly */
+.block-list-leave-active {
+  position: absolute;
+  width: 100%;
+}
+</style>
+
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
@@ -388,6 +448,7 @@ const showSlashMenu = ref(false)
 const slashMenuPosition = ref({ top: 0, left: 0 })
 const slashMenuBlockId = ref(null)
 const showMobileSidebar = ref(false)
+const generatingBlockId = ref(null)
 
 // 计算属性
 const contentBlocks = computed(() => appStore.contentBlocks)
@@ -738,6 +799,53 @@ onMounted(() => {
     showSlashMenu.value = false
   })
 })
+
+// AI 生成图像 (调用后端 - 火山引擎豆包)
+const generateAiImage = async (block) => {
+  if (!block.text || generatingBlockId.value) return
+  
+  generatingBlockId.value = block.id 
+  
+  try {
+    // Determine type for API
+    let apiType = 'body'
+    if (block.type === 'title') apiType = 'title'
+    if (block.type === 'intro') apiType = 'quote'
+    
+    // Call Backend (Volcengine)
+    // 严格模式：只调用后端，不使用任何免费兜底
+    const response = await fetch('/api/nano-banana/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: block.text,
+        type: apiType
+      })
+    })
+
+    if (!response.ok) {
+        const errText = await response.text()
+        console.error('Backend API Error (Volcengine):', errText)
+        throw new Error(errText || 'Generation failed')
+    }
+    
+    const data = await response.json()
+    if (data.url) {
+      appStore.updateBlockMeta(block.id, { 
+        aiImageUrl: data.url, 
+        originalText: block.text,
+        isAiGenerated: true 
+      })
+    }
+  } catch (e) {
+    // 直接抛出错误，显示给用户，不进行降级
+    console.error('Volcengine Generation Failed:', e)
+    alert('火山引擎生成失败: ' + e.message)
+  } finally {
+    generatingBlockId.value = null
+  }
+}
+
 </script>
 
 <style scoped>

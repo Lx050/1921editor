@@ -1,0 +1,229 @@
+<template>
+  <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto w-full">
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p class="mt-4 text-gray-600">加载中...</p>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="bg-white shadow rounded-lg p-6">
+        <div class="text-center text-red-600">
+          <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h3 class="mt-2 text-lg font-medium">加载失败</h3>
+          <p class="mt-1 text-sm">{{ error }}</p>
+          <button @click="router.push('/')" class="mt-4 text-blue-600 hover:text-blue-800">返回首页</button>
+        </div>
+      </div>
+
+      <!-- Article Config -->
+      <div v-else-if="article" class="space-y-6">
+        <!-- Header -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">配置文章</h2>
+          <div class="flex items-center space-x-4 text-sm text-gray-500">
+            <span>📄 {{ article.title }}</span>
+            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded">{{ article.status }}</span>
+          </div>
+          <p class="mt-2 text-xs text-gray-400">文章ID: {{ article.id }}</p>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">选择工作模式</h3>
+          <div class="space-y-3">
+            <div
+              v-for="mode in modes"
+              :key="mode.value"
+              @click="selectedMode = mode.value"
+              :class="[
+                'border rounded-lg p-4 cursor-pointer flex items-center space-x-4 transition-all',
+                selectedMode === mode.value ? 'border-blue-500 ring-2 ring-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+              ]"
+            >
+              <div class="text-2xl">{{ mode.icon }}</div>
+              <div>
+                <h4 class="font-bold text-gray-900">{{ mode.label }}</h4>
+                <p class="text-sm text-gray-500">{{ mode.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WeChat Account Selection (if logged in) -->
+        <div v-if="userStore.isLoggedIn && configStore.savedAccounts.length > 0" class="bg-white shadow rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">选择公众号</h3>
+          <div class="space-y-2">
+            <div
+              v-for="account in configStore.savedAccounts"
+              :key="account.id"
+              @click="selectedAccountId = account.id"
+              :class="[
+                'border rounded-lg p-3 cursor-pointer transition-colors',
+                selectedAccountId === account.id ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500' : 'border-gray-200 hover:border-blue-300'
+              ]"
+            >
+              <h4 class="font-bold text-gray-900">{{ account.name }}</h4>
+              <p class="text-xs text-gray-500">AppID: {{ maskAppId(account.appId) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Login Prompt (if not logged in) -->
+        <div v-if="!userStore.isLoggedIn" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-yellow-800">需要登录</h3>
+              <div class="mt-2 text-sm text-yellow-700">
+                <p>为了保存配置和发布文章，请先完成飞书登录。</p>
+              </div>
+              <div class="mt-4">
+                <button @click="login" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                  飞书登录
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-between">
+          <button @click="router.push('/')" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            返回首页
+          </button>
+          <button
+            @click="startProcessing"
+            :disabled="!selectedMode || (!userStore.isLoggedIn && configStore.savedAccounts.length === 0)"
+            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            开始处理
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useConfigStore } from '../stores/configStore'
+import { useUserStore } from '../stores/userStore'
+import { useAppStore } from '../stores/appStore'
+import { getArticle, getArticleFileUrl, type Article } from '../api/article'
+
+const route = useRoute()
+const router = useRouter()
+const configStore = useConfigStore()
+const userStore = useUserStore()
+const appStore = useAppStore()
+
+const article = ref<Article | null>(null)
+const loading = ref(true)
+const error = ref<string | null>(null)
+const selectedMode = ref<string>('daily')
+const selectedAccountId = ref<string | null>(null)
+
+const modes = [
+  { value: 'daily', label: '日常模式', icon: '📝', description: '日常公众号内容排版' },
+  { value: 'three_rural', label: '三下乡模式', icon: '🏡', description: '三下乡专项活动排版' },
+  { value: 'reprint', label: '转载模式', icon: '📋', description: '转载文章排版模板' }
+]
+
+const maskAppId = (id: string) => {
+  if (!id) return ''
+  return id.length > 8 ? id.substring(0, 4) + '****' + id.substring(id.length - 4) : id
+}
+
+const login = () => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+  window.location.href = `${baseUrl}/auth/feishu/login`
+}
+
+const startProcessing = async () => {
+  try {
+    loading.value = true
+    error.value = null
+
+    // Set mode
+    configStore.setMode(selectedMode.value as 'daily' | 'three_rural' | 'reprint')
+    
+    // Set account if selected
+    if (selectedAccountId.value) {
+      configStore.selectAccount(selectedAccountId.value)
+    }
+    
+    // 加载 Article 数据到 appStore
+    if (article.value) {
+      // 1. 加载文本内容
+      if (article.value.content) {
+        appStore.setRawText(article.value.content)
+        console.log('[ArticleConfig] Loaded text content:', article.value.content.substring(0, 100) + '...')
+      }
+      
+      // 2. 加载图片（如果有）
+      if (article.value.images && Array.isArray(article.value.images)) {
+        // 将后端存储的图片转换为前端需要的 WechatImage 格式
+        const wechatImages = article.value.images.map((img: any, index: number) => ({
+          id: `article_img_${index}_${Date.now()}`,
+          mediaId: '', // 暂时为空，后续上传微信时会填充
+          url: img.url || img.path || '',
+          name: img.name || `image_${index + 1}`,
+          status: 'success' as const,
+          localPreviewUrl: img.url || img.path || ''
+        }))
+        
+        appStore.addWechatImages(wechatImages)
+        console.log('[ArticleConfig] Loaded images:', wechatImages.length)
+      }
+      
+      // 3. 如果有 config 中的 imageUrls，也加载进来
+      if (article.value.config?.imageUrls && Array.isArray(article.value.config.imageUrls)) {
+        const additionalImages = article.value.config.imageUrls.map((url: string, index: number) => ({
+          id: `config_img_${index}_${Date.now()}`,
+          mediaId: '',
+          url,
+          name: `uploaded_image_${index + 1}`,
+          status: 'success' as const,
+          localPreviewUrl: url
+        }))
+        
+        appStore.addWechatImages(additionalImages)
+        console.log('[ArticleConfig] Loaded additional images from config:', additionalImages.length)
+      }
+    }
+    
+    // 跳转到 Step 1（内容已预填充）
+    router.push('/step1')
+  } catch (err: any) {
+    console.error('[ArticleConfig] Failed to load article data:', err)
+    error.value = err.message || '加载文章数据失败'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(async () => {
+  try {
+    const articleId = route.params.id as string
+    article.value = await getArticle(articleId)
+    
+    // Pre-select default account if logged in
+    if (userStore.isLoggedIn && configStore.savedAccounts.length > 0) {
+      selectedAccountId.value = configStore.wechatConfig.id || configStore.savedAccounts[0].id
+    }
+  } catch (err: any) {
+    error.value = err.response?.data?.message || '无法加载文章信息'
+  } finally {
+    loading.value = false
+  }
+})
+</script>

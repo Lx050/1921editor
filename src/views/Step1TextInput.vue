@@ -7,25 +7,41 @@
       </p>
     </div>
 
-    <!-- 格式指导区域 -->
-    <div class="mb-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
-      <h3 class="text-sm font-semibold text-blue-900 mb-2 flex items-center">
-        <span class="mr-2">📝</span> 格式指导
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
-        <div>
-          <p class="font-medium mb-1">图片标注：</p>
-          <p>• <code class="bg-blue-100 px-1">&单图</code> 或 <code class="bg-blue-100 px-1">&图片说明</code></p>
-          <p>• <code class="bg-blue-100 px-1">&&双图</code> 或 <code class="bg-blue-100 px-1">&&左图说明 右图说明</code></p>
-          <p class="text-xs text-blue-600 mt-1">注：双图说明请用空格分隔</p>
+    <!-- 格式指导区域 - 默认收起 -->
+    <div class="mb-4">
+      <button 
+        @click="showGuide = !showGuide"
+        class="flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors focus:outline-none"
+      >
+        <span class="mr-2">{{ showGuide ? '▼' : '▶' }}</span>
+        <span>📝 格式指导语法</span>
+      </button>
+      
+      <transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="transform scale-y-95 opacity-0"
+        enter-to-class="transform scale-y-100 opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="transform scale-y-100 opacity-100"
+        leave-to-class="transform scale-y-95 opacity-0"
+      >
+        <div v-if="showGuide" class="mt-2 bg-blue-50 p-4 rounded-lg border border-blue-200 origin-top">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
+            <div>
+              <p class="font-medium mb-1">图片标注：</p>
+              <p>• <code class="bg-blue-100 px-1">&单图</code> 或 <code class="bg-blue-100 px-1">&图片说明</code></p>
+              <p>• <code class="bg-blue-100 px-1">&&双图</code> 或 <code class="bg-blue-100 px-1">&&左图说明 右图说明</code></p>
+              <p class="text-xs text-blue-600 mt-1">注：双图说明请用空格分隔</p>
+            </div>
+            <div>
+              <p class="font-medium mb-1">文字标注：</p>
+              <p>• <code class="bg-blue-100 px-1"># 标题</code> (一级标题)</p>
+              <p>• <code class="bg-blue-100 px-1">## 小标题</code> (二级标题)</p>
+              <p>• <code class="bg-blue-100 px-1">> 引言内容</code></p>
+            </div>
+          </div>
         </div>
-        <div>
-          <p class="font-medium mb-1">文字标注：</p>
-          <p>• <code class="bg-blue-100 px-1"># 标题</code> (一级标题)</p>
-          <p>• <code class="bg-blue-100 px-1">## 小标题</code> (二级标题)</p>
-          <p>• <code class="bg-blue-100 px-1">> 引言内容</code></p>
-        </div>
-      </div>
+      </transition>
     </div>
 
     <div class="space-y-4 flex-1 flex flex-col">
@@ -116,20 +132,29 @@
         </div>
       </div>
 
-      <!-- 错误提示 -->
-      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-lg">
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <span class="text-red-400">⚠</span>
-          </div>
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">输入错误</h3>
-            <div class="mt-2 text-sm text-red-700">
-              {{ errorMessage }}
+      <!-- 错误提示 - 添加过渡动画 -->
+      <transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="transform -translate-y-2 opacity-0"
+        enter-to-class="transform translate-y-0 opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="transform translate-y-0 opacity-100"
+        leave-to-class="transform -translate-y-2 opacity-0"
+      >
+        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <span class="text-red-400">⚠</span>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">输入错误</h3>
+              <div class="mt-2 text-sm text-red-700">
+                {{ errorMessage }}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </transition>
 
       <!-- 操作按钮 -->
       <div class="flex justify-end pt-4">
@@ -159,6 +184,7 @@ const localText = ref('')
 const errorMessage = ref('')
 const fileInput = ref(null)
 const extractedImages = ref([])  // V2: 存储从ZIP中提取的图片
+const showGuide = ref(false)
 
 // 监听store中的文本变化
 watch(() => appStore.rawText, (newText) => {
@@ -258,29 +284,66 @@ const processZipFile = async (file) => {
 const processDocxFile = async (file) => {
   try {
     const arrayBuffer = await file.arrayBuffer()
-    
-    // 配置 mammoth 选项
+
+    // 配置 mammoth 选项 - 增强版：保留样式信息
     const options = {
-      // 自定义图片处理：直接替换为占位符
-      convertImage: mammoth.images.imgElement(() => {
+      // 自定义图片处理：将图片alt属性作为图注
+      convertImage: mammoth.images.imgElement((image) => {
+        // 如果图片有alt属性，将其作为图注
+        const alt = image.alt || ''
+        if (alt && alt.trim()) {
+          // 有图注，生成 &单图 图注内容 格式
+          return Promise.resolve({ src: "", alt: `&单图 ${alt.trim()}` })
+        }
+        // 无图注，生成纯 &单图
         return Promise.resolve({ src: "", alt: "&单图" })
+      }),
+      // 保留段落样式信息
+      styleMap: [
+        // 将不同样式的段落标记为不同的class
+        "p[style-name='Caption'] => p.caption:fresh",
+        "p[style-name='图注'] => p.caption:fresh",
+        "p[style-name='Image Caption'] => p.caption:fresh",
+        "p[style-name='图片说明'] => p.caption:fresh",
+        "p[style-name='Heading 1'] => h1:fresh",
+        "p[style-name='Heading 2'] => h2:fresh",
+        "p[style-name='标题 1'] => h1:fresh",
+        "p[style-name='标题 2'] => h2:fresh",
+        // 根据字体大小识别图注（小字号）
+        "p[style-name='注释'] => p.caption:fresh",
+        "p[style-name='说明'] => p.caption:fresh",
+        // 更多可能的图注样式名
+        "p[style-name='图片备注'] => p.caption:fresh",
+        "p[style-name='Figure Caption'] => p.caption:fresh",
+      ],
+      // 使用 transformDocument 来提取更多样式信息
+      transformDocument: mammoth.transforms.paragraph((paragraph) => {
+        // 检查段落的样式信息
+        if (paragraph.styleId || paragraph.styleName) {
+          console.log('[Mammoth] 段落样式:', {
+            styleId: paragraph.styleId,
+            styleName: paragraph.styleName,
+            text: paragraph.children?.map(c => c.value).join(' ').substring(0, 50)
+          })
+        }
+        return paragraph
       })
     }
 
     const result = await mammoth.convertToHtml({ arrayBuffer }, options)
     let html = result.value
-    
+
     // 将 HTML 转换为我们需要的文本格式
     const text = convertHtmlToCustomFormat(html)
-    
+
     localText.value = text
     appStore.setRawText(text)
-    
+
     // 清空 input 以便重复上传同名文件
     if (fileInput.value) {
       fileInput.value.value = ''
     }
-    
+
     if (result.messages.length > 0) {
       console.log('解析警告:', result.messages)
     }
@@ -290,57 +353,226 @@ const processDocxFile = async (file) => {
   }
 }
 
-// 将 HTML 转换为自定义文本格式
+// 将 HTML 转换为自定义文本格式（增强版：识别样式）
 const convertHtmlToCustomFormat = (html) => {
   // 创建临时 DOM 元素来解析 HTML
   const div = document.createElement('div')
   div.innerHTML = html
-  
+
   let text = ''
-  
+
   // 遍历子节点
   const processNode = (node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       return node.textContent
     }
-    
+
     if (node.nodeType !== Node.ELEMENT_NODE) return ''
-    
+
     let content = ''
-    
-    // 处理图片占位符 (mammoth 生成的 img 标签)
-    if (node.tagName === 'IMG' && node.alt === '&单图') {
-      return '\n\n&单图\n\n'
-    }
-    
+
     // 递归处理子节点
     node.childNodes.forEach(child => {
       content += processNode(child)
     })
-    
-    // 根据标签类型添加格式
+
+    // 根据标签类型和class添加格式
     switch (node.tagName) {
       case 'H1':
       case 'H2':
       case 'H3':
         return `\n\n# ${content.trim()}\n\n`
       case 'P':
+        // 检查是否有特定的class
+        const className = node.className || ''
+
+        // 如果是图注段落
+        if (className.includes('caption')) {
+          // 在生成图注前，先检查这段文字是否可能是标题
+          // 避免将标题误判为图注
+          if (isLikelyHeading(content)) {
+            // 如果是标题，按正文段落处理
+            return `\n\n${content.trim()}\n\n`
+          }
+
+          // 清理内容，移除多余的空格
+          const cleanedContent = content.trim().replace(/\s+/g, ' ')
+          // 生成 &单图 标记
+          return `\n\n&单图 ${cleanedContent}\n\n`
+        }
+
         // 如果段落只包含图片占位符，直接返回
-        if (content.trim() === '&单图') return content
+        if (content.trim().startsWith('&单图')) return content
         return `\n\n${content.trim()}\n\n`
+      case 'IMG':
+        // 处理图片占位符
+        if (node.alt && node.alt.startsWith('&单图')) {
+          return '\n\n' + node.alt + '\n\n'
+        }
+        return ''
       case 'BR':
         return '\n'
       default:
         return content
     }
   }
-  
+
   div.childNodes.forEach(node => {
     text += processNode(node)
   })
-  
+
   // 清理多余的空行
-  return text.replace(/\n{3,}/g, '\n\n').trim()
+  text = text.replace(/\n{3,}/g, '\n\n').trim()
+
+  // 多阶段后处理
+  text = convertConsecutiveImagesToDouble(text)  // 第1阶段：合并双图
+  text = fixImageCaptions(text)                  // 第2阶段：修复图注识别
+
+  return text
+}
+
+// 后处理函数：将连续的单图转换为双图
+const convertConsecutiveImagesToDouble = (text) => {
+  // 定义匹配模式：&单图 或 &单图 图注内容
+  // 支持多种变体：&单图、&单图 说明、&单图：说明
+  const singleImagePattern = /&单图(?::|：|\s)?([^\n]*?)/g
+
+  // 匹配连续的图片标记（最多连续2个，避免过多图片合并）
+  // 支持以下模式：
+  // 1. &单图\n\n&单图（纯图片）
+  // 2. &单图 图注1\n\n&单图 图注2（带图注）
+  // 3. &单图\n\n图注1\n\n&单图\n\n图注2（图注作为独立段落）
+  const regex = /&单图(?::|：|\s)?([^\n]*?)\n\n&单图(?::|：|\s)?([^\n]*?)(?:\n\n|$)/g
+
+  return text.replace(regex, (match, caption1, caption2) => {
+    // 清理图注内容
+    const cleanCaption1 = caption1 ? caption1.trim() : ''
+    const cleanCaption2 = caption2 ? caption2.trim() : ''
+
+    // 情况1：两个都有图注
+    if (cleanCaption1 && cleanCaption2) {
+      // 使用空格分隔两个图注
+      return `&&${cleanCaption1} ${cleanCaption2}`
+    }
+
+    // 情况2：只有一个有图注（通常是第二个）
+    if (cleanCaption2) {
+      return `&&${cleanCaption1} ${cleanCaption2}`.trim()
+    }
+    if (cleanCaption1) {
+      return `&&${cleanCaption1}`
+    }
+
+    // 情况3：都没有图注，纯双图
+    return '&&双图'
+  })
+}
+
+// 后处理函数：修复图片后的图注识别问题
+const fixImageCaptions = (text) => {
+  // 处理模式：识别图片后的短文本段（应为图注但被识别为正文）
+  // 识别以下模式：
+  // 模式1（高置信度）：图片 → 短文本 → 图片/标题
+  // 模式2（中置信度）：图片 → 短文本 → 长文本（图片已结束）
+
+  const paragraphs = text.split(/\n\n/g)
+  const result = []
+  let i = 0
+
+  while (i < paragraphs.length) {
+    const current = paragraphs[i]?.trim() || ''
+    const next = paragraphs[i + 1]?.trim() || ''
+    const nextNext = paragraphs[i + 2]?.trim() || ''
+
+    result.push(paragraphs[i])
+
+    // 模式1：检查是否是图片 → 短文本 → 图片/标题
+    // 这是最高置信度的图注模式
+    if (
+      current.startsWith('&单图') &&
+      next && // 有下一段
+      !next.startsWith('&') && // 下一段不是图片标记
+      nextNext && // 有下下段
+      (nextNext.startsWith('&单图') || isLikelyHeading(nextNext)) // 下下段是图片或标题
+    ) {
+      // 检查中间段是否是图注
+      if (isShortCaptionText(next)) {
+        console.log('[Fix] 模式1（高置信度）- 识别到图注:', next)
+        // 将中间段标记为图注
+        result[result.length - 1] = current + ' ' + next // 合并到图片标记中
+        i += 2 // 跳过已经处理的中间段
+        continue
+      }
+    }
+
+    // 模式2：检查是否是图片 → 短文本 → 长文本（图片已结束）
+    // 中置信度的图注模式
+    if (
+      current.startsWith('&单图') &&
+      next && // 有下一段
+      !next.startsWith('&') && // 下一段不是图片标记
+      nextNext && // 有下下段
+      nextNext.length > 100 // 下下段是正文（长度>100）
+    ) {
+      if (isShortCaptionText(next)) {
+        console.log('[Fix] 模式2（中置信度）- 识别到图注:', next)
+        result[result.length - 1] = current + ' ' + next // 合并到图片标记中
+        i += 2 // 跳过已经处理的中间段
+        continue
+      }
+    }
+
+    // 模式3：检查是否是图片 → 短文本 → 结束（末尾的图注）
+    if (
+      current.startsWith('&单图') &&
+      next && // 有下一段
+      !next.startsWith('&') && // 下一段不是图片标记
+      !nextNext // 没有下下段（已到结尾）
+    ) {
+      if (isShortCaptionText(next)) {
+        console.log('[Fix] 模式3（末尾图注）- 识别到图注:', next)
+        result[result.length - 1] = current + ' ' + next // 合并到图片标记中
+        i += 2 // 跳过已经处理的中间段
+        continue
+      }
+    }
+
+    i++
+  }
+
+  return result.join('\n\n')
+}
+
+// 判断是否是标题
+const isLikelyHeading = (text) => {
+  const trimmed = text.trim()
+  return (
+    trimmed.startsWith('##') || // 有标注
+    trimmed.startsWith('#') || // 有标注
+    /^第[一二三四五六七八九十\d]+[章节部分]/.test(trimmed) || // 章节标题
+    /^\d+[\.、]/.test(trimmed) || // 编号标题
+    (trimmed.length < 30 && !trimmed.includes('，')) // 短且无逗号
+  )
+}
+
+// 判断是否是可能的图注文本
+const isShortCaptionText = (text) => {
+  const trimmed = text.trim()
+  if (!trimmed) return false
+
+  // 图注特征检查
+  const features = {
+    length: trimmed.length < 50, // 短文本
+    hasKeywords: /图|注|说明|示意|示例|caption|pic|image/i.test(trimmed), // 含关键词
+    noPunctuations: !/[，。！？；：“”"]{2,}/.test(trimmed), // 无长句标点
+    noCommas: !trimmed.includes('，'), // 无逗号
+    noPeriods: !trimmed.includes('。'), // 无句号
+    notEmpty: trimmed.length > 0,
+    notOnlyNumbers: !/^[\d\s]+$/.test(trimmed) // 非纯数字
+  }
+
+  // 如果满足所有条件，极可能是图注
+  return Object.values(features).every(v => v === true)
 }
 
 // 插入智能示例文本（无标注）

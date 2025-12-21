@@ -16,12 +16,45 @@
         <div class="flex-1 bg-white shadow rounded-lg p-6">
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-medium text-gray-900">公众号管理</h3>
-            <button
+            <div class="flex space-x-3">
+               <div v-if="userStore.isLoggedIn" class="flex items-center space-x-3">
+                  <!-- 用户信息 -->
+                  <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-600">{{ userStore.userInfo?.name }}</span>
+                    <!-- 租户标识 -->
+                    <span v-if="userStore.currentTenant && userStore.currentTenant.slug !== 'default'" 
+                          class="px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded">
+                      {{ userStore.currentTenant.name }}
+                    </span>
+                  </div>
+                  <!-- 操作按钮 -->
+                  <button @click="router.push('/tenant-select')" 
+                          class="text-xs text-blue-500 hover:text-blue-700"
+                          title="切换组织">
+                    切换
+                  </button>
+                  <button @click="userStore.logout()" 
+                          class="text-xs text-red-500 hover:text-red-700">
+                    退出
+                  </button>
+               </div>
+               <button
+                 v-else
+                 @click="login"
+                 class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none"
+               >
+                 <svg class="mr-1.5 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                 </svg>
+                 飞书登录
+               </button>
+               <button
               @click="openAddAccountModal"
               class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               + 添加公众号
             </button>
+            </div>
           </div>
 
           <div class="space-y-4">
@@ -171,9 +204,42 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useConfigStore, type WechatConfig } from '../stores/configStore'
+import { useUserStore } from '../stores/userStore'
 
 const router = useRouter()
 const configStore = useConfigStore()
+const userStore = useUserStore()
+
+// 🏢 多租户登录支持
+const login = () => {
+    // 检查URL参数是否指定了租户
+    const urlParams = new URLSearchParams(window.location.search)
+    const tenantSlug = urlParams.get('tenant')
+    
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    
+    if (tenantSlug) {
+        // 如果URL中指定了租户，直接使用该租户登录
+        window.location.href = `${baseUrl}/auth/feishu/login?tenant=${tenantSlug}`
+    } else {
+        // 否则跳转到租户选择页面
+        router.push('/tenant-select')
+    }
+}
+
+// 快速登录（使用当前租户或默认租户）
+const quickLogin = () => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const currentTenant = userStore.currentTenant
+    
+    if (currentTenant && currentTenant.slug !== 'default') {
+        // 使用上次登录的租户
+        window.location.href = `${baseUrl}/auth/feishu/login?tenant=${currentTenant.slug}`
+    } else {
+        // 使用默认租户
+        window.location.href = `${baseUrl}/auth/feishu/login`
+    }
+}
 
 const showModal = ref(false)
 const isEditing = ref(false)
