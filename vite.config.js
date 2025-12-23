@@ -38,11 +38,21 @@ export default defineConfig({
         }
       },
       // 后端 API 代理
+      // 注意：需要排除 src/api 目录下的源文件，避免被代理到后端
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
         ws: true,  // 支持 WebSocket
+        // 只代理实际的 API 请求，排除源文件
+        bypass: (req) => {
+          // 如果请求的是源文件（.ts, .js, .vue 等），不走代理
+          if (req.url && /\.(ts|js|vue|tsx|jsx|mjs|cjs)(\?.*)?$/.test(req.url)) {
+            return req.url
+          }
+          // 其他 /api 请求走代理
+          return null
+        }
       },
       // Webhook 代理
       '/webhook': {
@@ -56,6 +66,31 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/sync-plugin/, '/sync-plugin'),
+      },
+      // 微信图片代理 - 解决防盗链问题（支持所有 qpic.cn 子域名）
+      '/wechat-image-proxy': {
+        target: 'https://mmbiz.qpic.cn', // 默认目标，会被动态覆盖
+        changeOrigin: true,
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            // 从 URL 中提取实际的目标域名
+            // 格式: /wechat-image-proxy/mmecoa.qpic.cn/path/to/image
+            const match = req.url.match(/^\/wechat-image-proxy\/([^/]+\.qpic\.cn)(\/.*)?$/);
+            if (match) {
+              const targetHost = match[1];
+              const targetPath = match[2] || '/';
+              proxyReq.setHeader('host', targetHost);
+              proxyReq.path = targetPath;
+            }
+          });
+        },
+        rewrite: (path) => {
+          // 移除 /wechat-image-proxy/hostname 前缀，保留实际路径
+          return path.replace(/^\/wechat-image-proxy\/[^/]+\.qpic\.cn/, '');
+        },
+        headers: {
+          'Referer': 'https://mp.weixin.qq.com'
+        }
       }
     }
   },
@@ -103,7 +138,7 @@ export default defineConfig({
           // 工具库
           'vendor-utils': ['dompurify'],
 
-          }
+        }
       }
     },
     // 启用CSS代码分割
@@ -113,17 +148,7 @@ export default defineConfig({
     // 设置chunk大小警告限制（默认500KB）
     chunkSizeWarningLimit: 300, // 降低限制以提前关注
     // 优化压缩
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // 移除 console.log
-        drop_debugger: true, // 移除 debugger
-        pure_funcs: ['console.log'], // 移除特定函数调用
-      },
-      mangle: {
-        safari10: true, // 兼容Safari 10
-      }
-    },
+    minify: 'esbuild',
     // 目标浏览器
     target: 'es2020',
     // 资源内联阈值

@@ -79,13 +79,15 @@
       <!-- V3: 响应式内容区域 -->
       <!-- 移动端：顶部横向图片选择器（固定高度）+ 下方预览区（占据剩余空间） -->
       <!-- 桌面端：左侧图片列表 + 右侧预览区 -->
-      <div v-else-if="finalHtml && !errorMessage" class="h-full overflow-hidden flex flex-col">
+      <div v-else-if="finalHtml && !errorMessage" class="h-full overflow-hidden flex flex-col md:flex-row">
         <!-- 使用新的 ImageReplacer 组件 -->
         <ImageReplacer
           :wechat-images="wechatImages"
           :selected-placeholder="selectedPlaceholder"
           @select="handleImageSelect"
         />
+
+
 
         <!-- 主内容区：预览与代码 -->
         <div class="flex-1 flex flex-row md:h-full">
@@ -265,174 +267,43 @@
 
 
 
-    <!-- 创建草稿弹窗 -->
-    <div 
-      v-if="showDraftModal" 
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      @click.self="showDraftModal = false"
-    >
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-        <!-- 弹窗头部 -->
-        <div class="bg-purple-600 text-white px-6 py-4">
-          <h3 class="text-lg font-semibold">创建公众号草稿</h3>
-          <p class="text-purple-200 text-sm mt-1">填写文章信息，上传到草稿箱</p>
-        </div>
+    <!-- 创建草稿弹窗组件 -->
+    <CreateDraftFormModal
+      :show="showDraftModal"
+      :initial-title="draftForm.title"
+      :available-images="successfulWechatImages"
+      :error="draftError"
+      :success="draftSuccess"
+      :ai-progress="aiImageProgress"
+      :is-submitting="isCreatingDraft"
+      :is-uploading-cover="isUploadingCover"
+      @close="showDraftModal = false"
+      @submit="submitDraft"
+      @upload-cover="handleCoverUpload"
+      @update:form="updateDraftForm"
+    />
 
-        <!-- 弹窗内容 -->
-        <div class="p-6 space-y-4">
-          <!-- 标题 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">文章标题 *</label>
-            <input
-              v-model="draftForm.title"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="请输入文章标题"
-            />
-          </div>
-
-          <!-- 封面图 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">封面图 *</label>
-            <div class="flex items-center space-x-2">
-              <select
-                v-model="draftForm.coverImageId"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="">请选择封面图</option>
-                <option 
-                  v-for="img in successfulWechatImages" 
-                  :key="img.id" 
-                  :value="img.mediaId"
-                >
-                  {{ img.name }}
-                </option>
-              </select>
-              
-              <!-- 封面上传按钮 -->
-              <div class="relative">
-                <input
-                  type="file"
-                  accept="image/*"
-                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  @change="handleCoverUpload"
-                  :disabled="isUploadingCover"
-                />
-                <button
-                  type="button"
-                  class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition-colors whitespace-nowrap flex items-center"
-                  :class="{'opacity-50': isUploadingCover}"
-                >
-                  <svg v-if="!isUploadingCover" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                  </svg>
-                  <div v-else class="w-4 h-4 mr-1 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
-                  {{ isUploadingCover ? '上传中...' : '上传封面' }}
-                </button>
-              </div>
-            </div>
-            <p v-if="successfulWechatImages.length === 0" class="text-xs text-orange-500 mt-1">
-              * 纯文字排版也需要一张封面图，请上传
-            </p>
-          </div>
-
-          <!-- 作者 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">作者（选填）</label>
-            <input
-              v-model="draftForm.author"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="如：小编"
-            />
-          </div>
-
-          <!-- 摘要 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">摘要（选填）</label>
-            <textarea
-              v-model="draftForm.digest"
-              rows="2"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-              placeholder="文章摘要，不填则默认截取正文前54字"
-            ></textarea>
-          </div>
-
-          <!-- 显示封面 -->
-          <div class="flex items-center">
-            <input
-              v-model="draftForm.showCover"
-              type="checkbox"
-              id="showCover"
-              class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-            />
-            <label for="showCover" class="ml-2 text-sm text-gray-700">在文章内显示封面图</label>
-          </div>
-
-          <!-- 错误提示 -->
-          <div v-if="draftError" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            {{ draftError }}
-          </div>
-
-          <!-- 成功提示 -->
-          <div v-if="draftSuccess" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-            <div class="flex items-start space-x-2">
-              <div class="text-lg">✅</div>
-              <div class="flex-1">
-                <div class="font-semibold mb-1">草稿创建成功！</div>
-                <div class="text-xs text-green-700">文章已保存到公众号草稿箱</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- AI 图片上传进度提示 -->
-          <div v-if="aiImageProgress" class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
-            <div class="flex items-center space-x-2">
-              <div v-if="!aiImageProgress.includes('✓')" class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <div v-else class="text-lg">✓</div>
-              <div class="flex-1">{{ aiImageProgress }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 弹窗底部 -->
-        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
-          <button
-            @click="showDraftModal = false"
-            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-          >
-            取消
-          </button>
-          <button
-            @click="submitDraft"
-            :disabled="isCreatingDraft || !draftForm.title || !draftForm.coverImageId"
-            class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span v-if="isCreatingDraft">创建中...</span>
-            <span v-else>创建草稿</span>
-            <div v-if="isCreatingDraft" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { useConfigStore } from '../stores/configStore'
 import { buildHtml } from '../utils/styleAssembler'
-import { createDraft, uploadImage } from '../utils/wechatApi'
+import { createDraft, uploadImage, getWechatProxyUrl } from '../utils/wechatApi'
 import ImageReplacer from '../components/ImageReplacer.vue'
-import PreviewFrame from '../components/PreviewFrame.vue'
-import DraftModal from '../components/DraftModal.vue'
+import CreateDraftFormModal from '../components/CreateDraftFormModal.vue'
 import { getConfig } from '../config'
 import { articleApi } from '../utils/api'
 import toast from '../composables/useToast'
+import DOMPurify from 'dompurify'
 
 const router = useRouter()
+const route = useRoute()
 const appStore = useAppStore()
+const configStore = useConfigStore()
 
 const isGenerating = ref(false)
 const finalHtml = ref('')
@@ -444,6 +315,17 @@ const previewFrame = ref(null)
 
 // V2: 图片替换相关状态
 const selectedPlaceholder = ref(null)
+
+// 监听占位符选中状态，显示提示
+watch(selectedPlaceholder, (newVal) => {
+  if (newVal) {
+    if (isMobile.value) {
+      toast.info('已选中占位符，请点击上方图片库中的图片进行替换')
+    } else {
+      toast.info('已选中占位符，请点击左侧图片库中的图片进行替换')
+    }
+  }
+})
 const imageReplacements = ref({})
 const lastScrollTop = ref(0) // 记录 iframe 滚动位置
 
@@ -497,8 +379,7 @@ const openDraftModal = () => {
 }
 
 // V2: 处理封面上传
-const handleCoverUpload = async (event) => {
-  const file = event.target.files[0]
+const handleCoverUpload = async (file) => {
   if (!file) return
   
   // 检查文件类型
@@ -537,9 +418,6 @@ const handleCoverUpload = async (event) => {
     // 3. 自动选中
     draftForm.value.coverImageId = response.media_id
     
-    // 清除 file input
-    event.target.value = ''
-    
   } catch (error) {
     console.error('[Step3] 封面上传失败:', error)
     draftError.value = error.message || '封面上传失败，请重试'
@@ -551,6 +429,7 @@ const handleCoverUpload = async (event) => {
 
 // 计算属性
 const contentBlocks = computed(() => appStore.contentBlocks)
+const isMobile = computed(() => appStore.isMobile || window.innerWidth < 768)
 const wechatImages = computed(() => appStore.wechatImages)
 const hasWechatImages = computed(() => wechatImages.value.length > 0)
 const successfulWechatImages = computed(() => 
@@ -581,6 +460,74 @@ const handleImageSelect = (image) => {
   selectedPlaceholder.value = null
 }
 
+// 监听路由变化，切换文章时通过清空 store 防止图片串台
+watch(
+  () => route.params.id,
+  (newId, oldId) => {
+    // 只有当从一个文章切换到另一个文章时才清空 (避免 Step2 -> Step3 或 刷新页面时的误清空)
+    if (newId && oldId && newId !== oldId) {
+      console.log('[Step3] 切换文章，清空图片 Store')
+      appStore.setWechatImages([])
+      isGenerating.value = true // 重置加载状态
+    }
+  }
+)
+
+// 自动保存图片逻辑 (增加 loading 检查，防止初始加载时覆盖为空)
+watch(wechatImages, async (newImages) => {
+  if (isGenerating.value) {
+    console.log('[Step3] 正在加载中，跳过自动保存')
+    return
+  }
+  
+  if (!route.params.id) return
+
+  // 安全检查：如果有图片仅仅是 blob 且没有 mediaId，说明正在上传中
+  // 此时绝对不能保存，否则会因为“净化逻辑”把这张图当作垃圾丢弃，导致图片丢失
+  const hasPendingUpload = newImages.some(img => 
+    img.url && img.url.startsWith('blob:') && !img.mediaId
+  )
+
+  if (hasPendingUpload) {
+    console.log('[Step3] 检测到正在上传的图片 (Blob)，暂停自动保存，等待上传完成...')
+    return // ⛔️ 终止保存，等待 upload 完成更新 URL 后再次触发 watch
+  }
+
+  // 过滤掉残留的 blob URL (理论上上面拦截了，这里是双重保险，防止极大延迟)
+  const persistentImages = newImages.map(img => {
+    // 再次检查，如果还是 blob，说明有问题，但为了不丢数据，我们暂时记录 log 并保留原样(虽然后端存 blob 没用)
+    // 或者我们仍然保留它? 不，后端存 blob 会导致 dirty data. 
+    // 上面的 hasPendingUpload 应该能拦截绝大多数情况。
+    // 这里我们只保留正常的。
+    if (img.url && img.url.startsWith('blob:') && !img.mediaId) return null
+    
+    return {
+      id: img.id,
+      mediaId: img.mediaId,
+      url: img.url,
+      name: img.name,
+      status: img.status
+    }
+  }).filter(Boolean)
+
+  if (persistentImages.length !== newImages.length) {
+    // 如果数量不一致，说明有被过滤的图，这很不正常 (因为 Pending 的已经被拦截了)
+    console.warn('[Step3] 警告：部分图片未通过持久化检查，将不被保存', newImages.length, '->', persistentImages.length)
+  }
+
+  console.log('[Step3] 自动保存图片到后端:', persistentImages.length)
+  try {
+    await articleApi.updateStep3(route.params.id, persistentImages)
+  } catch (e) {
+    console.error('保存图片失败', e)
+  }
+}, { deep: true })
+
+// 同步 Modal 表单数据
+const updateDraftForm = (newForm) => {
+  draftForm.value = { ...newForm }
+}
+
 // 新增：直接更新 iframe DOM
 const updateIframeImageDom = (placeholderId, newUrl) => {
   if (!previewFrame.value || !previewFrame.value.contentDocument) return
@@ -604,7 +551,79 @@ const updateIframeImageDom = (placeholderId, newUrl) => {
     // 如果 DOM 更新失败，回退到全量更新
     updatePreviewHtmlRef()
   }
+}// 修改：使用 DOMPurify 净化 HTML
+const updatePreviewHtmlRef = () => {
+  const html = getCurrentPreviewHtmlString()
+  // 净化 HTML 以防注入，同时保留 data-placeholder 等自定义属性
+  previewHtml.value = DOMPurify.sanitize(html, {
+    ADD_ATTR: ['data-placeholder', 'data-role', 'label', 'data-tplid', 'data-tools', 'data-id', 'data-cropselx1', 'data-cropselx2', 'data-cropsely1', 'data-cropsely2', 'data-imgfileid', 'data-ratio', 'data-w', 'data-s', 'data-type', 'type'],
+    ADD_TAGS: ['section', 'mp-style-type']
+  })
 }
+
+// 初始化加载文章数据
+// 初始化加载文章数据
+onMounted(async () => {
+  // 基础校验
+  if (contentBlocks.value.length === 0) {
+    router.push('/step2')
+    return
+  }
+
+  const styleConfig = appStore.styleConfig
+  const hasTitleStyle = styleConfig?.title && styleConfig.title.fullExample
+  const hasBodyStyle = styleConfig?.body && styleConfig.body.fullExample
+  const hasIntroStyle = styleConfig?.intro && styleConfig.intro.fullExample
+
+  if (!hasTitleStyle && !hasBodyStyle && !hasIntroStyle) {
+    alert('请先配置装饰样式后再进入预览阶段！')
+    router.push('/style-config')
+    return
+  }
+
+  if (route.params.id) {
+    try {
+      isGenerating.value = true
+      
+      const res = await articleApi.getArticleById(route.params.id)
+      const article = res.data
+      
+      if (article) {
+        // 设置标题
+        draftForm.value.title = article.title
+        
+        // 如果后端有保存的图片，同步到 store
+        // 🛡️ 关键修复：无论后端返回什么，都替换 Store（包括空列表），防止旧图片残留
+        console.log('[Step3] 后端返回的原始图片数据:', JSON.stringify(article.images))
+        const backendImages = article.images || []
+        const validImages = backendImages.map(img => {
+           // 如果 url 是 blob 开头，说明是旧数据，尝试用 media_id 或 proxy 恢复，或者标记为失效
+           if (img.url && img.url.startsWith('blob:')) {
+             return null 
+           }
+           return img
+        }).filter(Boolean)
+        
+        console.log('[Step3] 从后端加载文章图片:', validImages.length, '张 (已过滤 blob)')
+        appStore.setWechatImages(validImages) // 💡 始终设置，即使为空也清空旧数据
+        
+        // 生成初始 HTML
+        regenerate()
+        
+        // 然后获取真实姓名
+        fetchParticipants()
+      }
+    } catch (e) {
+      console.error('[Step3] 加载文章失败:', e)
+      errorMessage.value = '加载文章详情失败'
+    } finally {
+      isGenerating.value = false
+    }
+  } else {
+    // 无 ID 模式，直接从 store 生成
+    regenerate()
+  }
+})
 
 // V2: 设置 iframe 点击处理器
 const setupIframeClickHandler = () => {
@@ -731,16 +750,6 @@ const getCurrentPreviewHtmlString = () => {
     })
   }
   return html
-}
-
-// 更新 previewHtml Ref (会触发 iframe 刷新)
-const updatePreviewHtmlRef = () => {
-  // 保存当前滚动位置
-  if (previewFrame.value && previewFrame.value.contentWindow) {
-    lastScrollTop.value = previewFrame.value.contentWindow.scrollY
-  }
-  previewHtml.value = getCurrentPreviewHtmlString()
-  console.log('[Step3] 预览 HTML Ref 已更新')
 }
 
 // 废弃原 updatePreviewHtml，保留兼容性命名或直接移除引用
@@ -1060,29 +1069,6 @@ const fetchParticipants = async () => {
   }
 }
 
-onMounted(async () => {
-  if (contentBlocks.value.length === 0) {
-    router.push('/step2')
-    return
-  }
-
-  const styleConfig = appStore.styleConfig
-  const hasTitleStyle = styleConfig?.title && styleConfig.title.fullExample
-  const hasBodyStyle = styleConfig?.body && styleConfig.body.fullExample
-  const hasIntroStyle = styleConfig?.intro && styleConfig.intro.fullExample
-
-  if (!hasTitleStyle && !hasBodyStyle && !hasIntroStyle) {
-    alert('请先配置装饰样式后再进入预览阶段！')
-    router.push('/style-config')
-    return
-  }
-
-  // 先生成一次初始版（可能为空名字）
-  await generateHtml()
-  
-  // 然后获取真实姓名并重新生成
-  fetchParticipants()
-})
 
 // 保存草稿到后端 - 保存内容和样式配置
 const saveDraft = async () => {
@@ -1126,6 +1112,43 @@ const saveDraft = async () => {
       
       if (!response.ok) {
         throw new Error(`保存内容失败: ${response.status} - ${responseData?.message || 'Unknown error'}`)
+      }
+
+      // V2: 持久化微信图片库 (🔑 关键：使用代理 URL 存储，确保跨用户可访问)
+      const imagesToSave = appStore.wechatImages
+        .filter(img => img.status === 'success' && img.mediaId) // 只保存成功上传的
+        .map(img => {
+          // 确保 URL 是代理格式，绕过微信防盗链
+          let proxyUrl = ''
+          if (img.url && !img.url.startsWith('blob:')) {
+            proxyUrl = getWechatProxyUrl(img.url) // 转换为代理 URL
+          }
+          return {
+            id: img.id,
+            mediaId: img.mediaId,
+            url: proxyUrl,
+            name: img.name,
+            status: img.status
+          }
+        })
+      
+      console.log('[Step3] 准备保存的图片:', imagesToSave.map(i => ({ id: i.id, url: i.url?.substring(0, 50) })))
+      
+      if (imagesToSave.length > 0) {
+        console.log('[Step3] 正在保存微信图片库...', imagesToSave.length, '张')
+        const requestBody = JSON.stringify({ images: imagesToSave })
+        console.log('[Step3] 发送的原始数据:', requestBody)
+        const imgResponse = await fetch(`/api/articles/${articleId}/images`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: requestBody
+        })
+        console.log('[Step3] 图片保存响应:', imgResponse.status)
+      } else {
+        console.log('[Step3] 没有可保存的图片（可能全是 blob 或未成功上传）')
       }
       
       // 保存样式配置
@@ -1181,6 +1204,35 @@ const saveDraft = async () => {
       if (!updateResponse.ok) {
         const errorData = await updateResponse.json().catch(() => ({}))
         throw new Error(errorData.message || '保存内容失败')
+      }
+
+      // V2: 创建后保存微信图片库 (使用代理 URL)
+      const newArticleImages = appStore.wechatImages
+        .filter(img => img.status === 'success' && img.mediaId)
+        .map(img => {
+          let proxyUrl = ''
+          if (img.url && !img.url.startsWith('blob:')) {
+            proxyUrl = getWechatProxyUrl(img.url)
+          }
+          return {
+            id: img.id,
+            mediaId: img.mediaId,
+            url: proxyUrl,
+            name: img.name,
+            status: img.status
+          }
+        })
+      
+      if (newArticleImages.length > 0) {
+        console.log('[Step3] 新文章保存图片:', newArticleImages.length, '张')
+        await fetch(`/api/articles/${data.id}/images`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({ images: newArticleImages })
+        })
       }
       
       toast.success('文章已创建并保存！')

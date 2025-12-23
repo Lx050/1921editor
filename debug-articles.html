@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试文章API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .api-test {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .api-response {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .debug-section {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 文章API调试工具</h1>
+        <p>这个工具将帮助诊断草稿保存和显示的问题。</p>
+
+        <div class="debug-section">
+            <h3>📋 检查清单</h3>
+            <ul>
+                <li>✅ 用户已登录</li>
+                <li>🔄 JWT token有效</li>
+                <li>❓ 文章是否成功保存</li>
+                <li>❓ API是否返回文章列表</li>
+                <li>❓ Dashboard是否正确渲染</li>
+            </ul>
+        </div>
+
+        <div class="api-test">
+            <h3>1. 获取当前用户信息</h3>
+            <button onclick="testUserInfo()">测试用户信息</button>
+            <div id="user-info-result" class="api-response" style="display:none;"></div>
+        </div>
+
+        <div class="api-test">
+            <h3>2. 获取文章列表</h3>
+            <button onclick="testGetArticles()">获取文章列表</button>
+            <div id="articles-result" class="api-response" style="display:none;"></div>
+        </div>
+
+        <div class="api-test">
+            <h3>3. 创建测试文章</h3>
+            <input type="text" id="test-title" placeholder="输入测试文章标题" value="调试测试文章" style="padding: 8px; margin-right: 10px; width: 200px;">
+            <button onclick="testCreateArticle()">创建测试文章</button>
+            <div id="create-result" class="api-response" style="display:none;"></div>
+        </div>
+
+        <div class="api-test">
+            <h3>4. 更新文章内容</h3>
+            <input type="text" id="article-id" placeholder="输入文章ID" style="padding: 8px; margin-right: 10px; width: 300px;">
+            <button onclick="testUpdateArticle()">更新配置</button>
+            <button onclick="testSaveDraft()">保存草稿</button>
+            <div id="update-result" class="api-response" style="display:none;"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🐛 常见问题排查</h3>
+            <div class="warning">
+                <strong>如果文章列表为空：</strong>
+                <ul>
+                    <li>检查JWT token是否有效</li>
+                    <li>确认文章是否真的保存到数据库</li>
+                    <li>检查用户ID和租户ID是否正确</li>
+                    <li>查看后端日志是否有错误</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <h3>📊 调试步骤</h3>
+            <ol>
+                <li>点击"测试用户信息"确认认证状态</li>
+                <li>点击"获取文章列表"查看是否有草稿</li>
+                <li>如果列表为空，创建测试文章</li>
+                <li>更新文章内容并保存草稿</li>
+                <li>再次获取文章列表验证</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        let authToken = localStorage.getItem('auth_token') || '';
+
+        // 获取认证token
+        function getAuthToken() {
+            if (!authToken) {
+                authToken = prompt('请输入JWT token (从浏览器开发者工具的Application/LocalStorage中获取):');
+                if (authToken) {
+                    localStorage.setItem('auth_token', authToken);
+                }
+            }
+            return authToken;
+        }
+
+        // 创建axios实例
+        async function apiCall(method, url, data = null) {
+            const token = getAuthToken();
+            if (!token) {
+                throw new Error('需要认证token');
+            }
+
+            const config = {
+                method,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (data) {
+                config.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(`${API_BASE}${url}`, config);
+            const responseData = await response.json();
+
+            return {
+                status: response.status,
+                data: responseData,
+                headers: Object.fromEntries(response.headers.entries())
+            };
+        }
+
+        async function testUserInfo() {
+            const result = document.getElementById('user-info-result');
+            try {
+                const response = await apiCall('GET', '/auth/profile');
+                result.style.display = 'block';
+                result.className = 'api-response success';
+                result.textContent = `✅ 用户信息获取成功 (${response.status})\n\n` + JSON.stringify(response.data, null, 2);
+            } catch (error) {
+                result.style.display = 'block';
+                result.className = 'api-response error';
+                result.textContent = `❌ 获取用户信息失败\n\n${error.message}`;
+            }
+        }
+
+        async function testGetArticles() {
+            const result = document.getElementById('articles-result');
+            try {
+                const response = await apiCall('GET', '/articles');
+                result.style.display = 'block';
+                result.className = 'api-response success';
+                result.textContent = `✅ 文章列表获取成功 (${response.status})\n\n找到 ${response.data.length} 篇文章:\n\n` + JSON.stringify(response.data, null, 2);
+
+                // 分析文章状态
+                const statusCount = {};
+                response.data.forEach(article => {
+                    statusCount[article.status] = (statusCount[article.status] || 0) + 1;
+                });
+
+                result.textContent += `\n\n📊 文章状态统计:\n${Object.entries(statusCount).map(([status, count]) => `${status}: ${count}`).join('\n')}`;
+            } catch (error) {
+                result.style.display = 'block';
+                result.className = 'api-response error';
+                result.textContent = `❌ 获取文章列表失败\n\n${error.message}`;
+            }
+        }
+
+        async function testCreateArticle() {
+            const result = document.getElementById('create-result');
+            const title = document.getElementById('test-title').value || '测试文章';
+
+            try {
+                const response = await apiCall('POST', '/articles', { title });
+                result.style.display = 'block';
+                result.className = 'api-response success';
+                result.textContent = `✅ 文章创建成功 (${response.status})\n\n` + JSON.stringify(response.data, null, 2);
+
+                // 自动填充文章ID到更新表单
+                document.getElementById('article-id').value = response.data.id;
+            } catch (error) {
+                result.style.display = 'block';
+                result.className = 'api-response error';
+                result.textContent = `❌ 创建文章失败\n\n${error.message}`;
+            }
+        }
+
+        async function testUpdateArticle() {
+            const result = document.getElementById('update-result');
+            const articleId = document.getElementById('article-id').value;
+
+            if (!articleId) {
+                alert('请输入文章ID');
+                return;
+            }
+
+            try {
+                const response = await apiCall('PUT', `/articles/${articleId}/config`, {
+                    config: { rawText: '这是测试内容', theme: 'default' }
+                });
+                result.style.display = 'block';
+                result.className = 'api-response success';
+                result.textContent = `✅ 文章配置更新成功 (${response.status})\n\n` + JSON.stringify(response.data, null, 2);
+            } catch (error) {
+                result.style.display = 'block';
+                result.className = 'api-response error';
+                result.textContent = `❌ 更新文章配置失败\n\n${error.message}`;
+            }
+        }
+
+        async function testSaveDraft() {
+            const result = document.getElementById('update-result');
+            const articleId = document.getElementById('article-id').value;
+
+            if (!articleId) {
+                alert('请输入文章ID');
+                return;
+            }
+
+            try {
+                const response = await apiCall('POST', `/articles/${articleId}/save-draft`);
+                result.style.display = 'block';
+                result.className = 'api-response success';
+                result.textContent = `✅ 草稿保存成功 (${response.status})\n\n` + JSON.stringify(response.data, null, 2);
+
+                // 自动刷新文章列表
+                setTimeout(() => testGetArticles(), 500);
+            } catch (error) {
+                result.style.display = 'block';
+                result.className = 'api-response error';
+                result.textContent = `❌ 保存草稿失败\n\n${error.message}`;
+            }
+        }
+
+        // 页面加载时自动检查
+        console.log('🔍 文章API调试工具已加载');
+        console.log('📍 API基础URL:', API_BASE);
+        console.log('🔑 当前token:', authToken ? '已设置' : '未设置');
+    </script>
+</body>
+</html>

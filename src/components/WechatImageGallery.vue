@@ -24,8 +24,8 @@
         <p class="text-xs mt-1">上传 ZIP 压缩包以提取图片</p>
       </div>
 
-      <!-- 图片列表 - 两列网格布局，增加间距 -->
-      <div v-else class="grid grid-cols-2 gap-4">
+      <!-- 图片列表 - 三列网格布局，紧凑间距 -->
+      <div v-else class="grid grid-cols-3 gap-2">
         <div
           v-for="image in successfulImages"
           :key="image.id"
@@ -39,7 +39,7 @@
         >
           <!-- 图片 - 4:3 比例，使用懒加载 -->
           <LazyImage
-            :src="image.localPreviewUrl || image.url"
+            :src="image.localPreviewUrl || getWechatProxyUrl(image.url)"
             :alt="image.name"
             :width="200"
             :height="150"
@@ -57,21 +57,20 @@
       </div>
     </div>
 
-    <!-- 底部提示 -->
-    <div v-if="!selectedPlaceholder && successfulImages.length > 0" class="flex-shrink-0 px-4 py-3 bg-amber-50 border-t border-amber-100">
+    <div v-if="!selectedPlaceholder && successfulImages.length > 0" class="flex-shrink-0 px-3 py-2 bg-amber-50 border-t border-amber-100">
       <p class="text-xs text-amber-700">
-        💡 请先点击右侧预览中的占位符图片
+        请先点击右侧预览中的占位符图片
       </p>
     </div>
   </div>
 
   <!-- 移动端（横向布局）-->
-  <div v-else class="h-full flex flex-row items-center gap-2 px-3 py-2 overflow-x-auto overflow-y-hidden bg-gray-50">
+  <div v-else class="h-full flex flex-row items-center gap-2 px-2 py-1 overflow-x-auto overflow-y-hidden bg-gray-50 scrollbar-hide">
     <div
       v-for="image in successfulImages"
       :key="image.id"
       @click="selectImage(image)"
-      class="flex-shrink-0 w-20 h-24 rounded-lg overflow-hidden cursor-pointer transition-all bg-gray-200"
+      class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden cursor-pointer transition-all bg-gray-200"
       :class="{
         'ring-2 ring-blue-500 shadow-lg': selectedPlaceholder,
         'opacity-60 cursor-not-allowed': !selectedPlaceholder,
@@ -79,10 +78,10 @@
       }"
     >
       <LazyImage
-        :src="image.localPreviewUrl || image.url"
+        :src="image.localPreviewUrl || getWechatProxyUrl(image.url)"
         :alt="image.name"
-        width="80"
-        height="96"
+        width="64"
+        height="64"
         class="w-full h-full"
         img-class="w-full h-full object-cover"
         :placeholder="true"
@@ -96,6 +95,7 @@
 import { computed } from 'vue'
 import type { WechatImage } from '@/types'
 import LazyImage from './LazyImage.vue'
+import { getWechatProxyUrl } from '../utils/wechatApi'
 
 interface Props {
   images: WechatImage[]

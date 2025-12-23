@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>检查JWT Token</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .token-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 JWT Token 检查工具</h1>
+        <p>这个工具将检查当前用户的JWT token是否包含必要的字段。</p>
+
+        <div class="warning">
+            <strong>⚠️ 重要提醒：</strong>
+            <ul>
+                <li>如果token中没有<code>tenantId</code>字段，需要<strong>重新登录</strong></li>
+                <li>后端已更新JWT策略，新登录的用户会获得包含完整信息的token</li>
+                <li>旧token不会自动更新，必须重新登录</li>
+            </ul>
+        </div>
+
+        <div>
+            <h3>1. 获取当前Token</h3>
+            <button onclick="getToken()">获取Token</button>
+            <div id="token-display" class="token-info" style="display:none;"></div>
+        </div>
+
+        <div>
+            <h3>2. 解析Token内容</h3>
+            <button onclick="parseToken()">解析Token</button>
+            <div id="token-parsed" class="token-info" style="display:none;"></div>
+        </div>
+
+        <div>
+            <h3>3. 测试API调用</h3>
+            <button onclick="testAPI()">测试文章API</button>
+            <div id="api-result" class="token-info" style="display:none;"></div>
+        </div>
+
+        <div class="warning">
+            <h3>🔧 解决方案</h3>
+            <p>如果检查后发现token缺少<code>tenantId</code>字段：</p>
+            <ol>
+                <li>点击应用右上角的设置菜单</li>
+                <li>选择"退出登录"</li>
+                <li>重新使用飞书账号登录</li>
+                <li>再次尝试保存草稿功能</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = '';
+
+        function getToken() {
+            // 尝试从localStorage获取token
+            currentToken = localStorage.getItem('auth_token') || '';
+
+            const display = document.getElementById('token-display');
+            if (currentToken) {
+                display.style.display = 'block';
+                display.className = 'token-info success';
+                display.innerHTML = `✅ 找到Token<br><br>Token长度: ${currentToken.length}<br>Token前缀: ${currentToken.substring(0, 20)}...<br><br><strong>完整Token:</strong><br>${currentToken}`;
+            } else {
+                display.style.display = 'block';
+                display.className = 'token-info error';
+                display.innerHTML = '❌ 未找到Token，请先登录应用';
+            }
+        }
+
+        function parseToken() {
+            if (!currentToken) {
+                getToken();
+                return;
+            }
+
+            const display = document.getElementById('token-parsed');
+
+            try {
+                // JWT token包含三部分：header.payload.signature
+                const parts = currentToken.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Invalid JWT format');
+                }
+
+                // 解析payload部分
+                const payload = JSON.parse(atob(parts[1]));
+
+                display.style.display = 'block';
+                display.className = 'token-info';
+
+                let content = `📋 Token Payload 内容：<br><br>`;
+                content += JSON.stringify(payload, null, 2);
+
+                // 检查关键字段
+                const hasTenantId = payload.tenantId !== undefined;
+                const hasUserId = payload.sub !== undefined;
+
+                content += `<br><br><strong>关键字段检查：</strong><br>`;
+                content += `✅ 用户ID (sub): ${hasUserId ? payload.sub : '❌ 缺失'}<br>`;
+                content += `${hasTenantId ? '✅' : '❌'} 租户ID (tenantId): ${hasTenantId ? payload.tenantId : '缺失'}<br>`;
+                content += `✅ 用户名 (username): ${payload.username || '缺失'}<br>`;
+                content += `✅ 飞书ID (feishuId): ${payload.feishuId || '缺失'}<br>`;
+                content += `✅ 角色 (role): ${payload.role || '缺失'}`;
+
+                if (!hasTenantId) {
+                    display.className = 'token-info error';
+                    content += `<br><br>⚠️ <strong>警告：Token缺少tenantId字段！</strong><br>这会导致文章查询失败。请重新登录获取新的token。`;
+                } else {
+                    display.className = 'token-info success';
+                    content += `<br><br>✅ <strong>Token包含所有必要字段！</strong>`;
+                }
+
+                display.innerHTML = content;
+
+            } catch (error) {
+                display.style.display = 'block';
+                display.className = 'token-info error';
+                display.innerHTML = `❌ 解析Token失败: ${error.message}`;
+            }
+        }
+
+        async function testAPI() {
+            if (!currentToken) {
+                getToken();
+                return;
+            }
+
+            const display = document.getElementById('api-result');
+            display.style.display = 'block';
+            display.innerHTML = '🔄 正在测试API...';
+
+            try {
+                const response = await fetch('http://localhost:3001/api/articles', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                display.className = response.ok ? 'token-info success' : 'token-info error';
+                display.innerHTML = `${response.ok ? '✅' : '❌'} API调用状态: ${response.status}<br><br>响应内容:<br>${JSON.stringify(data, null, 2)}`;
+
+                if (response.ok && Array.isArray(data)) {
+                    display.innerHTML += `<br><br>📊 文章数量: ${data.length}<br>`;
+                    if (data.length === 0) {
+                        display.innerHTML += '💡 提示: 没有找到文章，可能需要保存一些草稿';
+                    } else {
+                        display.innerHTML += '<br>📝 文章列表:';
+                        data.forEach((article, index) => {
+                            display.innerHTML += `<br>  ${index + 1}. ${article.title} (${article.status})`;
+                        });
+                    }
+                }
+
+            } catch (error) {
+                display.className = 'token-info error';
+                display.innerHTML = `❌ API调用失败: ${error.message}`;
+            }
+        }
+
+        // 页面加载时自动获取token
+        window.addEventListener('load', () => {
+            console.log('🔑 JWT Token检查工具已加载');
+            getToken();
+        });
+    </script>
+</body>
+</html>

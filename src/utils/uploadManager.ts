@@ -4,7 +4,7 @@
  */
 
 import type { WechatImage, UploadProgress } from '@/types';
-import { uploadImage } from './wechatApi';
+import { uploadImage, getWechatProxyUrl } from './wechatApi';
 
 // V2: 优化配置 - 根据网络环境和微信 API 限制调整
 const MAX_CONCURRENT_UPLOADS = 5;  // 提升并发数：3 -> 5（微信 API 支持更高并发）
@@ -122,10 +122,12 @@ export class UploadManager {
             const response = await uploadImage(task.file);
 
             task.status = 'success';
+            // 🔑 关键：将微信原始 URL 转换为代理 URL，确保其他用户/设备可访问
+            const proxyUrl = getWechatProxyUrl(response.url || '');
             task.result = {
                 id: task.id,
                 mediaId: response.media_id || '',
-                url: response.url || '',
+                url: proxyUrl,  // 使用代理 URL 以支持跨用户访问
                 localPreviewUrl: localPreviewUrl,  // 使用本地 Blob URL 进行预览
                 name: task.file.name,
                 status: 'success',

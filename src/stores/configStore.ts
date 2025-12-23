@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { tenantApi } from '../utils/api'
 
 export type WorkMode = 'daily' | 'three_rural' | 'reprint'
 
@@ -422,6 +423,22 @@ export const useConfigStore = defineStore('config', () => {
 		}
 	}
 
+	const fetchBackendConfig = async (tenantId: string) => {
+		try {
+			const res = await tenantApi.getWechatConfig(tenantId)
+			if (res.data && res.data.appId) {
+				wechatConfig.value = {
+					...wechatConfig.value,
+					appId: res.data.appId,
+					appSecret: res.data.appSecret
+				}
+				console.log('WeChat config updated from backend')
+			}
+		} catch (e) {
+			console.error('Failed to fetch WeChat config', e)
+		}
+	}
+
 	// 初始化调用
 	init()
 
@@ -435,6 +452,7 @@ export const useConfigStore = defineStore('config', () => {
 		setFooter,
 		saveAccount,
 		removeAccount,
-		selectAccount
+		selectAccount,
+		fetchBackendConfig
 	}
 })

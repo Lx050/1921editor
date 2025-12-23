@@ -1,6 +1,6 @@
 <template>
   <div
-    class="md:w-[520px] flex-shrink-0 bg-gray-50 border-r-0 md:border-r border-b md:border-b-0"
+    class="md:w-[360px] flex-shrink-0 bg-gray-50 border-r-0 md:border-r border-b md:border-b-0"
     v-if="hasWechatImages"
   >
     <!-- 桌面端左侧图片库（纵向）-->
@@ -33,7 +33,7 @@
           :images="wechatImages"
           :selectedPlaceholder="selectedPlaceholder"
           @select="handleImageSelect"
-          :isMobile="true"
+          :mobileLayout="true"
         />
       </div>
     </div>

@@ -914,6 +914,18 @@ const saveDraft = async () => {
       if (!response.ok) {
         throw new Error('保存失败')
       }
+
+      // V2: 同等重要的图片库持久化
+      if (appStore.wechatImages.length > 0) {
+        await fetch(`/api/articles/${articleId}/images`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({ images: appStore.wechatImages })
+        })
+      }
       
       toast.success('草稿已保存！')
     } else {
@@ -954,6 +966,18 @@ const saveDraft = async () => {
       if (!updateResponse.ok) {
         const errorData = await updateResponse.json().catch(() => ({}))
         throw new Error(errorData.message || '保存内容失败')
+      }
+
+      // V2: 创建后立即保存图片库
+      if (appStore.wechatImages.length > 0) {
+        await fetch(`/api/articles/${data.id}/images`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({ images: appStore.wechatImages })
+        })
       }
       
       toast.success('文章已创建并保存！')

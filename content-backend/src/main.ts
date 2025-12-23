@@ -33,10 +33,10 @@ async function bootstrap() {
   );
 
   // 🔒 启用全局验证管道
+  // 注意：禁用 whitelist 以保留嵌套对象属性（如图片数组）
+  // 如果需要某些端点使用 whitelist，在该端点单独配置
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // 只保留 DTO 中定义的属性
-      forbidNonWhitelisted: true, // 拒绝未知属性
       transform: true, // 自动转换类型
       transformOptions: {
         enableImplicitConversion: true,

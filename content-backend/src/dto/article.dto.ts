@@ -73,6 +73,6 @@ export class UpdateArticleImagesDto {
     description: '图片列表',
     example: [{ name: 'image1.jpg', url: '/uploads/image1.jpg' }],
   })
-  @IsObject({ message: '图片列表必须是数组', each: true })
+  @IsArray({ message: '图片列表必须是数组' })
   images: any[];
 }

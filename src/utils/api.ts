@@ -182,6 +182,11 @@ export const articleApi = {
   saveDraft: (id: string) => {
     return api.post(`/articles/${id}/save-draft`)
   },
+
+  // 更新文章图片 (Step3)
+  updateStep3: (id: string, images: any[]) => {
+    return api.put(`/articles/${id}/images`, { images })
+  },
 }
 
 // Webhook API
@@ -201,6 +206,13 @@ export const webhookApi = {
 export const healthApi = {
   checkHealth: () => {
     return api.get('/health')
+  },
+}
+
+// 租户 API
+export const tenantApi = {
+  getWechatConfig: (tenantId: string) => {
+    return api.get(`/tenants/${tenantId}/wechat-config`)
   },
 }
 

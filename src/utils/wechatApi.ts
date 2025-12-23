@@ -206,4 +206,31 @@ export async function createDraft(article: import('@/types').DraftArticle): Prom
         throw error;
     }
 }
+/**
+ * 将微信图片 URL 转换为代理 URL
+ * @param originalUrl 原始微信图片 URL
+ * @returns 代理后的 URL
+ */
+export function getWechatProxyUrl(originalUrl: string): string {
+    if (!originalUrl || !originalUrl.startsWith('http')) {
+        return originalUrl;
+    }
 
+    // 如果已经是代理 URL 或本地 URL，直接返回
+    if (originalUrl.includes('/wechat-image-proxy') || originalUrl.startsWith('blob:') || originalUrl.startsWith('data:')) {
+        return originalUrl;
+    }
+
+    // 提取 qpic.cn 域名之后的部分（支持 mmbiz.qpic.cn, mmecoa.qpic.cn 等所有子域名）
+    try {
+        const url = new URL(originalUrl);
+        if (url.hostname.endsWith('.qpic.cn') || url.hostname === 'qpic.cn') {
+            // 保留完整路径，包含子域名信息
+            return `/wechat-image-proxy/${url.hostname}${url.pathname}${url.search}`;
+        }
+    } catch (e) {
+        console.warn('[WeChat API] URL 解析失败:', originalUrl);
+    }
+
+    return originalUrl;
+}

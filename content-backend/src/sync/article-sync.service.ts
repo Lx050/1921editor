@@ -6,10 +6,20 @@ import { Article, ArticleStatus } from '../entities/article.entity';
 import { Tenant } from '../entities/tenant.entity';
 import { User } from '../entities/user.entity';
 import * as Lark from '@larksuiteoapi/node-sdk';
+import {
+    FeishuArticleFields,
+    FeishuRecordData,
+    FeishuWebhookEvent,
+    SyncResult,
+    FeishuPerson,
+    UserGroupMapping,
+} from './interfaces/feishu-sync.interface';
 
 @Injectable()
 export class ArticleSyncService {
     private readonly logger = new Logger(ArticleSyncService.name);
+    // 🔒 防止同一篇文章的并发同步（内存锁）
+    private readonly syncInProgress = new Map<string, Promise<SyncResult>>();
 
     constructor(
         @InjectRepository(Article)
@@ -22,45 +32,91 @@ export class ArticleSyncService {
     ) { }
 
     /**
+     * 创建飞书客户端
+     */
+    private createFeishuClient(tenant: Tenant): Lark.Client {
+        const feishuAppId = tenant.feishuAppId || this.configService.get<string>('FEISHU_APP_ID');
+        const feishuAppSecret = tenant.feishuAppSecret || this.configService.get<string>('FEISHU_APP_SECRET');
+
+        if (!feishuAppId || !feishuAppSecret) {
+            throw new Error(`租户 ${tenant.name} 缺少飞书凭证且无全局配置`);
+        }
+
+        return new Lark.Client({
+            appId: feishuAppId,
+            appSecret: feishuAppSecret,
+            appType: Lark.AppType.SelfBuild,
+            domain: Lark.Domain.Feishu,
+        });
+    }
+
+    /**
      * 将文章同步到飞书多维表格
      * @param article 文章实体
      * @param tenant 租户实体
      */
-    async syncArticleToFeishu(article: Article, tenant: Tenant): Promise<void> {
+    async syncArticleToFeishu(article: Article, tenant: Tenant): Promise<SyncResult> {
+        // 🔒 检查是否已有正在进行的同步
+        const existingSync = this.syncInProgress.get(article.id);
+        if (existingSync) {
+            this.logger.log(`⏳ 文章 ${article.id} 已有同步任务进行中，等待完成...`);
+            return existingSync; // 返回正在进行的 Promise，避免重复创建
+        }
+
+        // 创建同步 Promise 并立即注册
+        const syncPromise = this.doSyncArticleToFeishu(article, tenant);
+        this.syncInProgress.set(article.id, syncPromise);
+
+        try {
+            return await syncPromise;
+        } finally {
+            // 同步完成后释放锁
+            this.syncInProgress.delete(article.id);
+        }
+    }
+
+    /**
+     * 实际执行同步逻辑（内部方法）
+     */
+    private async doSyncArticleToFeishu(article: Article, tenant: Tenant): Promise<SyncResult> {
         try {
             const settings = tenant.settings || {};
             if (!settings.articleTable) {
-                this.logger.warn(`租户 ${tenant.name} 未配置文章管理表，跳过同步`);
-                return;
+                const message = `租户 ${tenant.name} 未配置文章管理表，跳过同步`;
+                this.logger.warn(message);
+                return { success: true, message };
             }
 
             const { appToken, tableId } = settings.articleTable;
-            const feishuAppId = tenant.feishuAppId || this.configService.get<string>('FEISHU_APP_ID');
-            const feishuAppSecret = tenant.feishuAppSecret || this.configService.get<string>('FEISHU_APP_SECRET');
+            const client = this.createFeishuClient(tenant);
 
-            if (!feishuAppId || !feishuAppSecret) {
-                this.logger.warn(`租户 ${tenant.name} 未配置飞书凭证且无全局配置，跳过同步`);
-                return;
-            }
-
-            const client = new Lark.Client({
-                appId: feishuAppId,
-                appSecret: feishuAppSecret,
-                appType: Lark.AppType.SelfBuild,
-                domain: Lark.Domain.Feishu,
+            // 批量映射用户 (优化 N+1 查询)
+            const userMapping = await this.mapMultipleUserGroups({
+                planners: article.planners || [],
+                copywriters: article.copywriters || [],
+                editors: article.editors || [],
             });
 
-            const recordData: any = {
+            const recordData: FeishuRecordData = {
                 fields: {
                     '标题': article.title || '无标题',
                     '状态': article.status,
-                    '内容策划': await this.mapUsersToFeishu(article.planners, tenant.id),
-                    '文案撰稿': await this.mapUsersToFeishu(article.copywriters, tenant.id),
-                    '文章编辑': await this.mapUsersToFeishu(article.editors, tenant.id),
+                    '内容策划': userMapping.planners,
+                    '文案撰稿': userMapping.copywriters,
+                    '文章编辑': userMapping.editors,
                     '最后更新': article.updatedAt ? article.updatedAt.getTime() : Date.now(),
                     '系统ID': article.id,
                 },
             };
+
+            if (!article.feishuRecordId) {
+                // Double-check database in case another concurrent request updated it
+                const freshArticle = await this.articleRepository.findOne({ where: { id: article.id }, select: ['feishuRecordId'] });
+                if (freshArticle && freshArticle.feishuRecordId) {
+                    article.feishuRecordId = freshArticle.feishuRecordId;
+                    this.logger.log(`🔗 发现已存在的 Feishu Record ID: ${article.feishuRecordId}`);
+                }
+            }
 
             if (article.feishuRecordId) {
                 // 更新现有记录
@@ -90,54 +146,53 @@ export class ArticleSyncService {
                 }
             }
 
-            this.logger.log(`✅ 文章 ${article.title} 已同步到飞书表格`);
+            const successMessage = `✅ 文章 ${article.title} 已同步到飞书表格`;
+            this.logger.log(successMessage);
+            return { success: true, message: successMessage };
         } catch (error) {
-            this.logger.error(`同步文章到飞书表格失败: ${error.message}`);
+            const errorMessage = `同步文章到飞书表格失败: ${error.message}`;
+            this.logger.error(errorMessage, error.stack);
+            return { success: false, error: errorMessage };
         }
     }
 
     /**
      * 从飞书 Webhook 事件同步文章到数据库
      */
-    async syncArticleFromFeishu(event: any, tenant: Tenant): Promise<void> {
-        const { record_id, app_token, table_id } = event.event || event;
+    async syncArticleFromFeishu(event: FeishuWebhookEvent, tenant: Tenant): Promise<SyncResult> {
+        const record_id = event.event?.record_id || event.record_id;
+        const app_token = event.event?.app_token || event.app_token;
+        const table_id = event.event?.table_id || event.table_id;
+
+        if (!record_id || !app_token || !table_id) {
+            return { success: false, error: '缺失必要的路由信息' };
+        }
 
         try {
-            const feishuAppId = (tenant.feishuAppId || this.configService.get<string>('FEISHU_APP_ID')) || '';
-            const feishuAppSecret = (tenant.feishuAppSecret || this.configService.get<string>('FEISHU_APP_SECRET')) || '';
-
-            if (!feishuAppId || !feishuAppSecret) {
-                this.logger.error(`同步失败: 租户 ${tenant.name} 缺少飞书凭证`);
-                return;
-            }
-
-            const client = new Lark.Client({
-                appId: feishuAppId,
-                appSecret: feishuAppSecret,
-                appType: Lark.AppType.SelfBuild,
-                domain: Lark.Domain.Feishu,
-            });
+            const client = this.createFeishuClient(tenant);
 
             // 读取最新记录
             const recordRes = await client.bitable.appTableRecord.get({
                 path: {
-                    app_token: app_token,
-                    table_id: table_id,
-                    record_id: record_id,
+                    app_token,
+                    table_id,
+                    record_id,
                 },
             });
 
             if (recordRes.code !== 0 || !recordRes.data?.record) {
-                this.logger.error(`同步失败: 无法获取飞书记录 ${record_id}`);
-                return;
+                const error = `无法获取飞书记录 ${record_id}`;
+                this.logger.error(`同步失败: ${error}`);
+                return { success: false, error };
             }
 
-            const fields = recordRes.data.record.fields;
-            const systemId = fields['系统ID'] as string;
+            const fields = recordRes.data.record.fields as Partial<FeishuArticleFields>;
+            const systemId = fields['系统ID'];
 
             if (!systemId) {
-                this.logger.warn(`飞书记录 ${record_id} 缺少系统ID，忽略`);
-                return;
+                const message = `飞书记录 ${record_id} 缺少系统ID，忽略`;
+                this.logger.warn(message);
+                return { success: true, message };
             }
 
             const article = await this.articleRepository.findOne({
@@ -145,56 +200,78 @@ export class ArticleSyncService {
             });
 
             if (!article) {
-                this.logger.warn(`找不到对应的系统文章: ${systemId}`);
-                return;
+                const error = `找不到对应的系统文章: ${systemId}`;
+                this.logger.warn(error);
+                return { success: false, error };
             }
 
             // 冲突检测：如果数据库里的更新时间比飞书记录的更新时间更晚，则不覆盖
-            const feishuUpdatedAt = fields['最后更新'] as number;
+            const feishuUpdatedAt = fields['最后更新'];
             if (article.updatedAt && feishuUpdatedAt && article.updatedAt.getTime() > feishuUpdatedAt) {
-                this.logger.log(`数据库记录比飞书记录新，跳过该事件 (ID: ${systemId})`);
-                return;
+                const message = `数据库记录比飞书记录新，跳过该事件 (ID: ${systemId})`;
+                this.logger.log(message);
+                return { success: true, message };
             }
 
             // 更新本地记录
             this.logger.log(`正在从飞书同步文章更新: ${article.title}`);
 
-            const feishuFields = fields as any;
-            if (feishuFields['标题']) article.title = feishuFields['标题'];
-            if (feishuFields['状态']) article.status = feishuFields['状态'] as ArticleStatus;
+            if (fields['标题']) article.title = fields['标题'];
+            if (fields['状态']) article.status = fields['状态'] as ArticleStatus;
 
             // 同步人员字段
-            if (feishuFields['内容策划']) article.planners = await this.mapFeishuToUsers(feishuFields['内容策划']);
-            if (feishuFields['文案撰稿']) article.copywriters = await this.mapFeishuToUsers(feishuFields['文案撰稿']);
-            if (feishuFields['文章编辑']) article.editors = await this.mapFeishuToUsers(feishuFields['文章编辑']);
+            if (fields['内容策划']) article.planners = await this.mapFeishuToUsers(fields['内容策划']);
+            if (fields['文案撰稿']) article.copywriters = await this.mapFeishuToUsers(fields['文案撰稿']);
+            if (fields['文章编辑']) article.editors = await this.mapFeishuToUsers(fields['文章编辑']);
 
             await this.articleRepository.save(article);
-            this.logger.log(`✅ 文章 ${article.title} 已从飞书同步`);
+            const successMessage = `✅ 文章 ${article.title} 已从飞书同步`;
+            this.logger.log(successMessage);
+            return { success: true, message: successMessage };
 
         } catch (error) {
-            this.logger.error(`从飞书同步文章失败: ${error.message}`);
+            const errorMessage = `从飞书同步文章失败: ${error.message}`;
+            this.logger.error(errorMessage, error.stack);
+            return { success: false, error: errorMessage };
         }
     }
 
     /**
-     * 将系统用户 ID 数组映射为飞书多维表格的人员格式
+     * 批量映射多个用户组 (减少数据库查询)
      */
-    private async mapUsersToFeishu(userIds: string[], tenantId: string): Promise<any[]> {
-        if (!userIds || userIds.length === 0) return [];
+    private async mapMultipleUserGroups(groups: { planners: string[], copywriters: string[], editors: string[] }): Promise<UserGroupMapping> {
+        const allUserIds = Array.from(new Set([...groups.planners, ...groups.copywriters, ...groups.editors])).filter(id => !!id);
+
+        if (allUserIds.length === 0) {
+            return {
+                planners: [],
+                copywriters: [],
+                editors: [],
+            };
+        }
 
         const users = await this.userRepository.createQueryBuilder('user')
-            .where('user.id IN (:...ids)', { ids: userIds })
+            .where('user.id IN (:...ids)', { ids: allUserIds })
             .getMany();
 
-        return users
-            .filter(u => u.feishuId)
-            .map(u => ({ id: u.feishuId }));
+        const userMap = new Map(users.map(u => [u.id, u.feishuId]));
+
+        const getFeishuList = (ids: string[]): FeishuPerson[] =>
+            ids.map(id => userMap.get(id))
+                .filter((fid): fid is string => !!fid)
+                .map(fid => ({ id: fid }));
+
+        return {
+            planners: getFeishuList(groups.planners),
+            copywriters: getFeishuList(groups.copywriters),
+            editors: getFeishuList(groups.editors),
+        };
     }
 
     /**
-     * 将飞书多维表格的人员格式映射为系统用户 ID 数组
+     * 将飞书人员格式映射为系统用户 ID 数组
      */
-    private async mapFeishuToUsers(feishuPeople: any[]): Promise<string[]> {
+    private async mapFeishuToUsers(feishuPeople: FeishuPerson[]): Promise<string[]> {
         if (!feishuPeople || !Array.isArray(feishuPeople)) return [];
 
         const openIds = feishuPeople.map(p => p.id).filter(id => !!id);

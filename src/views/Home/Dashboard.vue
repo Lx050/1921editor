@@ -213,13 +213,6 @@
 
       <!-- 📄 最近草稿 -->
       <section class="relative">
-        <!-- 临时调试信息 -->
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-sm">
-          <strong>🔍 调试信息:</strong>
-          Loading: {{ loading }},
-          Articles: {{ articles.length }},
-          FirstArticle: {{ articles[0]?.title || 'none' }}
-        </div>
 
         <div class="flex items-center justify-between mb-8">
           <div>
@@ -325,7 +318,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from 'vue'
+import { ref, onMounted, onActivated, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/userStore'
 import { useConfigStore } from '../../stores/configStore'
@@ -338,6 +331,14 @@ const router = useRouter()
 const userStore = useUserStore()
 const configStore = useConfigStore()
 const appStore = useAppStore()
+
+// 同步微信配置
+watch(() => userStore.currentTenant?.id, (newId) => {
+  if (newId) {
+    console.log('[Dashboard] 同步租户微信配置:', newId)
+    configStore.fetchBackendConfig(newId)
+  }
+}, { immediate: true })
 
 const articles = ref<Article[]>([])
 const loading = ref(true)
@@ -450,9 +451,9 @@ const continueEdit = async (id: string) => {
     console.log('[Dashboard] 决策参数:', { status, hasContentBlocks })
     
     if (status === 'ADJUSTED' || status === 'PUBLISHED') {
-      // 已调整或已发布 -> 直接进入 Step3
+      // 已调整或已发布 -> 直接进入 Step3（带文章ID以加载保存的图片）
       console.log('[Dashboard] → 跳转到 Step3')
-      router.push('/step3')
+      router.push('/step3/' + article.id)
     } else if (status === 'PARSED' || hasContentBlocks) {
       // 已解析或有内容块 -> 直接进入 Step2
       console.log('[Dashboard] → 跳转到 Step2')

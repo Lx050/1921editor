@@ -127,12 +127,17 @@ export class ArticleService {
   }
 
   async updateStep3(id: string, images: any[], userId?: string) {
+    this.logger.log(`[updateStep3] 🖼️ 保存图片 - 文章ID: ${id}, 用户ID: ${userId}, 图片数量: ${images?.length || 0}`);
+    this.logger.log(`[updateStep3] 图片数据: ${JSON.stringify(images?.slice(0, 2))}`); // 只打印前2张
+
     if (userId) await this.addParticipant(id, userId, 'editors');
     await this.articleRepository.update(id, {
       images,
       status: ArticleStatus.ADJUSTED,
       updatedAt: new Date(),
     });
+
+    this.logger.log(`[updateStep3] ✅ 图片保存成功 - 文章ID: ${id}`);
     this.triggerSync(id);
     return this.findOne(id);
   }

@@ -49,6 +49,15 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/step3/:id',
+    name: 'Step3WithArticle',
+    component: () => import('../views/Step3Preview.vue'),
+    meta: {
+      step: 3,
+      title: '步骤 3/3: 编辑文章'
+    }
+  },
+  {
     path: '/style-config',
     name: 'StyleConfig',
     component: () => import('../views/StyleConfig.vue'),
@@ -143,7 +152,9 @@ router.beforeEach((to, from, next) => {
   const appStore = useAppStore()
 
   // 检查目标路由是否有保护规则
-  const guard = routeGuards[to.path]
+  // 对于带参数的路径，提取基础路径来匹配守卫规则
+  const basePath = to.path.startsWith('/step3/') ? '/step3' : to.path
+  const guard = routeGuards[basePath]
   if (guard) {
     // 验证条件
     const isValid = guard.validator(appStore)

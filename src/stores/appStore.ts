@@ -145,6 +145,10 @@ export const useAppStore = defineStore('app', () => {
     wechatImages.value.push(...images)
   }
 
+  const setWechatImages = (images: WechatImage[]): void => {
+    wechatImages.value = [...images]
+  }
+
   const updateUploadProgress = (progress: UploadProgress): void => {
     uploadProgress.value = { ...progress }
     isUploading.value = progress.uploading > 0
@@ -204,6 +208,7 @@ export const useAppStore = defineStore('app', () => {
     // V2 新增操作
     addWechatImage,
     addWechatImages,
+    setWechatImages,
     updateUploadProgress,
     setIsUploading,
     clearWechatImages,

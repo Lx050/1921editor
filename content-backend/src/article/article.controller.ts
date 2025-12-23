@@ -111,10 +111,11 @@ export class ArticleController {
 
   @Put(':id/images')
   @UseGuards(AuthGuard('jwt'))
-  @UsePipes(new ValidationPipe({ whitelist: true }))
+  // 🔧 完全移除 ValidationPipe 以避免数据被剥离
   @ApiOperation({ summary: '更新文章图片' })
-  updateImages(@Param('id') id: string, @Body() dto: UpdateArticleImagesDto, @Request() req: { user: any }) {
-    return this.articleService.updateStep3(id, dto.images, req.user.id);
+  updateImages(@Param('id') id: string, @Body() body: any, @Request() req: { user: any }) {
+    console.log('[Controller] 收到图片数据:', JSON.stringify(body?.images?.slice(0, 1)));
+    return this.articleService.updateStep3(id, body.images, req.user.id);
   }
 
   @Put(':id/step3-content')
