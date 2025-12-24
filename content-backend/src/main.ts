@@ -58,12 +58,17 @@ async function bootstrap() {
   ].filter(Boolean); // 过滤掉undefined
 
   app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       // 允许无origin的请求（如Postman、curl等）
       if (!origin) return callback(null, true);
 
       // 检查origin是否在允许列表中
-      if (allowedOrigins.some((allowed: string) => origin.startsWith(allowed))) {
+      if (
+        allowedOrigins.some((allowed: string) => origin.startsWith(allowed))
+      ) {
         callback(null, true);
       } else {
         logger.warn(`CORS blocked request from origin: ${origin}`);

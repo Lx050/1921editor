@@ -165,22 +165,30 @@ const saveAsDraftAndGoHome = async () => {
       // 保存文章ID到store
       appStore.setCurrentArticleId(articleId)
 
-      // 保存当前步骤的内容
+      // 🚀 并行优化：同时更新配置和内容
+      const saveTasks = []
+      
       if (appStore.rawText) {
-        const { updateArticleConfig } = await import('./api/article')
-        await updateArticleConfig(articleId, { rawText: appStore.rawText })
+        saveTasks.push((async () => {
+          const { updateArticleConfig } = await import('./api/article')
+          return updateArticleConfig(articleId, { rawText: appStore.rawText })
+        })())
       }
 
       if (appStore.contentBlocks && appStore.contentBlocks.length > 0) {
-        // 清理内容块，移除编辑器内部字段，只保留必要数据
-        const cleanedBlocks = appStore.contentBlocks.map(block => ({
-          type: block.type,
-          text: block.text || '',
-          // 只保留必要的 meta 信息（如 AI 生成的图片）
-          ...(block.meta?.aiImageUrl && { aiImageUrl: block.meta.aiImageUrl })
-        }))
-        const { updateArticleContent } = await import('./api/article')
-        await updateArticleContent(articleId, JSON.stringify(cleanedBlocks))
+        saveTasks.push((async () => {
+          const cleanedBlocks = appStore.contentBlocks.map(block => ({
+            type: block.type,
+            text: block.text || '',
+            ...(block.meta?.aiImageUrl && { aiImageUrl: block.meta.aiImageUrl })
+          }))
+          const { updateArticleContent } = await import('./api/article')
+          return updateArticleContent(articleId, JSON.stringify(cleanedBlocks))
+        })())
+      }
+      
+      if (saveTasks.length > 0) {
+        await Promise.all(saveTasks)
       }
     }
 

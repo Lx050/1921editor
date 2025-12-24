@@ -1,5 +1,10 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiExcludeController } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiExcludeController,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import { TenantService } from '../tenant/tenant.service';

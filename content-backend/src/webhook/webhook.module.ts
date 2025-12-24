@@ -8,13 +8,9 @@ import { User } from '../entities/user.entity';
 import { Tenant } from '../entities/tenant.entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([User, Tenant]),
-        SyncModule,
-        TenantModule,
-    ],
-    controllers: [FeishuWebhookController],
-    providers: [FeishuWebhookService],
-    exports: [FeishuWebhookService],
+  imports: [TypeOrmModule.forFeature([User, Tenant]), SyncModule, TenantModule],
+  controllers: [FeishuWebhookController],
+  providers: [FeishuWebhookService],
+  exports: [FeishuWebhookService],
 })
-export class WebhookModule { }
+export class WebhookModule {}

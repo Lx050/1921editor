@@ -30,7 +30,7 @@ import * as fs from 'fs';
 @ApiTags('articles')
 @Controller('articles')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) { }
+  constructor(private readonly articleService: ArticleService) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -43,7 +43,7 @@ export class ArticleController {
     return this.articleService.create(dto.title, {
       ...dto,
       ownerId: req.user.id,
-      tenantId: req.user.tenantId
+      tenantId: req.user.tenantId,
     });
   }
 
@@ -97,7 +97,11 @@ export class ArticleController {
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '更新文章配置' })
-  updateConfig(@Param('id') id: string, @Body() dto: UpdateArticleConfigDto, @Request() req: { user: any }) {
+  updateConfig(
+    @Param('id') id: string,
+    @Body() dto: UpdateArticleConfigDto,
+    @Request() req: { user: any },
+  ) {
     return this.articleService.updateStep1(id, dto.config, req.user.id);
   }
 
@@ -105,7 +109,11 @@ export class ArticleController {
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '更新文章内容' })
-  updateContent(@Param('id') id: string, @Body() dto: UpdateArticleContentDto, @Request() req: { user: any }) {
+  updateContent(
+    @Param('id') id: string,
+    @Body() dto: UpdateArticleContentDto,
+    @Request() req: { user: any },
+  ) {
     return this.articleService.updateStep2(id, dto.content, req.user.id);
   }
 
@@ -113,8 +121,15 @@ export class ArticleController {
   @UseGuards(AuthGuard('jwt'))
   // 🔧 完全移除 ValidationPipe 以避免数据被剥离
   @ApiOperation({ summary: '更新文章图片' })
-  updateImages(@Param('id') id: string, @Body() body: any, @Request() req: { user: any }) {
-    console.log('[Controller] 收到图片数据:', JSON.stringify(body?.images?.slice(0, 1)));
+  updateImages(
+    @Param('id') id: string,
+    @Body() body: any,
+    @Request() req: { user: any },
+  ) {
+    console.log(
+      '[Controller] 收到图片数据:',
+      JSON.stringify(body?.images?.slice(0, 1)),
+    );
     return this.articleService.updateStep3(id, body.images, req.user.id);
   }
 
@@ -122,7 +137,11 @@ export class ArticleController {
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '从Step3保存文章内容（设置状态为ADJUSTED）' })
-  updateStep3Content(@Param('id') id: string, @Body() dto: UpdateArticleContentDto, @Request() req: { user: any }) {
+  updateStep3Content(
+    @Param('id') id: string,
+    @Body() dto: UpdateArticleContentDto,
+    @Request() req: { user: any },
+  ) {
     return this.articleService.updateStep3Content(id, dto.content, req.user.id);
   }
 

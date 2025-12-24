@@ -19,7 +19,7 @@ export class AuthService {
     private feishuService: FeishuService,
     private tenantService: TenantService,
     private feishuTableSyncService: FeishuTableSyncService,
-  ) { }
+  ) {}
 
   /**
    * 多租户飞书登录
@@ -147,7 +147,7 @@ export class AuthService {
         // 重新查询以确保包含关联关系
         user = await this.userRepository.findOne({
           where: { id: user.id },
-          relations: ['tenant']
+          relations: ['tenant'],
         });
 
         if (!user) {
@@ -174,7 +174,10 @@ export class AuthService {
       this.logger.log('步骤 4.5: 同步用户到飞书表格...');
       try {
         const tenantForSync = user.tenant || tenant;
-        await this.feishuTableSyncService.syncUserToFeishuTable(user, tenantForSync);
+        await this.feishuTableSyncService.syncUserToFeishuTable(
+          user,
+          tenantForSync,
+        );
         this.logger.log('✅ 用户信息已同步到飞书表格');
       } catch (syncError) {
         // 同步失败不影响登录

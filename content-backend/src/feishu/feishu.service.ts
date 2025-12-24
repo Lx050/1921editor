@@ -87,9 +87,7 @@ export class FeishuService {
         this.logger.error(
           `File too large: ${sizeMB}MB (max: 50MB), fileKey: ${fileKey}`,
         );
-        throw new Error(
-          `文件过大: ${sizeMB}MB，最大允许 50MB`,
-        );
+        throw new Error(`文件过大: ${sizeMB}MB，最大允许 50MB`);
       }
 
       this.logger.log(

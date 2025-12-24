@@ -8,12 +8,12 @@ import { WechatAuthorizer } from '../entities/wechat-authorizer.entity';
 import { WechatPlatformConfig } from '../entities/wechat-platform-config.entity';
 
 @Module({
-    imports: [
-        HttpModule,
-        TypeOrmModule.forFeature([Tenant, WechatAuthorizer, WechatPlatformConfig]),
-    ],
-    controllers: [WechatController],
-    providers: [WechatService],
-    exports: [WechatService],
+  imports: [
+    HttpModule,
+    TypeOrmModule.forFeature([Tenant, WechatAuthorizer, WechatPlatformConfig]),
+  ],
+  controllers: [WechatController],
+  providers: [WechatService],
+  exports: [WechatService],
 })
-export class WechatModule { }
+export class WechatModule {}

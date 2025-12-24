@@ -12,9 +12,23 @@ import { ArticleSyncService } from './article-sync.service';
 import { Article } from '../entities/article.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Tenant, Article]), forwardRef(() => FeishuModule), ConfigModule],
-  providers: [SyncService, FeishuOrgSyncService, FeishuTableSyncService, ArticleSyncService],
-  exports: [SyncService, FeishuOrgSyncService, FeishuTableSyncService, ArticleSyncService],
+  imports: [
+    TypeOrmModule.forFeature([User, Tenant, Article]),
+    forwardRef(() => FeishuModule),
+    ConfigModule,
+  ],
+  providers: [
+    SyncService,
+    FeishuOrgSyncService,
+    FeishuTableSyncService,
+    ArticleSyncService,
+  ],
+  exports: [
+    SyncService,
+    FeishuOrgSyncService,
+    FeishuTableSyncService,
+    ArticleSyncService,
+  ],
   controllers: [SyncController],
 })
-export class SyncModule { }
+export class SyncModule {}

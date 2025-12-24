@@ -901,32 +901,39 @@ const saveDraft = async () => {
     const articleId = appStore.currentArticleId
     
     if (articleId) {
-      // 更新现有文章
-      const response = await fetch(`/api/articles/${articleId}/content`, {
+      // 🚀 并行优化：同时更新内容和图片库
+      console.log('[Step2] 正在并行保存内容和图片...')
+      const saveTasks = []
+
+      // 1. 更新内容
+      saveTasks.push(fetch(`/api/articles/${articleId}/content`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
         body: JSON.stringify({ content: cleanContent })
-      })
-      
-      if (!response.ok) {
-        throw new Error('保存失败')
-      }
+      }).then(r => {
+        if (!r.ok) throw new Error('保存内容失败')
+        return 'content'
+      }))
 
-      // V2: 同等重要的图片库持久化
+      // 2. 更新图片库 (V2: 持久化)
       if (appStore.wechatImages.length > 0) {
-        await fetch(`/api/articles/${articleId}/images`, {
+        saveTasks.push(fetch(`/api/articles/${articleId}/images`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify({ images: appStore.wechatImages })
-        })
+        }).then(r => {
+          if (!r.ok) throw new Error('保存图片库失败')
+          return 'images'
+        }))
       }
-      
+
+      await Promise.all(saveTasks)
       toast.success('草稿已保存！')
     } else {
       // 创建新文章 - 先创建，再更新内容

@@ -12,4 +12,4 @@ import { TenantController } from './tenant.controller';
   providers: [TenantService, TenantConfigService],
   exports: [TenantService, TenantConfigService],
 })
-export class TenantModule { }
+export class TenantModule {}

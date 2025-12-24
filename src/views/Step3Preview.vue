@@ -592,6 +592,12 @@ onMounted(async () => {
         // 设置标题
         draftForm.value.title = article.title
         
+        // 🚀 V3: 并行同步参与者姓名到 Store，无需额外请求
+        appStore.plannerNames = article.plannerNames || []
+        appStore.copywriterNames = article.copywriterNames || []
+        appStore.editorNames = article.editorNames || []
+        console.log('[Step3] 已同步参与者姓名')
+
         // 如果后端有保存的图片，同步到 store
         // 🛡️ 关键修复：无论后端返回什么，都替换 Store（包括空列表），防止旧图片残留
         console.log('[Step3] 后端返回的原始图片数据:', JSON.stringify(article.images))
@@ -609,9 +615,6 @@ onMounted(async () => {
         
         // 生成初始 HTML
         regenerate()
-        
-        // 然后获取真实姓名
-        fetchParticipants()
       }
     } catch (e) {
       console.error('[Step3] 加载文章失败:', e)
@@ -1042,34 +1045,6 @@ const goToPreviousStep = () => {
 
 
 
-// 🚀 V3: 获取文章参与者姓名并同步到 Store
-const fetchParticipants = async () => {
-  const articleId = appStore.currentArticleId
-  if (!articleId) return
-
-  try {
-    const response = await articleApi.getArticleById(articleId)
-    const data = response.data
-    
-    // 同步到 AppStore
-    appStore.plannerNames = data.plannerNames || []
-    appStore.copywriterNames = data.copywriterNames || []
-    appStore.editorNames = data.editorNames || []
-    
-    console.log('[Step3] 获取参与者成功:', {
-      planners: appStore.plannerNames,
-      copywriters: appStore.copywriterNames,
-      editors: appStore.editorNames
-    })
-    
-    // 加载完名字后，需要重新生成 HTML 以应用这些名字
-    generateHtml()
-  } catch (error) {
-    console.error('[Step3] 获取参与者详情失败:', error)
-  }
-}
-
-
 // 保存草稿到后端 - 保存内容和样式配置
 const saveDraft = async () => {
   if (isSaving.value) return
@@ -1095,33 +1070,34 @@ const saveDraft = async () => {
     console.log('[Step3] Auth Token:', localStorage.getItem('auth_token') ? '存在' : '不存在')
     
     if (articleId) {
-      // 更新现有文章 - 使用 Step3 专用端点（设置状态为 ADJUSTED）
-      console.log('[Step3] 正在更新文章内容（使用 step3-content 端点）...')
-      const response = await fetch(`/api/articles/${articleId}/step3-content`, {
+      // 🚀 并行优化：内容、图片库、样式配置同时保存
+      console.log('[Step3] 正在并行保存内容、图片和配置...')
+      
+      const saveTasks = []
+
+      // 1. 保存内容 (使用 Step3 专用端点)
+      saveTasks.push(fetch(`/api/articles/${articleId}/step3-content`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
         body: JSON.stringify({ content: cleanContent })
-      })
-      
-      console.log('[Step3] 内容保存响应状态:', response.status)
-      const responseData = await response.json().catch(() => null)
-      console.log('[Step3] 内容保存响应数据:', responseData)
-      
-      if (!response.ok) {
-        throw new Error(`保存内容失败: ${response.status} - ${responseData?.message || 'Unknown error'}`)
-      }
+      }).then(async r => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ message: 'Unknown error' }))
+          throw new Error(`保存内容失败: ${r.status} ${err.message}`)
+        }
+        return 'content'
+      }))
 
-      // V2: 持久化微信图片库 (🔑 关键：使用代理 URL 存储，确保跨用户可访问)
+      // 2. 保存图片库
       const imagesToSave = appStore.wechatImages
-        .filter(img => img.status === 'success' && img.mediaId) // 只保存成功上传的
+        .filter(img => img.status === 'success' && img.mediaId)
         .map(img => {
-          // 确保 URL 是代理格式，绕过微信防盗链
           let proxyUrl = ''
           if (img.url && !img.url.startsWith('blob:')) {
-            proxyUrl = getWechatProxyUrl(img.url) // 转换为代理 URL
+            proxyUrl = getWechatProxyUrl(img.url)
           }
           return {
             id: img.id,
@@ -1132,40 +1108,38 @@ const saveDraft = async () => {
           }
         })
       
-      console.log('[Step3] 准备保存的图片:', imagesToSave.map(i => ({ id: i.id, url: i.url?.substring(0, 50) })))
-      
       if (imagesToSave.length > 0) {
-        console.log('[Step3] 正在保存微信图片库...', imagesToSave.length, '张')
-        const requestBody = JSON.stringify({ images: imagesToSave })
-        console.log('[Step3] 发送的原始数据:', requestBody)
-        const imgResponse = await fetch(`/api/articles/${articleId}/images`, {
+        saveTasks.push(fetch(`/api/articles/${articleId}/images`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
-          body: requestBody
-        })
-        console.log('[Step3] 图片保存响应:', imgResponse.status)
-      } else {
-        console.log('[Step3] 没有可保存的图片（可能全是 blob 或未成功上传）')
+          body: JSON.stringify({ images: imagesToSave })
+        }).then(r => {
+          if (!r.ok) throw new Error('保存图片库失败')
+          return 'images'
+        }))
       }
-      
-      // 保存样式配置
-      const configResponse = await fetch(`/api/articles/${articleId}/config`, {
+
+      // 3. 保存样式配置
+      saveTasks.push(fetch(`/api/articles/${articleId}/config`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
         body: JSON.stringify({ config: appStore.styleConfig })
-      })
+      }).then(r => {
+        if (!r.ok) throw new Error('保存样式配置失败')
+        return 'config'
+      }))
+
+      // 等待所有任务完成
+      const results = await Promise.all(saveTasks)
+      console.log('[Step3] 并行保存完成:', results)
       
-      if (!configResponse.ok) {
-        console.warn('样式配置保存失败')
-      }
-      
-      toast.success('草稿已保存（包含内容和样式）')
+      toast.success('草稿已保存（内容、图片、样式同步完成）')
     } else {
       // 创建新文章 - 先创建，再更新内容
       const title = contentBlocks.value.find(b => b.type === 'title')?.text || '未命名文章'

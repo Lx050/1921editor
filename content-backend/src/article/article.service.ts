@@ -18,7 +18,7 @@ export class ArticleService {
     private userRepository: Repository<User>,
     private readonly articleSyncService: ArticleSyncService,
     private readonly tenantService: TenantService,
-  ) { }
+  ) {}
 
   private async triggerSync(id: string) {
     try {
@@ -27,7 +27,10 @@ export class ArticleService {
         relations: ['owner', 'tenant'],
       });
       if (article && article.tenant) {
-        await this.articleSyncService.syncArticleToFeishu(article, article.tenant);
+        await this.articleSyncService.syncArticleToFeishu(
+          article,
+          article.tenant,
+        );
       }
     } catch (error) {
       this.logger.warn(`同步文章到飞书失败: ${error.message}`);
@@ -37,15 +40,23 @@ export class ArticleService {
   /**
    * 将用户添加到指定角色的参与者列表中（去重）
    */
-  private async addParticipant(articleId: string, userId: string, role: 'planners' | 'copywriters' | 'editors') {
-    const article = await this.articleRepository.findOne({ where: { id: articleId } });
+  private async addParticipant(
+    articleId: string,
+    userId: string,
+    role: 'planners' | 'copywriters' | 'editors',
+  ) {
+    const article = await this.articleRepository.findOne({
+      where: { id: articleId },
+    });
     if (!article) return;
 
     const participants = article[role] || [];
     if (!participants.includes(userId)) {
       participants.push(userId);
       await this.articleRepository.update(articleId, { [role]: participants });
-      this.logger.log(`👤 自动记录参与者: 用户 ${userId} 已加入文章 ${articleId} 的 ${role} 列表`);
+      this.logger.log(
+        `👤 自动记录参与者: 用户 ${userId} 已加入文章 ${articleId} 的 ${role} 列表`,
+      );
     }
   }
 
@@ -54,17 +65,20 @@ export class ArticleService {
    */
   private async getParticipantNames(userIds: string[]): Promise<string[]> {
     if (!userIds || userIds.length === 0) return [];
-    const users = await this.userRepository.createQueryBuilder('user')
+    const users = await this.userRepository
+      .createQueryBuilder('user')
       .where('user.id IN (:...ids)', { ids: userIds })
       .getMany();
 
     // 按原始 ID 顺序排序姓名
-    const nameMap = new Map(users.map(u => [u.id, u.name || u.email]));
-    return userIds.map(id => nameMap.get(id)).filter(Boolean) as string[];
+    const nameMap = new Map(users.map((u) => [u.id, u.name || u.email]));
+    return userIds.map((id) => nameMap.get(id)).filter(Boolean) as string[];
   }
 
   async create(title: string, metadata?: Partial<Article>) {
-    this.logger.log(`📝 创建文章 - 标题: ${title}, 元数据: ${JSON.stringify(metadata)}`);
+    this.logger.log(
+      `📝 创建文章 - 标题: ${title}, 元数据: ${JSON.stringify(metadata)}`,
+    );
 
     const planners = metadata?.planners || [];
     if (metadata?.ownerId && !planners.includes(metadata.ownerId)) {
@@ -79,7 +93,9 @@ export class ArticleService {
     });
 
     const savedArticle = await this.articleRepository.save(article);
-    this.logger.log(`✅ 文章创建成功 - ID: ${savedArticle.id}, 所有者: ${savedArticle.ownerId}, 租户: ${savedArticle.tenantId}`);
+    this.logger.log(
+      `✅ 文章创建成功 - ID: ${savedArticle.id}, 所有者: ${savedArticle.ownerId}, 租户: ${savedArticle.tenantId}`,
+    );
 
     this.triggerSync(savedArticle.id); // 异步触发同步
 
@@ -127,8 +143,12 @@ export class ArticleService {
   }
 
   async updateStep3(id: string, images: any[], userId?: string) {
-    this.logger.log(`[updateStep3] 🖼️ 保存图片 - 文章ID: ${id}, 用户ID: ${userId}, 图片数量: ${images?.length || 0}`);
-    this.logger.log(`[updateStep3] 图片数据: ${JSON.stringify(images?.slice(0, 2))}`); // 只打印前2张
+    this.logger.log(
+      `[updateStep3] 🖼️ 保存图片 - 文章ID: ${id}, 用户ID: ${userId}, 图片数量: ${images?.length || 0}`,
+    );
+    this.logger.log(
+      `[updateStep3] 图片数据: ${JSON.stringify(images?.slice(0, 2))}`,
+    ); // 只打印前2张
 
     if (userId) await this.addParticipant(id, userId, 'editors');
     await this.articleRepository.update(id, {
@@ -144,10 +164,14 @@ export class ArticleService {
 
   // Step3 内容保存 - 设置状态为 ADJUSTED
   async updateStep3Content(id: string, content: string, userId?: string) {
-    this.logger.log(`[updateStep3Content] 开始保存 - ID: ${id}, 用户ID: ${userId}`);
+    this.logger.log(
+      `[updateStep3Content] 开始保存 - ID: ${id}, 用户ID: ${userId}`,
+    );
 
     // 先验证文章存在
-    const existingArticle = await this.articleRepository.findOne({ where: { id } });
+    const existingArticle = await this.articleRepository.findOne({
+      where: { id },
+    });
     if (!existingArticle) {
       this.logger.error(`[updateStep3Content] 文章不存在 - ID: ${id}`);
       throw new NotFoundException('Article not found');
@@ -161,7 +185,9 @@ export class ArticleService {
       status: ArticleStatus.ADJUSTED,
       updatedAt: new Date(),
     });
-    this.logger.log(`[updateStep3Content] 更新成功 - ID: ${id}, 状态: ADJUSTED`);
+    this.logger.log(
+      `[updateStep3Content] 更新成功 - ID: ${id}, 状态: ADJUSTED`,
+    );
     this.triggerSync(id);
     return this.findOne(id);
   }
@@ -184,20 +210,24 @@ export class ArticleService {
   }
 
   async findAll(user: User) {
-    this.logger.log(`🔍 查询文章列表 - 用户ID: ${user.id}, 租户ID: ${user.tenantId}`);
+    this.logger.log(
+      `🔍 查询文章列表 - 用户ID: ${user.id}, 租户ID: ${user.tenantId}`,
+    );
 
     // 按租户查询所有文章（同一组织共享文章池）
     const articles = await this.articleRepository.find({
       where: {
-        tenantId: user.tenantId  // 只按租户过滤，不按个人过滤
+        tenantId: user.tenantId, // 只按租户过滤，不按个人过滤
       },
-      relations: ['owner'],  // 加载文章所有者信息
+      relations: ['owner'], // 加载文章所有者信息
       order: { createdAt: 'DESC' },
     });
 
     this.logger.log(`📋 找到 ${articles.length} 篇文章（租户共享）`);
     articles.forEach((article, index) => {
-      this.logger.log(`  ${index + 1}. ${article.title} (${article.status}) - 创建者: ${article.owner?.name || article.ownerId}`);
+      this.logger.log(
+        `  ${index + 1}. ${article.title} (${article.status}) - 创建者: ${article.owner?.name || article.ownerId}`,
+      );
     });
 
     return articles;
@@ -218,7 +248,7 @@ export class ArticleService {
   async saveDraft(id: string, user: User) {
     // 验证文章是否存在且属于当前用户和租户
     const article = await this.articleRepository.findOne({
-      where: { id, ownerId: user.id, tenantId: user.tenantId }
+      where: { id, ownerId: user.id, tenantId: user.tenantId },
     });
 
     if (!article) {
@@ -229,13 +259,13 @@ export class ArticleService {
     if (article.status !== ArticleStatus.DRAFT) {
       await this.articleRepository.update(id, {
         status: ArticleStatus.DRAFT,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
       this.logger.log(`Article ${id} saved as draft by user ${user.id}`);
     } else {
       // 更新修改时间
       await this.articleRepository.update(id, {
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
       this.logger.log(`Draft ${id} updated by user ${user.id}`);
     }
