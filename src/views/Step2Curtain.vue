@@ -1,9 +1,9 @@
 <template>
   <div class="h-full flex overflow-hidden relative">
     <!-- 移动端样式选择开关 -->
-    <button 
+    <button
       @click="showMobileSidebar = !showMobileSidebar"
-      class="md:hidden fixed right-4 bottom-32 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+      class="md:hidden fixed right-4 bottom-32 z-50 bg-gradient-to-br from-[#ff6b4a] to-[#ff8566] text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
       title="切换样式面板"
     >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -12,16 +12,16 @@
     </button>
 
     <!-- 移动端遮罩层 -->
-    <div 
-      v-if="showMobileSidebar" 
+    <div
+      v-if="showMobileSidebar"
       @click="showMobileSidebar = false"
-      class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 md:hidden"
     ></div>
 
     <!-- 左侧样式选择面板 - 响应式 -->
-    <div 
+    <div
       :class="[
-        'w-64 flex-shrink-0 h-full fixed left-0 top-0 z-30 bg-white shadow-lg transition-transform duration-300 ease-in-out md:translate-x-0',
+        'w-64 flex-shrink-0 h-full fixed left-0 top-0 z-30 bg-[#141419]/95 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-in-out md:translate-x-0',
         showMobileSidebar ? 'translate-x-0' : '-translate-x-full'
       ]"
     >
@@ -32,13 +32,16 @@
     <div class="flex-1 flex flex-col h-full overflow-hidden md:ml-64 w-full">
       <!-- 头部 - 固定不滚动 -->
       <div class="flex-shrink-0 p-6 pb-4">
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">步骤 2/3: 编辑内容</h2>
-        <p class="text-gray-600 mb-3">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="magazine-badge">Step 2/3</span>
+        </div>
+        <h2 class="magazine-title-lg mb-2" style="color: var(--color-text-primary)">编辑内容</h2>
+        <p class="magazine-body-sm mb-4" style="color: var(--color-text-secondary)">
           左侧选择样式，点击文本块进行编辑，调整内容块的类型和顺序。
         </p>
         <!-- V2: 上传进度条 -->
-        <UploadProgress 
-          :progress="uploadProgress" 
+        <UploadProgress
+          :progress="uploadProgress"
           :isUploading="isUploading"
           @retry="retryFailedUploads"
         />

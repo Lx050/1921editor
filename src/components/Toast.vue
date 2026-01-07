@@ -5,7 +5,7 @@
         v-for="toast in toasts"
         :key="toast.id"
         :class="[
-          'px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 min-w-[280px] max-w-md animate-slideDown',
+          'px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 min-w-[280px] max-w-md border backdrop-blur-xl animate-slideDown',
           toastTypeClass(toast.type)
         ]"
       >
@@ -35,20 +35,20 @@ let toastId = 0
 
 const toastTypeClass = (type: string) => {
   const classes = {
-    success: 'bg-green-600 text-white',
-    error: 'bg-red-600 text-white',
-    warning: 'bg-yellow-500 text-white',
-    info: 'bg-blue-600 text-white'
+    success: 'bg-[#2dd4a6]/20 text-[#2dd4a6] border-[#2dd4a6]/30',
+    error: 'bg-[#f87171]/20 text-[#f87171] border-[#f87171]/30',
+    warning: 'bg-[#d4a574]/20 text-[#d4a574] border-[#d4a574]/30',
+    info: 'bg-[#60a5fa]/20 text-[#60a5fa] border-[#60a5fa]/30'
   }
   return classes[type] || classes.info
 }
 
 const toastIcon = (type: string) => {
   const icons = {
-    success: '✅',
-    error: '❌',
-    warning: '⚠️',
-    info: 'ℹ️'
+    success: '✓',
+    error: '✕',
+    warning: '⚠',
+    info: 'ℹ'
   }
   return icons[type] || icons.info
 }
@@ -56,7 +56,7 @@ const toastIcon = (type: string) => {
 const addToast = (type: Toast['type'], message: string, duration = 3000) => {
   const id = ++toastId
   toasts.value.push({ id, type, message })
-  
+
   if (duration > 0) {
     setTimeout(() => removeToast(id), duration)
   }
@@ -90,31 +90,31 @@ defineExpose({ addToast, removeToast })
 <style scoped>
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s var(--ease-out-expo);
 }
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-20px) scale(0.95);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(100px);
+  transform: translateX(100px) scale(0.98);
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-10px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .animate-slideDown {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.4s var(--ease-out-expo);
 }
 </style>

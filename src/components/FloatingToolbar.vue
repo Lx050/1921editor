@@ -1,26 +1,26 @@
 <template>
   <div
     v-if="visible"
-    class="absolute z-10 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-2"
+    class="absolute z-10 mt-2 bg-[#141419] border border-white/10 rounded-xl shadow-2xl p-2 backdrop-blur-xl"
     :style="{ left: position.x + 'px', top: position.y + 'px' }"
   >
-    <div class="text-xs text-gray-500 mb-2 px-2">设置类型</div>
+    <div class="text-xs text-[#606070] mb-2 px-2 uppercase tracking-wider">设置类型</div>
     <div class="flex flex-col space-y-1">
       <button
         v-for="option in typeOptions"
         :key="option.value"
         @click="selectType(option.value)"
         :class="[
-          'px-3 py-2 text-left text-sm rounded-md transition-colors flex items-center justify-between',
+          'px-3 py-2 text-left text-sm rounded-md transition-all duration-200 flex items-center justify-between',
           blockType === option.value
-            ? 'bg-blue-100 text-blue-700 font-medium'
-            : 'hover:bg-gray-100 text-gray-700'
+            ? 'bg-[#ff6b4a]/20 text-[#ff6b4a] font-medium'
+            : 'hover:bg-[#252530] text-[#a0a0b0]'
         ]"
       >
         <span>{{ option.label }}</span>
         <span
           v-if="blockType === option.value"
-          class="text-blue-600"
+          class="text-[#ff6b4a]"
         >
           ✓
         </span>

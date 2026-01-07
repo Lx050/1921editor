@@ -1,25 +1,25 @@
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
   >
-    <div class="bg-white rounded-lg max-w-md w-full p-6">
-      <h3 class="text-lg font-bold text-gray-900 mb-2">{{ title }}</h3>
-      <p class="text-sm text-gray-600 mb-4">{{ message }}</p>
+    <div class="bg-[#141419] rounded-2xl max-w-md w-full p-6 border border-white/10 shadow-2xl">
+      <h3 class="magazine-title-md text-[#f5f5f5] mb-2">{{ title }}</h3>
+      <p class="text-sm text-[#a0a0b0] mb-4">{{ message }}</p>
 
       <!-- 草稿链接 -->
       <div v-if="draftUrl" class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">草稿链接</label>
+        <label class="block text-sm font-medium text-[#a0a0b0] mb-2">草稿链接</label>
         <div class="flex items-center space-x-2">
           <input
             type="text"
             :value="draftUrl"
             readonly
-            class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50"
+            class="magazine-input flex-1 text-sm"
           />
           <button
             @click="copyDraftUrl"
-            class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+            class="magazine-btn magazine-btn-secondary text-sm"
           >
             复制
           </button>
@@ -28,15 +28,15 @@
 
       <!-- 二维码 -->
       <div v-if="qrCodeUrl" class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">扫码查看草稿</label>
-        <div class="flex justify-center">
+        <label class="block text-sm font-medium text-[#a0a0b0] mb-2">扫码查看草稿</label>
+        <div class="flex justify-center bg-[#0a0a0c] p-4 rounded-lg border border-white/10">
           <img :src="qrCodeUrl" alt="草稿二维码" class="w-32 h-32" />
         </div>
       </div>
 
       <!-- 错误信息 -->
-      <div v-if="error" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-        <p class="text-sm text-red-600">{{ error }}</p>
+      <div v-if="error" class="mb-4 p-3 bg-[#f87171]/10 border border-[#f87171]/30 rounded-lg">
+        <p class="text-sm text-[#f87171]">{{ error }}</p>
       </div>
 
       <!-- 按钮 -->
@@ -44,13 +44,13 @@
         <button
           v-if="showCancel"
           @click="$emit('cancel')"
-          class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+          class="magazine-btn magazine-btn-secondary"
         >
           取消
         </button>
         <button
           @click="$emit('confirm')"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          class="magazine-btn bg-gradient-to-r from-[#ff6b4a] to-[#ff8566] text-white"
         >
           确定
         </button>

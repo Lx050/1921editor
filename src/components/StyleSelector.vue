@@ -1,29 +1,33 @@
 <template>
-  <div class="h-full flex flex-col bg-gray-50 border-r border-gray-200">
+  <div class="h-full flex flex-col bg-[#141419]/95 backdrop-blur-xl border-r border-white/10">
     <!-- 标题 -->
-    <div class="p-4 border-b border-gray-200 bg-white">
-      <h3 class="text-sm font-semibold text-gray-900">样式选择</h3>
-      <p class="text-xs text-gray-500 mt-1">点击应用样式</p>
+    <div class="p-4 border-b border-white/10">
+      <h3 class="magazine-title-sm text-[#f5f5f5]">样式选择</h3>
+      <p class="text-xs text-[#606070] mt-1">点击应用样式</p>
     </div>
 
     <!-- Tab 切换 -->
-    <div class="flex border-b border-gray-200 bg-white">
+    <div class="flex border-b border-white/10">
       <button
         v-for="tab in tabs"
         :key="tab.value"
         @click="activeTab = tab.value"
         :class="[
-          'flex-1 px-3 py-2 text-sm font-medium transition-colors',
+          'flex-1 px-3 py-2 text-sm font-medium transition-all duration-200 relative',
           activeTab === tab.value
-            ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            ? 'text-[#ff6b4a]'
+            : 'text-[#606070] hover:text-[#a0a0b0]'
         ]"
       >
         {{ tab.label }}
+        <div
+          v-if="activeTab === tab.value"
+          class="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ff6b4a] to-[#d4a574]"
+        ></div>
       </button>
     </div>
 
-    <!-- 缩略图网格 - 不滚动，显示所有内容 -->
+    <!-- 缩略图网格 -->
     <div class="flex-1 p-3 overflow-y-auto">
       <div class="grid grid-cols-2 gap-2">
         <div
@@ -31,22 +35,24 @@
           :key="style.id"
           @click="selectStyle(style)"
           :class="[
-            'relative cursor-pointer border-2 rounded-lg p-2 transition-all hover:shadow-md',
-            isSelected(style) ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+            'relative cursor-pointer border-2 rounded-lg p-2 transition-all duration-200',
+            isSelected(style)
+              ? 'border-[#ff6b4a] bg-[#ff6b4a]/10 shadow-lg'
+              : 'border-white/10 hover:border-[#ff6b4a]/30 bg-[#1e1e26] hover:bg-[#252530]'
           ]"
         >
           <!-- 缩略图预览 -->
-          <div class="h-16 overflow-hidden rounded bg-white flex items-center justify-center">
+          <div class="h-16 overflow-hidden rounded bg-[#0a0a0c] flex items-center justify-center">
             <div v-html="sanitizeHtml(style.preview)" class="transform scale-90"></div>
           </div>
-          
+
           <!-- 样式名称 -->
-          <div class="mt-1 text-xs text-center text-gray-700 font-medium truncate">
+          <div class="mt-1 text-xs text-center font-medium truncate" :class="isSelected(style) ? 'text-[#ff6b4a]' : 'text-[#a0a0b0]'">
             {{ style.name }}
           </div>
 
           <!-- 选中标记 -->
-          <div v-if="isSelected(style)" class="absolute top-1 right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+          <div v-if="isSelected(style)" class="absolute top-1 right-1 w-5 h-5 bg-gradient-to-br from-[#ff6b4a] to-[#ff8566] rounded-full flex items-center justify-center shadow-lg">
             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
             </svg>
@@ -55,16 +61,16 @@
       </div>
 
       <!-- 空状态 -->
-      <div v-if="currentStyles.length === 0" class="text-center py-8 text-gray-400 text-sm">
+      <div v-if="currentStyles.length === 0" class="text-center py-8 text-[#606070] text-sm">
         暂无样式
       </div>
     </div>
 
     <!-- 管理样式库按钮 -->
-    <div class="p-3 border-t border-gray-200 bg-white">
+    <div class="p-3 border-t border-white/10">
       <button
         @click="goToStyleConfig"
-        class="w-full px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 font-medium rounded-lg transition-colors text-sm flex items-center justify-center space-x-2"
+        class="w-full px-4 py-2 bg-[#d4a574]/20 hover:bg-[#d4a574]/30 text-[#d4a574] font-medium rounded-lg transition-all duration-200 text-sm flex items-center justify-center space-x-2 border border-[#d4a574]/30"
       >
         <span>🎨</span>
         <span>管理样式库</span>
