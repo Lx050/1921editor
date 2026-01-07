@@ -21,7 +21,7 @@ import imagePreloader from '../utils/imagePreloader'
 // 这些资源在开发环境中不存在或路径不正确
 const criticalResources: Array<{
   rel: string
-  href: string
+  url: string
   as?: string
   type?: string
   crossorigin?: string
