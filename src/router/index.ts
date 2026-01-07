@@ -157,7 +157,7 @@ const logRouteGuard = (to: string, passed: boolean, message: string): void => {
 }
 
 // 导航守卫 - 确保正确的步骤流程
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const appStore = useAppStore()
 
   // 检查目标路由是否有保护规则

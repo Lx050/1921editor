@@ -34,7 +34,7 @@ const toasts = ref<Toast[]>([])
 let toastId = 0
 
 const toastTypeClass = (type: string) => {
-  const classes = {
+  const classes: Record<string, string> = {
     success: 'bg-[#2dd4a6]/20 text-[#2dd4a6] border-[#2dd4a6]/30',
     error: 'bg-[#f87171]/20 text-[#f87171] border-[#f87171]/30',
     warning: 'bg-[#d4a574]/20 text-[#d4a574] border-[#d4a574]/30',
@@ -44,7 +44,7 @@ const toastTypeClass = (type: string) => {
 }
 
 const toastIcon = (type: string) => {
-  const icons = {
+  const icons: Record<string, string> = {
     success: '✓',
     error: '✕',
     warning: '⚠',

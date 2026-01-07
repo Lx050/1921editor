@@ -530,7 +530,7 @@ async function toggleAutoRenewal(account: WechatAccount): Promise<void> {
 /**
  * 获取续期状态图标
  */
-function getRenewalStatusClass(account: WechatAccount): string {
+function getRenewalStatusClass(_account: WechatAccount): string {
   // 这里可以根据实际的续期状态返回不同的图标类
   return 'icon-check'; // 示例
 }
@@ -538,7 +538,7 @@ function getRenewalStatusClass(account: WechatAccount): string {
 /**
  * 获取续期状态文本
  */
-function getRenewalStatusText(account: WechatAccount): string {
+function getRenewalStatusText(_account: WechatAccount): string {
   // 这里可以根据实际的续期状态返回不同的文本
   return '自动续期已启用'; // 示例
 }
@@ -551,15 +551,15 @@ function reauthorize(account: WechatAccount) {
   showReauthModal.value = true;
 }
 
-function forceRenewal(account: WechatAccount) {
+function forceRenewal(_account: WechatAccount) {
   // 强制续期逻辑
 }
 
-function switchAccount(account: WechatAccount) {
+function switchAccount(_account: WechatAccount) {
   // 切换账号逻辑
 }
 
-function removeAccount(account: WechatAccount) {
+function removeAccount(_account: WechatAccount) {
   // 移除账号逻辑
 }
 

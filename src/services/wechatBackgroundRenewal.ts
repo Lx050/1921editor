@@ -2,7 +2,6 @@
  * 微信后台无感知续期服务
  * 在用户无感知的情况下自动完成续期操作
  */
-import { WechatApiService } from '@/services/wechatApiService';
 
 interface RenewalTask {
   id: string;
@@ -176,7 +175,7 @@ export class WechatBackgroundRenewal {
         success: false,
         taskId: task.id,
         completedAt: Date.now(),
-        error: error.message,
+        error: (error as any).message,
       };
     } finally {
       // 从活跃列表中移除
@@ -283,7 +282,7 @@ export class WechatBackgroundRenewal {
       if (!result.valid) {
         throw new Error('Token无效');
       }
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Token验证异常: ${error.message}`);
     }
   }
@@ -297,7 +296,7 @@ export class WechatBackgroundRenewal {
     try {
       const registration = this.serviceWorkerRegistration;
       if ('periodicSync' in registration) {
-        await registration.periodicSync.register('wechat-renewal-check', {
+        await (registration as any).periodicSync.register('wechat-renewal-check', {
           minInterval: 60 * 60 * 1000, // 每小时检查一次
         });
         console.log('[后台续期] 周期性同步注册成功');

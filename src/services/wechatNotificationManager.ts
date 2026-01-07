@@ -2,7 +2,13 @@
  * 微信续期智能通知管理器
  * 根据用户习惯和场景智能选择提醒方式
  */
-import { WechatNotificationChannel } from './notificationChannels';
+
+// 声明 window.wx
+declare global {
+  interface Window {
+    wx: any;
+  }
+}
 
 interface NotificationOptions {
   title: string;
@@ -11,7 +17,7 @@ interface NotificationOptions {
   actions?: NotificationAction[];
   persistent?: boolean;
   timeout?: number;
-  vibration?: boolean;
+  vibration?: boolean | number[];
   sound?: string;
 }
 
@@ -31,7 +37,7 @@ interface UserBehaviorPattern {
 
 export class WechatNotificationManager {
   private notificationChannels: Map<string, WechatNotificationChannel>;
-  private userBehavior: UserBehaviorPattern;
+  private userBehavior!: UserBehaviorPattern;
   private notificationHistory: Map<string, number[]>;
 
   constructor() {
@@ -291,7 +297,7 @@ export class WechatNotificationManager {
   /**
    * 记录通知事件
    */
-  private recordNotificationEvent(title: string, results: PromiseSettledResult<boolean>[]): void {
+  private recordNotificationEvent(title: string, _results: PromiseSettledResult<boolean>[]): void {
     const timestamp = Date.now();
 
     if (!this.notificationHistory.has(title)) {
@@ -334,7 +340,7 @@ export class WechatNotificationManager {
       this.showWarning(title, message, {
         actions: [{
           label: '知道了',
-          action: () => {},
+          action: () => { },
           primary: true,
         }],
       });
@@ -457,11 +463,10 @@ class SystemNotificationChannel extends WechatNotificationChannel {
         body: options.message,
         icon: '/icons/wechat-notification.png',
         badge: '/icons/wechat-badge.png',
-        vibrate: options.vibration,
         silent: options.vibration === false,
         requireInteraction: options.persistent,
         tag: 'wechat-renewal',
-      });
+      } as any);
 
       if (options.actions && options.actions.length > 0) {
         // 注意：某些浏览器可能不支持通知操作按钮

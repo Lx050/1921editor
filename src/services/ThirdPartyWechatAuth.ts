@@ -8,7 +8,6 @@ export class ThirdPartyWechatAuth {
   private openPlatformAppId: string;
   private callbackUrl: string;
   private storeAuthCallback!: (authData: any) => void;
-  private getAuthCallback!: (appId: string) => any;
 
   constructor() {
     this.openPlatformAppId = process.env.REACT_APP_WECHAT_OPEN_APP_ID!;
@@ -30,7 +29,6 @@ export class ThirdPartyWechatAuth {
     getAuth: (appId: string) => any;
   }) {
     this.storeAuthCallback = storageCallbacks.storeAuth;
-    this.getAuthCallback = storageCallbacks.getAuth;
   }
 
   /**

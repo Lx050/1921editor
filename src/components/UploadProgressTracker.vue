@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed } from 'vue';
 
 interface Props {
   title?: string
@@ -163,14 +163,7 @@ const canPause = computed(() => activeTasks.value > 0 && !isPaused.value)
 const canResume = computed(() => isPaused.value && !isCancelled.value)
 const canCancel = computed(() => !isCancelled.value && (activeTasks.value > 0 || completedTasks.value < totalTasks.value))
 
-// 是否应该隐藏组件
-const shouldHide = computed(() => {
-  return props.autoHide &&
-         totalTasks.value > 0 &&
-         completedTasks.value + failedTasks.value === totalTasks.value &&
-         !isPaused.value &&
-         !isCancelled.value
-})
+
 
 // 方法
 const addTask = (task: Omit<TaskProgress, 'id'>) => {

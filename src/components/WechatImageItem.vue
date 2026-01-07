@@ -30,7 +30,6 @@
 </template>
 
 <script setup lang="ts">
-import type { WechatImage } from '@/types'
 import LazyImage from './LazyImage.vue'
 
 defineProps<{

@@ -19,7 +19,7 @@ export class ResourcePreloader {
    * 预加载单个资源
    */
   static preload(resource: PreloadResource): Promise<void> {
-    const { url, type, priority = 'auto', crossOrigin = false, integrity } = resource
+    const { url } = resource
 
     // 检查是否已经预加载
     if (this.preloadedResources.has(url)) {

@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps<{
   previewHtml: string
@@ -82,7 +82,7 @@ const updateTime = () => {
   })
 }
 
-let timer: NodeJS.Timeout
+let timer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   updateTime()

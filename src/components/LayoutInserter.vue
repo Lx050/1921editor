@@ -137,7 +137,7 @@ const imageOptions = [
 const insertOptions = [...textOptions, ...imageOptions]
 
 // 切换菜单显示
-const toggleMenu = (event) => {
+const toggleMenu = (event: MouseEvent) => {
   event.stopPropagation()
   menuVisible.value = !menuVisible.value
 }
@@ -148,7 +148,7 @@ const closeMenu = () => {
 }
 
 // 插入内容
-const insertContent = (optionValue) => {
+const insertContent = (optionValue: string) => {
   const option = insertOptions.find(opt => opt.value === optionValue)
   if (option) {
     if (option.type === 'text') {

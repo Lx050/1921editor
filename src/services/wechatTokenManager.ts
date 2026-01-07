@@ -7,6 +7,7 @@ interface WechatTokenData {
   access_token: string;
   refresh_token: string;
   expires_at: number;
+  expires_in?: number;
   openid: string;
   unionid?: string;
 }
@@ -14,7 +15,7 @@ interface WechatTokenData {
 export class WechatTokenManager {
   private static instance: WechatTokenManager;
   private tokens: Map<string, WechatTokenData> = new Map();
-  private refreshTimer: NodeJS.Timeout | null = null;
+  private refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
   private constructor() {
     this.loadTokensFromStorage();
@@ -330,7 +331,7 @@ export class WechatTokenManager {
   /**
    * 获取所有用户状态
    */
-  getAllUsersStatus(): Array<{openid: string; expiresAt: number; refreshRemainingTime: number; needsReauth: boolean}> {
+  getAllUsersStatus(): Array<{ openid: string; expiresAt: number; refreshRemainingTime: number; needsReauth: boolean }> {
     const status = [];
 
     for (const [openid, tokenData] of this.tokens.entries()) {

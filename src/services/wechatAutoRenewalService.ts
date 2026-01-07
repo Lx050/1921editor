@@ -2,7 +2,6 @@
  * 微信自动续期服务 - 移动端专用
  * 目标：让用户感觉不到30天的授权限制
  */
-import { useWechatAuthStore } from '@/stores/wechatAuthStore';
 import { WechatNotificationManager } from './wechatNotificationManager';
 import { WechatBackgroundRenewal } from './wechatBackgroundRenewal';
 
@@ -34,7 +33,7 @@ export class WechatAutoRenewalService {
 
   private notificationManager: WechatNotificationManager;
   private backgroundRenewal: WechatBackgroundRenewal;
-  private healthMonitorInterval: NodeJS.Timeout;
+  private healthMonitorInterval: ReturnType<typeof setInterval> | null = null;
 
   private constructor() {
     this.notificationManager = new WechatNotificationManager();
@@ -240,7 +239,6 @@ export class WechatAutoRenewalService {
    * 计算最佳续期时机
    */
   private async calculateOptimalRenewalTime(health: AccountHealthStatus): Promise<number> {
-    const now = Date.now();
     const expiresAt = health.expiresAt;
 
     // 基于历史数据和当前网络状况计算最佳时机
@@ -309,7 +307,7 @@ export class WechatAutoRenewalService {
       window.location.href = authUrl;
     } catch (error) {
       console.error('[WeChat自动续期] 启动手动重新授权失败:', error);
-      this.notificationManager.showError('启动重新授权失败，请重试');
+      this.notificationManager.showError('授权异常', '启动重新授权失败，请重试');
     }
   }
 
@@ -389,24 +387,24 @@ export class WechatAutoRenewalService {
     return [];
   }
 
-  private async getRenewalHistory(accountId: string) {
+  private async getRenewalHistory(_accountId: string) {
     // 实现获取续期历史的逻辑
     return { recentFailures: 0, lastRenewalAt: 0, totalRenewals: 0 };
   }
 
-  private updateHealthDisplay(statuses: AccountHealthStatus[]) {
+  private updateHealthDisplay(_statuses: AccountHealthStatus[]) {
     // 更新UI显示健康状态
   }
 
-  private async sendScheduledReminder(health: AccountHealthStatus) {
+  private async sendScheduledReminder(_health: AccountHealthStatus) {
     // 发送定时提醒
   }
 
-  private scheduleRenewal(accountId: string, delay: number) {
+  private scheduleRenewal(_accountId: string, _delay: number) {
     // 调度续期任务
   }
 
-  private async recordSuccessfulRenewal(health: AccountHealthStatus) {
+  private async recordSuccessfulRenewal(_health: AccountHealthStatus) {
     // 记录成功续期
   }
 
@@ -415,7 +413,7 @@ export class WechatAutoRenewalService {
     return 0.9;
   }
 
-  private async getHistoricalSuccessRate(accountId: string): Promise<number> {
+  private async getHistoricalSuccessRate(_accountId: string): Promise<number> {
     // 获取历史成功率 (0-1)
     return 0.95;
   }
@@ -425,11 +423,11 @@ export class WechatAutoRenewalService {
     return null;
   }
 
-  private async switchToBackupAccount(failedAccount: AccountHealthStatus, backupAccount: any) {
+  private async switchToBackupAccount(_failedAccount: AccountHealthStatus, _backupAccount: any) {
     // 切换到备用账号
   }
 
-  private scheduleManualReminder(accountId: string, hours: number) {
+  private scheduleManualReminder(_accountId: string, _hours: number) {
     // 调度手动提醒
   }
 }

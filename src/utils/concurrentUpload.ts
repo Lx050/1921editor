@@ -38,7 +38,6 @@ export class ConcurrentUploadManager {
   private config: Required<UploadConfig>
   private activeTasks = new Map<string, UploadTask>()
   private progressCallbacks = new Set<(progress: UploadProgress) => void>()
-  private queue: UploadTask[] = []
   private activeUploads = new Set<string>()
   private stats = {
     total: 0,
@@ -118,14 +117,14 @@ export class ConcurrentUploadManager {
     this.activeTasks.clear()
     tasks.forEach(task => this.activeTasks.set(task.id, task))
 
-    // 使用Promise.allSettled进行并发控制
+    // 使用并发控制处理任务
     const results = await this.processWithConcurrency(
       tasks,
       (task) => this.downloadAndUploadSingle(task, uploadFn)
     )
 
-    const successful = results.filter(r => r.status === 'fulfilled')
-    const failed = results.filter(r => r.status === 'rejected')
+    const successful = results.filter((r): r is PromiseFulfilledResult<{ original: string; newUrl: string }> => r.status === 'fulfilled')
+    const failed = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
 
     this.stats.completed = successful.length
     this.stats.failed = failed.length
@@ -134,7 +133,7 @@ export class ConcurrentUploadManager {
 
     return {
       results: successful.map(r => r.value),
-      errors: failed.map(r => ({ url: '', error: r.reason.message }))
+      errors: failed.map(r => ({ url: '', error: r.reason instanceof Error ? r.reason.message : String(r.reason) }))
     }
   }
 
@@ -145,34 +144,30 @@ export class ConcurrentUploadManager {
     items: T[],
     processor: (item: T) => Promise<R>
   ): Promise<PromiseSettledResult<R>[]> {
-    const results: PromiseSettledResult<R>[] = []
-    const executing: Promise<void>[] = []
+    const results: Promise<PromiseSettledResult<R>>[] = []
+    const executing: Promise<any>[] = []
 
     for (const item of items) {
       const promise = processor(item)
         .then(result => ({ status: 'fulfilled', value: result } as PromiseSettledResult<R>))
         .catch(error => ({ status: 'rejected', reason: error } as PromiseSettledResult<R>))
-        .finally(() => {
-          // 从执行队列中移除
-          const index = executing.indexOf(promise as any)
-          if (index > -1) {
-            executing.splice(index, 1)
-          }
-        })
 
       results.push(promise)
-      executing.push(promise as any)
 
-      // 控制并发数
+      const e: Promise<any> = promise.finally(() => {
+        const index = executing.indexOf(e)
+        if (index > -1) {
+          executing.splice(index, 1)
+        }
+      })
+      executing.push(e)
+
       if (executing.length >= this.config.maxConcurrent) {
         await Promise.race(executing)
       }
     }
 
-    // 等待所有任务完成
-    await Promise.all(executing)
-
-    return results
+    return Promise.all(results)
   }
 
   /**
@@ -279,8 +274,10 @@ export class ConcurrentUploadManager {
         const { done, value } = await reader.read()
         if (done) break
 
-        chunks.push(value)
-        received += value.length
+        if (value) {
+          chunks.push(value)
+          received += value.length
+        }
 
         // 更新进度
         if (total > 0) {
@@ -297,7 +294,7 @@ export class ConcurrentUploadManager {
       clearTimeout(timeoutId)
 
       // 合并所有chunks
-      const blob = new Blob(chunks)
+      const blob = new Blob(chunks as BlobPart[])
       const fileName = this.extractFileName(task.url) || `image-${Date.now()}.png`
       const mimeType = blob.type || this.getMimeTypeFromUrl(task.url)
 
@@ -328,8 +325,6 @@ export class ConcurrentUploadManager {
     file: File,
     uploadFn: (file: File) => Promise<{ url: string }>
   ): Promise<{ url: string }> {
-    const startTime = Date.now()
-
     // 如果uploadFn不支持进度，我们就模拟进度
     const uploadPromise = uploadFn(file)
 
@@ -379,7 +374,6 @@ export class ConcurrentUploadManager {
    */
   cancelAll(): void {
     this.activeTasks.clear()
-    this.queue = []
     this.activeUploads.clear()
   }
 
@@ -487,7 +481,16 @@ export class ConcurrentUploadManager {
       img.src = objectURL
 
       // 清理 Object URL
-      img.onload = () => URL.revokeObjectURL(objectURL)
+      img.onload = () => {
+        URL.revokeObjectURL(objectURL)
+      }
+
+      // 注意：上面的 onload 会覆盖前面的 onload，所以需要合并
+      const originalOnload = img.onload;
+      img.onload = () => {
+        if (originalOnload) (originalOnload as any).call(img);
+        URL.revokeObjectURL(objectURL);
+      };
     })
   }
 }

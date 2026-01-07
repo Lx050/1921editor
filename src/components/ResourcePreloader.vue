@@ -61,7 +61,7 @@ function preloadCriticalImages() {
 
   if (currentPath === '/') {
     // 首页的关键图片
-    const criticalImages = [
+    const criticalImages: string[] = [
       // 添加首页可能需要的图片资源
     ]
 

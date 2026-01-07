@@ -7,7 +7,7 @@ export class WechatService {
   private static instance: WechatService;
   private tokenCache: Map<string, { token: string; expireTime: number }> = new Map();
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): WechatService {
     if (!WechatService.instance) {
@@ -125,7 +125,7 @@ export class WechatService {
     try {
       const response = await fetch('/api/wechat/status');
       return await response.json();
-    } catch (error) {
+    } catch (error: any) {
       console.error('检查服务状态失败:', error);
       return { status: 'error', message: error.message };
     }

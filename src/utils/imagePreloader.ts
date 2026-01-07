@@ -109,7 +109,7 @@ class ImagePreloader {
    */
   preloadCriticalImages(): void {
     // 预加载 Logo 和品牌图片
-    const criticalImages = [
+    const criticalImages: string[] = [
       // 根据实际项目需要添加关键图片URL
     ]
 

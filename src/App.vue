@@ -126,22 +126,17 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from './stores/appStore'
-import { useConfigStore } from './stores/configStore'
 import ResourcePreloader from './components/ResourcePreloader.vue'
 import Toast from './components/Toast.vue'
-import toast from './composables/useToast'
+import { ArticleService } from './services/articleService'
 
 const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
-const configStore = useConfigStore()
-
-// 检测是否为开发环境
-const isDev = import.meta.env.DEV
 
 // 检查是否为Dashboard页面
 const isDashboardPage = computed(() => {
@@ -184,73 +179,13 @@ const goToHome = () => {
 // 保存草稿并返回首页
 const saveAsDraftAndGoHome = async () => {
   try {
-    // 检查是否有当前的文章ID
-    let articleId = appStore.currentArticleId
-
-    // 如果没有当前文章ID，需要先创建文章
-    if (!articleId) {
-      // 从appStore获取必要的数据创建新文章
-      const title = appStore.rawText ? appStore.rawText.substring(0, 20) + '...' : '未命名文章'
-
-      // 导入创建文章的API
-      const { createArticle } = await import('./api/article')
-      const newArticle = await createArticle(title)
-      articleId = newArticle.id
-
-      // 保存文章ID到store
-      appStore.setCurrentArticleId(articleId)
-
-      // 🚀 并行优化：同时更新配置和内容
-      const saveTasks = []
-      
-      if (appStore.rawText) {
-        saveTasks.push((async () => {
-          const { updateArticleConfig } = await import('./api/article')
-          return updateArticleConfig(articleId, { rawText: appStore.rawText })
-        })())
-      }
-
-      if (appStore.contentBlocks && appStore.contentBlocks.length > 0) {
-        saveTasks.push((async () => {
-          const cleanedBlocks = appStore.contentBlocks.map(block => ({
-            type: block.type,
-            text: block.text || '',
-            ...(block.meta?.aiImageUrl && { aiImageUrl: block.meta.aiImageUrl })
-          }))
-          const { updateArticleContent } = await import('./api/article')
-          return updateArticleContent(articleId, JSON.stringify(cleanedBlocks))
-        })())
-      }
-      
-      if (saveTasks.length > 0) {
-        await Promise.all(saveTasks)
-      }
-    }
-
-    // 调用保存草稿API
-    const { saveArticleDraft } = await import('./api/article')
-    await saveArticleDraft(articleId)
-
-    console.log('草稿保存成功:', articleId)
-    toast.success('草稿保存成功！')
-
+    await ArticleService.saveCurrentAsDraft()
     // 保存成功后返回首页
     router.push('/')
-  } catch (error) {
-    console.error('保存草稿失败:', error)
-
-    // 提供详细的错误信息
-    let errorMessage = '保存草稿失败'
-    if (error.response?.data?.message) {
-      errorMessage = `保存失败: ${error.response.data.message}`
-    } else if (error.message) {
-      errorMessage = `保存失败: ${error.message}`
-    }
-
-    toast.error(errorMessage)
-    
+  } catch (error: any) {
+    // 错误已经在 service 中处理并弹出了 toast
     // 即使保存失败，也允许用户选择是否返回首页
-    if (confirm(`${errorMessage}，是否仍要返回首页？`)) {
+    if (confirm(`${error.message}，是否仍要返回首页？`)) {
       router.push('/')
     }
   }

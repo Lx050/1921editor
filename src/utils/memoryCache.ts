@@ -22,7 +22,7 @@ export class MemoryCache {
   private static instance: MemoryCache
   private cache = new Map<string, CacheItem>()
   private options: Required<CacheOptions>
-  private cleanupTimer: NodeJS.Timeout | null = null
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null
   private currentMemorySize = 0
 
   private constructor(options: CacheOptions = {}) {
@@ -334,7 +334,7 @@ export const memoryCache = MemoryCache.getInstance()
 
 // 缓存装饰器
 export function cached(ttl?: number, keyGenerator?: (...args: any[]) => string) {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (_target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value
 
     descriptor.value = async function (...args: any[]) {
