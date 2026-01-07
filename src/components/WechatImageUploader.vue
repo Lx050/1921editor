@@ -9,7 +9,7 @@
       <div v-if="!files.length" class="upload-placeholder">
         <i class="upload-icon">📷</i>
         <p>点击或拖拽图片到此处上传</p>
-        <button class="upload-btn" @click="$refs.fileInput.click()">
+        <button class="upload-btn" @click="handleUploadClick">
           选择图片
         </button>
         <input ref="fileInput" type="file" accept="image/*" multiple @change="handleFileSelect" hidden>
@@ -45,7 +45,7 @@
         </div>
 
         <!-- 添加更多按钮 -->
-        <div class="add-more-btn" @click="$refs.fileInput.click()">
+        <div class="add-more-btn" @click="handleUploadClick">
           <i class="add-icon">+</i>
           <span>添加更多</span>
         </div>
@@ -97,6 +97,11 @@ interface UploadResult {
 const files = ref<UploadFile[]>([]);
 const uploadResults = ref<UploadResult[]>([]);
 const isDragOver = ref(false);
+const fileInput = ref<HTMLInputElement | null>(null);
+
+const handleUploadClick = () => {
+  fileInput.value?.click();
+};
 
 // 文件选择处理
 const handleFileSelect = (event: Event) => {
@@ -178,7 +183,7 @@ const uploadImage = async (uploadFile: UploadFile) => {
     });
     document.dispatchEvent(event);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('图片上传失败:', error);
 
     uploadFile.status = 'error';

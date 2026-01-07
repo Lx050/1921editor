@@ -39,7 +39,7 @@ export class DocxWorkerManager {
   private progressCallbacks = new Map<string, (progress: WorkerProgress) => void>()
   private resolveCallbacks = new Map<string, (result: WorkerResult) => void>()
   private rejectCallbacks = new Map<string, (error: WorkerError) => void>()
-  private timeoutTimers = new Map<string, NodeJS.Timeout>()
+  private timeoutTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
   private constructor() {
     this.initWorker()
@@ -105,7 +105,7 @@ export class DocxWorkerManager {
     console.error('[DocxWorkerManager] Worker错误:', event)
 
     // 标记所有任务失败
-    this.activeTasks.forEach((task, id) => {
+    this.activeTasks.forEach((_task, id) => {
       this.handleError(id, {
         id,
         error: event.message || 'Worker发生错误',

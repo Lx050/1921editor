@@ -47,10 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
 const login = () => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
   // 默认登录，若有租户需求可在 Dashboard 中切换

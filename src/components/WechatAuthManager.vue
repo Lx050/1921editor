@@ -514,7 +514,7 @@ const removeAccount = async () => {
     await saveAccounts();
     closeRemoveModal();
     alert('授权已移除');
-  } catch (error) {
+  } catch (error: any) {
     console.error('移除授权失败:', error);
     alert('移除授权失败: ' + error.message);
   } finally {

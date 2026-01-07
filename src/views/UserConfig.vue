@@ -227,20 +227,6 @@ const login = () => {
     }
 }
 
-// 快速登录（使用当前租户或默认租户）
-const quickLogin = () => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
-    const currentTenant = userStore.currentTenant
-    
-    if (currentTenant && currentTenant.slug !== 'default') {
-        // 使用上次登录的租户
-        window.location.href = `${baseUrl}/auth/feishu/login?tenant=${currentTenant.slug}`
-    } else {
-        // 使用默认租户
-        window.location.href = `${baseUrl}/auth/feishu/login`
-    }
-}
-
 const showModal = ref(false)
 const isEditing = ref(false)
 const form = ref<Partial<WechatConfig>>({

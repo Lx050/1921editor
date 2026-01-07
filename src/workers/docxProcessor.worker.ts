@@ -7,7 +7,10 @@
 declare const importScripts: (url: string) => void
 
 // 动态加载mammoth库
+// 动态加载mammoth库
 importScripts('https://cdn.jsdelivr.net/npm/mammoth@1.5.1/mammoth.browser.min.js')
+
+declare const mammoth: any
 
 // 类型定义
 interface DocxProcessOptions {
@@ -82,7 +85,7 @@ async function processDocx(
         "p[style-name='Subtitle'] => h2.subtitle:fresh",
         "r[style-name='Strong'] => strong",
         "r[style-name='Emphasis'] => em",
-        ...options.styleMap
+        ...(options.styleMap || [])
       ],
       includeDefaultStyleMap: options.includeDefaultStyleMap !== false,
       ignoreEmptyParagraphs: options.ignoreEmptyParagraphs !== false,
@@ -243,7 +246,7 @@ function extractMetadata(file: File, htmlResult: any): DocxProcessResult['metada
 }
 
 // 监听错误
-self.onerror = (error) => {
+self.onerror = (error: any) => {
   console.error('[DocxWorker] Worker错误:', error)
   self.postMessage({
     type: 'WORKER_ERROR',

@@ -11,12 +11,6 @@ export interface TokenStorageOptions {
 }
 
 class TokenStorage {
-  private defaultOptions: TokenStorageOptions = {
-    secure: true,       // 生产环境必须使用 HTTPS
-    sameSite: 'strict', // 严格的 SameSite 策略
-    maxAge: 7 * 24 * 60 * 60, // 7天
-  };
-
   /**
    * 设置 token 到 httpOnly cookie
    * 注意：在纯前端环境中，httpOnly cookie 无法直接设置
@@ -24,9 +18,8 @@ class TokenStorage {
    * 1. 开发环境：使用 localStorage（但会警告）
    * 2. 生产环境：需要后端设置 httpOnly cookie
    */
-  setToken(token: string, options?: Partial<TokenStorageOptions>): void {
+  setToken(token: string, _options?: Partial<TokenStorageOptions>): void {
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const isSecure = !isDevelopment && (options?.secure ?? this.defaultOptions.secure);
 
     if (isDevelopment) {
       console.warn('⚠️  Using localStorage in development mode - not secure for production!');

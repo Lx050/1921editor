@@ -7,7 +7,7 @@ export class WebPConverter {
   private static instance: WebPConverter
   private supportsWebP: boolean | null = null
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): WebPConverter {
     if (!WebPConverter.instance) {
@@ -28,12 +28,9 @@ export class WebPConverter {
     canvas.width = 1
     canvas.height = 1
 
-    const webpDataUri = 'data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAwA0JaQAA3AA/vuUAAA='
-
     try {
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        const data = ctx.createImageData(1, 1)
         // 尝试解码 WebP
         this.supportsWebP = canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0
       } else {
@@ -78,9 +75,7 @@ export class WebPConverter {
       const url = new URL(src, window.location.origin)
 
       // 添加优化参数（这些参数需要在后端图片处理服务中支持）
-      if (format !== 'original') {
-        url.searchParams.set('format', format)
-      }
+      url.searchParams.set('format', format)
 
       if (quality !== 80) {
         url.searchParams.set('quality', quality.toString())
@@ -115,8 +110,6 @@ export class WebPConverter {
     baseSrc: string,
     sizes: Array<{ width: number; height?: number; descriptor?: string }>
   ): string {
-    const supportsWebP = this.checkWebPSupport()
-
     return sizes
       .map((size) => {
         const url = this.getOptimizedUrl(baseSrc, {

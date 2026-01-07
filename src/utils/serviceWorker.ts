@@ -204,7 +204,7 @@ export class ServiceWorkerManager {
           }
         }
 
-        this.registration.active?.postMessage(
+        this.registration?.active?.postMessage(
           { type: 'CACHE_URLS', payload: { urls } },
           [messageChannel.port2]
         )

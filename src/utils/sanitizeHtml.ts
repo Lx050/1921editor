@@ -16,12 +16,6 @@ export function sanitizeHtml(html: string): string {
   const cleanHtml = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'div'],
     ALLOWED_ATTR: ['class', 'style'],
-    ALLOWED_CSS_PROPERTIES: [
-      'color', 'background-color', 'font-size', 'font-weight',
-      'font-style', 'text-decoration', 'text-align', 'margin',
-      'padding', 'border', 'display'
-    ],
-    FORBID_SCRIPT: true,
     FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'button'],
     FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus'],
     KEEP_CONTENT: true // 保留被禁止标签内的文本内容

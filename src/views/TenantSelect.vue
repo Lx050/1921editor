@@ -135,11 +135,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import type { TenantInfo } from '../stores/userStore'
 import api from '../utils/api'
-
-const router = useRouter()
 
 const tenants = ref<TenantInfo[]>([])
 const loading = ref(true)

@@ -60,8 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-
 const props = defineProps<{
   show: boolean
   title: string
@@ -72,7 +70,7 @@ const props = defineProps<{
   showCancel?: boolean
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   cancel: []
   confirm: []
 }>()

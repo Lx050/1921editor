@@ -10,7 +10,6 @@ import { uploadImage, getWechatProxyUrl } from './wechatApi';
 const MAX_CONCURRENT_UPLOADS = 5;  // 提升并发数：3 -> 5（微信 API 支持更高并发）
 const MAX_RETRY_COUNT = 3;         // 最大重试次数
 const RETRY_BASE_DELAY = 1000;     // 重试基础延迟（毫秒）
-const UPLOAD_TIMEOUT = 30000;      // V2: 添加上传超时时间（30秒）
 
 /**
  * 上传任务接口
@@ -182,7 +181,7 @@ export class UploadManager {
         if (progress.uploading === 0 && progress.completed + progress.failed === progress.total && progress.total > 0) {
             // V2: 记录完成时间和统计信息
             const endTime = Date.now();
-            const totalDuration = endTime - (this as any).startTime;
+            const totalDuration = endTime - this.startTime;
             const results = this.queue
                 .filter((t) => t.result)
                 .map((t) => t.result as WechatImage);

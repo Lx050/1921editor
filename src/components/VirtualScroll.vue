@@ -36,7 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch } from 'vue';
+import type { CSSProperties } from 'vue';
 
 interface Props {
   items: any[]
@@ -77,7 +78,7 @@ const containerHeight = ref(props.containerHeight)
 // 计算总高度
 const totalHeight = computed(() => {
   if (typeof props.itemHeight === 'function') {
-    return props.items.reduce((sum, _, index) => sum + props.itemHeight!(index), 0)
+    return props.items.reduce((sum, _, index) => sum + (props.itemHeight as (index: number) => number)(index), 0)
   }
   return props.items.length * props.itemHeight
 })
@@ -116,19 +117,19 @@ const visibleItems = computed(() => {
 })
 
 // 容器样式
-const containerStyle = computed(() => ({
+const containerStyle = computed((): CSSProperties => ({
   height: `${containerHeight.value}px`,
   overflow: 'auto',
-  position: 'relative'
+  position: 'relative' as const
 }))
 
 // 视口样式
-const viewportStyle = computed(() => ({
-  position: 'absolute',
+const viewportStyle = computed((): CSSProperties => ({
+  position: 'absolute' as const,
   top: 0,
   left: 0,
   right: 0,
-  transform: `translateY(${Math.min(...visibleItems.value.map(item => item.top))}px)`
+  transform: `translateY(${visibleItems.value.length > 0 ? Math.min(...visibleItems.value.map(item => item.top)) : 0}px)`
 }))
 
 // 获取项目高度
@@ -143,8 +144,8 @@ const getItemHeight = (index: number): number => {
 const getAverageItemHeight = (): number => {
   if (typeof props.itemHeight === 'function') {
     return props.items.length > 0
-      ? props.items.reduce((sum, _, index) => sum + props.itemHeight!(index), 0) / props.items.length
-      : props.itemHeight
+      ? props.items.reduce((sum, _, index) => sum + (props.itemHeight as (index: number) => number)(index), 0) / props.items.length
+      : 50 // 默认高度
   }
   return props.itemHeight
 }
@@ -155,9 +156,9 @@ const getItemKey = (item: VirtualItem): any => {
 }
 
 // 获取项目样式
-const getItemStyle = (item: VirtualItem): object => {
+const getItemStyle = (item: VirtualItem): CSSProperties => {
   return {
-    position: 'absolute',
+    position: 'absolute' as const,
     top: `${item.top}px`,
     left: '0',
     right: '0',

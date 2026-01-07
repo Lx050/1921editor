@@ -7,8 +7,8 @@ export class ThirdPartyWechatAuth {
   private static instance: ThirdPartyWechatAuth;
   private openPlatformAppId: string;
   private callbackUrl: string;
-  private storeAuth: (authData: any) => void;
-  private getAuth: (appId: string) => any;
+  private storeAuthCallback!: (authData: any) => void;
+  private getAuthCallback!: (appId: string) => any;
 
   constructor() {
     this.openPlatformAppId = process.env.REACT_APP_WECHAT_OPEN_APP_ID!;
@@ -29,8 +29,8 @@ export class ThirdPartyWechatAuth {
     storeAuth: (authData: any) => void;
     getAuth: (appId: string) => any;
   }) {
-    this.storeAuth = storageCallbacks.storeAuth;
-    this.getAuth = storageCallbacks.getAuth;
+    this.storeAuthCallback = storageCallbacks.storeAuth;
+    this.getAuthCallback = storageCallbacks.getAuth;
   }
 
   /**
@@ -144,7 +144,7 @@ export class ThirdPartyWechatAuth {
   async publishToWechat(appId: string, content: any): Promise<any> {
     try {
       // 获取授权信息
-      const authInfo = await this.getAuth(appId);
+      const authInfo = await this.getAuthInfo(appId);
 
       if (!authInfo) {
         throw new Error('公众号未授权，请先授权');
@@ -195,7 +195,7 @@ export class ThirdPartyWechatAuth {
       const refreshedInfo = await this.refreshToken(authInfo);
 
       // 更新存储的授权信息
-      this.storeAuth(refreshedInfo);
+      this.storeAuthCallback(refreshedInfo);
     }
   }
 
@@ -251,7 +251,7 @@ export class ThirdPartyWechatAuth {
    */
   private validateState(state: string): boolean {
     // 这里可以实现更复杂的state验证逻辑
-    return state && state.length >= 8;
+    return !!(state && state.length >= 8);
   }
 
   /**
@@ -259,7 +259,7 @@ export class ThirdPartyWechatAuth {
    */
   private async saveAuthInfo(authInfo: WechatAuthInfo): Promise<void> {
     try {
-      this.storeAuth(authInfo);
+      this.storeAuthCallback(authInfo);
 
       // 同时保存到后端数据库
       await fetch('/api/wechat/save-auth', {
@@ -280,7 +280,7 @@ export class ThirdPartyWechatAuth {
   /**
    * 获取授权信息
    */
-  private async getAuth(appId: string): Promise<WechatAuthInfo | null> {
+  private async getAuthInfo(appId: string): Promise<WechatAuthInfo | null> {
     try {
       // 先从本地获取
       const localAuth = this.getAuthLocal(appId);
@@ -337,9 +337,9 @@ export class ThirdPartyWechatAuth {
    * 检查公众号是否已授权
    */
   async isAccountAuthorized(appId: string): Promise<boolean> {
-    const authInfo = await this.getAuth(appId);
-    return authInfo && authInfo.authorizer_access_token &&
-           (Date.now() - authInfo.authorizedAt) < (authInfo.expires_in * 1000 - 5 * 60 * 1000);
+    const authInfo = await this.getAuthInfo(appId);
+    return !!(authInfo && authInfo.authorizer_access_token &&
+      (Date.now() - authInfo.authorizedAt) < (authInfo.expires_in * 1000 - 5 * 60 * 1000));
   }
 
   /**
@@ -347,7 +347,7 @@ export class ThirdPartyWechatAuth {
    */
   async removeAuth(appId: string): Promise<void> {
     try {
-      this.storeAuth({ appId, removed: true, removedAt: Date.now() });
+      this.storeAuthCallback({ appId, removed: true, removedAt: Date.now() });
 
       await fetch(`/api/wechat/remove-auth/${appId}`, {
         method: 'DELETE',
@@ -370,5 +370,5 @@ interface WechatAuthInfo {
   head_img: string;                // 授权公众号的头像
   func_info: any;                 // 授权的公众号功能列表
   authorizedAt: number;             // 授权时间
-  lastUsed: number;               // 最后使用时间
+  lastUsed?: number;               // 最后使用时间
 }
