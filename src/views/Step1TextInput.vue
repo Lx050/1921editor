@@ -389,7 +389,8 @@ const convertHtmlToCustomFormat = (html) => {
       case 'H1':
       case 'H2':
       case 'H3':
-        return `\n\n# ${content.trim()}\n\n`
+        // Word 标题转为 ## (标题)，而非 # (正文)
+        return `\n\n## ${content.trim()}\n\n`
       case 'P':
         // 检查是否有特定的class
         const className = node.className || ''
@@ -420,6 +421,16 @@ const convertHtmlToCustomFormat = (html) => {
         return ''
       case 'BR':
         return '\n'
+      case 'UL':
+      case 'OL':
+        // 列表作为独立段落
+        return `\n\n${content.trim()}\n\n`
+      case 'LI':
+        // 列表项添加项目符号
+        return `• ${content.trim()}\n`
+      case 'BLOCKQUOTE':
+        // 引用块使用 > 语法
+        return `\n\n> ${content.trim()}\n\n`
       default:
         return content
     }
@@ -442,18 +453,11 @@ const convertHtmlToCustomFormat = (html) => {
 
 // 后处理函数：将连续的单图转换为双图
 const convertConsecutiveImagesToDouble = (text) => {
-  // 定义匹配模式：&单图 或 &单图 图注内容
-  // 支持多种变体：&单图、&单图 说明、&单图：说明
-  const singleImagePattern = /&单图(?::|：|\s)?([^\n]*?)/g
+  // 匹配简化语法: &\n\n& 或 &caption1\n\n&caption2
+  // 支持 & 或 &单图 或 &caption 格式
+  const regex = /&(单图)?([^\n&]*?)\n\n&(单图)?([^\n&]*?)(?:\n\n|$)/g
 
-  // 匹配连续的图片标记（最多连续2个，避免过多图片合并）
-  // 支持以下模式：
-  // 1. &单图\n\n&单图（纯图片）
-  // 2. &单图 图注1\n\n&单图 图注2（带图注）
-  // 3. &单图\n\n图注1\n\n&单图\n\n图注2（图注作为独立段落）
-  const regex = /&单图(?::|：|\s)?([^\n]*?)\n\n&单图(?::|：|\s)?([^\n]*?)(?:\n\n|$)/g
-
-  return text.replace(regex, (match, caption1, caption2) => {
+  return text.replace(regex, (match, prefix1, caption1, prefix2, caption2) => {
     // 清理图注内容
     const cleanCaption1 = caption1 ? caption1.trim() : ''
     const cleanCaption2 = caption2 ? caption2.trim() : ''

@@ -148,13 +148,19 @@ const SPECIAL_MARKS: Record<string, BlockType> = {
  * @returns 解析结果
  */
 function parseMarkedContent(text: string): ParseResult {
+  const trimmedText: string = text.trim()
+
+  // 引言标记：> 开头
+  if (trimmedText.startsWith('>')) {
+    const quoteContent = trimmedText.substring(1).trim()
+    return { hasMark: true, text: quoteContent, type: 'intro' }
+  }
+
   // 图片模板标记 - 简化语法
   // & 单独使用 = 纯单图
   // &内容 = 单图 + 图注
   // && 单独使用 = 纯双图
   // &&左图注 右图注 = 双图 + 图注
-  const trimmedText: string = text.trim()
-
   if (trimmedText.startsWith('&')) {
     // 处理 &&（双图）
     if (trimmedText.startsWith('&&')) {
