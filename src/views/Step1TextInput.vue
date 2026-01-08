@@ -568,11 +568,9 @@ const isShortCaptionText = (text) => {
   const trimmed = text.trim()
   if (!trimmed) return false
 
-  // 新增：排除标题特征（章节、编号、短且无逗号等）
-  // 优先级：标题 > 图注
-  if (isLikelyHeading(trimmed)) return false
+  // 排除图片标记（&单图、&&双图 等），这些不是图注
+  if (trimmed.startsWith('&')) return false
 
-  // 图注特征检查
   const features = {
     length: trimmed.length < 50, // 短文本
     hasKeywords: /图|注|说明|示意|示例|caption|pic|image/i.test(trimmed), // 含关键词
