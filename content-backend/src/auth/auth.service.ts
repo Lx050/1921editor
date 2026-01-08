@@ -1,13 +1,35 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { User, UserRole } from '../entities/user.entity';
-import { FeishuService } from '../feishu/feishu.service';
+import { Tenant } from '../entities/tenant.entity';
+import { EmailVerificationToken } from '../entities/email-verification-token.entity';
+import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { TenantService } from '../tenant/tenant.service';
-import { FeishuTableSyncService } from '../sync/feishu-table-sync.service';
-import * as Lark from '@larksuiteoapi/node-sdk';
+import { PasswordHashService } from '../services/password-hash.service';
+import { EmailService } from '../services/email.service';
+import { TokenService } from '../services/token.service';
+import { InviteCodeService } from '../services/invite-code.service';
+import {
+  RegisterDto,
+  LoginDto,
+  VerifyEmailDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  ChangePasswordDto,
+} from './dto';
 
+/**
+ * 认证服务
+ * 提供邮箱密码认证功能，替代原来的飞书登录
+ */
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -15,212 +37,397 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Tenant)
+    private tenantRepository: Repository<Tenant>,
+    @InjectRepository(EmailVerificationToken)
+    private emailVerificationRepository: Repository<EmailVerificationToken>,
+    @InjectRepository(PasswordResetToken)
+    private passwordResetRepository: Repository<PasswordResetToken>,
     private jwtService: JwtService,
-    private feishuService: FeishuService,
     private tenantService: TenantService,
-    private feishuTableSyncService: FeishuTableSyncService,
+    private passwordHashService: PasswordHashService,
+    private emailService: EmailService,
+    private tokenService: TokenService,
+    private inviteCodeService: InviteCodeService,
+    private dataSource: DataSource,
   ) {}
 
   /**
-   * 多租户飞书登录
-   * @param code 飞书授权码
-   * @param tenantSlug 租户标识符（从前端URL参数获取）
+   * 用户注册
+   * @param registerDto 注册信息
    */
-  async feishuLogin(code: string, tenantSlug?: string) {
-    try {
-      this.logger.log('========== 飞书登录开始 ==========');
-      this.logger.log(`Authorization Code: ${code?.substring(0, 10)}...`);
-      this.logger.log(`Tenant Slug: ${tenantSlug || 'default'}`);
+  async register(registerDto: RegisterDto) {
+    const { email, password, name, inviteCode } = registerDto;
 
-      // 1. 确定租户
-      let tenant;
-      if (tenantSlug) {
-        this.logger.log(`尝试查找租户: ${tenantSlug}`);
-        tenant = await this.tenantService.findBySlug(tenantSlug);
-      } else {
-        this.logger.log('使用默认租户');
-        tenant = await this.tenantService.findById(
-          '00000000-0000-0000-0000-000000000001',
-        );
-      }
-      this.logger.log(`租户已找到: ${tenant.name} (ID: ${tenant.id})`);
+    this.logger.log(`用户注册请求: ${email}`);
 
-      let client: Lark.Client;
-      const tenantId = tenant.id;
-
-      if (tenant.feishuAppId && tenant.feishuAppSecret) {
-        // 使用租户专属的飞书配置
-        this.logger.log(`使用租户专属飞书配置: ${tenant.name}`);
-        this.logger.log(`Tenant AppID: ${tenant.feishuAppId}`);
-        client = new Lark.Client({
-          appId: tenant.feishuAppId,
-          appSecret: tenant.feishuAppSecret,
-          appType: Lark.AppType.SelfBuild,
-          domain: Lark.Domain.Feishu,
-          loggerLevel: Lark.LoggerLevel.debug, // 启用SDK调试日志
-        });
-      } else {
-        // 使用全局飞书配置（向后兼容）
-        this.logger.log('租户未配置飞书凭证，使用全局配置');
-        client = this.feishuService.getClient();
-      }
-
-      // 2. Get User Access Token - 使用标准飞书身份验证（非OIDC）
-      this.logger.log('步骤 2: 用 authorization code 换取 access_token...');
-      const tokenRes = await client.request({
-        method: 'POST',
-        url: '/open-apis/authen/v1/access_token', // 使用标准端点而不是OIDC
-        data: {
-          grant_type: 'authorization_code',
-          code: code,
-        },
-      });
-
-      this.logger.log(`Token API 响应码: ${tokenRes.code}`);
-      this.logger.log(`Token API 响应消息: ${tokenRes.msg || 'success'}`);
-
-      if (tokenRes.code !== 0 || !tokenRes.data) {
-        this.logger.error('❌ 获取 Access Token 失败');
-        this.logger.error(`错误码: ${tokenRes.code}`);
-        this.logger.error(`错误消息: ${tokenRes.msg}`);
-        this.logger.error(`完整响应: ${JSON.stringify(tokenRes)}`);
-        throw new UnauthorizedException(
-          `Failed to get access token: ${tokenRes.msg}`,
-        );
-      }
-
-      const { access_token, name, open_id, avatar_url, email } = tokenRes.data;
-      this.logger.log(
-        `✅ Access Token 获取成功: ${access_token.substring(0, 15)}...`,
+    // 1. 验证密码强度
+    if (!this.passwordHashService.validateStrength(password)) {
+      throw new BadRequestException(
+        '密码强度不足：至少8位，必须包含大小写字母和数字',
       );
-      this.logger.log(`完整Token响应: ${JSON.stringify(tokenRes.data)}`);
-
-      // 飞书标准身份验证已在步骤2返回用户信息，无需步骤3
-      this.logger.log('✅ 用户信息已在Token响应中');
-
-      const feishuUser = {
-        name: name,
-        open_id: open_id,
-        avatar_url: avatar_url,
-        email: email,
-      };
-
-      this.logger.log(`用户名称: ${feishuUser.name}`);
-      this.logger.log(`用户 OpenID: ${feishuUser.open_id}`);
-
-      if (!feishuUser.open_id) {
-        this.logger.error('❌ 用户信息缺少 OpenID');
-        throw new UnauthorizedException('Feishu User Missing OpenID');
-      }
-
-      // 4. 🔒 白名单检查：查找用户是否在该租户的白名单中
-      this.logger.log('步骤 4: 检查用户白名单...');
-      this.logger.log(
-        `查找用户 - TenantID: ${tenantId}, FeishuID: ${feishuUser.open_id}`,
-      );
-
-      let user = await this.userRepository.findOne({
-        where: {
-          tenantId: tenantId,
-          feishuId: feishuUser.open_id,
-        },
-        relations: ['tenant'],
-      });
-
-      if (!user) {
-        // ✨ 自动注册：用户通过了飞书验证，自动加入该租户
-        this.logger.log(`🆕 新用户首次登录，自动注册: ${feishuUser.name}`);
-
-        user = this.userRepository.create({
-          tenantId: tenantId,
-          feishuId: feishuUser.open_id,
-          name: feishuUser.name || 'Unknown',
-          email: feishuUser.email || '',
-          role: UserRole.EDITOR, // 默认角色
-          isActive: true,
-          lastLoginAt: new Date(),
-        });
-
-        await this.userRepository.save(user);
-        this.logger.log(`✅ 用户已创建: ${user.name} (ID: ${user.id})`);
-
-        // 重新查询以确保包含关联关系
-        user = await this.userRepository.findOne({
-          where: { id: user.id },
-          relations: ['tenant'],
-        });
-
-        if (!user) {
-          throw new Error('Failed to create user');
-        }
-      } else {
-        // ✅ 用户存在，检查状态
-        if (!user.isActive) {
-          this.logger.warn(`❌ 用户 ${user.name} 已被禁用，拒绝登录`);
-          throw new UnauthorizedException('该账号已被禁用或已离职');
-        }
-
-        this.logger.log(`✅ 用户回归: ${user.name} (${user.role})`);
-        user.name = feishuUser.name || user.name;
-        user.lastLoginAt = new Date(); // 更新最后登录时间
-        await this.userRepository.save(user);
-      }
-
-      this.logger.log(
-        `用户 ${user.name} 登录到租户 ${user.tenant?.name || 'Default'}`,
-      );
-
-      // 🔄 同步用户信息到飞书表格
-      this.logger.log('步骤 4.5: 同步用户到飞书表格...');
-      try {
-        const tenantForSync = user.tenant || tenant;
-        await this.feishuTableSyncService.syncUserToFeishuTable(
-          user,
-          tenantForSync,
-        );
-        this.logger.log('✅ 用户信息已同步到飞书表格');
-      } catch (syncError) {
-        // 同步失败不影响登录
-        this.logger.warn(`⚠️ 同步到飞书表格失败: ${syncError.message}`);
-      }
-
-      // 5. Issue JWT
-      this.logger.log('步骤 5: 签发 JWT Token...');
-      const authResult = this.login(user);
-      this.logger.log('✅ JWT Token 签发成功');
-      this.logger.log('========== 飞书登录完成 ==========');
-
-      return authResult;
-    } catch (e) {
-      this.logger.error('========== 飞书登录失败 ==========');
-      this.logger.error(`错误类型: ${e.constructor.name}`);
-      this.logger.error(`错误消息: ${e.message}`);
-      if (e.stack) {
-        this.logger.error(`堆栈跟踪: ${e.stack}`);
-      }
-
-      if (e instanceof UnauthorizedException) {
-        throw e;
-      }
-      throw new UnauthorizedException('Feishu Login Failed: ' + e.message);
     }
+
+    // 2. 检查邮箱是否已注册
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
+    if (existingUser) {
+      throw new ConflictException('该邮箱已被注册');
+    }
+
+    // 3. 确定租户
+    let tenant: Tenant | null;
+    if (inviteCode) {
+      // 使用邀请码加入已有租户
+      tenant = await this.tenantRepository.findOne({
+        where: { inviteCode },
+      });
+      if (!tenant) {
+        throw new BadRequestException('邀请码无效');
+      }
+      if (this.inviteCodeService.isExpired(tenant.inviteCodeExpires)) {
+        throw new BadRequestException('邀请码已过期');
+      }
+      this.logger.log(`使用邀请码加入租户: ${tenant.name}`);
+    } else {
+      // 查找默认租户或创建个人租户
+      tenant = await this.tenantRepository.findOne({
+        where: { slug: 'default' },
+      });
+      if (!tenant) {
+        // 如果没有默认租户，返回错误，提示先初始化系统
+        throw new BadRequestException(
+          '系统未初始化，请先调用 /api/system/initialize 初始化系统',
+        );
+      }
+      this.logger.log(`使用默认租户: ${tenant.name}`);
+    }
+
+    // 4. 创建用户
+    const hashedPassword = await this.passwordHashService.hash(password);
+    const verificationToken = this.tokenService.generateEmailVerificationToken();
+
+    const user = this.userRepository.create({
+      tenantId: tenant.id,
+      email,
+      password: hashedPassword,
+      name,
+      role: UserRole.EDITOR,
+      emailVerified: false,
+      verificationToken,
+      isActive: true,
+    });
+
+    await this.userRepository.save(user);
+
+    // 5. 保存邮箱验证令牌
+    const emailVerificationToken = this.emailVerificationRepository.create({
+      email,
+      token: verificationToken,
+      expiresAt: this.tokenService.calculateExpiry(
+        this.tokenService.EMAIL_VERIFICATION_EXPIRY,
+      ),
+    });
+    await this.emailVerificationRepository.save(emailVerificationToken);
+
+    // 6. 发送验证邮件
+    const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    await this.emailService.sendVerificationEmail(email, name, verifyUrl);
+
+    this.logger.log(`用户注册成功: ${email}, 租户: ${tenant.name}`);
+
+    return {
+      message: '注册成功，请查收验证邮件',
+      userId: user.id,
+    };
   }
 
-  async login(user: User) {
+  /**
+   * 验证邮箱
+   * @param verifyEmailDto 验证信息
+   */
+  async verifyEmail(verifyEmailDto: VerifyEmailDto) {
+    const { token } = verifyEmailDto;
+
+    this.logger.log(`邮箱验证请求: ${token.substring(0, 8)}...`);
+
+    // 1. 查找验证令牌
+    const emailToken = await this.emailVerificationRepository.findOne({
+      where: { token },
+    });
+
+    if (!emailToken) {
+      throw new BadRequestException('验证令牌无效');
+    }
+
+    // 2. 检查是否过期
+    if (this.tokenService.isExpired(emailToken.expiresAt)) {
+      throw new BadRequestException('验证令牌已过期，请重新注册');
+    }
+
+    // 3. 查找用户
+    const user = await this.userRepository.findOne({
+      where: { email: emailToken.email, verificationToken: token },
+      relations: ['tenant'],
+    });
+
+    if (!user) {
+      throw new BadRequestException('用户不存在');
+    }
+
+    // 4. 更新用户状态
+    user.emailVerified = true;
+    user.verificationToken = null;
+    await this.userRepository.save(user);
+
+    // 5. 删除验证令牌
+    await this.emailVerificationRepository.delete({ token });
+
+    this.logger.log(`邮箱验证成功: ${user.email}`);
+
+    // 6. 生成 JWT Token
+    return this.login(user);
+  }
+
+  /**
+   * 用户登录
+   * @param loginDto 登录信息
+   */
+  async loginWithEmail(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+
+    this.logger.log(`用户登录请求: ${email}`);
+
+    // 1. 查找用户
+    const user = await this.userRepository.findOne({
+      where: { email },
+      relations: ['tenant'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('邮箱或密码错误');
+    }
+
+    // 2. 验证密码
+    const isPasswordValid = await this.passwordHashService.compare(
+      password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('邮箱或密码错误');
+    }
+
+    // 3. 检查用户状态
+    if (!user.isActive) {
+      throw new UnauthorizedException('该账号已被禁用');
+    }
+
+    // 4. 检查邮箱验证状态（可选：是否强制验证）
+    // if (!user.emailVerified) {
+    //   throw new UnauthorizedException('请先验证邮箱');
+    // }
+
+    // 5. 更新最后登录时间
+    user.lastLoginAt = new Date();
+    await this.userRepository.save(user);
+
+    this.logger.log(`用户登录成功: ${user.email}, 租户: ${user.tenant?.name}`);
+
+    // 6. 生成 JWT Token
+    return this.login(user);
+  }
+
+  /**
+   * 请求密码重置
+   * @param forgotPasswordDto 忘记密码信息
+   */
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const { email } = forgotPasswordDto;
+
+    this.logger.log(`密码重置请求: ${email}`);
+
+    // 1. 查找用户
+    const user = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    // 为了安全，即使用户不存在也返回成功消息
+    if (!user) {
+      this.logger.warn(`密码重置请求的邮箱不存在: ${email}`);
+      return { message: '如果该邮箱存在，密码重置邮件已发送' };
+    }
+
+    // 2. 生成重置令牌
+    const resetToken = this.tokenService.generatePasswordResetToken();
+
+    // 3. 保存重置令牌
+    const passwordResetToken = this.passwordResetRepository.create({
+      email,
+      token: resetToken,
+      expiresAt: this.tokenService.calculateExpiry(
+        this.tokenService.PASSWORD_RESET_EXPIRY,
+      ),
+      used: false,
+    });
+    await this.passwordResetRepository.save(passwordResetToken);
+
+    // 4. 发送重置邮件
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    await this.emailService.sendPasswordResetEmail(email, resetUrl);
+
+    this.logger.log(`密码重置邮件已发送: ${email}`);
+
+    return { message: '如果该邮箱存在，密码重置邮件已发送' };
+  }
+
+  /**
+   * 重置密码
+   * @param resetPasswordDto 重置密码信息
+   */
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { token, newPassword } = resetPasswordDto;
+
+    this.logger.log(`密码重置执行: ${token.substring(0, 8)}...`);
+
+    // 1. 验证密码强度
+    if (!this.passwordHashService.validateStrength(newPassword)) {
+      throw new BadRequestException(
+        '密码强度不足：至少8位，必须包含大小写字母和数字',
+      );
+    }
+
+    // 2. 查找重置令牌
+    const resetToken = await this.passwordResetRepository.findOne({
+      where: { token },
+    });
+
+    if (!resetToken) {
+      throw new BadRequestException('重置令牌无效');
+    }
+
+    // 3. 检查是否过期
+    if (this.tokenService.isExpired(resetToken.expiresAt)) {
+      throw new BadRequestException('重置令牌已过期');
+    }
+
+    // 4. 检查是否已使用
+    if (resetToken.used) {
+      throw new BadRequestException('重置令牌已被使用');
+    }
+
+    // 5. 查找用户
+    const user = await this.userRepository.findOne({
+      where: { email: resetToken.email },
+    });
+
+    if (!user) {
+      throw new BadRequestException('用户不存在');
+    }
+
+    // 6. 更新密码
+    const hashedPassword = await this.passwordHashService.hash(newPassword);
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await this.userRepository.save(user);
+
+    // 7. 标记令牌为已使用
+    resetToken.used = true;
+    await this.passwordResetRepository.save(resetToken);
+
+    // 8. 发送密码已修改通知
+    await this.emailService.sendPasswordChangedNotification(user.email, user.name);
+
+    this.logger.log(`密码重置成功: ${user.email}`);
+
+    return { message: '密码重置成功' };
+  }
+
+  /**
+   * 修改密码
+   * @param userId 用户ID
+   * @param changePasswordDto 修改密码信息
+   */
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    const { oldPassword, newPassword } = changePasswordDto;
+
+    this.logger.log(`用户修改密码: ${userId}`);
+
+    // 1. 查找用户
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+
+    // 2. 验证旧密码
+    const isOldPasswordValid = await this.passwordHashService.compare(
+      oldPassword,
+      user.password,
+    );
+
+    if (!isOldPasswordValid) {
+      throw new UnauthorizedException('当前密码不正确');
+    }
+
+    // 3. 验证新密码强度
+    if (!this.passwordHashService.validateStrength(newPassword)) {
+      throw new BadRequestException(
+        '密码强度不足：至少8位，必须包含大小写字母和数字',
+      );
+    }
+
+    // 4. 新密码不能与旧密码相同
+    const isSamePassword = await this.passwordHashService.compare(
+      newPassword,
+      user.password,
+    );
+    if (isSamePassword) {
+      throw new BadRequestException('新密码不能与当前密码相同');
+    }
+
+    // 5. 更新密码
+    const hashedPassword = await this.passwordHashService.hash(newPassword);
+    user.password = hashedPassword;
+    await this.userRepository.save(user);
+
+    // 6. 发送密码已修改通知
+    await this.emailService.sendPasswordChangedNotification(user.email, user.name);
+
+    this.logger.log(`密码修改成功: ${user.email}`);
+
+    return { message: '密码修改成功' };
+  }
+
+  /**
+   * 生成 JWT Token（内部方法）
+   * @param user 用户对象
+   */
+  private login(user: User) {
     const payload = {
-      username: user.name,
       sub: user.id,
-      feishuId: user.feishuId,
-      tenantId: user.tenantId, // 🔑 关键：JWT中包含租户ID
+      email: user.email,
+      tenantId: user.tenantId,
       role: user.role,
     };
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
       user: {
         id: user.id,
+        email: user.email,
         name: user.name,
         role: user.role,
         tenantId: user.tenantId,
+        emailVerified: user.emailVerified,
+        tenant: {
+          id: user.tenant?.id,
+          name: user.tenant?.name,
+          slug: user.tenant?.slug,
+        },
       },
     };
   }

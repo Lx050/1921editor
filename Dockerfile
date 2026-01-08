@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:18-alpine as build-stage
+FROM node:20-alpine as build-stage
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN npm run build
 FROM nginx:stable-alpine as production-stage
 
 # Copy the build output to the nginx html directory
-COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY --from=build-stage /app/src/dist /usr/share/nginx/html
 
 # Copy the custom nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf

@@ -2,21 +2,29 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { FeishuModule } from '../feishu/feishu.module';
+import { Tenant } from '../entities/tenant.entity';
+import { EmailVerificationToken } from '../entities/email-verification-token.entity';
+import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { TenantModule } from '../tenant/tenant.module';
-import { SyncModule } from '../sync/sync.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
 import { AuthController } from './auth.controller';
+import { PasswordHashService } from '../services/password-hash.service';
+import { EmailService } from '../services/email.service';
+import { TokenService } from '../services/token.service';
+import { InviteCodeService } from '../services/invite-code.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    FeishuModule,
+    TypeOrmModule.forFeature([
+      User,
+      Tenant,
+      EmailVerificationToken,
+      PasswordResetToken,
+    ]),
     TenantModule,
-    SyncModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -31,14 +39,27 @@ import { AuthController } from './auth.controller';
         return {
           secret,
           signOptions: { expiresIn: '7d' },
-          algorithm: 'HS256', // 明确指定算法
+          algorithm: 'HS256',
         };
       },
       inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    PasswordHashService,
+    EmailService,
+    TokenService,
+    InviteCodeService,
+  ],
+  exports: [
+    AuthService,
+    PasswordHashService,
+    EmailService,
+    TokenService,
+    InviteCodeService,
+  ],
 })
 export class AuthModule {}

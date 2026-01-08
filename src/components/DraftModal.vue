@@ -60,6 +60,7 @@
 </template>
 
 <script setup lang="ts">
+import { copyToClipboard } from '../utils/clipboard'
 const props = defineProps<{
   show: boolean
   title: string
@@ -77,11 +78,10 @@ defineEmits<{
 
 const copyDraftUrl = async () => {
   if (props.draftUrl) {
-    try {
-      await navigator.clipboard.writeText(props.draftUrl)
-      // 可以添加成功提示
-    } catch (err) {
-      console.error('复制失败:', err)
+    const result = await copyToClipboard(props.draftUrl)
+    if (!result.ok) {
+      console.error('复制失败:', result.error)
+      alert(`草稿链接（请手动复制）:\n${props.draftUrl}`)
     }
   }
 }

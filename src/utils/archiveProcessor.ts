@@ -2,7 +2,7 @@
  * 通用压缩包处理器
  * 支持 ZIP, RAR, 7z 格式的解压和内容提取
  * 使用 7z-wasm (基于 7-Zip WebAssembly) 处理 RAR/7z
- * 使用 JSZip 处理 ZIP (更轻量)
+ * 使用 JSZip 处理 ZIP (更轻量，且方便处理编码)
  */
 
 import JSZip from 'jszip'
@@ -32,21 +32,20 @@ function isImageFile(filename: string): boolean {
  * 检查文件是否是 Word 文档
  */
 function isDocxFile(filename: string): boolean {
-    return filename.toLowerCase().endsWith('.docx')
+    const lowerName = filename.toLowerCase()
+    // V5 改进：使用 includes 并在之后校验，防止由于编码问题导致的后缀截断
+    const isDocx = lowerName.includes('.docx') || lowerName.includes('.docm')
+    // 过滤 Word 临时文件
+    const isTemp = getFileName(filename).startsWith('~$')
+    return isDocx && !isTemp
 }
 
 /**
- * 从 ArrayBuffer 创建 File 对象
+ * 从 ArrayBuffer 或 Uint8Array 创建 File 对象
  */
 function createFileFromBuffer(buffer: ArrayBuffer | Uint8Array, filename: string, mimeType: string): File {
-    // 确保转换为 ArrayBuffer 并使用类型断言
-    let arrayBuffer: ArrayBuffer
-    if (buffer instanceof Uint8Array) {
-        arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
-    } else {
-        arrayBuffer = buffer
-    }
-    const blob = new Blob([arrayBuffer], { type: mimeType })
+    // 强制转换为 any 以绕过 strict TS BlobPart 检查，或者使用正确的 ArrayBufferView
+    const blob = new Blob([buffer] as any[], { type: mimeType })
     return new File([blob], filename, { type: mimeType })
 }
 
@@ -102,7 +101,28 @@ export function isArchiveFile(file: File): boolean {
 }
 
 /**
- * 使用 JSZip 解压 ZIP 文件
+ * 智能解码文件名
+ * 尝试 UTF-8，如果不符合 UTF-8 规范则尝试 GBK
+ */
+function decodeFilename(bytes: Uint8Array): string {
+    try {
+        // 尝试用 UTF-8 解码，设置 fatal: true 如果由于字节序列不合法而失败则抛错
+        const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+        return utf8Decoder.decode(bytes);
+    } catch (e) {
+        // UTF-8 解码失败，很可能是 GBK (Windows 默认中文编码)
+        try {
+            const gbkDecoder = new TextDecoder('gbk');
+            return gbkDecoder.decode(bytes);
+        } catch (e2) {
+            // 万一 GBK 也不行，退回到默认解码
+            return new TextDecoder().decode(bytes);
+        }
+    }
+}
+
+/**
+ * 使用 JSZip 解压 ZIP 文件 (带智能编码检测)
  */
 async function extractWithJSZip(file: File): Promise<ExtractResult> {
     const result: ExtractResult = {
@@ -111,7 +131,14 @@ async function extractWithJSZip(file: File): Promise<ExtractResult> {
     }
 
     const arrayBuffer = await file.arrayBuffer()
-    const zip = await JSZip.loadAsync(arrayBuffer)
+
+    // V6: 使用智能解码处理文件名乱码
+    const zip = await JSZip.loadAsync(arrayBuffer, {
+        decodeFileName: (bytes: any) => {
+            if (typeof bytes === 'string') return bytes;
+            return decodeFilename(new Uint8Array(bytes));
+        }
+    })
 
     const filePromises: Promise<void>[] = []
 
@@ -121,7 +148,8 @@ async function extractWithJSZip(file: File): Promise<ExtractResult> {
             return
         }
 
-        const filename = getFileName(relativePath)
+        const filename = getFileName(relativePath).trim()
+        console.log('[JSZip] 扫描到文件:', { relativePath, filename })
 
         // 处理图片文件
         if (isImageFile(filename)) {
@@ -134,6 +162,7 @@ async function extractWithJSZip(file: File): Promise<ExtractResult> {
 
         // 处理 Word 文档
         if (isDocxFile(filename)) {
+            console.log('[JSZip] 🎯 识别到 Word 文档:', filename)
             const promise = zipEntry.async('arraybuffer').then((buffer) => {
                 const docxFile = createFileFromBuffer(buffer, filename, getMimeType(filename))
                 result.docxFiles.push(docxFile)
@@ -164,11 +193,11 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
         const inputData = new Uint8Array(arrayBuffer)
 
         // 在 7z-wasm 虚拟文件系统中创建目录
-        const inputDir = '/input'
-        const outputDir = '/output'
+        const inputDir = `/input_${Date.now()}`
+        const outputDir = `/output_${Date.now()}`
 
-        sevenZip.FS.mkdir(inputDir)
-        sevenZip.FS.mkdir(outputDir)
+        try { sevenZip.FS.mkdir(inputDir) } catch (e) { }
+        try { sevenZip.FS.mkdir(outputDir) } catch (e) { }
 
         // 将压缩包写入虚拟文件系统
         const inputPath = `${inputDir}/${file.name}`
@@ -176,7 +205,12 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
 
         // 执行解压命令
         console.log('[7z-wasm] 开始解压:', file.name)
-        sevenZip.callMain(['x', inputPath, `-o${outputDir}`, '-y', '-bso0', '-bsp0'])
+
+        // 改进：不再强制 -mcp=936，除非明确需要（7z 对 ZIP 的编码处理有时不如 JSZip 灵活）
+        const cmd = ['x', inputPath, `-o${outputDir}`, '-y', '-bso0', '-bsp0']
+
+        // 如果文件名包含乱码标志，可以尝试添加选项，但此处我们优先信任 7z 的自动检测
+        sevenZip.callMain(cmd)
 
         // 递归读取解压后的文件
         function readDir(dirPath: string): void {
@@ -189,25 +223,20 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
                 const stat = sevenZip.FS.stat(fullPath)
 
                 if (sevenZip.FS.isDir(stat.mode)) {
-                    // 递归处理子目录
                     readDir(fullPath)
                 } else if (sevenZip.FS.isFile(stat.mode)) {
-                    // 跳过隐藏文件
                     if (entry.startsWith('.') || fullPath.includes('__MACOSX')) continue
 
-                    const filename = getFileName(entry)
+                    const filename = getFileName(entry).trim()
 
                     // 读取文件内容
                     const fileData = sevenZip.FS.readFile(fullPath, { encoding: 'binary' })
 
-                    // 处理图片文件
                     if (isImageFile(filename)) {
                         const imageFile = createFileFromBuffer(fileData, filename, getMimeType(filename))
                         result.imageFiles.push(imageFile)
-                    }
-
-                    // 处理 Word 文档
-                    if (isDocxFile(filename)) {
+                    } else if (isDocxFile(filename)) {
+                        console.log('[7z-wasm] 🎯 识别到 Word 文档:', filename)
                         const docxFile = createFileFromBuffer(fileData, filename, getMimeType(filename))
                         result.docxFiles.push(docxFile)
                     }
@@ -216,9 +245,6 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
         }
 
         readDir(outputDir)
-
-        console.log('[7z-wasm] 解压完成:', result.docxFiles.length, '个 Word 文档,', result.imageFiles.length, '张图片')
-
         return result
     } catch (error) {
         console.error('[7z-wasm] 解压失败:', error)
@@ -228,29 +254,30 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
 
 /**
  * 通用解压函数 - 自动选择合适的解压方式
- * @param file 压缩包文件
- * @returns 解压结果
  */
 export async function extractArchive(file: File): Promise<ExtractResult> {
     const archiveType = getArchiveType(file)
-
-    console.log('[Archive Processor] 处理文件:', file.name, '类型:', archiveType)
+    console.log('[Archive Processor v6] 处理文件:', file.name, '类型:', archiveType)
 
     switch (archiveType) {
         case 'zip':
-            // ZIP 使用 JSZip (更轻量)
-            return extractWithJSZip(file)
+            // ZIP 优先使用 JSZip，因为它在浏览器端处理文件名编码更灵活
+            try {
+                return await extractWithJSZip(file)
+            } catch (e) {
+                console.warn('[Archive Processor] JSZip 处理失败，尝试 7z-wasm:', e)
+                return await extractWith7zWasm(file)
+            }
 
         case '7z':
         case 'rar':
-            // 7z/RAR 使用 7z-wasm
-            return extractWith7zWasm(file)
+            return await extractWith7zWasm(file)
 
         default:
             throw new Error(`不支持的压缩包格式: ${file.name}`)
     }
 }
 
-// 为了向后兼容，导出旧的函数名
+// 兼容性导出
 export { extractArchive as extractZip }
 export { isArchiveFile as isZipFile }

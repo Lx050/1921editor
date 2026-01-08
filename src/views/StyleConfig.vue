@@ -1,57 +1,28 @@
 <template>
   <div class="h-full flex flex-col overflow-hidden">
     <!-- 顶部操作栏 -->
-    <div class="flex-shrink-0 p-6 border-b bg-white">
-      <div class="flex items-center justify-between">
+    <div class="flex-shrink-0 p-4 md:p-6 border-b bg-white">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900 mb-2">样式管理中心</h2>
-          <p class="text-gray-600">管理所有装饰样式模板：添加、编辑、删除</p>
+          <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-1 md:mb-2">样式管理中心</h2>
+          <p class="text-xs md:text-sm text-gray-600">管理装饰模板：添加、编辑、删除</p>
         </div>
 
-        <div class="flex items-center space-x-3 overflow-x-auto pb-2 md:pb-0">
-          <button
-            @click="handleImport"
-            class="px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
-            title="导入自定义样式"
-          >
-            📥 导入
-          </button>
-          <button
-            @click="handleExport"
-            class="px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
-            title="导出自定义样式"
-          >
-            📤 导出
-          </button>
-          <button
-            @click="handleClearCustom"
-            class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
-            title="清除所有自定义样式"
-          >
-            🗑️ 清除自定义
-          </button>
-          <button
-            @click="saveDraftAndGoHome"
-            :disabled="isSaving"
-            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors whitespace-nowrap disabled:bg-gray-400"
-            title="保存草稿并返回首页"
-          >
-            {{ isSaving ? '保存中...' : '💾 保存并返回首页' }}
-          </button>
+        <div class="flex items-center space-x-2 md:space-x-3">
           <button
             @click="goBack"
-            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors whitespace-nowrap"
+            class="flex-1 md:flex-none px-3 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
           >
-            ← 返回编辑
+            ← 返回
           </button>
           <button
             @click="addNewStyle"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center space-x-2 whitespace-nowrap"
+            class="flex-1 md:flex-none px-3 md:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2 whitespace-nowrap"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            <span>添加新样式</span>
+            <span>添加样式</span>
           </button>
         </div>
       </div>
@@ -84,15 +55,16 @@
         >
           <!-- 样式预览 -->
           <div class="h-24 overflow-hidden rounded bg-gray-50 mb-3 flex items-center justify-center">
-            <div v-html="sanitizeHtml(style.preview)" class="transform scale-90"></div>
+            <div v-html="sanitizeHtml(getPreviewWithContent(style))" class="transform scale-50 origin-center"></div>
           </div>
 
           <!-- 样式信息 -->
           <div class="mb-3">
             <div class="flex items-center justify-between mb-1">
               <h3 class="font-medium text-gray-900">{{ style.name }}</h3>
-              <span v-if="isCustomStyle(style.id)" class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
-                自定义
+              <span class="px-2 py-0.5 text-xs font-medium rounded"
+                :class="style.source === 'api' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'">
+                {{ getStyleSourceLabel(style) }}
               </span>
             </div>
             <p class="text-xs text-gray-500">ID: {{ style.id }}</p>
@@ -102,27 +74,27 @@
           <div class="flex space-x-2">
             <button
               @click="editStyle(style)"
-              :disabled="!isCustomStyle(style.id)"
+              :disabled="!canEditStyle(style)"
               :class="[
                 'flex-1 px-3 py-1.5 text-sm font-medium rounded transition-colors',
-                isCustomStyle(style.id)
+                canEditStyle(style)
                   ? 'bg-blue-100 hover:bg-blue-200 text-blue-700'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               ]"
-              :title="isCustomStyle(style.id) ? '编辑' : '默认样式不可编辑'"
+              :title="canEditStyle(style) ? '编辑' : (style.source === 'local' ? '只有管理员可以编辑本地样式' : '无权限编辑')"
             >
               编辑
             </button>
             <button
               @click="deleteStyleHandler(style)"
-              :disabled="!isCustomStyle(style.id)"
+              :disabled="!canEditStyle(style)"
               :class="[
                 'flex-1 px-3 py-1.5 text-sm font-medium rounded transition-colors',
-                isCustomStyle(style.id)
+                canEditStyle(style)
                   ? 'bg-red-100 hover:bg-red-200 text-red-700'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               ]"
-              :title="isCustomStyle(style.id) ? '删除' : '默认样式不可删除'"
+              :title="canEditStyle(style) ? '删除' : (style.source === 'local' ? '只有管理员可以删除本地样式' : '无权限删除')"
             >
               删除
             </button>
@@ -310,21 +282,18 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { sanitizeHtml } from '../utils/sanitizeHtml'
-import { useAppStore } from '../stores/appStore'
-import toast from '../composables/useToast'
+import { useStyleStore } from '../stores/styleStore'
+import { useUserStore } from '../stores/userStore'
 import {
   getAllStyles,
-  addCustomStyle,
-  updateStyle,
-  deleteStyle,
-  isCustomStyle,
-  exportCustomStyles,
-  importCustomStyles,
-  clearCustomStyles
+  updateStyle as updateLocalStyle,
+  deleteStyle as deleteLocalStyle,
+  isCustomStyle as isLocalCustomStyle
 } from '../styles/styleStorage'
 
 const router = useRouter()
-const appStore = useAppStore()
+const styleStore = useStyleStore()
+const userStore = useUserStore()
 
 // Tab 配置
 const tabs = [
@@ -336,51 +305,21 @@ const tabs = [
 // 当前激活的 Tab
 const activeTab = ref('title')
 
-// 样式数据（默认 + 自定义）
+// 样式数据（API + 本地）
 const allStyles = ref({ title: [], body: [], intro: [] })
 
-// 保存状态
-const isSaving = ref(false)
+// 加载所有样式（合并 API 样式和本地样式）
+const loadStyles = async () => {
+  // 确保 styleStore 已加载
+  await styleStore.fetchStyles()
 
-// 加载所有样式
-const loadStyles = () => {
-  allStyles.value = getAllStyles()
-}
+  // 合并 API 样式和本地样式
+  const localStyles = getAllStyles()
 
-// 保存草稿并返回首页
-const saveDraftAndGoHome = async () => {
-  if (isSaving.value) return
-
-  isSaving.value = true
-
-  try {
-    const contentBlocks = appStore.contentBlocks
-
-    if (!contentBlocks || contentBlocks.length === 0) {
-      router.push('/')
-      return
-    }
-
-    const cleanedBlocks = contentBlocks.map(block => ({
-      type: block.type,
-      text: block.text || '',
-      ...(block.meta?.aiImageUrl && { aiImageUrl: block.meta.aiImageUrl })
-    }))
-
-    const payload = {
-      rawText: appStore.rawText,
-      contentBlocks: cleanedBlocks,
-      styleConfig: appStore.styleConfig
-    }
-
-    localStorage.setItem('local_step2_draft', JSON.stringify(payload))
-    toast.success('?????????')
-    router.push('/')
-  } catch (error) {
-    console.error('????:', error)
-    toast.error('????: ' + error.message)
-  } finally {
-    isSaving.value = false
+  allStyles.value = {
+    title: [...styleStore.apiTitleStyles, ...localStyles.title],
+    body: [...styleStore.apiBodyStyles, ...localStyles.body],
+    intro: [...styleStore.apiIntroStyles, ...localStyles.intro]
   }
 }
 
@@ -435,12 +374,14 @@ const editStyle = (style) => {
     fullExample: style.fullExample
   }
   showEditDialog.value = true
-  
+
   // 初始化可视化编辑器内容
   nextTick(() => {
     if (visualEditor.value) {
-      // 将 {{CONTENT}} 替换为可视化的占位符
-      visualEditor.value.innerHTML = style.fullExample.replace('{{CONTENT}}', '<span data-placeholder="true">[内容占位符]</span>')
+      // 使用正则替换，避免 Vue 解析 {{CONTENT}}
+      const tempPlaceholder = '\u0000CONTENT\u0000'
+      const escapedHtml = style.fullExample.replace(/\{\{CONTENT\}\}/g, tempPlaceholder)
+      visualEditor.value.innerHTML = escapedHtml.replace(tempPlaceholder, '<span data-placeholder="true">[内容占位符]</span>')
     }
   })
 }
@@ -475,9 +416,12 @@ const syncVisualToCode = () => {
 // 同步代码到可视化内容
 const syncCodeToVisual = () => {
   if (!visualEditor.value) return
-  
+
   const html = editForm.value.fullExample
-  visualEditor.value.innerHTML = html.replace('{{CONTENT}}', '<span data-placeholder="true">[内容占位符]</span>')
+  // 使用临时占位符，避免 Vue 解析 {{CONTENT}}
+  const tempPlaceholder = '\u0000CONTENT\u0000' // 使用空字符避免 Vue 解析
+  const escapedHtml = html.replace(/\{\{CONTENT\}\}/g, tempPlaceholder)
+  visualEditor.value.innerHTML = escapedHtml.replace(tempPlaceholder, '<span data-placeholder="true">[内容占位符]</span>')
 }
 
 // 标准化样式
@@ -635,8 +579,45 @@ const setSelectionAsPlaceholder = () => {
   syncVisualToCode()
 }
 
+// 判断是否可以编辑样式
+// 云端样式（API样式）：所有人都可以修改和删除
+// 本地样式：只有管理员可以修改/删除
+const canEditStyle = (style) => {
+  if (!style) return false
+  // API 样式：所有人都可以修改
+  if (style.source === 'api') {
+    return true
+  }
+  // 本地样式：只有管理员可以修改
+  return userStore.isAdmin
+}
+
+// 判断样式来源标签文本
+const getStyleSourceLabel = (style) => {
+  if (style.source === 'api') {
+    return style.isCustom ? '自定义' : '系统'
+  }
+  return '本地'
+}
+
+// 获取带示例文字的预览HTML
+const getPreviewWithContent = (style) => {
+  const sampleText = '西大'
+  let html = style.fullExample || style.preview || ''
+
+  // 替换任意占位符为示例文字
+  html = html.replace(/\{\{[^}]+\}\}/g, sampleText)
+
+  // 若模板未包含占位符，追加一个可见示例
+  if (!html.includes(sampleText)) {
+    html += `<div style="margin-top: 6px; text-align: center; font-size: 14px; color: #333;">${sampleText}</div>`
+  }
+
+  return html
+}
+
 // 保存样式
-const saveStyle = () => {
+const saveStyle = async () => {
   if (!editForm.value.name || !editForm.value.fullExample) {
     alert('请填写样式名称和完整模板HTML')
     return
@@ -647,116 +628,87 @@ const saveStyle = () => {
     return
   }
 
-  if (editingStyle.value) {
-    // 编辑现有样式
-    if (!isCustomStyle(editingStyle.value.id)) {
-      alert('默认样式不可编辑，只能编辑自定义样式')
-      return
-    }
-    
-    const success = updateStyle(editingStyle.value.id, {
-      name: editForm.value.name,
-      type: editForm.value.type,
-      preview: editForm.value.preview,
-      fullExample: editForm.value.fullExample
-    })
-    
-    if (success) {
-      loadStyles()
+  try {
+    if (editingStyle.value) {
+      // 编辑现有样式 - 检查权限
+      if (!canEditStyle(editingStyle.value)) {
+        if (editingStyle.value.source === 'local') {
+          alert('只有管理员可以修改本地样式')
+        } else {
+          alert('您没有权限修改此样式')
+        }
+        return
+      }
+
+      // 根据样式来源决定使用 API 还是本地存储
+      if (editingStyle.value.source === 'api') {
+        // 使用 API 更新（云端样式）
+        await styleStore.updateStyle(editingStyle.value.id, {
+          name: editForm.value.name,
+          type: editForm.value.type,
+          preview: editForm.value.preview,
+          fullExample: editForm.value.fullExample
+        })
+      } else {
+        // 使用本地存储更新
+        updateLocalStyle(editingStyle.value.id, {
+          name: editForm.value.name,
+          type: editForm.value.type,
+          preview: editForm.value.preview,
+          fullExample: editForm.value.fullExample
+        })
+      }
+
+      await loadStyles()
       closeEditDialog()
       alert('保存成功！')
     } else {
-      alert('保存失败，请重试')
-    }
-  } else {
-    // 添加新样式
-    const newStyle = addCustomStyle({
-      name: editForm.value.name,
-      type: editForm.value.type,
-      preview: editForm.value.preview,
-      fullExample: editForm.value.fullExample
-    })
-    
-    if (newStyle) {
-      loadStyles()
+      // 添加新样式 - 保存到数据库
+      await styleStore.addStyle({
+        name: editForm.value.name,
+        type: editForm.value.type,
+        preview: editForm.value.preview,
+        fullExample: editForm.value.fullExample
+      })
+
+      await loadStyles()
       closeEditDialog()
       alert('添加成功！')
-    } else {
-      alert('添加失败，请重试')
     }
+  } catch (error) {
+    console.error('保存样式失败:', error)
+    alert('保存失败: ' + (error.message || '请重试'))
   }
 }
 
 // 删除样式
-const deleteStyleHandler = (style) => {
-  if (!isCustomStyle(style.id)) {
-    alert('默认样式不可删除，只能删除自定义样式')
+const deleteStyleHandler = async (style) => {
+  // 检查权限
+  if (!canEditStyle(style)) {
+    if (style.source === 'local') {
+      alert('只有管理员可以删除本地样式')
+    } else {
+      alert('您没有权限删除此样式')
+    }
     return
   }
-  
+
   if (confirm(`确定要删除样式"${style.name}"吗？此操作不可恢复。`)) {
-    const success = deleteStyle(style.id)
-    if (success) {
-      loadStyles()
-      alert('删除成功！')
-    } else {
-      alert('删除失败，请重试')
-    }
-  }
-}
-
-// 导出自定义样式
-const handleExport = () => {
-  console.log('Exporting styles...')
-  try {
-    exportCustomStyles()
-    alert('导出成功！文件已下载')
-  } catch (e) {
-    console.error('Export failed:', e)
-    alert('导出失败: ' + e.message)
-  }
-}
-
-// 导入自定义样式
-const handleImport = () => {
-  console.log('Importing styles...')
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = '.json'
-  input.style.display = 'none'
-  document.body.appendChild(input)
-  
-  input.onchange = async (e) => {
-    const file = e.target.files[0]
-    if (!file) {
-      document.body.removeChild(input)
-      return
-    }
-    
     try {
-      await importCustomStyles(file)
-      loadStyles()
-      alert('导入成功！')
-    } catch (error) {
-      console.error('Import failed:', error)
-      alert(`导入失败：${error.message}`)
-    } finally {
-      document.body.removeChild(input)
-    }
-  }
-  
-  input.click()
-}
+      // 根据样式来源决定使用 API 还是本地存储
+      if (style.source === 'api') {
+        // 使用 API 删除（云端样式）
+        await styleStore.deleteStyle(style.id)
+      } else {
+        // 使用本地存储删除
+        deleteLocalStyle(style.id)
+      }
 
-// 清除所有自定义样式
-const handleClearCustom = () => {
-  if (confirm('确定要清除所有自定义样式吗？此操作不可恢复。')) {
-    const success = clearCustomStyles()
-    if (success) {
-      loadStyles()
-      alert('清除成功！')
-    } else {
-      alert('清除失败，请重试')
+      await loadStyles()
+      alert('删除成功！')
+    } catch (error) {
+      console.error('删除样式失败:', error)
+      alert('删除失败: ' + (error.message || '请重试'))
     }
   }
 }

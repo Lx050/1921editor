@@ -66,7 +66,8 @@ const routes: RouteRecordRaw[] = [
     name: 'StyleConfig',
     component: () => import('../views/StyleConfig.vue'),
     meta: {
-      title: '样式配置'
+      title: '样式配置',
+      requiresAuth: true
     }
   },
   {
@@ -83,6 +84,38 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/ArticleConfig.vue'),
     meta: {
       title: '配置文章'
+    }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/Login.vue'),
+    meta: {
+      title: '登录'
+    }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/Register.vue'),
+    meta: {
+      title: '注册'
+    }
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('../views/ForgotPassword.vue'),
+    meta: {
+      title: '忘记密码'
+    }
+  },
+  {
+    path: '/verify-email',
+    name: 'VerifyEmail',
+    component: () => import('../views/VerifyEmail.vue'),
+    meta: {
+      title: '验证邮箱'
     }
   },
   {
@@ -133,12 +166,7 @@ const routeGuards: Record<string, RouteGuard> = {
     redirect: '/step2',
     description: 'step3需要内容块'
   },
-  '/style-config': {
-    // 同样允许有 rawText 或 contentBlocks
-    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length),
-    redirect: '/step1',
-    description: '样式配置需要文本内容或内容块'
-  }
+
 }
 
 const router = createRouter({

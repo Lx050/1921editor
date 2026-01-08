@@ -1,6 +1,6 @@
 <template>
-  <!-- 全屏容器：固定布局，不滚动 -->
-  <div class="fixed inset-0 flex overflow-hidden">
+  <!-- 全屏容器：相对于 App.vue 的 flex-1 区域 -->
+  <div class="relative flex h-full w-full overflow-hidden">
     <!-- 移动端样式选择开关 -->
     <button
       @click="showMobileSidebar = !showMobileSidebar"
@@ -34,13 +34,13 @@
     <div class="flex-1 flex flex-col h-full w-full step-content-area relative overflow-hidden">
       <!-- 精简头部 - 统一高度和样式 -->
       <div class="flex-shrink-0 w-full border-b p-3 md:p-4" style="background: var(--color-content-card); border-color: var(--color-content-border);">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-3">
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-3">
-              <span class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap">Step 2/3</span>
-              <h2 class="text-lg font-bold truncate" style="color: var(--color-content-text)">编辑内容</h2>
+            <div class="flex items-center gap-2 md:gap-3">
+              <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap">Step 2/3</span>
+              <h2 class="text-base md:text-lg font-bold truncate" style="color: var(--color-content-text)">编辑内容</h2>
             </div>
-            <p class="text-xs mt-0.5 truncate" style="color: var(--color-content-text-secondary)">点击内容块直接编辑，左侧实时预览不同样式</p>
+            <p class="text-[10px] md:text-xs mt-0.5 truncate" style="color: var(--color-content-text-secondary)">点击内容块编辑，左侧实时切换样式</p>
           </div>
           
           <!-- 上传进度 -->
@@ -81,7 +81,7 @@
                       v-if="selectedBlockId === block.id"
                       :value="block.type"
                       @change="changeBlockType(block.id, ($event.target as HTMLSelectElement).value as BlockType)"
-                      class="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-medium text-gray-700 hover:border-blue-400 focus:border-blue-500 focus:outline-none cursor-pointer"
+                      class="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-medium text-black hover:border-blue-400 focus:border-blue-500 focus:outline-none cursor-pointer"
                       @click.stop
                     >
                       <option v-for="option in getBlockTypeOptions()" :key="option.value" :value="option.value">
@@ -243,29 +243,34 @@
         </div>
       </div>
     
-      <!-- 操作按钮 - 固定在底部 -->
-      <div class="absolute bottom-0 left-0 right-0 flex flex-row justify-between items-center p-4 border-t z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] h-20" style="background: var(--color-content-card); border-color: var(--color-content-border);">
-        <div class="flex-1">
+      <!-- 操作按钮 - 固定在底部，与第三步风格一致 -->
+      <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div class="flex items-center justify-between gap-4">
+          <!-- 上一步按钮 -->
           <button
             @click="goToPreviousStep"
-            class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors"
+            class="flex-1 h-11 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-black text-sm font-medium rounded-xl transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-1"
           >
-            ← 上一步
+            <span>←</span>
+            <span>上一步</span>
           </button>
-        </div>
-
-        <div class="flex gap-3">
+          
+          <!-- 下一步按钮 -->
           <button
             @click="goToNextStep"
-            class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-base font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center space-x-2 disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
+            class="flex-[2] h-11 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="contentBlocks.length === 0 || isUploading"
           >
-            <span v-if="isUploading">图片上传中...</span>
-            <span v-else>下一步：预览效果</span>
-            <svg v-if="!isUploading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
-            <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <template v-if="isUploading">
+               <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+               <span class="hidden sm:inline">图片上传中...</span>
+               <span class="sm:hidden">上传中</span>
+            </template>
+            <template v-else>
+              <span class="hidden sm:inline">下一步：预览效果</span>
+              <span class="sm:hidden">生成预览</span>
+              <span>→</span>
+            </template>
           </button>
         </div>
       </div>

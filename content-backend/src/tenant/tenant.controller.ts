@@ -10,7 +10,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TenantService } from './tenant.service';
 
 @ApiTags('Tenants')
-@Controller('api/tenants')
+@Controller('tenants')
 export class TenantController {
   constructor(private readonly tenantService: TenantService) {}
 

@@ -18,7 +18,8 @@ export enum UserRole {
 }
 
 @Entity('users')
-@Index(['tenantId', 'feishuId'], { unique: true }) // 组合唯一索引：同一租户内 feishuId 唯一
+@Index(['email'], { unique: true }) // 邮箱全局唯一
+@Index(['tenantId', 'email'], { unique: true }) // 同一租户内邮箱唯一
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -32,8 +33,11 @@ export class User {
   tenant: Tenant;
 
   // === 用户信息 ===
-  @Column() // 不再是全局唯一，而是 (tenantId, feishuId) 组合唯一
-  feishuId: string;
+  @Column({ unique: true })
+  email: string; // 邮箱（必填，全局唯一）
+
+  @Column()
+  password: string; // 加密后的密码
 
   @Column()
   name: string;
@@ -45,8 +49,19 @@ export class User {
   })
   role: UserRole;
 
-  @Column({ nullable: true })
-  email: string; // From Feishu or manual match
+  // === 邮箱验证 ===
+  @Column({ default: false })
+  emailVerified: boolean; // 邮箱是否已验证
+
+  @Column({ type: 'varchar', nullable: true })
+  verificationToken: string | null; // 邮箱验证令牌
+
+  // === 密码重置 ===
+  @Column({ type: 'varchar', nullable: true })
+  resetPasswordToken: string | null; // 密码重置令牌
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordExpires: Date | null; // 密码重置令牌过期时间
 
   @Column({ name: 'isactive', default: true })
   isActive: boolean;

@@ -66,10 +66,10 @@ export class TenantService {
   }
 
   /**
-   * 根据飞书AppId查找租户
+   * 根据邀请码查找租户
    */
-  async findByFeishuAppId(feishuAppId: string): Promise<Tenant | null> {
-    return this.tenantRepository.findOne({ where: { feishuAppId } });
+  async findByInviteCode(inviteCode: string): Promise<Tenant | null> {
+    return this.tenantRepository.findOne({ where: { inviteCode } });
   }
 
   /**

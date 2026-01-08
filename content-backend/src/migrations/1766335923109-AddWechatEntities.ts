@@ -5,13 +5,17 @@ export class AddWechatEntities1766335923109 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "FK_users_tenant"`,
+      `ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "FK_users_tenant"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "articles" DROP CONSTRAINT "FK_articles_tenant"`,
+      `ALTER TABLE "articles" DROP CONSTRAINT IF EXISTS "FK_articles_tenant"`,
     );
-    await queryRunner.query(`DROP INDEX "public"."IDX_users_tenant_feishu"`);
-    await queryRunner.query(`DROP INDEX "public"."IDX_articles_tenantId"`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "public"."IDX_users_tenant_feishu"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "public"."IDX_articles_tenantId"`,
+    );
     await queryRunner.query(
       `CREATE TABLE "wechat_authorizers" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "tenantId" uuid NOT NULL, "authorizerAppId" character varying NOT NULL, "authorizerAccessToken" text, "authorizerRefreshToken" text, "expiresAt" TIMESTAMP, "nickName" character varying, "headImg" character varying, "userName" character varying, "principalName" character varying, "serviceTypeInfo" jsonb, "verifyTypeInfo" jsonb, "alias" character varying, "qrcodeUrl" character varying, "isActive" boolean NOT NULL DEFAULT true, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_27f5302591ea9b84216f76b16b3" UNIQUE ("authorizerAppId"), CONSTRAINT "PK_0e2510f408dc91c1d94c211d489" PRIMARY KEY ("id"))`,
     );
@@ -21,15 +25,28 @@ export class AddWechatEntities1766335923109 implements MigrationInterface {
     await queryRunner.query(
       `CREATE TABLE "wechat_platform_config" ("id" SERIAL NOT NULL, "componentVerifyTicket" character varying, "componentAccessToken" text, "tokenExpiresAt" TIMESTAMP, "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_9c71135fa0ded6382a19354f6cd" PRIMARY KEY ("id"))`,
     );
-    await queryRunner.query(`ALTER TABLE "tenants" DROP COLUMN "isactive"`);
-    await queryRunner.query(`ALTER TABLE "tenants" DROP COLUMN "createdat"`);
-    await queryRunner.query(`ALTER TABLE "tenants" DROP COLUMN "updatedat"`);
     await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "UQ_f1b4e50d435570b5abdf6341f05"`,
+      `ALTER TABLE "tenants" DROP COLUMN IF EXISTS "isactive"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "users" ALTER COLUMN "isactive" SET NOT NULL`,
+      `ALTER TABLE "tenants" DROP COLUMN IF EXISTS "createdat"`,
     );
+    await queryRunner.query(
+      `ALTER TABLE "tenants" DROP COLUMN IF EXISTS "updatedat"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "UQ_f1b4e50d435570b5abdf6341f05"`,
+    );
+    const hasUsersIsActive = await queryRunner.query(`
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_name = 'users' AND column_name = 'isactive'
+    `);
+    if (hasUsersIsActive.length) {
+      await queryRunner.query(
+        `ALTER TABLE "users" ALTER COLUMN "isactive" SET NOT NULL`,
+      );
+    }
     await queryRunner.query(
       `CREATE UNIQUE INDEX "IDX_a80f2b71c4ce62405b1686a13b" ON "users" ("tenantId", "feishuId") `,
     );

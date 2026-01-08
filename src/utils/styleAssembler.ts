@@ -57,6 +57,13 @@ export function buildHtml(
 		.replace(/{{PLANNERS}}/g, appStore.plannerNames.join(' ') || ' ')
 		.replace(/{{COPYWRITERS}}/g, appStore.copywriterNames.join(' ') || ' ')
 		.replace(/{{EDITORS}}/g, appStore.editorNames.join(' ') || ' ')
+		// V4: 替换尾部可变字段
+		.replace(/{{TEAM_NAME}}/g, appStore.teamName || '"团队名称待填写"')
+		.replace(/{{SOURCE_ACCOUNT}}/g, appStore.sourceAccount || '"来源公众号待填写"')
+		.replace(/{{EDITOR_INPUT}}/g, appStore.editorInput || ' ')  // 编辑（用户填写，默认为空）
+
+	// 🚀 将 footer 包裹在 contenteditable 容器中，允许用户直接在预览中编辑
+	footer = `<div id="editable-footer" contenteditable="true" style="outline: none;">${footer}</div>`
 
 	htmlParts.push(footer)
 

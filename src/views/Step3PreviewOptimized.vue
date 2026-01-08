@@ -142,6 +142,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { buildHtml } from '../utils/styleAssembler'
+import { copyToClipboard } from '../utils/clipboard'
 import { createDraft } from '../utils/wechatApi'
 import ImageReplacer from '../components/ImageReplacer.vue'
 import PreviewFrame from '../components/PreviewFrame.vue'
@@ -180,14 +181,15 @@ const handleImageSelect = (image, placeholder) => {
 }
 
 const copyHtml = async () => {
-  try {
-    await navigator.clipboard.writeText(finalHtml.value)
+  const result = await copyToClipboard(finalHtml.value)
+  if (result.ok) {
     copyButtonText.value = '已复制!'
     setTimeout(() => {
       copyButtonText.value = '复制HTML代码'
     }, 2000)
-  } catch (err) {
-    console.error('复制失败:', err)
+  } else {
+    console.error('复制失败:', result.error)
+    alert('复制失败，请手动选择代码进行复制')
   }
 }
 

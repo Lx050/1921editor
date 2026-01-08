@@ -4,6 +4,9 @@ import { config } from 'dotenv';
 import { User } from './entities/user.entity';
 import { Article } from './entities/article.entity';
 import { Tenant } from './entities/tenant.entity';
+import { EmailVerificationToken } from './entities/email-verification-token.entity';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
+import * as path from 'path';
 
 // 加载环境变量
 config();
@@ -16,7 +19,13 @@ export const AppDataSource = new DataSource({
   url: process.env.DATABASE_URL || configService.get<string>('DATABASE_URL'),
   synchronize: false, // 必须关闭
   logging: process.env.NODE_ENV === 'development',
-  entities: [User, Article, Tenant],
-  migrations: ['src/migrations/*.ts'],
-  subscribers: ['src/subscribers/*.ts'],
+  entities: [
+    User,
+    Article,
+    Tenant,
+    EmailVerificationToken,
+    PasswordResetToken,
+  ],
+  migrations: [path.join(__dirname, 'migrations/*{.ts,.js}')],
+  subscribers: [path.join(__dirname, 'subscribers/*{.ts,.js}')],
 });

@@ -69,15 +69,15 @@ const DAILY_FOOTER = `
 			<span style="letter-spacing: 0.54px;text-indent: 0em;">图片：{{COPYWRITERS}}</span>
 		</section>
 		<section style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;text-align: center;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;font-family:微软雅黑;" class="" data-doubao-translate-traverse-mark="1">
-			<span style="letter-spacing: 0px;text-indent: 0em;">编辑：{{EDITORS}}</span>
+			<span style="letter-spacing: 0px;text-indent: 0em;">编辑：{{EDITOR_INPUT}}</span>
 		</section>
 		<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;" class="" data-doubao-translate-traverse-mark="1">
 			<section style="outline: 0px;letter-spacing: 0.54px;text-indent: 0em;line-height: 1.75em;min-height: 14px;font-stretch: normal;" class="" data-doubao-translate-traverse-mark="1">
 				<section style="line-height: 1.75em;" class="" data-doubao-translate-traverse-mark="1">
-					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：{{PLANNERS}}</span>
+					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：王雪 宋欣翼</span>
 				</section>
 				<section style="line-height: 1.75em;" class="" data-doubao-translate-traverse-mark="1">
-					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：{{EDITORS}}</span>
+					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：朱梦鹤</span>
 				</section>
 				<p style="line-height: 1.75em;" data-doubao-translate-traverse-mark="1">
 					<br/>
@@ -162,18 +162,18 @@ const THREE_RURAL_FOOTER = `
 		<br/>
 	</p>
 	<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;text-align:center;font-family:微软雅黑;" align="center">
-		图文来源：“新华社客户端”社会实践队
+		图文来源：{{TEAM_NAME}}
 	</p>
 	<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;text-align:center;font-family:微软雅黑;" align="center">
-		<span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">编辑：</span><span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">{{EDITORS}}</span>
+		<span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">编辑：</span><span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">{{EDITOR_INPUT}}</span>
 	</p>
 	<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;text-align:center;font-family:微软雅黑;" align="center">
-		<span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">审核：{{PLANNERS}}&nbsp;</span>
+		<span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">审核：王雪 宋欣翼&nbsp;</span>
 	</p>
 	<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;" class="" data-doubao-translate-traverse-mark="1">
 		<section style="outline: 0px;letter-spacing: 0.54px;text-indent: 0em;line-height: 1.75em;min-height: 14px;font-stretch: normal;" class="" data-doubao-translate-traverse-mark="1">
 			<p style="line-height: 1.75em;">
-				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：{{EDITORS}}</span>
+				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：朱梦鹤</span>
 			</p>
 			<p style="line-height: 1.75em;">
 				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><br/></span>
@@ -271,15 +271,18 @@ const REPRINT_FOOTER = `
 		<br/>
 	</p>
 	<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;text-align:center;font-family:微软雅黑;"  align="center">
-		来源：“新华社客户端”公众号
+		来源：{{SOURCE_ACCOUNT}}
+	</p>
+	<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;text-align:center;font-family:微软雅黑;"  align="center">
+		编辑：{{EDITOR_INPUT}}
 	</p>
 	<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;" class="" data-doubao-translate-traverse-mark="1">
 		<section style="outline: 0px;letter-spacing: 0.54px;text-indent: 0em;line-height: 1.75em;min-height: 14px;font-stretch: normal;" class="" data-doubao-translate-traverse-mark="1">
 			<section style="line-height: 1.75em;" class="" data-doubao-translate-traverse-mark="1">
-				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：{{PLANNERS}}&nbsp;</span>
+				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：王雪 宋欣翼&nbsp;</span>
 			</section>
 			<p style="line-height: 1.75em;">
-				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：{{EDITORS}}</span>
+				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：朱梦鹤</span>
 			</p>
 			<p style="line-height: 1.75em;">
 				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;" ><br/></span>

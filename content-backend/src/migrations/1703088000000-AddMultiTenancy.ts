@@ -118,11 +118,39 @@ export class AddMultiTenancy1703088000000 implements MigrationInterface {
       ON "articles" ("tenantId")
     `);
 
-    // 15. 添加 ADMIN 角色到 UserRole 枚举
-    await queryRunner.query(`
-      ALTER TYPE "users_role_enum" 
-      ADD VALUE IF NOT EXISTS 'ADMIN'
+    // 15. 确保 users.role 使用枚举并包含 ADMIN
+    const enumExists = await queryRunner.query(`
+      SELECT 1 FROM pg_type WHERE typname = 'users_role_enum'
     `);
+
+    if (!enumExists.length) {
+      await queryRunner.query(`
+        CREATE TYPE "users_role_enum" AS ENUM (
+          'ADMIN',
+          'EDITOR',
+          'COPYWRITER',
+          'PLANNER'
+        )
+      `);
+      await queryRunner.query(`
+        ALTER TABLE "users"
+        ALTER COLUMN "role" DROP DEFAULT
+      `);
+      await queryRunner.query(`
+        ALTER TABLE "users"
+        ALTER COLUMN "role" TYPE "users_role_enum"
+        USING "role"::text::"users_role_enum"
+      `);
+      await queryRunner.query(`
+        ALTER TABLE "users"
+        ALTER COLUMN "role" SET DEFAULT 'EDITOR'
+      `);
+    } else {
+      await queryRunner.query(`
+        ALTER TYPE "users_role_enum"
+        ADD VALUE IF NOT EXISTS 'ADMIN'
+      `);
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

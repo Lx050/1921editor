@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import type { ContentBlock, StyleConfig, BlockType, WechatImage, UploadProgress } from '@/types'
+import { useUserStore } from './userStore'
 
 export const useAppStore = defineStore('app', () => {
   // 状态（明确类型注解，无向后兼容）
@@ -12,9 +13,16 @@ export const useAppStore = defineStore('app', () => {
   const styleConfig: Ref<StyleConfig | null> = ref(null)
 
   // V3 新增状态：参与者姓名（用于自动化尾部）
-  const plannerNames: Ref<string[]> = ref([])
-  const copywriterNames: Ref<string[]> = ref([])
-  const editorNames: Ref<string[]> = ref([])
+  // 固定人员：责编 - 朱梦鹤，审核 - 王雪 宋欣翼
+  const plannerNames: Ref<string[]> = ref(['王雪', '宋欣翼'])  // 审核/校对
+  const copywriterNames: Ref<string[]> = ref([])                 // 文案/图片来源（需从文档解析）
+  const editorNames: Ref<string[]> = ref(['朱梦鹤'])             // 责编（固定）
+
+  // V4 新增状态：尾部可变字段（用于不同模式）
+  const teamName: Ref<string> = ref('')           // 团队名称（三下乡模式，需从文档解析）
+  const sourceAccount: Ref<string> = ref('')      // 来源公众号名称（转载模式，需从文档解析）
+  const imageSource: Ref<string> = ref('')        // 图片来源（日常模式）
+  const editorInput: Ref<string> = ref('')        // 编辑人员（用户填写，默认为空）
 
   // V2 新增状态：微信图片上传相关
   const wechatImages: Ref<WechatImage[]> = ref([])
@@ -174,10 +182,39 @@ export const useAppStore = defineStore('app', () => {
     wechatImages.value = []
     uploadProgress.value = { total: 0, completed: 0, failed: 0, uploading: 0 }
     isUploading.value = false
-    // V3: 重置参与者名称
-    plannerNames.value = []
-    copywriterNames.value = []
-    editorNames.value = []
+    // V3: 重置参与者名称（保留固定人员，只重置需解析的字段）
+    plannerNames.value = ['王雪', '宋欣翼']  // 审核（固定）
+    copywriterNames.value = []                // 文案（需解析）
+    editorNames.value = ['朱梦鹤']            // 责编（固定）
+    // V4: 重置尾部可变字段（需从文档解析）
+    teamName.value = ''
+    sourceAccount.value = ''
+    imageSource.value = ''
+    editorInput.value = ''  // 编辑人员（用户填写）
+
+    // 🚀 核心优化：每次重置时，如果用户已登录，自动填充姓名
+    const userStore = useUserStore()
+    if (userStore.userInfo) {
+      initializeUserMetadata(userStore.userInfo)
+    }
+  }
+
+  /**
+   * 根据登录用户信息初始化元数据
+   * @param userInfo 用户信息对象
+   */
+  const initializeUserMetadata = (userInfo: any): void => {
+    // 调试打印，确保我们知道 userInfo 的结构
+    console.log('[Store] 初始化用户元数据, userInfo:', userInfo)
+
+    if (userInfo) {
+      // 优先级：name > nickname > username > email
+      const name = userInfo.name || userInfo.nickname || userInfo.username || userInfo.email || ''
+      if (name) {
+        console.log('[Store] 自动填充编辑姓名:', name)
+        editorInput.value = name
+      }
+    }
   }
 
   return {
@@ -194,6 +231,11 @@ export const useAppStore = defineStore('app', () => {
     plannerNames,
     copywriterNames,
     editorNames,
+    // V4 新增状态：尾部可变字段
+    teamName,
+    sourceAccount,
+    imageSource,
+    editorInput,
     // 操作
     setStep,
     setCurrentArticleId,
@@ -212,7 +254,8 @@ export const useAppStore = defineStore('app', () => {
     updateUploadProgress,
     setIsUploading,
     clearWechatImages,
-    resetApp
+    resetApp,
+    initializeUserMetadata
   }
 })
 

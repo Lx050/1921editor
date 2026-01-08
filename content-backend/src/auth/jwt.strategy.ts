@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // JWT payload.sub 是用户的 UUID (user.id)，不是 feishuId
+    // JWT payload.sub 是用户的 UUID (user.id)
     const userId = payload.sub;
 
     this.logger.debug(`🔐 JWT验证 - 解析的userId: ${userId}`);
@@ -52,10 +52,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     this.logger.debug(`✅ 用户验证成功: ${user.name} (${user.id})`);
 
     return {
-      id: user.id,
-      userId: user.id,
-      username: user.name,
-      feishuId: user.feishuId,
+      sub: user.id,
+      email: user.email,
       tenantId: user.tenantId,
       role: user.role,
     };

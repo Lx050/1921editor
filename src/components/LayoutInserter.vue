@@ -19,39 +19,41 @@
     <!-- 下拉菜单 -->
     <div
       v-if="menuVisible"
-      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-20"
+      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white border border-gray-200 rounded-xl shadow-xl p-3 z-20 min-w-[280px]"
     >
-      <div class="text-xs text-gray-500 mb-2 text-center">插入内容</div>
-
-      <!-- 文本内容区 -->
-      <div class="mb-3">
-        <div class="text-xs font-medium text-gray-700 mb-1">文本内容</div>
-        <div class="flex space-x-2">
-          <button
-            v-for="option in textOptions"
-            :key="option.value"
-            @click="insertContent(option.value)"
-            class="px-3 py-2 text-sm rounded-md hover:bg-blue-100 text-gray-700 flex flex-col items-center space-y-1 transition-colors min-w-[70px]"
-          >
-            <span class="text-lg">{{ option.icon }}</span>
-            <span class="text-xs font-medium">{{ option.label }}</span>
-          </button>
+      <div class="text-xs font-bold text-gray-400 mb-3 text-center uppercase tracking-wider">插入内容</div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <!-- 文本内容区 -->
+        <div class="space-y-2">
+          <div class="text-[10px] font-bold text-gray-400 px-1">文本</div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button
+              v-for="option in textOptions"
+              :key="option.value"
+              @click="insertContent(option.value)"
+              class="p-2 text-sm rounded-lg hover:bg-blue-50 active:bg-blue-100 text-gray-700 flex flex-col items-center justify-center transition-all border border-transparent hover:border-blue-100"
+            >
+              <span class="text-xl mb-1">{{ option.icon }}</span>
+              <span class="text-[10px] font-bold">{{ option.label }}</span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- 图片模板区 -->
-      <div>
-        <div class="text-xs font-medium text-gray-700 mb-1">图片模板</div>
-        <div class="flex space-x-2">
-          <button
-            v-for="option in imageOptions"
-            :key="option.value"
-            @click="insertContent(option.value)"
-            class="px-3 py-2 text-sm rounded-md hover:bg-orange-100 text-gray-700 flex flex-col items-center space-y-1 transition-colors min-w-[70px]"
-          >
-            <span class="text-lg">{{ option.icon }}</span>
-            <span class="text-xs font-medium">{{ option.label }}</span>
-          </button>
+        <!-- 图片模板区 -->
+        <div class="space-y-2">
+          <div class="text-[10px] font-bold text-gray-400 px-1">图文</div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button
+              v-for="option in imageOptions"
+              :key="option.value"
+              @click="insertContent(option.value)"
+              class="p-2 text-sm rounded-lg hover:bg-orange-50 active:bg-orange-100 text-gray-700 flex flex-col items-center justify-center transition-all border border-transparent hover:border-orange-100"
+            >
+              <span class="text-xl mb-1">{{ option.icon }}</span>
+              <span class="text-[10px] font-bold">{{ option.label }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

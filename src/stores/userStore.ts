@@ -20,6 +20,9 @@ export const useUserStore = defineStore('user', () => {
 
     const isLoggedIn = computed(() => !!token.value && tokenStorage.isTokenValid(token.value))
 
+    // 判断用户是否为管理员
+    const isAdmin = computed(() => userInfo.value?.role === 'ADMIN')
+
     // 获取用户的租户ID
     const tenantId = computed(() => userInfo.value?.tenantId || currentTenant.value?.id || null)
 
@@ -62,6 +65,7 @@ export const useUserStore = defineStore('user', () => {
         currentTenant,
         tenantId,
         isLoggedIn,
+        isAdmin,
         setToken,
         setUserInfo,
         setCurrentTenant,

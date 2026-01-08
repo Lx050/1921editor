@@ -132,6 +132,9 @@ export default defineConfig({
           // 压缩包处理库
           'vendor-zip': ['jszip'],
 
+          // 7z-wasm 单独打包（大库，懒加载）
+          'vendor-7z': ['7z-wasm'],
+
           // QRCode生成器
           'vendor-qrcode': ['qrcode'],
 
@@ -156,8 +159,12 @@ export default defineConfig({
   },
   // 优化依赖项
   optimizeDeps: {
-    include: ['vue', 'vue-router', 'pinia']
+    include: ['vue', 'vue-router', 'pinia'],
+    // 排除 7z-wasm，避免预构建导致 WASM 加载问题
+    exclude: ['7z-wasm']
   },
   // 配置资源缓存
-  cacheDir: 'node_modules/.vite'
+  cacheDir: 'node_modules/.vite',
+  // 支持 WebAssembly 文件
+  assetsInclude: ['**/*.wasm']
 })

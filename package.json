@@ -15,7 +15,9 @@
   "dependencies": {
     "@types/dompurify": "^3.0.5",
     "7z-wasm": "^1.2.0",
+    "axios": "^1.13.2",
     "dompurify": "^3.3.1",
+    "element-plus": "^2.13.0",
     "jszip": "^3.10.1",
     "mammoth": "^1.11.0",
     "pinia": "^2.1.6",

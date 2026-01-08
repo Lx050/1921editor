@@ -1,127 +1,118 @@
 <template>
-  <div id="app" class="h-screen flex flex-col magazine-bg">
+  <div id="app" class="min-h-screen flex flex-col bg-[#f8f9fa]">
     <!-- 全局 Toast 通知 -->
     <Toast />
 
     <!-- 资源预加载器 -->
     <ResourcePreloader />
 
-    <!-- 顶部导航栏 - 在Dashboard页面时隐藏 -->
+    <!-- 顶部导航栏 - 仅在非 Landing/Home 页面显示，或根据需要始终显示 -->
     <header
-      v-if="!isDashboardPage"
-      class="relative backdrop-blur-xl bg-[#141419]/80 border-b border-white/10 magazine-page-enter magazine-stagger-1"
+      v-if="showHeader"
+      class="relative flex-none bg-white shadow-sm border-b border-gray-100 z-50"
     >
-      <!-- 装饰性顶部线条 -->
-      <div class="absolute top-0 left-0 right-0 h-[1px]">
-        <div class="w-full h-full bg-gradient-to-r from-transparent via-[#d4a574]/50 to-transparent"></div>
-      </div>
+      <!-- 装饰性顶部色彩线条 (6px) -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-400 via-purple-400 to-rose-400"></div>
 
-      <div class="max-w-6xl mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 md:py-4">
+        <div class="flex items-center justify-between gap-2">
           <!-- Logo 区域 -->
-          <div class="flex items-center space-x-3">
-            <div class="relative">
-              <div class="w-10 h-10 bg-gradient-to-br from-[#ff6b4a] to-[#ff8566] rounded-lg flex items-center justify-center shadow-lg">
-                <span class="text-white font-bold" style="font-family: var(--font-display)">B</span>
+          <div class="flex items-center space-x-2 md:space-x-4">
+            <div class="relative flex-shrink-0">
+              <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span class="text-white font-bold text-lg md:text-xl" style="font-family: var(--font-display)">B</span>
               </div>
-              <!-- 装饰性光晕 -->
-              <div class="absolute -inset-1 bg-gradient-to-br from-[#ff6b4a]/30 to-transparent rounded-lg blur-sm -z-10"></div>
             </div>
-            <div>
-              <h1 class="text-lg font-semibold" style="font-family: var(--font-display); color: var(--color-text-primary)">
+            <div class="hidden sm:block">
+              <h1 class="text-sm md:text-lg font-bold text-gray-900 leading-tight" style="font-family: var(--font-display)">
                 版式装配引擎
               </h1>
-              <span class="text-xs tracking-widest uppercase" style="font-family: var(--font-body); color: var(--color-text-muted)">
-                V1.0
+              <div class="flex items-center space-x-2">
+                <span class="text-[8px] md:text-[10px] tracking-widest text-blue-600 font-bold uppercase">Professional Edition</span>
+                <span class="text-[8px] md:text-[10px] text-gray-400">V1.0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 步骤指示器 - 仅在步骤页面显示 -->
+          <div v-if="isStepPage" class="flex items-center bg-gray-50 px-2 md:px-6 py-1.5 md:py-2 rounded-xl md:rounded-2xl border border-gray-100">
+            <div class="flex items-center">
+              <div
+                :class="[
+                  'w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold transition-all duration-300',
+                  currentStep === 1
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : currentStep > 1
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-white text-gray-400 border border-gray-200'
+                ]"
+              >
+                <span v-if="currentStep > 1">✓</span>
+                <span v-else>1</span>
+              </div>
+              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 1 ? 'text-gray-900' : 'text-gray-400'">
+                输入文本
+              </span>
+            </div>
+
+            <div class="w-4 md:w-10 h-[1px] bg-gray-200 mx-2 md:mx-4"></div>
+
+            <div class="flex items-center">
+              <div
+                :class="[
+                  'w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold transition-all duration-300',
+                  currentStep === 2
+                    ? 'bg-purple-500 text-white shadow-md'
+                    : currentStep > 2
+                    ? 'bg-purple-100 text-purple-600'
+                    : 'bg-white text-gray-400 border border-gray-200'
+                ]"
+              >
+                <span v-if="currentStep > 2">✓</span>
+                <span v-else>2</span>
+              </div>
+              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 2 ? 'text-gray-900' : 'text-gray-400'">
+                编辑内容
+              </span>
+            </div>
+
+            <div class="w-4 md:w-10 h-[1px] bg-gray-200 mx-2 md:mx-4"></div>
+
+            <div class="flex items-center">
+              <div
+                :class="[
+                  'w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold transition-all duration-300',
+                  currentStep === 3
+                    ? 'bg-rose-500 text-white shadow-md'
+                    : 'bg-white text-gray-400 border border-gray-200'
+                ]"
+              >
+                3
+              </div>
+              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 3 ? 'text-gray-900' : 'text-gray-400'">
+                生成预览
               </span>
             </div>
           </div>
 
-          <div class="flex items-center space-x-4">
-            <!-- 步骤指示器 -->
-            <div class="flex items-center space-x-3">
-              <div class="flex items-center" v-if="currentStep > 0">
-                <div
-                  :class="[
-                    'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300',
-                    currentStep === 1
-                      ? 'bg-gradient-to-br from-[#ff6b4a] to-[#ff8566] text-white shadow-lg'
-                      : 'bg-[#252530] text-[#a0a0b0] border border-white/10'
-                  ]"
-                >
-                  <span v-if="currentStep > 1" class="text-[#2dd4a6]">✓</span>
-                  <span v-else>1</span>
-                </div>
-                <span class="ml-2 text-sm font-medium hidden sm:inline" :class="currentStep === 1 ? 'text-[#f5f5f5]' : 'text-[#606070]'">
-                  输入文本
-                </span>
-              </div>
-
-              <div v-if="currentStep > 0" class="w-6 h-[1px] bg-white/10 hidden sm:block"></div>
-
-              <div class="flex items-center" v-if="currentStep > 0">
-                <div
-                  :class="[
-                    'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300',
-                    currentStep === 2
-                      ? 'bg-gradient-to-br from-[#ff6b4a] to-[#ff8566] text-white shadow-lg'
-                      : currentStep > 2
-                      ? 'bg-[#252530] text-[#2dd4a6] border border-[#2dd4a6]/30'
-                      : 'bg-[#252530] text-[#a0a0b0] border border-white/10'
-                  ]"
-                >
-                  <span v-if="currentStep > 2" class="text-[#2dd4a6]">✓</span>
-                  <span v-else>2</span>
-                </div>
-                <span class="ml-2 text-sm font-medium hidden sm:inline" :class="currentStep === 2 ? 'text-[#f5f5f5]' : 'text-[#606070]'">
-                  编辑内容
-                </span>
-              </div>
-
-              <div v-if="currentStep > 0" class="w-6 h-[1px] bg-white/10 hidden sm:block"></div>
-
-              <div class="flex items-center" v-if="currentStep > 0">
-                <div
-                  :class="[
-                    'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300',
-                    currentStep === 3
-                      ? 'bg-gradient-to-br from-[#ff6b4a] to-[#ff8566] text-white shadow-lg'
-                      : 'bg-[#252530] text-[#a0a0b0] border border-white/10'
-                  ]"
-                >
-                  3
-                </div>
-                <span class="ml-2 text-sm font-medium hidden sm:inline" :class="currentStep === 3 ? 'text-[#f5f5f5]' : 'text-[#606070]'">
-                  生成预览
-                </span>
-              </div>
-            </div>
-
-            <!-- 分隔线 -->
-            <div v-if="currentStep > 0" class="h-6 w-[1px] bg-white/10 mx-2"></div>
-
-            <!-- 返回首页按钮 -->
-            <button
-              @click="goToHome"
-              class="magazine-btn magazine-btn-secondary"
-              title="返回首页"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-              </svg>
-              <span class="text-sm font-medium">返回首页</span>
-            </button>
-          </div>
+          <!-- 返回首页按钮 -->
+          <button
+            @click="goToHome"
+            class="flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg md:rounded-xl transition-all duration-200 shadow-md shadow-blue-500/20 group flex-shrink-0"
+          >
+            <svg class="w-3.5 h-3.5 md:w-4 md:h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            <span class="text-xs md:text-sm font-bold hidden sm:inline">首页</span>
+            <span class="text-xs md:text-sm font-bold sm:hidden">返回</span>
+          </button>
         </div>
       </div>
     </header>
 
     <!-- 主要内容区域 -->
-    <main class="w-full px-4 py-6 flex-1 flex flex-col">
-      <!-- 路由视图 -->
-      <div class="bg-[#141419]/60 backdrop-blur-sm rounded-xl border border-white/10 flex-1 overflow-hidden shadow-2xl magazine-page-enter magazine-stagger-2">
-        <router-view />
-      </div>
+    <main class="flex-1 flex flex-col min-h-0 relative">
+      <router-view />
     </main>
   </div>
 </template>
@@ -137,14 +128,27 @@ const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
 
-// 检查是否为Dashboard页面
-const isDashboardPage = computed(() => {
-  return route.name === 'Home'
+// 是否显示 Header
+const showHeader = computed(() => {
+  // 首页、Landing页以及所有鉴权相关页面都不显示全局 Header
+  const noHeaderPages = [
+    'Landing', 
+    'Home', 
+    'Login', 
+    'Register', 
+    'ForgotPassword', 
+    'VerifyEmail'
+  ]
+  return !noHeaderPages.includes(route.name as string) && route.name !== undefined
+})
+
+// 是否为步骤页面
+const isStepPage = computed(() => {
+  return ['Step1', 'Step2', 'Step3', 'Step3WithArticle', 'StyleConfig'].includes(route.name as string)
 })
 
 // 根据当前路由更新步骤
 const currentStep = computed(() => {
-  // 只有明确定义了 step 的路由才显示步骤条
   const step = route.meta?.step
   if (typeof step === 'number') {
     appStore.setStep(step)
@@ -158,6 +162,15 @@ const goToHome = () => {
 }
 </script>
 
-<style scoped>
-/* 组件特定的样式 */
+<style>
+/* 全局样式修复 */
+#app {
+  width: 100vw;
+  min-height: 100vh;
+}
+
+/* 步骤页面需要撑满屏幕，非步骤页面按内容高度 */
+.flex-1 {
+  flex: 1 1 0%;
+}
 </style>

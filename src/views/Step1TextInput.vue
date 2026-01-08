@@ -1,59 +1,86 @@
 <template>
-  <!-- 全屏布局（无固定底部工具栏） -->
+  <!-- 全屏布局（与 Step2/Step3 一致） -->
   <div class="h-full flex flex-col step-content-area overflow-hidden">
-    <!-- 头部区域 - 固定 -->
-    <div class="flex-shrink-0 p-6 pb-4" style="background: var(--color-content-card); border-bottom: 1px solid var(--color-content-border);">
-      <h2 class="text-2xl font-bold mb-2" style="color: var(--color-content-text);">步骤 1/3: 输入文本</h2>
-      <p style="color: var(--color-content-text-secondary)">
-        请粘贴您需要排版的大段纯文本。系统支持智能识别和标注语法，自动区分标题、正文等内容。
-      </p>
+    <!-- 精简头部 - 与 Step2/Step3 统一样式 -->
+    <div class="flex-shrink-0 w-full border-b p-3 md:p-4" style="background: var(--color-content-card); border-color: var(--color-content-border);">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap">Step 1/3</span>
+            <h2 class="text-base md:text-lg font-bold truncate" style="color: var(--color-content-text);">输入文本</h2>
+          </div>
+          <p class="text-[10px] md:text-xs mt-0.5 truncate" style="color: var(--color-content-text-secondary)">
+            粘贴文本或导入 Word/ZIP 文件
+          </p>
+        </div>
+        
+        <!-- 辅助按钮组 -->
+        <div class="flex items-center gap-2">
+          <button
+            @click="insertSampleText"
+            class="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors hidden md:block"
+          >
+            智能示例
+          </button>
+          <button
+            @click="insertMarkedSampleText"
+            class="px-3 py-1.5 text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors hidden md:block"
+          >
+            标注示例
+          </button>
+          <button
+            @click="clearText"
+            class="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-lg transition-colors"
+            :disabled="!localText"
+          >
+            清空
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- 内容区域 - 独立滚动 -->
-    <div class="flex-1 overflow-y-auto p-6">
-
+    <!-- 内容区域 - 独立滚动，底部留出操作栏空间 -->
+    <div class="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-24 flex flex-col">
       <!-- 格式指导区域 - 默认收起 -->
-      <div class="mb-4">
-      <button 
-        @click="showGuide = !showGuide"
-        class="flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors focus:outline-none"
-      >
-        <span class="mr-2">{{ showGuide ? '▼' : '▶' }}</span>
-        <span>📝 格式指导语法</span>
-      </button>
-      
-      <transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform scale-y-95 opacity-0"
-        enter-to-class="transform scale-y-100 opacity-100"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform scale-y-100 opacity-100"
-        leave-to-class="transform scale-y-95 opacity-0"
-      >
-        <div v-if="showGuide" class="mt-2 bg-blue-50 p-4 rounded-lg border border-blue-200 origin-top">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
-            <div>
-              <p class="font-medium mb-1">图片标注：</p>
-              <p>• <code class="bg-blue-100 px-1">&</code>（纯单图）或 <code class="bg-blue-100 px-1">&图注内容</code></p>
-              <p>• <code class="bg-blue-100 px-1">&&双图</code> 或 <code class="bg-blue-100 px-1">&&左图说明 右图说明</code></p>
-              <p class="text-xs text-blue-600 mt-1">注：双图说明请用空格分隔</p>
-            </div>
-            <div>
-              <p class="font-medium mb-1">文字标注：</p>
-              <p>• <code class="bg-blue-100 px-1"># 标题</code> (一级标题)</p>
-              <p>• <code class="bg-blue-100 px-1">## 小标题</code> (二级标题)</p>
-              <p>• <code class="bg-blue-100 px-1">> 引言内容</code></p>
+      <div class="py-3">
+        <button 
+          @click="showGuide = !showGuide"
+          class="flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors focus:outline-none"
+        >
+          <span class="mr-2">{{ showGuide ? '▼' : '▶' }}</span>
+          <span>📝 格式指导语法</span>
+        </button>
+        
+        <transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform scale-y-95 opacity-0"
+          enter-to-class="transform scale-y-100 opacity-100"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform scale-y-100 opacity-100"
+          leave-to-class="transform scale-y-95 opacity-0"
+        >
+          <div v-if="showGuide" class="mt-2 bg-blue-50 p-4 rounded-lg border border-blue-200 origin-top">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
+              <div>
+                <p class="font-medium mb-1">图片标注：</p>
+                <p>• <code class="bg-blue-100 px-1">&</code>（纯单图）或 <code class="bg-blue-100 px-1">&图注内容</code></p>
+                <p>• <code class="bg-blue-100 px-1">&&双图</code> 或 <code class="bg-blue-100 px-1">&&左图说明 右图说明</code></p>
+                <p class="text-xs text-blue-600 mt-1">注：双图说明请用空格分隔</p>
+              </div>
+              <div>
+                <p class="font-medium mb-1">文字标注：</p>
+                <p>• <code class="bg-blue-100 px-1"># 标题</code> (一级标题)</p>
+                <p>• <code class="bg-blue-100 px-1">## 小标题</code> (二级标题)</p>
+                <p>• <code class="bg-blue-100 px-1">> 引言内容</code></p>
+              </div>
             </div>
           </div>
-        </div>
-      </transition>
+        </transition>
       </div>
 
-      <!-- 主内容区域 -->
-      <div class="space-y-4 flex-1 flex flex-col">
-      <!-- 文本输入区域 -->
-      <div class="flex-1 flex flex-col">
-        <label for="textInput" class="block text-sm font-medium text-gray-700 mb-2">
+      <!-- 文本输入区域 - 适中高度，适合移动端 -->
+      <div class="flex flex-col flex-1 min-h-0">
+        <label for="textInput" class="block text-sm font-medium text-black mb-2">
           粘贴您的文本内容
         </label>
         <textarea
@@ -63,93 +90,25 @@
           @dragover.prevent="handleDragOver"
           @dragleave.prevent="handleDragLeave"
           :class="[
-            'w-full flex-1 min-h-[300px] px-4 py-3 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 resize-none font-mono text-sm transition-colors content-textarea',
+            'w-full flex-1 min-h-0 px-4 py-3 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 resize-none font-mono text-sm transition-colors content-textarea',
             isDragging ? 'border-orange-400 ring-2 ring-orange-400' : ''
           ]"
-          placeholder="请在此粘贴您的文本内容，或直接将 Word 文档拖拽至此...
-
-标注语法示例：
-# 这是文章标题
-
-> 这是引言内容
-
-## 第一章：概述
-# 这是正文第一段内容，系统会智能识别或使用#标注。
-
-&这是一张单图的说明
-
-## 技术要点
-# 这是正文第二段内容。
-
-&&左边的图片说明 右边的图片说明
-
-## 总结
-# 这是结尾内容。
-
-注意：使用空行分隔不同内容块"
+          placeholder="请在此粘贴您的文本内容，或点击下方按钮导入 Word/ZIP 文件..."
         ></textarea>
-        <div class="mt-2 text-sm" style="color: var(--color-content-text-secondary);">
+        <div class="mt-2 flex items-center justify-between text-sm" style="color: var(--color-content-text-secondary);">
           <span v-if="localText">{{ localText.length }} 个字符</span>
           <span v-else>请输入文本内容</span>
+          <!-- 已提取图片数量 -->
+          <div v-if="extractedImages.length > 0" class="flex items-center text-green-600 bg-green-50 px-2 py-1 rounded text-xs">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            已提取 {{ extractedImages.length }} 张图片
+          </div>
         </div>
       </div>
 
-  
-      <!-- 快速操作按钮 -->
-      <div class="flex flex-wrap gap-2">
-        <input 
-          type="file" 
-          ref="fileInput" 
-          accept=".docx,.zip,.rar,.7z" 
-          class="hidden" 
-          @change="handleFileUpload"
-        >
-        <button
-          @click="triggerFileUpload"
-          class="px-4 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors flex items-center"
-        >
-          <span class="mr-1">📄</span> 导入 Word/ZIP/RAR/7z
-        </button>
-        <button
-          @click="insertSampleText"
-          class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-        >
-          插入智能示例
-        </button>
-        <button
-          @click="insertMarkedSampleText"
-          class="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-        >
-          插入标注示例
-        </button>
-        <button
-          @click="clearText"
-          class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-          :disabled="!localText"
-        >
-          清空文本
-        </button>
-        <!-- 显示已提取图片数量 -->
-        <div v-if="extractedImages.length > 0" class="flex items-center text-sm text-green-600 bg-green-50 px-3 py-1 rounded ml-2">
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          已提取 {{ extractedImages.length }} 张图片
-        </div>
-        <!-- 下一步按钮 - 与快速操作按钮同行，位于最右边 -->
-        <div class="flex-1"></div>
-        <button
-          @click="goToNextStep"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md flex items-center"
-          :disabled="!localText.trim()"
-        >
-          下一步：编辑内容 →
-        </button>
-      </div>
-      </div>
-      <!-- space-y-4 结束 -->
-
-      <!-- 错误提示 - 添加过渡动画 -->
+      <!-- 错误提示 -->
       <transition
         enter-active-class="transition duration-300 ease-out"
         enter-from-class="transform -translate-y-2 opacity-0"
@@ -158,7 +117,7 @@
         leave-from-class="transform translate-y-0 opacity-100"
         leave-to-class="transform -translate-y-2 opacity-0"
       >
-        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div v-if="errorMessage" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <div class="flex">
             <div class="flex-shrink-0">
               <span class="text-red-400">⚠</span>
@@ -172,6 +131,39 @@
           </div>
         </div>
       </transition>
+    </div>
+    
+    <!-- 底部操作栏 - 固定在底部，与 Step2/Step3 风格一致 -->
+    <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <!-- 隐藏的文件输入 -->
+      <input 
+        type="file" 
+        ref="fileInput" 
+        accept=".docx,.zip,.rar,.7z" 
+        class="hidden" 
+        @change="handleFileUpload"
+      >
+      
+      <div class="flex items-center justify-between gap-4">
+        <!-- 导入按钮 -->
+        <button
+          @click="triggerFileUpload"
+          class="flex-1 h-11 bg-white border border-gray-200 hover:bg-green-50 hover:border-green-400 text-black hover:text-green-700 text-sm font-medium rounded-xl transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2"
+        >
+          <span>📄</span>
+          <span>导入 Word/ZIP</span>
+        </button>
+        
+        <!-- 下一步按钮 -->
+        <button
+          @click="goToNextStep"
+          class="flex-[2] h-11 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!localText.trim()"
+        >
+          <span>下一步：编辑内容</span>
+          <span>→</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -263,14 +255,22 @@ const processArchiveFile = async (file) => {
     console.log('[Step1] 处理压缩包文件:', file.name)
     const result = await extractArchive(file)
     
+    console.log('[Step1] 提取结果:', {
+      docxCount: result.docxFiles.length,
+      docxNames: result.docxFiles.map(f => f.name),
+      imageCount: result.imageFiles.length
+    })
+
     // 累加提取的图片 (V2: 允许图片重复/累加)
     extractedImages.value = [...extractedImages.value, ...result.imageFiles]
     console.log('[Step1] 新增', result.imageFiles.length, '张图片，总计', extractedImages.value.length)
     
     // 如果有 docx 文件，处理第一个 (V2: 文档直接替换)
     if (result.docxFiles.length > 0) {
-      console.log('[Step1] ZIP 中发现 Word 文档:', result.docxFiles[0].name)
-      await processDocxFile(result.docxFiles[0])
+      // 排序优化：避免识别到奇怪的文档，优先处理第一个，但可以添加过滤逻辑
+      const mainDoc = result.docxFiles[0]
+      console.log('[Step1] 正在解析主文档:', mainDoc.name, '大小:', mainDoc.size)
+      await processDocxFile(mainDoc)
     } else {
       // 仅提示图片提取成功，不报错
       if (result.imageFiles.length > 0) {
@@ -280,18 +280,26 @@ const processArchiveFile = async (file) => {
       }
     }
   } catch (error) {
-    console.error('[Step1] ZIP 处理失败:', error)
-    errorMessage.value = error instanceof Error ? error.message : 'ZIP 文件处理失败'
+    console.error('[Step1] 压缩包处理失败:', error)
+    errorMessage.value = error instanceof Error ? error.message : '压缩包处理失败'
   }
 }
 
 // 处理 DOCX 文件
 const processDocxFile = async (file) => {
   try {
+    console.log('[Step1] 开始处理 Word 文档:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified
+    })
+    
     // 动态导入 mammoth（仅在需要时加载）
     const { default: mammoth } = await import('mammoth')
 
     const arrayBuffer = await file.arrayBuffer()
+    console.log('[Step1] ArrayBuffer 读取完成，大小:', arrayBuffer.byteLength)
 
     // 配置 mammoth 选项 - 增强版：保留样式信息
     const options = {
@@ -341,11 +349,25 @@ const processDocxFile = async (file) => {
     const result = await mammoth.convertToHtml({ arrayBuffer }, options)
     let html = result.value
 
+    console.log('[Step1] Mammoth 解析完成, HTML 前100字:', html.substring(0, 100))
+
     // 将 HTML 转换为我们需要的文本格式
     const text = convertHtmlToCustomFormat(html)
 
+    // V4: 从文本中提取元数据（团队名称、来源公众号等）
+    extractMetadataFromText(text)
+
+    // 检查是否全屏乱码
+    const replacementCharCount = (text.match(/\ufffd/g) || []).length
+    if (replacementCharCount > text.length * 0.1) {
+      console.error('[Step1] 检测到大量替换字符 (乱码):', replacementCharCount)
+      errorMessage.value = '文档解析成功但内容包含大量乱码，请检查文档编码或是否为旧版 .doc 格式。'
+    }
+
     localText.value = text
     appStore.setRawText(text)
+    
+    console.log('[Step1] Word 文档解析完成，文本长度:', text.length)
 
     // 清空 input 以便重复上传同名文件
     if (fileInput.value) {
@@ -353,12 +375,94 @@ const processDocxFile = async (file) => {
     }
 
     if (result.messages.length > 0) {
-      console.log('解析警告:', result.messages)
+      console.log('[Step1] 解析警告:', result.messages)
     }
   } catch (error) {
-    console.error('解析失败:', error)
-    errorMessage.value = '文档解析失败，请检查文件是否损坏'
+    console.error('[Step1] 文档解析失败:', error)
+    console.error('[Step1] 错误详情:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
+    errorMessage.value = `文档解析失败: ${error.message || '请检查文件是否损坏'}`
   }
+}
+
+// V4: 从文档文本中提取元数据
+const extractMetadataFromText = (text) => {
+  console.log('[Step1] 开始提取文档元数据...')
+  
+  // 提取模式：
+  // 1. 队伍名称：xxx  或  队伍名称:xxx
+  // 2. 团队名称：xxx
+  // 3. 来源：xxx  或  来源:xxx
+  // 4. 文案：xxx  或  图文来源：xxx
+  
+  const patterns = {
+    // 三下乡模式 - 团队名称
+    teamName: [
+      /队伍名称[：:]\s*[""]?([^"""\n]+)[""]?/,
+      /团队名称[：:]\s*[""]?([^"""\n]+)[""]?/,
+      /实践队[：:]\s*[""]?([^"""\n]+)[""]?/,
+      /[""]([^"""]+)[""]\s*社会实践队/,
+      /[""]([^"""]+)[""]\s*实践队/,
+    ],
+    // 转载模式 - 来源公众号
+    sourceAccount: [
+      /来源[：:]\s*[""]?([^"""\n]+)[""]?\s*公众号/,
+      /转载自[：:]\s*[""]?([^"""\n]+)[""]?/,
+      /原文来源[：:]\s*[""]?([^"""\n]+)[""]?/,
+    ],
+    // 日常模式 - 文案作者
+    copywriters: [
+      /文案[：:]\s*([^\n]+)/,
+      /图文[：:]\s*([^\n]+)/,
+      /撰稿[：:]\s*([^\n]+)/,
+      /作者[：:]\s*([^\n]+)/,
+    ]
+  }
+  
+  // 提取团队名称
+  for (const pattern of patterns.teamName) {
+    const match = text.match(pattern)
+    if (match && match[1]) {
+      const teamName = match[1].trim()
+      console.log('[Step1] 解析到团队名称:', teamName)
+      appStore.teamName = `"${teamName}"社会实践队`
+      break
+    }
+  }
+  
+  // 提取来源公众号
+  for (const pattern of patterns.sourceAccount) {
+    const match = text.match(pattern)
+    if (match && match[1]) {
+      const source = match[1].trim()
+      console.log('[Step1] 解析到来源公众号:', source)
+      appStore.sourceAccount = `"${source}"公众号`
+      break
+    }
+  }
+  
+  // 提取文案作者
+  for (const pattern of patterns.copywriters) {
+    const match = text.match(pattern)
+    if (match && match[1]) {
+      // 分割多个作者（支持空格、顿号、逗号分隔）
+      const authors = match[1].trim().split(/[、，,\s]+/).filter(Boolean)
+      if (authors.length > 0) {
+        console.log('[Step1] 解析到文案作者:', authors)
+        appStore.copywriterNames = authors
+        break
+      }
+    }
+  }
+  
+  console.log('[Step1] 元数据提取完成:', {
+    teamName: appStore.teamName,
+    sourceAccount: appStore.sourceAccount,
+    copywriterNames: appStore.copywriterNames
+  })
 }
 
 // 将 HTML 转换为自定义文本格式（增强版：识别样式）
@@ -444,41 +548,177 @@ const convertHtmlToCustomFormat = (html) => {
   text = text.replace(/\n{3,}/g, '\n\n').trim()
 
   // 多阶段后处理
-  text = convertConsecutiveImagesToDouble(text)  // 第1阶段：合并双图
+  text = mergeImageWithCaption(text)              // 第0阶段：合并图片标记和后续图注
+  text = convertConsecutiveImagesToDouble(text)   // 第1阶段：合并双图
   // 注意：已禁用 fixImageCaptions，改为使用明确的冒号分隔符语法
   // text = fixImageCaptions(text)  // 第2阶段：修复图注识别（已禁用）
 
   return text
 }
 
+// 第0阶段：合并图片标记和后续的图注段落
+// 处理模式：& \n\n （图为xxx） → &xxx
+const mergeImageWithCaption = (text) => {
+  // 匹配：& 后面跟着换行，然后是一个可能的图注段落
+  // 图注段落特征：以 （ 或 ( 开头，或者包含 "图为"、"图一" 等关键词
+  
+  const lines = text.split('\n')
+  const result = []
+  let i = 0
+  
+  while (i < lines.length) {
+    const currentLine = lines[i].trim()
+    
+    // 检查是否是单独的图片标记 &
+    if (currentLine === '&' || currentLine === '&&') {
+      // 查找后面的图注段落
+      let nextNonEmpty = i + 1
+      while (nextNonEmpty < lines.length && lines[nextNonEmpty].trim() === '') {
+        nextNonEmpty++
+      }
+      
+      if (nextNonEmpty < lines.length) {
+        const nextLine = lines[nextNonEmpty].trim()
+        
+        // 检查是否是图注（以括号开头，或包含"图为"等关键词）
+        if (isLikelyCaption(nextLine)) {
+          // 清洗图注并合并
+          const cleanedCaption = cleanCaption(nextLine)
+          
+          if (currentLine === '&&') {
+            // 双图情况：可能需要查找两个图注
+            let secondCaption = ''
+            let nextNext = nextNonEmpty + 1
+            while (nextNext < lines.length && lines[nextNext].trim() === '') {
+              nextNext++
+            }
+            if (nextNext < lines.length && isLikelyCaption(lines[nextNext].trim())) {
+              secondCaption = cleanCaption(lines[nextNext].trim())
+              i = nextNext + 1
+            } else {
+              i = nextNonEmpty + 1
+            }
+            
+            if (cleanedCaption && secondCaption) {
+              result.push(`&&${cleanedCaption} ${secondCaption}`)
+            } else if (cleanedCaption) {
+              result.push(`&&${cleanedCaption}`)
+            } else {
+              result.push('&&')
+            }
+          } else {
+            // 单图情况
+            if (cleanedCaption) {
+              result.push(`&${cleanedCaption}`)
+            } else {
+              result.push('&')
+            }
+            i = nextNonEmpty + 1
+          }
+          continue
+        }
+      }
+    }
+    
+    result.push(lines[i])
+    i++
+  }
+  
+  return result.join('\n')
+}
+
+// 判断是否可能是图注
+const isLikelyCaption = (line) => {
+  if (!line) return false
+  
+  // 以括号开头
+  if (/^[（(]/.test(line)) return true
+  
+  // 包含"图为"、"图一"等关键词
+  if (/^图[为一二三四五六七八九十\d中示]/.test(line)) return true
+  
+  // 短文本且看起来像图注（少于50字符，无句号结尾）
+  if (line.length < 50 && !line.endsWith('。') && !line.endsWith('.')) {
+    return true
+  }
+  
+  return false
+}
+
 // 后处理函数：将连续的单图转换为双图
 const convertConsecutiveImagesToDouble = (text) => {
-  // 匹配简化语法: &\n\n& 或 &caption1\n\n&caption2
-  // 支持 & 或 &单图 或 &caption 格式
-  const regex = /&(单图)?([^\n&]*?)\n\n&(单图)?([^\n&]*?)(?:\n\n|$)/g
-
-  return text.replace(regex, (match, prefix1, caption1, prefix2, caption2) => {
+  // 先清洗所有图注
+  let cleanedText = cleanAllCaptions(text)
+  
+  // 匹配连续的图片标记（中间可能有空行或换行）
+  // 支持 & 或 &caption 格式
+  const regex = /&([^\n&]*?)\n+&([^\n&]*?)(?=\n|$)/g
+  
+  return cleanedText.replace(regex, (match, caption1, caption2) => {
     // 清理图注内容
-    const cleanCaption1 = caption1 ? caption1.trim() : ''
-    const cleanCaption2 = caption2 ? caption2.trim() : ''
-
-    // 情况1：两个都有图注
-    if (cleanCaption1 && cleanCaption2) {
-      // 使用空格分隔两个图注
-      return `&&${cleanCaption1} ${cleanCaption2}`
+    const clean1 = cleanCaption(caption1)
+    const clean2 = cleanCaption(caption2)
+    
+    // 两个都有图注
+    if (clean1 && clean2) {
+      return `&&${clean1} ${clean2}\n\n`
     }
-
-    // 情况2：只有一个有图注（通常是第二个）
-    if (cleanCaption2) {
-      return `&&${cleanCaption1} ${cleanCaption2}`.trim()
+    
+    // 只有一个有图注
+    if (clean1 || clean2) {
+      const caption = clean1 || clean2
+      return `&&${caption}\n\n`
     }
-    if (cleanCaption1) {
-      return `&&${cleanCaption1}`
-    }
-
-    // 情况3：都没有图注，纯双图
-    return '&&双图'
+    
+    // 都没有图注，纯双图
+    return '&&\n\n'
   })
+}
+
+// 清洗所有图注（遍历整个文本）
+const cleanAllCaptions = (text) => {
+  // 匹配 &后面跟着的图注内容
+  return text.replace(/&([^\n&]+)/g, (match, caption) => {
+    const cleaned = cleanCaption(caption)
+    return cleaned ? `&${cleaned}` : '&'
+  })
+}
+
+// 清洗单个图注内容
+const cleanCaption = (caption) => {
+  if (!caption) return ''
+  
+  let cleaned = caption.trim()
+  
+  // 移除外层括号（中文和英文）
+  cleaned = cleaned.replace(/^[（(](.+)[）)]$/, '$1')
+  
+  // 移除常见前缀模式
+  const prefixPatterns = [
+    /^图为[:：]?\s*/,           // "图为：" 或 "图为"
+    /^图[一二三四五六七八九十\d]+[:：、]?\s*/,  // "图一：" 或 "图1、"
+    /^图中[:：]?\s*/,           // "图中："
+    /^图示[:：]?\s*/,           // "图示："
+    /^如图[:：]?\s*/,           // "如图："
+    /^上图[:：]?\s*/,           // "上图："
+    /^下图[:：]?\s*/,           // "下图："
+    /^左图[:：]?\s*/,           // "左图："
+    /^右图[:：]?\s*/,           // "右图："
+    /^图片[:：]?\s*/,           // "图片："
+    /^配图[:：]?\s*/,           // "配图："
+  ]
+  
+  for (const pattern of prefixPatterns) {
+    cleaned = cleaned.replace(pattern, '')
+  }
+  
+  // 再次移除可能残留的括号
+  cleaned = cleaned.replace(/^[（(]/, '').replace(/[）)]$/, '')
+  
+  // 移除多余的空格
+  cleaned = cleaned.replace(/\s+/g, ' ').trim()
+  
+  return cleaned
 }
 
 // 后处理函数：修复图片后的图注识别问题

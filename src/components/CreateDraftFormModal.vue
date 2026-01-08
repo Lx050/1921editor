@@ -6,34 +6,34 @@
   >
     <div class="bg-[#141419] rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-white/10">
       <!-- 弹窗头部 -->
-      <div class="relative px-6 py-5 border-b border-white/10">
+      <div class="relative px-5 py-4 md:px-6 md:py-5 border-b border-white/10">
         <!-- 装饰性渐变 -->
         <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#ff6b4a] via-[#d4a574] to-[#ff6b4a]"></div>
 
-        <h3 class="magazine-title-md text-[#f5f5f5]">创建公众号草稿</h3>
-        <p class="text-sm text-[#a0a0b0] mt-1">填写文章信息，上传到草稿箱</p>
+        <h3 class="text-lg md:text-xl font-bold text-[#f5f5f5] tracking-tight">创建公众号草稿</h3>
+        <p class="text-[10px] md:text-sm text-[#a0a0b0] mt-0.5 md:mt-1">填写文章信息，上传到微信草稿箱</p>
       </div>
 
       <!-- 弹窗内容 -->
-      <div class="p-6 space-y-4">
+      <div class="p-5 md:p-6 space-y-4 max-h-[60vh] overflow-y-auto">
         <!-- 标题 -->
         <div>
-          <label class="block text-sm font-medium text-[#a0a0b0] mb-2">文章标题 *</label>
+          <label class="block text-xs font-bold text-[#a0a0b0] mb-2 uppercase tracking-wider">文章标题 *</label>
           <input
             v-model="form.title"
             type="text"
-            class="magazine-input"
+            class="magazine-input magazine-input-dark"
             placeholder="请输入文章标题"
           />
         </div>
 
         <!-- 封面图 -->
         <div>
-          <label class="block text-sm font-medium text-[#a0a0b0] mb-2">封面图 *</label>
-          <div class="flex items-center space-x-2">
+          <label class="block text-xs font-bold text-[#a0a0b0] mb-2 uppercase tracking-wider">封面图 *</label>
+          <div class="flex flex-col sm:flex-row items-stretch gap-2">
             <select
               v-model="form.coverImageId"
-              class="magazine-input flex-1"
+              class="magazine-input magazine-input-dark flex-1"
             >
               <option value="">请选择封面图</option>
               <option
@@ -56,7 +56,7 @@
               />
               <button
                 type="button"
-                class="px-3 py-2 bg-[#252530] hover:bg-[#2dd4a6]/20 text-[#a0a0b0] hover:text-[#2dd4a6] text-sm rounded-lg transition-colors whitespace-nowrap flex items-center border border-white/10"
+                class="w-full px-3 py-2 bg-[#252530] hover:bg-[#2dd4a6]/20 text-[#a0a0b0] hover:text-[#2dd4a6] text-sm font-bold rounded-lg transition-colors whitespace-nowrap flex items-center justify-center border border-white/10"
                 :class="{'opacity-50': isUploadingCover}"
               >
                 <svg v-if="!isUploadingCover" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,29 +67,29 @@
               </button>
             </div>
           </div>
-          <p v-if="availableImages.length === 0" class="text-xs text-[#d4a574] mt-2">
+          <p v-if="availableImages.length === 0" class="text-[10px] text-[#d4a574] mt-2">
             * 纯文字排版也需要一张封面图，请上传
           </p>
         </div>
 
         <!-- 作者 -->
         <div>
-          <label class="block text-sm font-medium text-[#a0a0b0] mb-2">作者（选填）</label>
+          <label class="block text-xs font-bold text-[#a0a0b0] mb-2 uppercase tracking-wider">作者（选填）</label>
           <input
             v-model="form.author"
             type="text"
-            class="magazine-input"
+            class="magazine-input magazine-input-dark"
             placeholder="如：小编"
           />
         </div>
 
         <!-- 摘要 -->
         <div>
-          <label class="block text-sm font-medium text-[#a0a0b0] mb-2">摘要（选填）</label>
+          <label class="block text-xs font-bold text-[#a0a0b0] mb-2 uppercase tracking-wider">摘要（选填）</label>
           <textarea
             v-model="form.digest"
             rows="2"
-            class="magazine-textarea"
+            class="magazine-textarea magazine-input-dark"
             placeholder="文章摘要，不填则默认截取正文前54字"
           ></textarea>
         </div>
@@ -102,27 +102,27 @@
             id="showCover"
             class="w-4 h-4 bg-[#252530] border-white/20 rounded focus:ring-[#ff6b4a] focus:ring-offset-0"
           />
-          <label for="showCover" class="ml-2 text-sm text-[#a0a0b0]">在文章内显示封面图</label>
+          <label for="showCover" class="ml-2 text-xs font-bold text-[#a0a0b0] uppercase tracking-wider">在文章内显示封面图</label>
         </div>
 
         <!-- 错误提示 -->
-        <div v-if="error" class="bg-[#f87171]/10 border border-[#f87171]/30 text-[#f87171] px-4 py-3 rounded-lg text-sm">
+        <div v-if="error" class="bg-[#f87171]/10 border border-[#f87171]/30 text-[#f87171] px-4 py-3 rounded-lg text-xs font-bold">
           {{ error }}
         </div>
 
         <!-- 成功提示 -->
-        <div v-if="success" class="bg-[#2dd4a6]/10 border border-[#2dd4a6]/30 text-[#2dd4a6] px-4 py-3 rounded-lg text-sm">
+        <div v-if="success" class="bg-[#2dd4a6]/10 border border-[#2dd4a6]/30 text-[#2dd4a6] px-4 py-3 rounded-lg text-xs font-bold">
           <div class="flex items-start space-x-2">
             <div class="text-lg">✓</div>
             <div class="flex-1">
-              <div class="font-semibold mb-1">草稿创建成功！</div>
-              <div class="text-xs text-[#2dd4a6]/80">文章已保存到公众号草稿箱</div>
+              <div class="font-bold mb-1">草稿创建成功！</div>
+              <div class="text-[10px] text-[#2dd4a6]/80 font-normal">文章已保存到公众号草稿箱</div>
             </div>
           </div>
         </div>
 
         <!-- AI 图片上传进度提示 -->
-        <div v-if="aiProgress" class="bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa] px-4 py-3 rounded-lg text-sm">
+        <div v-if="aiProgress" class="bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa] px-4 py-3 rounded-lg text-xs font-bold">
           <div class="flex items-center space-x-2">
             <div v-if="!aiProgress.includes('✓')" class="w-4 h-4 border-2 border-[#60a5fa] border-t-transparent rounded-full animate-spin"></div>
             <div v-else class="text-lg">✓</div>
@@ -132,17 +132,17 @@
       </div>
 
       <!-- 弹窗底部 -->
-      <div class="bg-[#0a0a0c] px-6 py-4 flex justify-end space-x-3 border-t border-white/10">
+      <div class="bg-[#0a0a0c] px-5 py-4 md:px-6 md:py-4 flex justify-end gap-3 border-t border-white/10">
         <button
           @click="$emit('close')"
-          class="magazine-btn magazine-btn-secondary"
+          class="flex-1 md:flex-none px-4 py-2 text-sm font-bold text-[#a0a0b0] hover:text-white transition-colors"
         >
           取消
         </button>
         <button
           @click="$emit('submit')"
           :disabled="isSubmitting || !form.title || !form.coverImageId"
-          class="magazine-btn bg-gradient-to-r from-[#ff6b4a] to-[#ff8566] text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          class="flex-1 md:flex-none px-6 py-2 bg-gradient-to-r from-[#ff6b4a] to-[#ff8566] text-white text-sm font-bold rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
         >
           <span v-if="isSubmitting">创建中...</span>
           <span v-else>创建草稿</span>

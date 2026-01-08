@@ -19,18 +19,12 @@ export class Tenant {
   @Column({ unique: true, nullable: true })
   slug: string; // 租户标识符，用于URL，如 "xx-medical"
 
-  // === 飞书配置 ===
-  @Column({ nullable: true })
-  feishuAppId: string; // 该租户的飞书应用ID
+  // === 邀请码配置 ===
+  @Column({ unique: true, nullable: true })
+  inviteCode: string; // 企业专属邀请码（12位，全局唯一）
 
-  @Column({ nullable: true })
-  feishuAppSecret: string; // 该租户的飞书应用密钥
-
-  @Column({ nullable: true })
-  feishuBaseAppToken: string; // 飞书多维表格 App Token（用户白名单表）
-
-  @Column({ nullable: true })
-  feishuBaseTableId: string; // 飞书多维表格 Table ID（用户白名单表）
+  @Column({ type: 'timestamp', nullable: true })
+  inviteCodeExpires: Date | null; // 邀请码过期时间（null 表示永久有效）
 
   // === 微信公众号配置 ===
   @Column({ nullable: true })

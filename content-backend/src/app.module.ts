@@ -8,11 +8,10 @@ import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { FeishuModule } from './feishu/feishu.module';
 import { AuthModule } from './auth/auth.module';
 import { ArticleModule } from './article/article.module';
 import { EmailModule } from './email/email.module';
-import { SyncModule } from './sync/sync.module';
+// import { SyncModule } from './sync/sync.module'; // 已移除：依赖飞书模块
 import { TenantModule } from './tenant/tenant.module';
 import { NanoBananaModule } from './nano-banana/nano-banana.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -21,7 +20,9 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { join } from 'path';
-import { WebhookModule } from './webhook/webhook.module';
+// import { WebhookModule } from './webhook/webhook.module'; // 已移除：依赖飞书模块
+import { SystemModule } from './system/system.module';
+import { StyleTemplateModule } from './style-template/style-template.module';
 
 @Module({
   imports: [
@@ -57,17 +58,18 @@ import { WebhookModule } from './webhook/webhook.module';
     }),
     EventEmitterModule.forRoot(),
     TenantModule,
-    FeishuModule,
+    SystemModule,
     AuthModule,
     ArticleModule,
     EmailModule,
-    SyncModule,
+    // SyncModule, // 已移除：依赖飞书模块
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
     NanoBananaModule,
-    WebhookModule,
+    StyleTemplateModule,
+    // WebhookModule, // 已移除：依赖飞书模块
   ],
   controllers: [AppController],
   providers: [
