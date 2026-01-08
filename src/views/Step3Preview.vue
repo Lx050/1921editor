@@ -86,49 +86,49 @@
           </div>
         </div>
 
-        <!-- 主体区域 - 模拟 Step 2 的 Scroll Area -->
-        <div class="flex-1 relative overflow-hidden bg-gray-50/50">
-          <!-- 独立滚动区域 -->
-          <div class="h-full pb-20 overflow-y-auto flex flex-col">
-            <!-- 预览模式: 居中显示，顶部无留白 -->
-            <div v-show="activeTab === 'preview'" class="flex-1 flex justify-center items-start px-4 md:px-8 pb-4 md:pb-8 preview-container min-h-0">
-              <div :class="[showMobileFrame ? 'relative w-[390px] h-[844px] mobile-frame flex flex-col overflow-hidden shrink-0 shadow-2xl' : 'w-full md:w-[390px] max-w-md md:max-w-none shadow-xl rounded-2xl flex-shrink-0 h-[80vh] min-h-[600px] flex flex-col preview-content overflow-hidden bg-white border border-gray-100']">
-                <template v-if="showMobileFrame">
-                  <!-- ... 之前的真机框架内容保持不变 ... -->
-                  <div class="absolute top-0 w-full h-11 z-20 flex justify-between px-6 items-center pointer-events-none" style="background: linear-gradient(180deg, #2a2a30 0%, #1a1a1f 100%);">
-                    <div class="w-12 h-full flex items-center text-white text-[10px] font-medium pl-2">9:41</div>
-                    <div class="w-[120px] h-[34px] rounded-3xl absolute left-1/2 -translate-x-1/2 top-2" style="background: #1a1a1f;"></div>
-                    <div class="w-16 flex space-x-1.5 justify-end items-center pr-2">
-                       <svg class="w-4 h-3 text-white" viewBox="0 0 18 12" fill="currentColor"><path d="M1 9.5C1 10.3284 1.67157 11 2.5 11H13.5C14.3284 11 15 10.3284 15 9.5V2.5C15 1.67157 14.3284 1 13.5 1H2.5C1.67157 1 1 1.67157 1 2.5V9.5Z" stroke="white"/><path d="M16.5 4V8" stroke="white" stroke-linecap="round"/></svg>
-                    </div>
+        <!-- 主体区域 - 直接放置预览框 -->
+        <div class="flex-1 flex flex-col relative overflow-hidden">
+          <!-- 预览模式: 手机框直接填充 -->
+          <div v-show="activeTab === 'preview'" class="flex-1 flex pb-20 overflow-hidden">
+            <div :class="[showMobileFrame ? 'w-[390px] h-full mobile-frame flex flex-col overflow-hidden mx-auto shadow-2xl' : 'flex-1 flex flex-col overflow-hidden bg-white']">
+              <template v-if="showMobileFrame">
+                <!-- 手机状态栏 -->
+                <div class="w-full h-11 flex justify-between px-6 items-center shrink-0" style="background: linear-gradient(180deg, #2a2a30 0%, #1a1a1f 100%);">
+                  <div class="w-12 h-full flex items-center text-white text-[10px] font-medium pl-2">9:41</div>
+                  <div class="w-[120px] h-[34px] rounded-3xl absolute left-1/2 -translate-x-1/2 top-2" style="background: #1a1a1f;"></div>
+                  <div class="w-16 flex space-x-1.5 justify-end items-center pr-2">
+                     <svg class="w-4 h-3 text-white" viewBox="0 0 18 12" fill="currentColor"><path d="M1 9.5C1 10.3284 1.67157 11 2.5 11H13.5C14.3284 11 15 10.3284 15 9.5V2.5C15 1.67157 14.3284 1 13.5 1H2.5C1.67157 1 1 1.67157 1 2.5V9.5Z" stroke="white"/><path d="M16.5 4V8" stroke="white" stroke-linecap="round"/></svg>
                   </div>
-                  <div class="mt-11 h-11 bg-[#ededed] flex items-center justify-between px-4 border-b border-gray-300 z-10 shrink-0">
-                    <div class="flex items-center text-gray-800 font-medium text-[16px]"><span class="mr-1 text-2xl leading-none" style="margin-top: -2px;">‹</span> 公众号</div>
-                    <div class="text-gray-800 font-semibold text-[16px] tracking-wide truncate max-w-[150px]">{{ draftForm.title || '文章预览' }}</div>
-                    <div class="w-12 flex justify-end">
-                       <div class="w-8 h-6 bg-white border border-gray-300 rounded-full flex justify-center items-center space-x-0.5">
-                          <div class="w-0.5 h-0.5 bg-black rounded-full"></div>
-                          <div class="w-1 h-0.5 bg-black rounded-full"></div>
-                          <div class="w-0.5 h-0.5 bg-black rounded-full"></div>
-                       </div>
-                    </div>
+                </div>
+                <!-- 微信导航栏 -->
+                <div class="h-11 bg-[#ededed] flex items-center justify-between px-4 border-b border-gray-300 shrink-0">
+                  <div class="flex items-center text-gray-800 font-medium text-[16px]"><span class="mr-1 text-2xl leading-none" style="margin-top: -2px;">‹</span> 公众号</div>
+                  <div class="text-gray-800 font-semibold text-[16px] tracking-wide truncate max-w-[150px]">{{ draftForm.title || '文章预览' }}</div>
+                  <div class="w-12 flex justify-end">
+                     <div class="w-8 h-6 bg-white border border-gray-300 rounded-full flex justify-center items-center space-x-0.5">
+                        <div class="w-0.5 h-0.5 bg-black rounded-full"></div>
+                        <div class="w-1 h-0.5 bg-black rounded-full"></div>
+                        <div class="w-0.5 h-0.5 bg-black rounded-full"></div>
+                     </div>
                   </div>
-                </template>
-                <div v-else class="h-10 bg-gray-50 border-b flex items-center justify-center text-[10px] text-gray-400 font-bold tracking-widest shrink-0 uppercase">WeChat Article Preview</div>
-                <div class="flex-1 bg-white relative overflow-hidden">
-                  <iframe ref="previewFrame" :srcdoc="previewHtml" class="w-full h-full border-0 absolute inset-0" title="版式预览" @load="setupIframeClickHandler"></iframe>
                 </div>
-                <div v-if="showMobileFrame" class="h-8 w-full flex justify-center items-end pb-2 shrink-0 z-10">
-                  <div class="w-36 h-1 bg-gray-800 rounded-full opacity-20"></div>
-                </div>
+              </template>
+              <div v-else class="h-10 bg-gray-50 border-b flex items-center justify-center text-[10px] text-gray-400 font-bold tracking-widest shrink-0 uppercase">WeChat Article Preview</div>
+              <!-- iframe 内容区 - 自动填充剩余高度 -->
+              <div class="flex-1 bg-white relative overflow-hidden">
+                <iframe ref="previewFrame" :srcdoc="previewHtml" class="w-full h-full border-0 absolute inset-0" title="版式预览" @load="setupIframeClickHandler"></iframe>
+              </div>
+              <!-- 底部指示条 -->
+              <div v-if="showMobileFrame" class="h-8 w-full flex justify-center items-end pb-2 shrink-0 bg-white">
+                <div class="w-36 h-1 bg-gray-800 rounded-full opacity-20"></div>
               </div>
             </div>
-            <!-- 代码预览 -->
-            <div v-show="activeTab === 'code'" class="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50">
-              <div class="max-w-4xl mx-auto">
-                <div class="text-[10px] font-bold text-gray-400 mb-3 tracking-widest uppercase">HTML Output Source</div>
-                <div class="bg-gray-900 text-gray-100 rounded-2xl p-6 md:p-8 font-mono text-xs md:text-sm break-all leading-relaxed shadow-2xl border border-white/5 select-all">{{ finalHtml }}</div>
-              </div>
+          </div>
+          <!-- 代码预览 -->
+          <div v-show="activeTab === 'code'" class="flex-1 overflow-y-auto p-6 md:p-8 pb-24 bg-gray-50">
+            <div class="max-w-4xl mx-auto">
+              <div class="text-[10px] font-bold text-gray-400 mb-3 tracking-widest uppercase">HTML Output Source</div>
+              <div class="bg-gray-900 text-gray-100 rounded-2xl p-6 md:p-8 font-mono text-xs md:text-sm break-all leading-relaxed shadow-2xl border border-white/5 select-all">{{ finalHtml }}</div>
             </div>
           </div>
         </div>
