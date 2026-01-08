@@ -86,11 +86,11 @@
           </div>
         </div>
 
-        <!-- 主体区域 - 直接放置预览框 -->
-        <div class="flex-1 flex flex-col relative overflow-hidden">
-          <!-- 预览模式: 手机框直接填充 -->
-          <div v-show="activeTab === 'preview'" class="flex-1 flex pb-20 overflow-hidden">
-            <div :class="[showMobileFrame ? 'w-[390px] h-full mobile-frame flex flex-col overflow-hidden mx-auto shadow-2xl' : 'flex-1 flex flex-col overflow-hidden bg-white']">
+        <!-- 主体区域 - 预览框居中，两侧留白 -->
+        <div class="flex-1 flex flex-col relative overflow-hidden bg-gray-100">
+          <!-- 预览模式: 手机框居中，两侧留空 -->
+          <div v-show="activeTab === 'preview'" class="flex-1 flex justify-center items-stretch pb-20 overflow-hidden">
+            <div class="w-[390px] h-full flex flex-col overflow-hidden shrink-0 shadow-2xl bg-white">
               <template v-if="showMobileFrame">
                 <!-- 手机状态栏 -->
                 <div class="w-full h-11 flex justify-between px-6 items-center shrink-0" style="background: linear-gradient(180deg, #2a2a30 0%, #1a1a1f 100%);">
