@@ -361,9 +361,10 @@ const handleCoverUpload = async (file: File | null) => {
     // 3. 自动选中
     draftForm.value.coverImageId = mediaId
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Step3] 封面上传失败:', error)
-    draftError.value = error.message || '封面上传失败，请重试'
+    const message = error instanceof Error ? error.message : '封面上传失败，请重试'
+    draftError.value = message
   } finally {
     isUploadingCover.value = false
   }
@@ -513,7 +514,6 @@ const updatePreviewHtmlRef = () => {
 }
 
 // 初始化加载文章数据
-// 初始化加载文章数据
 onMounted(async () => {
   const articleId = resolveArticleId(route.params.id)
   if (articleId) {
@@ -530,7 +530,7 @@ onMounted(async () => {
         appStore.plannerNames = article.plannerNames || []
         appStore.copywriterNames = article.copywriterNames || []
         appStore.editorNames = article.editorNames || []
-        console.log('[Step3] ????????')
+        console.log('[Step3] 文章配置加载完成')
 
         if (article.config) {
           appStore.setStyleConfig(article.config)
@@ -560,7 +560,7 @@ onMounted(async () => {
           }
         }
 
-        console.log('[Step3] ???????????:', JSON.stringify(article.images))
+        console.log('[Step3] 后端返回的图片数据:', JSON.stringify(article.images))
         const backendImages = (article.images || []) as WechatImage[]
         const validImages = backendImages.map((img) => {
           if (img.url && img.url.startsWith('blob:')) {
@@ -569,12 +569,12 @@ onMounted(async () => {
           return img
         }).filter((img): img is WechatImage => Boolean(img))
 
-        console.log('[Step3] ?????????:', validImages.length, '?(???blob)')
+        console.log('[Step3] 有效图片数量:', validImages.length, '张（已过滤 blob）')
         appStore.setWechatImages(validImages)
       }
     } catch (e) {
-      console.error('[Step3] ??????:', e)
-      errorMessage.value = '????????'
+      console.error('[Step3] 加载文章失败:', e)
+      errorMessage.value = '加载文章数据失败'
     } finally {
       isGenerating.value = false
     }
@@ -614,13 +614,13 @@ const setupIframeClickHandler = () => {
 
     if (!iframeWindow || !iframeDoc) return
 
-    // V2: ???????
+    // V2: 恢复滚动位置
     if (lastScrollTop.value > 0) {
       iframeWindow.scrollTo(0, lastScrollTop.value)
-      // console.log('[Step3] ???????', lastScrollTop.value)
+      // console.log('[Step3] 恢复滚动位置', lastScrollTop.value)
     }
 
-    // ????????????????
+    // 查找并绑定所有占位符图片的点击事件
     const placeholderImages = iframeDoc.querySelectorAll<HTMLImageElement>('img[data-placeholder]')
     console.log('[Step3] 找到占位符图片数量:', placeholderImages.length)
     
@@ -698,17 +698,14 @@ const setupIframeClickHandler = () => {
             // 为了用户体验，我们应该延迟同步到 store，或者只在 blur 时同步
          })
          
-         footer.addEventListener('blur', () => {
-            configStore.setFooter(footer.outerHTML)
-            console.log('[Step3] Footer 更新已保存')
-         })
-         
          // 聚焦时高亮
          footer.addEventListener('focus', () => {
             footer.style.outline = '2px solid #3b82f6'
          })
          footer.addEventListener('blur', () => {
              footer.style.outline = '1px dashed #ddd'
+             configStore.setFooter(footer.outerHTML)
+             console.log('[Step3] Footer 更新已保存')
          })
       }
     }
@@ -1226,9 +1223,10 @@ const copyShareLink = async () => {
       alert(`协作链接（请手动复制）:\n${shareUrl}`)
     }
     
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Step3] 分享失败:', err)
-    toast.error('共享生成失败: ' + (err.message || '未知错误'))
+    const message = err instanceof Error ? err.message : '未知错误'
+    toast.error('共享生成失败: ' + message)
   } finally {
     isSharing.value = false
   }
