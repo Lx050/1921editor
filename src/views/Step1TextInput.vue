@@ -568,6 +568,10 @@ const isShortCaptionText = (text) => {
   const trimmed = text.trim()
   if (!trimmed) return false
 
+  // 新增：排除标题特征（章节、编号、短且无逗号等）
+  // 优先级：标题 > 图注
+  if (isLikelyHeading(trimmed)) return false
+
   // 图注特征检查
   const features = {
     length: trimmed.length < 50, // 短文本

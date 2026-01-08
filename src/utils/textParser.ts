@@ -348,6 +348,11 @@ function isLikelyImageCaption(text: string): boolean {
   // 移除首尾空格
   const trimmedText = text.trim()
 
+  // 新增：排除标题特征（优先级：标题 > 图注）
+  if (isLikelyTitle(trimmedText, 0, [])) {
+    return false
+  }
+
   // 图注通常较短，但可能比想象的要长（放宽到100字符）
   if (trimmedText.length > 100) {
     return false
