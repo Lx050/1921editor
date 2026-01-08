@@ -108,7 +108,7 @@
           @click="triggerFileUpload"
           class="px-4 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors flex items-center"
         >
-          <span class="mr-1">📄</span> 导入 Word/zip/7z
+          <span class="mr-1">📄</span> 导入 Word/ZIP/RAR/7z
         </button>
         <button
           @click="insertSampleText"
@@ -180,7 +180,7 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
-import { extractZip, isZipFile } from '../utils/zipProcessor'
+import { extractArchive, isArchiveFile } from '../utils/archiveProcessor'
 import { uploadManager } from '../utils/uploadManager'
 
 const router = useRouter()
@@ -242,9 +242,9 @@ const handleDragLeave = () => {
 const processFile = async (file) => {
   errorMessage.value = ''
   
-  // V2: 检查是否是 ZIP 文件
-  if (isZipFile(file)) {
-    await processZipFile(file)
+  // V2: 检查是否是压缩包文件
+  if (isArchiveFile(file)) {
+    await processArchiveFile(file)
     return
   }
 
@@ -257,11 +257,11 @@ const processFile = async (file) => {
   await processDocxFile(file)
 }
 
-// V2: 处理 ZIP 文件
-const processZipFile = async (file) => {
+// V2: 处理压缩包文件 (ZIP/RAR/7z)
+const processArchiveFile = async (file) => {
   try {
-    console.log('[Step1] 处理 ZIP 文件:', file.name)
-    const result = await extractZip(file)
+    console.log('[Step1] 处理压缩包文件:', file.name)
+    const result = await extractArchive(file)
     
     // 累加提取的图片 (V2: 允许图片重复/累加)
     extractedImages.value = [...extractedImages.value, ...result.imageFiles]

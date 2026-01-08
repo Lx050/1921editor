@@ -102,7 +102,12 @@ export function smartTextParser(rawText: string): ContentBlock[] {
  * @returns 是否为图片块
  */
 function isImageBlock(type: BlockType): boolean {
-  return type === 'image_single' || type === 'image_double'
+  return (
+    type === 'image_single' ||
+    type === 'image_double' ||
+    type === 'image_single_caption' ||
+    type === 'image_double_caption'
+  )
 }
 
 /**
