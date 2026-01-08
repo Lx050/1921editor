@@ -143,55 +143,59 @@ const SPECIAL_MARKS: Record<string, BlockType> = {
  * @returns 解析结果
  */
 function parseMarkedContent(text: string): ParseResult {
-  // 图片模板标记 - 去除前后空格后进行匹配
+  // 图片模板标记 - 简化语法
+  // & 单独使用 = 纯单图
+  // &内容 = 单图 + 图注
+  // && 单独使用 = 纯双图
+  // &&左图注 右图注 = 双图 + 图注
   const trimmedText: string = text.trim()
 
-  // 单图标记：& 或 &单图
   if (trimmedText.startsWith('&')) {
-    const content = trimmedText.substring(1).trim()
-
-    // 处理 &&
+    // 处理 &&（双图）
     if (trimmedText.startsWith('&&')) {
       const doubleContent = trimmedText.substring(2).trim()
 
-      if (doubleContent === '双图+注' || doubleContent === 'double_caption') {
-        // 兼容旧的完整标记
-        return { hasMark: true, text: '', type: 'image_double_caption' }
-      }
-
-      if (doubleContent === '双图' || doubleContent === '') {
+      // && 单独使用 = 纯双图
+      if (doubleContent === '' || doubleContent === '双图') {
         return { hasMark: true, text: '', type: 'image_double' }
       }
 
-      // 检查是否使用了明确的图注分隔符（冒号）
-      const captionMatch = doubleContent.match(/^(?:双图)?[::：]\s*(.+)$/)
-      if (captionMatch) {
-        return {
-          hasMark: true,
-          text: captionMatch[1].trim(),
-          type: 'image_double_caption'
-        }
+      // 兼容旧标记
+      if (doubleContent === '双图+注' || doubleContent === 'double_caption') {
+        return { hasMark: true, text: '', type: 'image_double_caption' }
       }
 
-      // 没有冒号分隔符，视为纯双图（后面的内容将被忽略或作为独立段落）
-      return { hasMark: true, text: '', type: 'image_double' }
-    }
-
-    // 处理 &
-    // 检查是否使用了明确的图注分隔符（冒号）
-    const captionMatch = content.match(/^(?:单图)?[::：]\s*(.+)$/)
-    if (captionMatch) {
-      // 有明确的图注分隔符，视为带图注
+      // &&后有内容 = 双图 + 图注
+      // 移除可能存在的"双图"前缀
+      const cleanContent = doubleContent.replace(/^双图\s*/, '')
       return {
         hasMark: true,
-        text: captionMatch[1].trim(),
-        type: 'image_single_caption'
+        text: cleanContent,
+        type: 'image_double_caption'
       }
     }
 
-    // 没有冒号分隔符，无论后面是否有内容，都视为纯单图
-    // （后面的内容会被当作独立段落处理）
-    return { hasMark: true, text: '', type: 'image_single' }
+    // 处理 &（单图）
+    const content = trimmedText.substring(1).trim()
+
+    // & 单独使用 = 纯单图
+    if (content === '' || content === '单图') {
+      return { hasMark: true, text: '', type: 'image_single' }
+    }
+
+    // 兼容旧标记
+    if (content === '单图+注' || content === 'single_caption') {
+      return { hasMark: true, text: '', type: 'image_single_caption' }
+    }
+
+    // &后有内容 = 单图 + 图注
+    // 移除可能存在的"单图"前缀和冒号
+    const cleanContent = content.replace(/^单图[::：]?\s*/, '')
+    return {
+      hasMark: true,
+      text: cleanContent,
+      type: 'image_single_caption'
+    }
   }
 
   // 兼容旧的文字标记 "双图" 和 "双图+注" (不带符号的情况)

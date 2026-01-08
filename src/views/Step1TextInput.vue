@@ -34,7 +34,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
             <div>
               <p class="font-medium mb-1">图片标注：</p>
-              <p>• <code class="bg-blue-100 px-1">&单图</code> 或 <code class="bg-blue-100 px-1">&单图：图注内容</code></p>
+              <p>• <code class="bg-blue-100 px-1">&</code>（纯单图）或 <code class="bg-blue-100 px-1">&图注内容</code></p>
               <p>• <code class="bg-blue-100 px-1">&&双图</code> 或 <code class="bg-blue-100 px-1">&&左图说明 右图说明</code></p>
               <p class="text-xs text-blue-600 mt-1">注：双图说明请用空格分隔</p>
             </div>
@@ -300,11 +300,11 @@ const processDocxFile = async (file) => {
         // 如果图片有alt属性，将其作为图注
         const alt = image.alt || ''
         if (alt && alt.trim()) {
-          // 有图注，使用冒号分隔符格式
-          return Promise.resolve({ src: "", alt: `&单图：${alt.trim()}` })
+          // 有图注，生成 &图注内容 格式
+          return Promise.resolve({ src: "", alt: `&${alt.trim()}` })
         }
-        // 无图注，生成纯 &单图
-        return Promise.resolve({ src: "", alt: "&单图" })
+        // 无图注，生成纯 &
+        return Promise.resolve({ src: "", alt: "&" })
       }),
       // 保留段落样式信息
       styleMap: [
@@ -405,16 +405,16 @@ const convertHtmlToCustomFormat = (html) => {
 
           // 清理内容，移除多余的空格
           const cleanedContent = content.trim().replace(/\s+/g, ' ')
-          // 生成 &单图：标记（使用冒号分隔符）
-          return `\n\n&单图：${cleanedContent}\n\n`
+          // 生成 &图注内容 标记
+          return `\n\n&${cleanedContent}\n\n`
         }
 
         // 如果段落只包含图片占位符，直接返回
-        if (content.trim().startsWith('&单图')) return content
+        if (content.trim().startsWith('&')) return content
         return `\n\n${content.trim()}\n\n`
       case 'IMG':
         // 处理图片占位符
-        if (node.alt && node.alt.startsWith('&单图')) {
+        if (node.alt && node.alt.startsWith('&')) {
           return '\n\n' + node.alt + '\n\n'
         }
         return ''
