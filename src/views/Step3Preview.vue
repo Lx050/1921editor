@@ -89,10 +89,10 @@
         <!-- 主体区域 - 模拟 Step 2 的 Scroll Area -->
         <div class="flex-1 relative overflow-hidden bg-gray-50/50">
           <!-- 独立滚动区域 -->
-          <div class="h-full pb-20 overflow-hidden flex flex-col">
-            <!-- 预览模式: 居中显示，保持 Step 2 的内边距感 -->
-            <div v-show="activeTab === 'preview'" class="flex-1 flex justify-center p-4 md:p-8 preview-container overflow-hidden">
-              <div :class="[showMobileFrame ? 'relative w-[390px] h-[844px] mobile-frame flex flex-col overflow-hidden shrink-0 transform scale-[0.85] sm:scale-100 origin-top shadow-2xl' : 'w-full md:w-[390px] max-w-md md:max-w-none shadow-xl rounded-2xl flex-shrink-0 h-full flex flex-col preview-content overflow-hidden bg-white border border-gray-100']">
+          <div class="h-full pb-20 overflow-y-auto flex flex-col">
+            <!-- 预览模式: 居中显示，允许滚动查看完整预览 -->
+            <div v-show="activeTab === 'preview'" class="flex-1 flex justify-center items-start p-4 md:p-8 preview-container min-h-0">
+              <div :class="[showMobileFrame ? 'relative w-[390px] h-[844px] mobile-frame flex flex-col overflow-hidden shrink-0 shadow-2xl' : 'w-full md:w-[390px] max-w-md md:max-w-none shadow-xl rounded-2xl flex-shrink-0 h-[80vh] min-h-[600px] flex flex-col preview-content overflow-hidden bg-white border border-gray-100']">
                 <template v-if="showMobileFrame">
                   <!-- ... 之前的真机框架内容保持不变 ... -->
                   <div class="absolute top-0 w-full h-11 z-20 flex justify-between px-6 items-center pointer-events-none" style="background: linear-gradient(180deg, #2a2a30 0%, #1a1a1f 100%);">
