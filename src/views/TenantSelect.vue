@@ -183,17 +183,9 @@ const loadTenants = async () => {
   }
 }
 
-const selectTenant = (tenant: TenantInfo | null) => {
-  // 简单的 Haptic Feedback 模拟
+const selectTenant = (_tenant: TenantInfo | null) => {
   if ('vibrate' in navigator) navigator.vibrate(10)
-
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
-  
-  if (tenant) {
-    window.location.href = `${baseUrl}/auth/feishu/login?tenant=${tenant.slug}`
-  } else {
-    window.location.href = `${baseUrl}/auth/feishu/login`
-  }
+  window.location.href = '/step1'
 }
 
 onMounted(() => {

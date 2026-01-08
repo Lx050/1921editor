@@ -1,14 +1,19 @@
 <template>
-  <div class="p-6 h-full flex flex-col">
-    <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 mb-2">步骤 1/3: 输入文本</h2>
-      <p class="text-gray-600">
+  <!-- 全屏布局（无固定底部工具栏） -->
+  <div class="h-full flex flex-col step-content-area overflow-hidden">
+    <!-- 头部区域 - 固定 -->
+    <div class="flex-shrink-0 p-6 pb-4" style="background: var(--color-content-card); border-bottom: 1px solid var(--color-content-border);">
+      <h2 class="text-2xl font-bold mb-2" style="color: var(--color-content-text);">步骤 1/3: 输入文本</h2>
+      <p style="color: var(--color-content-text-secondary)">
         请粘贴您需要排版的大段纯文本。系统支持智能识别和标注语法，自动区分标题、正文等内容。
       </p>
     </div>
 
-    <!-- 格式指导区域 - 默认收起 -->
-    <div class="mb-4">
+    <!-- 内容区域 - 独立滚动 -->
+    <div class="flex-1 overflow-y-auto p-6">
+
+      <!-- 格式指导区域 - 默认收起 -->
+      <div class="mb-4">
       <button 
         @click="showGuide = !showGuide"
         class="flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors focus:outline-none"
@@ -42,9 +47,10 @@
           </div>
         </div>
       </transition>
-    </div>
+      </div>
 
-    <div class="space-y-4 flex-1 flex flex-col">
+      <!-- 主内容区域 -->
+      <div class="space-y-4 flex-1 flex flex-col">
       <!-- 文本输入区域 -->
       <div class="flex-1 flex flex-col">
         <label for="textInput" class="block text-sm font-medium text-gray-700 mb-2">
@@ -57,8 +63,8 @@
           @dragover.prevent="handleDragOver"
           @dragleave.prevent="handleDragLeave"
           :class="[
-            'w-full flex-1 min-h-[300px] px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono text-sm transition-colors',
-            isDragging ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500' : 'border-gray-300'
+            'w-full flex-1 min-h-[300px] px-4 py-3 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 resize-none font-mono text-sm transition-colors content-textarea',
+            isDragging ? 'border-orange-400 ring-2 ring-orange-400' : ''
           ]"
           placeholder="请在此粘贴您的文本内容，或直接将 Word 文档拖拽至此...
 
@@ -82,7 +88,7 @@
 
 注意：使用空行分隔不同内容块"
         ></textarea>
-        <div class="mt-2 text-sm text-gray-500">
+        <div class="mt-2 text-sm" style="color: var(--color-content-text-secondary);">
           <span v-if="localText">{{ localText.length }} 个字符</span>
           <span v-else>请输入文本内容</span>
         </div>
@@ -130,7 +136,18 @@
           </svg>
           已提取 {{ extractedImages.length }} 张图片
         </div>
+        <!-- 下一步按钮 - 与快速操作按钮同行，位于最右边 -->
+        <div class="flex-1"></div>
+        <button
+          @click="goToNextStep"
+          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md flex items-center"
+          :disabled="!localText.trim()"
+        >
+          下一步：编辑内容 →
+        </button>
       </div>
+      </div>
+      <!-- space-y-4 结束 -->
 
       <!-- 错误提示 - 添加过渡动画 -->
       <transition
@@ -155,17 +172,6 @@
           </div>
         </div>
       </transition>
-
-      <!-- 操作按钮 -->
-      <div class="flex justify-end pt-4">
-        <button
-          @click="goToNextStep"
-          class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-          :disabled="!localText.trim()"
-        >
-          下一步：编辑内容 →
-        </button>
-      </div>
     </div>
   </div>
 </template>

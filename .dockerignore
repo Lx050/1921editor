@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.agent
+.claude
+lighthouse-reports
+*.log
+uploads
+.env

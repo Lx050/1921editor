@@ -1,0 +1,234 @@
+/* Minimal magazine design system tokens and helpers */
+:root {
+  /* 深色背景层级 */
+  --color-bg-primary: #0a0a0c;
+  --color-bg-secondary: #141419;
+  --color-bg-tertiary: #1a1a22;
+  --color-bg-elevated: #1f1f2a;
+
+  /* 🆕 内容区域背景（暖白色系，解决黑白对比过于强烈的问题） */
+  --color-content-bg: #f8f7f4;
+  /* 暖白色主背景 */
+  --color-content-bg-soft: #faf9f6;
+  /* 更浅的暖白色 */
+  --color-content-card: #fefefe;
+  /* 卡片背景 */
+  --color-content-border: #e8e6e1;
+  /* 暖灰色边框 */
+  --color-content-text: #2d2d2d;
+  /* 深灰色文字（非纯黑） */
+  --color-content-text-secondary: #5a5a5a;
+  /* 次要文字 */
+
+  /* 文字颜色 */
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #c5c5d4;
+  --color-text-muted: #8b8ba3;
+
+  /* 主题色 */
+  --color-accent-primary: #ff6b4a;
+  --color-gold-primary: #d4a574;
+
+  /* 边框和阴影 */
+  --color-border-default: rgba(255, 255, 255, 0.1);
+  --shadow-accent: 0 10px 30px rgba(255, 107, 74, 0.25);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-content-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  /* 圆角和间距 */
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --duration-fast: 150ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 字体 */
+  --font-display: "Playfair Display", "Times New Roman", serif;
+  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+
+  /* 灰度色板 */
+  --gray-50: #f9fafb;
+  --gray-200: #e5e7eb;
+  --primary-color: #3b82f6;
+}
+
+.magazine-bg {
+  background:
+    radial-gradient(1200px 600px at 10% 0%, rgba(255, 107, 74, 0.08), transparent 60%),
+    radial-gradient(1000px 500px at 90% 10%, rgba(212, 165, 116, 0.08), transparent 55%),
+    linear-gradient(180deg, var(--color-bg-secondary) 0%, var(--color-bg-primary) 100%);
+}
+
+.magazine-page-enter {
+  animation: magazine-page-enter 0.6s var(--ease-out-expo) both;
+}
+
+.magazine-stagger-1 {
+  animation-delay: 0.05s;
+}
+
+.magazine-stagger-2 {
+  animation-delay: 0.12s;
+}
+
+@keyframes magazine-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.magazine-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gold-primary);
+  background: rgba(212, 165, 116, 0.12);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+}
+
+.magazine-title-lg {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.magazine-title-md {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+
+.magazine-title-sm {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.magazine-body-sm {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.magazine-input,
+.magazine-textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--color-text-primary);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.magazine-input:focus,
+.magazine-textarea:focus {
+  outline: none;
+  border-color: rgba(255, 107, 74, 0.6);
+  box-shadow: 0 0 0 2px rgba(255, 107, 74, 0.2);
+}
+
+.magazine-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* ========================================
+   🆕 统一的步骤页面内容区域样式
+   解决黑白配色过于生硬的问题
+   ======================================== */
+
+/* 步骤页面的主容器 - 使用暖白色渐变背景 */
+.step-content-area {
+  background: linear-gradient(180deg,
+      var(--color-content-bg-soft) 0%,
+      var(--color-content-bg) 100%);
+  min-height: 100%;
+}
+
+/* 步骤页面的头部区域 - 保持深色但有渐变过渡 */
+.step-header {
+  background: linear-gradient(180deg,
+      var(--color-bg-secondary) 0%,
+      var(--color-bg-tertiary) 100%);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+/* 内容卡片样式 - 使用暖白色 */
+.content-card {
+  background: var(--color-content-card);
+  border: 1px solid var(--color-content-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-content-card);
+  color: var(--color-content-text);
+}
+
+/* 内容卡片 hover 状态 */
+.content-card:hover {
+  border-color: #d4d2cd;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* 编辑区域的文本框样式 - 统一暖色调 */
+.content-textarea {
+  background: var(--color-content-card);
+  border: 1px solid var(--color-content-border);
+  color: var(--color-content-text);
+  border-radius: var(--radius-sm);
+}
+
+.content-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.15);
+}
+
+/* 预览容器 - 柔和的渐变背景 */
+.preview-container {
+  background: linear-gradient(135deg,
+      #e8e6e3 0%,
+      #f0eeeb 50%,
+      #f5f4f2 100%);
+}
+
+/* 预览内容区域 */
+.preview-content {
+  background: var(--color-content-card);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* 真机预览外壳 - 使用深灰渐变而非纯黑 */
+.mobile-frame {
+  background: linear-gradient(145deg,
+      #2a2a30 0%,
+      #1a1a1f 50%,
+      #252528 100%);
+  border: 8px solid #3a3a42;
+  border-radius: 50px;
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 过渡层 - 在深色和浅色之间的柔和过渡 */
+.transition-layer {
+  background: linear-gradient(180deg,
+      rgba(20, 20, 25, 0.95) 0%,
+      rgba(248, 247, 244, 0.98) 100%);
+  backdrop-filter: blur(10px);
+}

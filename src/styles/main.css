@@ -3,13 +3,28 @@
    Magazine Aesthetics Design System - Main Entry
    ======================================== */
 
+/* 导入杂志美学设计系统 */
+@import './magazine-design-system.css';
+
 /* 导入 Tailwind CSS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 导入杂志美学设计系统 */
-@import './magazine-design-system.css';
+@layer components {
+  .magazine-btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200;
+  }
+
+  .magazine-btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-white shadow-lg hover:shadow-xl;
+    background: linear-gradient(135deg, var(--color-accent-primary, #ff6b4a), #ff8566);
+  }
+
+  .magazine-btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-white/10 text-[#f5f5f5] bg-white/10 hover:bg-white/20;
+  }
+}
 
 /* ========================================
    全局覆盖和增强

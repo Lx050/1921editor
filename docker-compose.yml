@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Frontend Service (Vue 3 + Nginx)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: always
+
+  # Backend Service (NestJS)
+  backend:
+    build:
+      context: ./content-backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/feishu_backend
+      - PORT=3001
+      - NODE_ENV=production
+    volumes:
+      - ./content-backend/uploads:/app/uploads
+      - ./content-backend/logs:/app/logs
+    depends_on:
+      - db
+    networks:
+      - app-network
+    restart: always
+
+  # Database Service (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: feishu_backend
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

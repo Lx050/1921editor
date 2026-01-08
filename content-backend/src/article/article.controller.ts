@@ -6,7 +6,6 @@ import {
   Param,
   Put,
   Delete,
-  UseGuards,
   Request,
   Res,
   NotFoundException,
@@ -16,7 +15,6 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ArticleService } from './article.service';
-import { AuthGuard } from '@nestjs/passport';
 import {
   CreateArticleDto,
   UpdateArticleConfigDto,
@@ -26,31 +24,43 @@ import {
 import type { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('articles')
 @Controller('articles')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) {}
+  constructor(
+    private readonly articleService: ArticleService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  private getDefaultTenantId(): string {
+    return (
+      this.configService.get<string>('DEFAULT_TENANT_ID') ||
+      '00000000-0000-0000-0000-000000000001'
+    );
+  }
 
   @Post()
-  @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: '创建文章' })
   @ApiResponse({ status: 201, description: '文章创建成功' })
   @ApiResponse({ status: 400, description: '参数验证失败' })
-  @ApiResponse({ status: 401, description: '未授权' })
   create(@Body() dto: CreateArticleDto, @Request() req: { user: any }) {
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.create(dto.title, {
       ...dto,
-      ownerId: req.user.id,
-      tenantId: req.user.tenantId,
+      ownerId: req.user?.id || null,
+      tenantId,
     });
   }
 
   @Get()
-  @UseGuards(AuthGuard('jwt'))
   findAll(@Request() req: { user: any }) {
-    return this.articleService.findAll(req.user);
+    if (req.user?.tenantId) {
+      return this.articleService.findAll(req.user);
+    }
+    return this.articleService.findAllByTenant(this.getDefaultTenantId());
   }
 
   @Get(':id')
@@ -94,7 +104,6 @@ export class ArticleController {
   }
 
   @Put(':id/config')
-  @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '更新文章配置' })
   updateConfig(
@@ -102,11 +111,10 @@ export class ArticleController {
     @Body() dto: UpdateArticleConfigDto,
     @Request() req: { user: any },
   ) {
-    return this.articleService.updateStep1(id, dto.config, req.user.id);
+    return this.articleService.updateStep1(id, dto.config, req.user?.id);
   }
 
   @Put(':id/content')
-  @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '更新文章内容' })
   updateContent(
@@ -114,11 +122,10 @@ export class ArticleController {
     @Body() dto: UpdateArticleContentDto,
     @Request() req: { user: any },
   ) {
-    return this.articleService.updateStep2(id, dto.content, req.user.id);
+    return this.articleService.updateStep2(id, dto.content, req.user?.id);
   }
 
   @Put(':id/images')
-  @UseGuards(AuthGuard('jwt'))
   // 🔧 完全移除 ValidationPipe 以避免数据被剥离
   @ApiOperation({ summary: '更新文章图片' })
   updateImages(
@@ -130,11 +137,10 @@ export class ArticleController {
       '[Controller] 收到图片数据:',
       JSON.stringify(body?.images?.slice(0, 1)),
     );
-    return this.articleService.updateStep3(id, body.images, req.user.id);
+    return this.articleService.updateStep3(id, body.images, req.user?.id);
   }
 
   @Put(':id/step3-content')
-  @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '从Step3保存文章内容（设置状态为ADJUSTED）' })
   updateStep3Content(
@@ -142,28 +148,28 @@ export class ArticleController {
     @Body() dto: UpdateArticleContentDto,
     @Request() req: { user: any },
   ) {
-    return this.articleService.updateStep3Content(id, dto.content, req.user.id);
+    return this.articleService.updateStep3Content(
+      id,
+      dto.content,
+      req.user?.id,
+    );
   }
 
   @Post(':id/publish')
-  @UseGuards(AuthGuard('jwt'))
   publish(@Param('id') id: string, @Request() req: { user: any }) {
-    return this.articleService.publish(id, req.user.id);
+    return this.articleService.publish(id, req.user?.id);
   }
 
   @Post(':id/save-draft')
-  @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: '保存文章草稿' })
   @ApiResponse({ status: 200, description: '草稿保存成功' })
-  @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 404, description: '文章不存在' })
   async saveDraft(@Param('id') id: string, @Request() req: { user: any }) {
     return this.articleService.saveDraft(id, req.user);
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard('jwt'))
   remove(@Param('id') id: string) {
     return this.articleService.delete(id);
   }

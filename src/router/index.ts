@@ -7,20 +7,15 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
-    redirect: '/step1', // 暂时重定向到 step1，方便查看效果
+    component: () => import('../views/Home/index.vue'),
     meta: {
       title: '主页'
     }
   },
-  // 保留原始 Home 路由，方便后续恢复
-  // {
-  //   path: '/home',
-  //   name: 'Home',
-  //   component: () => import('../views/Home/index.vue'),
-  //   meta: {
-  //     title: '主页'
-  //   }
-  // },
+  {
+    path: '/home',
+    redirect: '/'
+  },
   {
     path: '/settings/wechat',
     name: 'WechatSettings',
@@ -95,7 +90,7 @@ const routes: RouteRecordRaw[] = [
     name: 'LoginCallback',
     component: () => import('../views/LoginCallback.vue'),
     meta: {
-      title: '飞书登录回调'
+      title: 'Auth Callback'
     }
   },
   {
@@ -165,6 +160,10 @@ router.beforeEach((to, _from, next) => {
   const basePath = to.path.startsWith('/step3/') ? '/step3' : to.path
   const guard = routeGuards[basePath]
   if (guard) {
+    if (basePath === '/step3' && to.params?.id) {
+      next()
+      return
+    }
     // 验证条件
     const isValid = guard.validator(appStore)
 

@@ -1,5 +1,6 @@
 <template>
-  <div class="h-full flex overflow-hidden relative">
+  <!-- 全屏容器：固定布局，不滚动 -->
+  <div class="fixed inset-0 flex overflow-hidden">
     <!-- 移动端样式选择开关 -->
     <button
       @click="showMobileSidebar = !showMobileSidebar"
@@ -18,37 +19,42 @@
       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 md:hidden"
     ></div>
 
-    <!-- 左侧样式选择面板 - 响应式 -->
+    <!-- 左侧样式选择面板 - 桌面端 flex 布局，移动端 fixed 遮罩 -->
     <div
       :class="[
-        'w-64 flex-shrink-0 h-full fixed left-0 top-0 z-30 bg-[#141419]/95 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-in-out md:translate-x-0',
-        showMobileSidebar ? 'translate-x-0' : '-translate-x-full'
+        'w-72 flex-shrink-0 h-full border-r transition-transform duration-300 ease-in-out md:translate-x-0 overflow-hidden',
+        showMobileSidebar ? 'translate-x-0 fixed left-0 top-0 bottom-0 z-30' : '-translate-x-full fixed md:relative md:translate-x-0'
       ]"
+      style="background: var(--color-content-bg-soft); border-color: var(--color-content-border);"
     >
       <StyleSelector />
     </div>
 
-    <!-- 右侧内容编辑区 - 响应式边距 -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden md:ml-64 w-full">
-      <!-- 头部 - 固定不滚动 -->
-      <div class="flex-shrink-0 p-6 pb-4">
-        <div class="flex items-center gap-3 mb-2">
-          <span class="magazine-badge">Step 2/3</span>
+    <!-- 右侧内容编辑区 - 高度固定，内部滚动 -->
+    <div class="flex-1 flex flex-col h-full w-full step-content-area relative overflow-hidden">
+      <!-- 精简头部 - 统一高度和样式 -->
+      <div class="flex-shrink-0 w-full border-b p-3 md:p-4" style="background: var(--color-content-card); border-color: var(--color-content-border);">
+        <div class="flex items-center justify-between">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap">Step 2/3</span>
+              <h2 class="text-lg font-bold truncate" style="color: var(--color-content-text)">编辑内容</h2>
+            </div>
+            <p class="text-xs mt-0.5 truncate" style="color: var(--color-content-text-secondary)">点击内容块直接编辑，左侧实时预览不同样式</p>
+          </div>
+          
+          <!-- 上传进度 -->
+          <UploadProgress
+            :progress="uploadProgress"
+            :isUploading="isUploading"
+            @retry="retryFailedUploads"
+            class="flex-shrink-0 ml-4"
+          />
         </div>
-        <h2 class="magazine-title-lg mb-2" style="color: var(--color-text-primary)">编辑内容</h2>
-        <p class="magazine-body-sm mb-4" style="color: var(--color-text-secondary)">
-          左侧选择样式，点击文本块进行编辑，调整内容块的类型和顺序。
-        </p>
-        <!-- V2: 上传进度条 -->
-        <UploadProgress
-          :progress="uploadProgress"
-          :isUploading="isUploading"
-          @retry="retryFailedUploads"
-        />
       </div>
 
-      <!-- 幕布工作区 - 可滚动，底部留出按钮空间 -->
-      <div class="flex-1 overflow-y-auto px-6 pb-40">
+      <!-- 幕布工作区 - 独立滚动，底部留出工具栏空间 -->
+      <div class="flex-1 overflow-y-auto px-6 pb-28">
         <div class="space-y-3 pb-4">
           <TransitionGroup name="block-list" tag="div" class="space-y-3">
             <div
@@ -56,241 +62,123 @@
               :key="block.id"
               class="relative group"
             >
-              <!-- 内容块 -->
+              <!-- 内容块 - 简洁样式 -->
               <div
                 @click="selectBlock(block.id)"
                 :class="[
-                  'p-4 border rounded-xl cursor-pointer transition-all duration-300 ease-out relative',
+                  'p-4 rounded-xl transition-all duration-200 relative content-card',
                   selectedBlockId === block.id
-                    ? 'border-blue-500 bg-white shadow-lg scale-[1.01] z-10'
-                    : 'border-transparent hover:bg-gray-50'
+                    ? 'ring-2 ring-blue-400 shadow-md'
+                    : 'hover:shadow-sm'
                 ]"
               >
-                <!-- 块操作工具栏 - 选中时显示更丰富 -->
-                <div class="flex items-center justify-between mb-3 bg-gray-50 p-2 rounded-lg border border-gray-100" v-if="selectedBlockId === block.id || editingBlockId === block.id">
-                  <div class="flex items-center space-x-2">
-                    <!-- 类型切换下拉 -->
-                    <div class="relative">
-                      <button
-                        @click.stop="toggleTypeDropdown(block.id)"
-                        class="flex items-center space-x-1 px-3 py-1.5 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-blue-400 transition-colors"
-                        title="切换当前块的类型"
-                      >
-                        <span class="text-lg">{{ getBlockTypeIcon(block.type) }}</span>
-                        <span>{{ getBlockTypeDisplayName(block.type) }}</span>
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                      </button>
-
-                      <!-- 类型下拉菜单 -->
-                      <div
-                        v-if="showTypeDropdown === block.id"
-                        class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50"
-                        @click.stop
-                      >
-                        <div class="px-3 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b border-gray-100">
-                          选择类型
-                        </div>
-                        <button
-                          v-for="option in getBlockTypeOptions()"
-                          :key="option.value"
-                          @click="changeBlockTypeFromDropdown(block.id, option.value as BlockType)"
-                          :class="[
-                            'w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 transition-colors flex items-center space-x-2',
-                            block.type === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
-                          ]"
-                        >
-                          <span class="text-lg w-6 text-center">{{ option.icon }}</span>
-                          <span>{{ option.label }}</span>
-                          <span v-if="block.type === option.value" class="ml-auto text-blue-600">✓</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- 快捷切换按钮 (仅在宽屏显示) -->
-                    <div class="hidden sm:flex space-x-1 border-l border-gray-300 pl-2 ml-2">
-                      <button 
-                        @click.stop="changeBlockType(block.id, 'title')"
-                        class="p-1.5 rounded hover:bg-gray-200 text-gray-600" 
-                        :class="{ 'bg-blue-100 text-blue-700': block.type === 'title' }"
-                        title="设为标题"
-                      >
-                        <span class="text-sm font-bold">H</span>
-                      </button>
-                      <button 
-                        @click.stop="changeBlockType(block.id, 'body')"
-                        class="p-1.5 rounded hover:bg-gray-200 text-gray-600"
-                        :class="{ 'bg-blue-100 text-blue-700': block.type === 'body' }"
-                        title="设为正文"
-                      >
-                        <span class="text-sm">T</span>
-                      </button>
-                      <button 
-                        @click.stop="changeBlockType(block.id, 'intro')"
-                        class="p-1.5 rounded hover:bg-gray-200 text-gray-600"
-                        :class="{ 'bg-blue-100 text-blue-700': block.type === 'intro' }"
-                        title="设为引言"
-                      >
-                        <span class="text-sm italic">“</span>
-                      </button>
-                    </div>
+                <!-- 顶部栏：类型标签 + 操作按钮 -->
+                <div class="flex items-center justify-between mb-3">
+                  <!-- 左侧：类型标签/选择器 -->
+                  <div class="flex items-center gap-2">
+                    <!-- 选中时显示下拉选择器 -->
+                    <select
+                      v-if="selectedBlockId === block.id"
+                      :value="block.type"
+                      @change="changeBlockType(block.id, ($event.target as HTMLSelectElement).value as BlockType)"
+                      class="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-medium text-gray-700 hover:border-blue-400 focus:border-blue-500 focus:outline-none cursor-pointer"
+                      @click.stop
+                    >
+                      <option v-for="option in getBlockTypeOptions()" :key="option.value" :value="option.value">
+                        {{ option.icon }} {{ option.label }}
+                      </option>
+                    </select>
+                    <!-- 未选中时显示静态标签 -->
+                    <span 
+                      v-else 
+                      class="px-2 py-1 rounded text-xs font-medium border"
+                      style="background: var(--color-content-bg); color: var(--color-content-text-secondary); border-color: var(--color-content-border);"
+                    >
+                      {{ getBlockTypeDisplayName(block.type) }}
+                    </span>
                   </div>
 
-                  <!-- AI Generation Button -->
-                  <div class="flex space-x-1 border-l border-gray-300 pl-2 ml-2">
+                  <!-- 右侧：操作按钮（仅选中时显示） -->
+                  <div v-if="selectedBlockId === block.id" class="flex items-center gap-1">
+                    <!-- AI 按钮 -->
                     <button 
                       @click.stop="generateAiImage(block)"
-                      class="p-1.5 rounded hover:bg-purple-100 text-purple-600 transition-colors"
+                      class="p-1.5 rounded hover:bg-purple-100 text-purple-500 transition-colors"
                       :class="{ 'animate-pulse': generatingBlockId === block.id }"
                       :disabled="generatingBlockId === block.id"
-                      title="AI 图像化 (Nano Banana Pro)"
+                      title="AI 图像化"
                     >
                       <span v-if="generatingBlockId === block.id" class="text-xs">⏳</span>
-                      <span v-else class="font-bold">✨</span>
+                      <span v-else>✨</span>
                     </button>
-                  </div>
-
-                  <!-- 右侧操作 -->
-                  <div class="flex items-center space-x-2">
+                    <!-- 删除按钮 -->
                     <button
                       @click.stop="confirmDeleteBlock(index, block.id)"
-                      class="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors"
-                      title="删除此块"
+                      class="p-1.5 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      title="删除"
                     >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                       </svg>
                     </button>
                   </div>
-                </div>
-
-                <!-- 非选中状态下的简略标签 + AI 按钮 -->
-                <div v-else class="flex items-center justify-between mb-2 opacity-60 hover:opacity-100 transition-opacity">
-                  <div class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
-                    {{ getBlockTypeDisplayName(block.type) }}
-                  </div>
-
-                  <!-- 即使未选中，也能直接 AI 化 -->
+                  <!-- 未选中时右上角的 AI 图标 -->
                   <button 
+                    v-else
                     @click.stop="generateAiImage(block)"
-                    class="p-1 rounded hover:bg-purple-100 text-purple-600 transition-colors"
-                    :class="{ 'animate-pulse': generatingBlockId === block.id }"
+                    class="p-1 rounded hover:bg-purple-100 text-purple-400 hover:text-purple-600 transition-colors opacity-50 hover:opacity-100"
+                    :class="{ 'animate-pulse opacity-100': generatingBlockId === block.id }"
                     :disabled="generatingBlockId === block.id"
-                    title="AI 图像化 (Nano Banana Pro)"
+                    title="AI 图像化"
                   >
                     <span v-if="generatingBlockId === block.id" class="text-xs">⏳</span>
-                    <span v-else class="font-bold">✨</span>
+                    <span v-else>✨</span>
                   </button>
                 </div>
 
-                <!-- 块内容 -->
-                <div
-                  v-if="block.text || isImageBlock(block.type)"
-                  class="text-gray-800"
-                >
-                  <!-- 编辑模式 -->
-                  <div v-if="editingBlockId === block.id" class="relative">
-                    <textarea
-                      v-model="editingText"
-                      class="w-full p-4 border-2 border-blue-400 rounded-lg focus:outline-none focus:border-blue-500 resize-none pr-24"
-                      :class="getBlockTextareaClass(block.type)"
-                      :placeholder="getBlockPlaceholder(block.type)"
-                      rows="4"
-                      ref="editTextarea"
-                      @blur="handleTextareaBlur(block.id)"
-                      @keydown.enter.ctrl="saveBlockEdit(block.id)"
-                      @keydown.esc="cancelBlockEdit"
-                      @input="handleTextareaInput($event, block.id)"
-                    ></textarea>
-
-                    <!-- 大按钮组 -->
-                    <div class="absolute top-3 right-3 flex flex-col space-y-2">
-                      <button
-                        @click.stop="saveBlockEdit(block.id)"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center space-x-2 text-sm font-medium transition-colors min-w-[80px]"
-                        title="保存编辑内容 (Ctrl+Enter)"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <span>保存</span>
-                      </button>
-                      <button
-                        @click.stop="cancelBlockEdit"
-                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center space-x-2 text-sm font-medium transition-colors min-w-[80px]"
-                        title="取消编辑 (Esc)"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        <span>取消</span>
-                      </button>
-                    </div>
-
-                    <!-- 快捷键提示 -->
-                    <div class="absolute bottom-3 left-3 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      💡 Ctrl+Enter 保存 | Esc 取消
-                    </div>
-                  </div>
-                  <!-- 显示模式 -->
-                  <div
-                    v-else-if="!isImageBlock(block.type)"
-                    class="relative group"
-                  >
-                    <div
-                      @click="startEditBlock(block.id)"
-                      class="cursor-pointer hover:bg-blue-50 p-4 rounded-lg transition-all border border-transparent hover:border-blue-200"
-                    >
-                      <!-- AI 生成的图片展示 -->
-                      <div v-if="block.meta?.aiImageUrl" class="mb-3 relative group/image">
-                        <LazyImage
-                          :src="block.meta.aiImageUrl as string"
-                          alt="AI Generated"
-                          :width="400"
-                          :height="300"
-                          class="w-full rounded-lg shadow-sm border border-gray-200"
-                          img-class="w-full rounded-lg shadow-sm border border-gray-200"
-                          :placeholder="true"
-                          :threshold="0.3"
-                        />
-                        <div class="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
-                          <span class="bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">AI Visualized</span>
-                        </div>
-                      </div>
-
-                      <div :class="{ 'text-gray-400 text-sm': block.meta?.aiImageUrl }">
-                        {{ formatBlockText(block.text) }}
-                      </div>
-                    </div>
-
-                    <!-- 大编辑按钮 - 减少误触 -->
-                    <div class="absolute -top-3 -right-3 opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100">
-                      <button
-                        @click.stop="startEditBlock(block.id)"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 text-sm font-medium transition-colors"
-                        title="点击编辑此内容块"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                        <span>编辑</span>
-                      </button>
-                    </div>
-
-                    <!-- 点击提示 -->
-                    <div class="absolute bottom-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div class="bg-gray-800 bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-                        💡 点击文本区域或编辑按钮
-                      </div>
-                    </div>
+                <!-- 文本内容区：始终显示为可编辑输入框 -->
+                <div v-if="!isImageBlock(block.type)" class="relative">
+                  <!-- AI 生成的图片展示 -->
+                  <div v-if="block.meta?.aiImageUrl" class="mb-3 relative">
+                    <LazyImage
+                      :src="block.meta.aiImageUrl as string"
+                      alt="AI Generated"
+                      :width="400"
+                      :height="300"
+                      class="w-full rounded-lg shadow-sm border border-gray-200"
+                      img-class="w-full rounded-lg shadow-sm border border-gray-200"
+                      :placeholder="true"
+                      :threshold="0.3"
+                    />
+                    <span class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded">AI</span>
                   </div>
 
-                  <!-- 图片模板显示 -->
-                  <div
+                  <!-- 直接编辑的输入框 -->
+                  <input
+                    v-if="block.type === 'title'"
+                    type="text"
+                    v-model="block.text"
+                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors text-center text-lg font-bold"
+                    :placeholder="getBlockPlaceholder(block.type)"
+                    @click.stop
+                  />
+                  <!-- 正文等使用 textarea -->
+                  <textarea
                     v-else
-                    class="py-4 text-center"
-                  >
+                    v-model="block.text"
+                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors resize-none"
+                    :class="{ 'text-gray-400 text-sm': block.meta?.aiImageUrl }"
+                    :placeholder="getBlockPlaceholder(block.type)"
+                    rows="2"
+                    @click.stop
+                  ></textarea>
+                </div>
+
+                <!-- 图片模板显示 -->
+                <div
+                  v-if="isImageBlock(block.type)"
+                  class="py-4 text-center"
+                >
                     <div class="flex flex-col items-center justify-center space-y-3">
                       <div class="flex items-center space-x-3">
                         <span class="text-2xl">
@@ -335,15 +223,6 @@
                         />
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                <!-- 其他空内容的块 -->
-                <div
-                  v-else
-                  class="text-gray-500 italic"
-                >
-                  {{ getImagePlaceholder(block.type) }}
                 </div>
               </div>
 
@@ -364,102 +243,55 @@
         </div>
       </div>
     
-      <!-- 操作按钮 - 固定在底部，左边距为左侧面板宽度 -->
-      <div class="fixed bottom-0 left-0 md:left-64 right-0 flex flex-col sm:flex-row justify-between items-center p-4 sm:p-6 pt-4 border-t bg-white z-10 shadow-lg space-y-3 sm:space-y-0">
-        <div class="w-full sm:w-auto">
+      <!-- 操作按钮 - 固定在底部 -->
+      <div class="absolute bottom-0 left-0 right-0 flex flex-row justify-between items-center p-4 border-t z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] h-20" style="background: var(--color-content-card); border-color: var(--color-content-border);">
+        <div class="flex-1">
           <button
             @click="goToPreviousStep"
-            class="w-full sm:w-auto px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+            class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors"
           >
-            ← 上一步：重填文本
+            ← 上一步
           </button>
         </div>
 
-        <!-- 保存草稿按钮 -->
-        <div class="w-full sm:w-auto">
-          <button
-            @click="saveDraft"
-            :disabled="isSaving || contentBlocks.length === 0"
-            class="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors shadow-md flex items-center justify-center space-x-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            <svg v-if="!isSaving" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-            </svg>
-            <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>{{ isSaving ? '保存中...' : '💾 保存草稿' }}</span>
-          </button>
-        </div>
-
-        <div class="w-full sm:w-auto">
+        <div class="flex gap-3">
           <button
             @click="goToNextStep"
-            class="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg transition-colors shadow-lg flex items-center justify-center space-x-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-base font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center space-x-2 disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
             :disabled="contentBlocks.length === 0 || isUploading"
-            :title="isUploading ? '请等待图片上传完成' : '进入下一步预览效果'"
           >
             <span v-if="isUploading">图片上传中...</span>
             <span v-else>下一步：预览效果</span>
-            <svg v-if="!isUploading" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-if="!isUploading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
             </svg>
-            <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </button>
         </div>
       </div>
-    </div>
-
-    <!-- 斜杠命令菜单 - 浮动在最上层 -->
-    <div
-      v-if="showSlashMenu"
-      class="fixed bg-white border border-gray-200 rounded-lg shadow-xl py-2 z-50 min-w-[200px]"
-      :style="{ top: slashMenuPosition.top + 'px', left: slashMenuPosition.left + 'px' }"
-    >
-      <div class="px-3 py-1 text-xs text-gray-500 font-medium border-b border-gray-100 mb-1">
-        快速命令 (输入 / 触发)
-      </div>
-      <button
-        v-for="cmd in slashCommands"
-        :key="cmd.value"
-        @click="applySlashCommand(cmd.value)"
-        class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors flex items-center space-x-2"
-      >
-        <span class="text-lg">{{ cmd.icon }}</span>
-        <div>
-          <div class="font-medium text-gray-700">{{ cmd.label }}</div>
-          <div class="text-xs text-gray-500">{{ cmd.description }}</div>
-        </div>
-      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
-import { smartTextParser, cleanBlockText } from '../utils/textParser'
+import { smartTextParser } from '../utils/textParser'
 import { getBlockTypeDisplayName } from '../utils/styleAssembler'
 import { uploadManager } from '../utils/uploadManager'
 import StyleSelector from '../components/StyleSelector.vue'
 import LayoutInserter from '../components/LayoutInserter.vue'
 import UploadProgress from '../components/UploadProgress.vue'
 import LazyImage from '../components/LazyImage.vue'
-import toast from '../composables/useToast'
-import { ArticleService } from '../services/articleService'
 import type { ContentBlock, BlockType } from '../types'
 
 const router = useRouter()
 const appStore = useAppStore()
 const selectedBlockId = ref<string | null>(null)
-const editingBlockId = ref<string | null>(null)
-const editingText = ref('')
-const showTypeDropdown = ref<string | null>(null)
-const showSlashMenu = ref(false)
-const slashMenuPosition = ref({ top: 0, left: 0 })
-const slashMenuBlockId = ref<string | null>(null)
 const showMobileSidebar = ref(false)
 const generatingBlockId = ref<string | null>(null)
-const isSaving = ref(false)
+const LOCAL_DRAFT_KEY = 'local_step2_draft'
 
 // 计算属性
 const contentBlocks = computed(() => appStore.contentBlocks)
@@ -492,98 +324,18 @@ const selectBlock = (blockId: string) => {
   selectedBlockId.value = blockId === selectedBlockId.value ? null : blockId
 }
 
-// 斜杠命令配置
-const slashCommands = [
-  { value: 'title', label: '标题', icon: '📰', description: '小标题' },
-  { value: 'body', label: '正文', icon: '📝', description: '普通段落' },
-  { value: 'intro', label: '引言', icon: '💭', description: '引言/开篇' },
-  { value: 'outro', label: '结尾', icon: '🏁', description: '结尾/总结' },
-  { value: 'image_single', label: '单图', icon: '🖼️', description: '插入单图模板' },
-  { value: 'image_single_caption', label: '单图+注', icon: '🖼️📝', description: '插入带图注的单图模板' },
-  { value: 'image_double', label: '双图', icon: '🖼️🖼️', description: '插入双图模板' },
-  { value: 'image_double_caption', label: '双图+注', icon: '🖼️📝', description: '插入带图注的双图模板' }
-]
-
-// 获取块类型图标
-const getBlockTypeIcon = (type: string) => {
-  const cmd = slashCommands.find(c => c.value === type)
-  return cmd ? cmd.icon : '📄'
-}
-
 // 获取块类型选项
 const getBlockTypeOptions = () => {
-  return slashCommands.map(cmd => ({
-    value: cmd.value,
-    label: cmd.label,
-    icon: cmd.icon
-  }))
-}
-
-// 切换类型下拉菜单
-const toggleTypeDropdown = (blockId: string) => {
-  if (showTypeDropdown.value === blockId) {
-    showTypeDropdown.value = null
-  } else {
-    showTypeDropdown.value = blockId
-    // 关闭斜杠菜单
-    showSlashMenu.value = false
-  }
-}
-
-// 从下拉菜单改变块类型
-const changeBlockTypeFromDropdown = (blockId: string, newType: BlockType) => {
-  changeBlockType(blockId, newType)
-  showTypeDropdown.value = null
-}
-
-// 处理文本输入 - 监听斜杠命令
-const handleTextareaInput = (event: Event, blockId: string) => {
-  const textarea = event.target as HTMLTextAreaElement
-  const text = textarea.value
-  const cursorPos = textarea.selectionStart
-  
-  // 检查光标前的字符
-  const textBeforeCursor = text.substring(0, cursorPos)
-  const lastChar = textBeforeCursor.slice(-1)
-  
-  if (lastChar === '/') {
-    // 显示斜杠菜单
-    showSlashMenu.value = true
-    slashMenuBlockId.value = blockId
-    
-    // 计算菜单位置
-    const rect = textarea.getBoundingClientRect()
-    slashMenuPosition.value = {
-      top: rect.top + window.scrollY + 40,
-      left: rect.left + window.scrollX + 20
-    }
-  } else {
-    // 隐藏斜杠菜单
-    showSlashMenu.value = false
-  }
-}
-
-// 应用斜杠命令
-const applySlashCommand = (commandValue: string) => {
-  if (slashMenuBlockId.value) {
-    // 移除文本中的 '/' 字符
-    editingText.value = editingText.value.replace(/\/$/, '')
-    
-    // 改变块类型
-    changeBlockType(slashMenuBlockId.value, commandValue as BlockType)
-    
-    // 关闭菜单
-    showSlashMenu.value = false
-    slashMenuBlockId.value = null
-    
-    // 重新聚焦到textarea
-    nextTick(() => {
-      const textarea = document.querySelector('textarea')
-      if (textarea) {
-        textarea.focus()
-      }
-    })
-  }
+  return [
+    { value: 'title', label: '标题', icon: '📰' },
+    { value: 'body', label: '正文', icon: '📝' },
+    { value: 'intro', label: '引言', icon: '💭' },
+    { value: 'outro', label: '结尾', icon: '🏁' },
+    { value: 'image_single', label: '单图', icon: '🖼️' },
+    { value: 'image_single_caption', label: '单图+注', icon: '🖼️📝' },
+    { value: 'image_double', label: '双图', icon: '🖼️🖼️' },
+    { value: 'image_double_caption', label: '双图+注', icon: '🖼️📝' }
+  ]
 }
 
 // 改变块类型
@@ -632,12 +384,6 @@ const confirmDeleteBlock = (index: number, _blockId: string) => {
     deleteBlock(index)
   }
 }
-
-// 格式化块文本显示
-const formatBlockText = (text: string) => {
-  return cleanBlockText(text)
-}
-
 // 获取图片占位符文本
 const getImagePlaceholder = (type: string) => {
   const placeholders: Record<string, string> = {
@@ -652,68 +398,6 @@ const getImagePlaceholder = (type: string) => {
 // 判断是否为图片块
 const isImageBlock = (type: string) => {
   return ['image_single', 'image_single_caption', 'image_double', 'image_double_caption'].includes(type)
-}
-
-// 编辑功能相关方法
-const startEditBlock = (blockId: string) => {
-  const block = contentBlocks.value.find(b => b.id === blockId)
-  if (block && block.text) {
-    // 添加一个小的延迟，防止快速点击导致的误触
-    setTimeout(() => {
-      editingBlockId.value = blockId
-      editingText.value = block.text
-      selectedBlockId.value = null // 清除选择状态
-
-      // 下一帧聚焦到textarea
-      nextTick(() => {
-        const textarea = document.querySelector('textarea')
-        if (textarea) {
-          textarea.focus()
-          // 将光标移动到文本末尾
-          textarea.selectionStart = textarea.selectionEnd = textarea.value.length
-        }
-      })
-    }, 50) // 50ms延迟
-  }
-}
-
-const saveBlockEdit = (blockId: string) => {
-  if (editingText.value.trim()) {
-    appStore.updateBlockText(blockId, editingText.value.trim())
-  }
-  editingBlockId.value = null
-  editingText.value = ''
-}
-
-const cancelBlockEdit = () => {
-  editingBlockId.value = null
-  editingText.value = ''
-}
-
-// 处理textarea失去焦点事件 - 防止误触
-const handleTextareaBlur = (blockId: string) => {
-  // 延迟处理，避免点击按钮时触发blur
-  setTimeout(() => {
-    // 检查当前焦点是否在按钮上
-    const activeElement = document.activeElement
-    if (activeElement && activeElement.tagName === 'BUTTON') {
-      // 如果焦点在按钮上，不处理blur事件
-      return
-    }
-    // 否则保存编辑
-    saveBlockEdit(blockId)
-  }, 150) // 150ms延迟，给点击按钮足够时间
-}
-
-// 获取不同类型文本框的样式类
-const getBlockTextareaClass = (type: string) => {
-  const classMap: Record<string, string> = {
-    'title': 'text-lg font-semibold text-center',
-    'body': 'text-base',
-    'intro': 'text-base italic',
-    'outro': 'text-base italic'
-  }
-  return classMap[type] || 'text-base'
 }
 
 // 获取不同类型的占位符文本
@@ -783,15 +467,31 @@ const updateDoubleCaption = (block: ContentBlock, index: number, newValue: strin
 // 组件挂载时如果没有内容块，返回第一步
 onMounted(() => {
   if (contentBlocks.value.length === 0 && !appStore.rawText) {
+    const savedDraft = localStorage.getItem(LOCAL_DRAFT_KEY)
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft)
+        if (parsed?.rawText) appStore.setRawText(parsed.rawText)
+        if (parsed?.styleConfig) appStore.setStyleConfig(parsed.styleConfig)
+        if (Array.isArray(parsed?.contentBlocks) && parsed.contentBlocks.length > 0) {
+          const restoredBlocks = parsed.contentBlocks.map((block: any, index: number) => ({
+            id: `local_${index}_${Date.now()}`,
+            type: block.type || 'body',
+            text: block.text || '',
+            source: 'local',
+            meta: block.meta || {}
+          }))
+          appStore.setContentBlocks(restoredBlocks)
+        }
+      } catch (e) {
+        console.warn('[Step2] Failed to restore local draft:', e)
+      }
+    }
+  }
+
+  if (contentBlocks.value.length === 0 && !appStore.rawText) {
     router.push('/step1')
   }
-  
-  // 点击外部关闭下拉菜单和斜杠菜单
-  const handleClickOutside = () => {
-    showTypeDropdown.value = null
-    showSlashMenu.value = false
-  }
-  document.addEventListener('click', handleClickOutside)
 })
 
 // AI 生成图像 (调用后端 - 火山引擎豆包)
@@ -838,22 +538,6 @@ const generateAiImage = async (block: ContentBlock) => {
   }
 }
 
-// 保存草稿到后端 - 清理数据，只保存必要字段
-const saveDraft = async () => {
-  if (contentBlocks.value.length === 0 || isSaving.value) return
-  
-  isSaving.value = true
-  
-  try {
-    await ArticleService.saveCurrentAsDraft()
-    toast.success('草稿已保存！')
-  } catch (error: any) {
-    console.error('保存失败:', error)
-    toast.error('保存失败: ' + error.message)
-  } finally {
-    isSaving.value = false
-  }
-}
 </script>
 
 <style scoped>

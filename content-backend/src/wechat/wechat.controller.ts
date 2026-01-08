@@ -5,7 +5,6 @@ import {
   UseInterceptors,
   UploadedFile,
   Body,
-  UseGuards,
   Req,
   HttpCode,
   HttpStatus,
@@ -17,11 +16,9 @@ import {
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WechatService } from './wechat.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   ApiTags,
   ApiOperation,
-  ApiBearerAuth,
   ApiResponse,
   ApiProperty,
 } from '@nestjs/swagger';
@@ -42,6 +39,14 @@ export class WechatController {
     private readonly wechatService: WechatService,
     private readonly configService: ConfigService,
   ) {}
+
+  private resolveTenantId(req: any): string {
+    return (
+      req.user?.tenantId ||
+      this.configService.get<string>('DEFAULT_TENANT_ID') ||
+      '00000000-0000-0000-0000-000000000001'
+    );
+  }
 
   /**
    * 微信服务器 VerifyTicket 推送接口 (由微信后台配置)
@@ -94,10 +99,8 @@ export class WechatController {
 
   /**
    * 生成预授权码 PreAuthCode
-   */
+  */
   @Post('pre-auth-code')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: '生成预授权码',
     description: '获取用于引导用户扫码授权的 pre_auth_code',
@@ -121,10 +124,8 @@ export class WechatController {
 
   /**
    * 授权回调 - 接收 auth_code 并换取令牌
-   */
+  */
   @Post('exchange-auth')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: '通过 auth_code 换取令牌',
     description: '在用户扫码授权回调后调用，完成租户与公众号的关联',
@@ -132,7 +133,7 @@ export class WechatController {
   @ApiResponse({ status: 201, description: '授权成功' })
   async exchangeAuth(@Req() req, @Body() body: ExchangeAuthDto) {
     try {
-      const tenantId = req.user.tenantId;
+      const tenantId = this.resolveTenantId(req);
       const result = await this.wechatService.exchangeAuthCode(
         tenantId,
         body.code,
@@ -145,10 +146,8 @@ export class WechatController {
 
   /**
    * 获取租户已授权的公众号列表
-   */
+  */
   @Get('authorized-accounts')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: '获取已授权账号列表',
     description: '获取当前租户下所有已授权的微信公众号及其基本信息',
@@ -156,7 +155,7 @@ export class WechatController {
   @ApiResponse({ status: 200, description: '返回列表' })
   async getAuthorizedAccounts(@Req() req) {
     try {
-      const tenantId = req.user.tenantId;
+      const tenantId = this.resolveTenantId(req);
       const accounts = await this.wechatService.getAuthorizedAccounts(tenantId);
       return { success: true, data: accounts };
     } catch (error) {
@@ -167,21 +166,17 @@ export class WechatController {
   // === 兼容旧接口的发布/上传方法 (已改造为使用 AuthorizerToken) ===
 
   @Get('status')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: '检查微信授权状态 (旧接口兼容)',
     description: '获取当前租户下所有已授权的微信账号',
   })
   @ApiResponse({ status: 200, description: '返回授权列表' })
   async checkStatus(@Req() req) {
-    const tenantId = req.user.tenantId;
+    const tenantId = this.resolveTenantId(req);
     return await this.wechatService.getAuthorizedAccounts(tenantId);
   }
 
   @Post('upload')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: '上传图片到微信临时素材',
     description: '为文章发布准备图片资源',
@@ -192,7 +187,7 @@ export class WechatController {
     try {
       if (!image) return { success: false, error: '没有上传图片文件' };
 
-      const tenantId = req.user.tenantId;
+      const tenantId = this.resolveTenantId(req);
       const result = await this.wechatService.uploadImage(tenantId, image);
 
       return { success: true, data: result };
@@ -202,8 +197,6 @@ export class WechatController {
   }
 
   @Post('draft')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: '创建微信草稿',
     description: '将文章内容同步到微信公众号草稿箱',
@@ -211,7 +204,7 @@ export class WechatController {
   @ApiResponse({ status: 201, description: '草稿创建成功' })
   async createDraft(@Body() articleData: any, @Req() req) {
     try {
-      const tenantId = req.user.tenantId;
+      const tenantId = this.resolveTenantId(req);
       const result = await this.wechatService.createDraft(
         tenantId,
         articleData,
@@ -224,8 +217,6 @@ export class WechatController {
   }
 
   @Delete(':appId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: '解约/移除微信账号授权',
     description: '从本系统中逻辑移除对该公众号的授权，不再展示',
@@ -233,7 +224,7 @@ export class WechatController {
   @ApiResponse({ status: 200, description: '移除成功' })
   async removeAuth(@Param('appId') appId: string, @Req() req) {
     try {
-      const tenantId = req.user.tenantId;
+      const tenantId = this.resolveTenantId(req);
       await this.wechatService.removeAuth(tenantId, appId);
       return { success: true };
     } catch (error) {

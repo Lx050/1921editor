@@ -71,28 +71,11 @@ api.interceptors.response.use(
 
     // 🔒 统一错误处理
     if (error.response?.status === 401) {
-      // 未授权：可能是 Token 过期或无效
-      console.error('⚠️ 认证失效，正在重新登录...')
-
-      // 清除本地 Token
+      console.error('Unauthorized request')
       if (typeof window !== 'undefined') {
         tokenStorage.clearAuth()
-
-        // 只有不在回调路径时才重定向，避免死循环
-        if (!window.location.pathname.includes('/auth/callback')) {
-          // 保存当前路径用于登录后跳转
-          const redirectPath = window.location.pathname + window.location.search
-          if (redirectPath !== '/' && redirectPath !== '') {
-            sessionStorage.setItem('redirect_after_login', redirectPath)
-          }
-
-          // 显示提示（如果有element-plus）
-          if (window.ElMessage) {
-            window.ElMessage.warning('登录已过期，请重新登录')
-          }
-
-          // 跳转到首页（会触发登录）
-          window.location.href = '/'
+        if (window.ElMessage) {
+          window.ElMessage.warning('Unauthorized request')
         }
       }
     } else if (error.response?.status === 403) {

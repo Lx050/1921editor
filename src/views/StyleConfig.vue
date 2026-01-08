@@ -350,95 +350,35 @@ const loadStyles = () => {
 // 保存草稿并返回首页
 const saveDraftAndGoHome = async () => {
   if (isSaving.value) return
-  
+
   isSaving.value = true
-  
+
   try {
-    const articleId = appStore.currentArticleId
     const contentBlocks = appStore.contentBlocks
-    
-    if (!articleId && (!contentBlocks || contentBlocks.length === 0)) {
-      // 没有文章也没有内容，直接返回
+
+    if (!contentBlocks || contentBlocks.length === 0) {
       router.push('/')
       return
     }
-    
-    // 清理内容块
+
     const cleanedBlocks = contentBlocks.map(block => ({
       type: block.type,
       text: block.text || '',
       ...(block.meta?.aiImageUrl && { aiImageUrl: block.meta.aiImageUrl })
     }))
-    const cleanContent = JSON.stringify(cleanedBlocks)
-    
-    if (articleId) {
-      // 更新现有文章的内容
-      const contentResponse = await fetch(`/api/articles/${articleId}/content`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify({ content: cleanContent })
-      })
-      
-      if (!contentResponse.ok) {
-        throw new Error('保存内容失败')
-      }
-      
-      // 同时保存样式配置
-      if (appStore.styleConfig) {
-        await fetch(`/api/articles/${articleId}/config`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-          },
-          body: JSON.stringify({ config: appStore.styleConfig })
-        })
-      }
-      
-      toast.success('草稿已保存！')
-    } else if (contentBlocks.length > 0) {
-      // 创建新文章
-      const title = contentBlocks.find(b => b.type === 'title')?.text || '未命名文章'
-      
-      const createResponse = await fetch('/api/articles', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify({ 
-          title,
-          config: appStore.styleConfig
-        })
-      })
-      
-      if (!createResponse.ok) {
-        throw new Error('创建文章失败')
-      }
-      
-      const data = await createResponse.json()
-      appStore.setCurrentArticleId(data.id)
-      
-      // 更新内容
-      await fetch(`/api/articles/${data.id}/content`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify({ content: cleanContent })
-      })
-      
-      toast.success('文章已创建并保存！')
+
+    const payload = {
+      rawText: appStore.rawText,
+      contentBlocks: cleanedBlocks,
+      styleConfig: appStore.styleConfig
     }
-    
+
+    localStorage.setItem('local_step2_draft', JSON.stringify(payload))
+    toast.success('?????????')
     router.push('/')
   } catch (error) {
-    console.error('保存失败:', error)
-    toast.error('保存失败: ' + error.message)
+    console.error('????:', error)
+    toast.error('????: ' + error.message)
   } finally {
     isSaving.value = false
   }

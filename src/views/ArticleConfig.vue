@@ -53,8 +53,8 @@
           </div>
         </div>
 
-        <!-- WeChat Account Selection (if logged in) -->
-        <div v-if="userStore.isLoggedIn && configStore.savedAccounts.length > 0" class="bg-white shadow rounded-lg p-6">
+        <!-- WeChat Account Selection -->
+        <div v-if="configStore.savedAccounts.length > 0" class="bg-white shadow rounded-lg p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">选择公众号</h3>
           <div class="space-y-2">
             <div
@@ -72,28 +72,6 @@
           </div>
         </div>
 
-        <!-- Login Prompt (if not logged in) -->
-        <div v-if="!userStore.isLoggedIn" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-              </svg>
-            </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-yellow-800">需要登录</h3>
-              <div class="mt-2 text-sm text-yellow-700">
-                <p>为了保存配置和发布文章，请先完成飞书登录。</p>
-              </div>
-              <div class="mt-4">
-                <button @click="login" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                  飞书登录
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Action Buttons -->
         <div class="flex justify-between">
           <button @click="router.push('/')" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
@@ -101,7 +79,7 @@
           </button>
           <button
             @click="startProcessing"
-            :disabled="!selectedMode || (!userStore.isLoggedIn && configStore.savedAccounts.length === 0)"
+            :disabled="!selectedMode"
             class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             开始处理
@@ -116,14 +94,12 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '../stores/configStore'
-import { useUserStore } from '../stores/userStore'
 import { useAppStore } from '../stores/appStore'
 import { getArticle, type Article } from '../api/article'
 
 const route = useRoute()
 const router = useRouter()
 const configStore = useConfigStore()
-const userStore = useUserStore()
 const appStore = useAppStore()
 
 const article = ref<Article | null>(null)
@@ -141,11 +117,6 @@ const modes = [
 const maskAppId = (id: string) => {
   if (!id) return ''
   return id.length > 8 ? id.substring(0, 4) + '****' + id.substring(id.length - 4) : id
-}
-
-const login = () => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
-  window.location.href = `${baseUrl}/auth/feishu/login`
 }
 
 const startProcessing = async () => {
@@ -245,8 +216,9 @@ onMounted(async () => {
     article.value = await getArticle(articleId)
     
     // Pre-select default account if logged in
-    if (userStore.isLoggedIn && configStore.savedAccounts.length > 0) {
-      selectedAccountId.value = configStore.wechatConfig.id || configStore.savedAccounts[0].id
+    if (configStore.savedAccounts.length > 0) {
+      selectedAccountId.value =
+        configStore.wechatConfig.id || configStore.savedAccounts[0].id
     }
   } catch (err: any) {
     error.value = err.response?.data?.message || '无法加载文章信息'

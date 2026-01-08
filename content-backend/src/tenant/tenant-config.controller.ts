@@ -3,12 +3,11 @@ import {
   Get,
   Post,
   Body,
-  UseGuards,
   Request,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TenantConfigService } from './tenant-config.service';
+import { ConfigService } from '@nestjs/config';
 
 class ConfigureTableDto {
   tableUrl: string;
@@ -16,9 +15,18 @@ class ConfigureTableDto {
 
 @ApiTags('tenant-config')
 @Controller('tenant/config')
-@UseGuards(AuthGuard('jwt'))
 export class TenantConfigController {
-  constructor(private tenantConfigService: TenantConfigService) {}
+  constructor(
+    private tenantConfigService: TenantConfigService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  private getDefaultTenantId(): string {
+    return (
+      this.configService.get<string>('DEFAULT_TENANT_ID') ||
+      '00000000-0000-0000-0000-000000000001'
+    );
+  }
 
   /**
    * 租户自助配置人员管理表
@@ -50,7 +58,7 @@ export class TenantConfigController {
     },
   })
   async configureUserTable(@Request() req, @Body() dto: ConfigureTableDto) {
-    const tenantId = req.user.tenantId;
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
 
     const tenant = await this.tenantConfigService.configureTenantUserTable(
       tenantId,
@@ -72,7 +80,7 @@ export class TenantConfigController {
   @Post('article-table')
   @ApiOperation({ summary: '配置文章管理表（可选）' })
   async configureArticleTable(@Request() req, @Body() dto: ConfigureTableDto) {
-    const tenantId = req.user.tenantId;
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
 
     const tenant = await this.tenantConfigService.configureTenantArticleTable(
       tenantId,
@@ -94,7 +102,7 @@ export class TenantConfigController {
   @Get()
   @ApiOperation({ summary: '获取租户配置' })
   async getTenantConfig(@Request() req) {
-    const tenantId = req.user.tenantId;
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
 
     const tenant = await this.tenantConfigService.getTenant(tenantId);
 

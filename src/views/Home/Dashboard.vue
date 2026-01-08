@@ -446,20 +446,17 @@ const continueEdit = async (id: string) => {
       console.log('[Dashboard] ⚠️ 文章无内容')
     }
     
-    // 4. 根据状态直接跳转到对应步骤
+    // 4. 统一走 Step3（已编辑），状态不再作为跳转依据
     const status = article.status
-    console.log('[Dashboard] 决策参数:', { status, hasContentBlocks })
-    
-    if (status === 'ADJUSTED' || status === 'PUBLISHED') {
-      // 已调整或已发布 -> 直接进入 Step3（带文章ID以加载保存的图片）
+    const hasImages = Array.isArray(article.images) && article.images.length > 0
+    const hasContent = Boolean(article.content) || hasContentBlocks || hasImages
+
+    console.log('[Dashboard] 决策参数:', { status, hasContentBlocks, hasImages, hasContent })
+
+    if (hasContent) {
       console.log('[Dashboard] → 跳转到 Step3')
       router.push('/step3/' + article.id)
-    } else if (status === 'PARSED' || hasContentBlocks) {
-      // 已解析或有内容块 -> 直接进入 Step2
-      console.log('[Dashboard] → 跳转到 Step2')
-      router.push('/step2')
     } else {
-      // 草稿状态且无内容 -> Step1
       console.log('[Dashboard] → 跳转到 Step1')
       router.push('/step1')
     }
@@ -472,23 +469,24 @@ const continueEdit = async (id: string) => {
 }
 
 const getStatusClass = (status: string) => {
+  const edited = 'bg-blue-100/80 text-blue-700 border-blue-200'
   const map: Record<string, string> = {
-    'DRAFT': 'bg-gray-100/80 text-gray-700 border-gray-200',
-    'PARSED': 'bg-yellow-100/80 text-yellow-700 border-yellow-200',
-    'ADJUSTED': 'bg-blue-100/80 text-blue-700 border-blue-200',
+    'DRAFT': edited,
+    'PARSED': edited,
+    'ADJUSTED': edited,
     'PUBLISHED': 'bg-green-100/80 text-green-700 border-green-200'
   }
-  return map[status] || 'bg-gray-100/80 text-gray-700 border-gray-200'
+  return map[status] || edited
 }
 
 const formatStatus = (status: string) => {
   const map: Record<string, string> = {
-    'DRAFT': '草稿',
-    'PARSED': '已解析',
-    'ADJUSTED': '已调整',
+    'DRAFT': '已编辑',
+    'PARSED': '已编辑',
+    'ADJUSTED': '已编辑',
     'PUBLISHED': '已发布'
   }
-  return map[status] || status
+  return map[status] || '已编辑'
 }
 
 const formatDate = (dateStr: string) => {

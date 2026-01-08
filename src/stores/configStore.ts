@@ -197,9 +197,6 @@ const THREE_RURAL_FOOTER = `
 	<section class="_135editor" data-doubao-translate-traverse-mark="1">
 		<mp-style-type data-value="10000"></mp-style-type>
 		<p>
-			“”
-		</p>
-		<p>
 			<br/>
 		</p>
 	</section>
@@ -305,12 +302,6 @@ const REPRINT_FOOTER = `
 	</p>
 	<section class="_135editor" data-doubao-translate-traverse-mark="1">
 		<mp-style-type data-value="10000"></mp-style-type>
-		<p>
-			“”
-		</p>
-		<p>
-			<br/>
-		</p>
 	</section>
 </section>
 <blockquote>

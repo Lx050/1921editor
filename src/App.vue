@@ -132,7 +132,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from './stores/appStore'
 import ResourcePreloader from './components/ResourcePreloader.vue'
 import Toast from './components/Toast.vue'
-import { ArticleService } from './services/articleService'
 
 const route = useRoute()
 const router = useRouter()
@@ -155,40 +154,7 @@ const currentStep = computed(() => {
 })
 
 const goToHome = () => {
-  // 检查是否有需要保存的内容
-  const hasContent = appStore.rawText || (appStore.contentBlocks && appStore.contentBlocks.length > 0)
-
-  // 如果没有内容，直接返回
-  if (!hasContent) {
-    router.push('/')
-    return
-  }
-
-  // 有内容时提供三个选项
-  const action = confirm('当前有未保存的内容，请选择操作：\n\n点击"确定" - 保存为草稿并返回首页\n点击"取消" - 直接返回首页（不保存）')
-
-  if (action) {
-    // 用户选择保存
-    saveAsDraftAndGoHome()
-  } else {
-    // 用户选择不保存，直接返回
-    router.push('/')
-  }
-}
-
-// 保存草稿并返回首页
-const saveAsDraftAndGoHome = async () => {
-  try {
-    await ArticleService.saveCurrentAsDraft()
-    // 保存成功后返回首页
-    router.push('/')
-  } catch (error: any) {
-    // 错误已经在 service 中处理并弹出了 toast
-    // 即使保存失败，也允许用户选择是否返回首页
-    if (confirm(`${error.message}，是否仍要返回首页？`)) {
-      router.push('/')
-    }
-  }
+  router.push('/')
 }
 </script>
 
