@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class EmailAuthAndInviteCode1736320000000
-  implements MigrationInterface
-{
+export class EmailAuthAndInviteCode1736320000000 implements MigrationInterface {
   name = 'EmailAuthAndInviteCode1736320000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -14,7 +12,9 @@ export class EmailAuthAndInviteCode1736320000000
     ); // (tenantId, feishuId)
 
     // 2. 删除 feishuId 列
-    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN IF EXISTS "feishuId"`);
+    await queryRunner.query(
+      `ALTER TABLE "users" DROP COLUMN IF EXISTS "feishuId"`,
+    );
 
     // 3. 处理现有的 null email 值（先删除这些用户，因为他们使用飞书登录）
     await queryRunner.query(`DELETE FROM "users" WHERE "email" IS NULL`);
@@ -171,9 +171,7 @@ export class EmailAuthAndInviteCode1736320000000
     await queryRunner.query(
       `DROP INDEX IF EXISTS "public"."IDX_users_tenant_email"`,
     );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "public"."IDX_users_email"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "public"."IDX_users_email"`);
 
     await queryRunner.query(
       `ALTER TABLE "users" DROP COLUMN IF EXISTS "resetPasswordExpires"`,

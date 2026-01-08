@@ -99,7 +99,7 @@ export class WechatController {
 
   /**
    * 生成预授权码 PreAuthCode
-  */
+   */
   @Post('pre-auth-code')
   @ApiOperation({
     summary: '生成预授权码',
@@ -124,7 +124,7 @@ export class WechatController {
 
   /**
    * 授权回调 - 接收 auth_code 并换取令牌
-  */
+   */
   @Post('exchange-auth')
   @ApiOperation({
     summary: '通过 auth_code 换取令牌',
@@ -146,7 +146,7 @@ export class WechatController {
 
   /**
    * 获取租户已授权的公众号列表
-  */
+   */
   @Get('authorized-accounts')
   @ApiOperation({
     summary: '获取已授权账号列表',

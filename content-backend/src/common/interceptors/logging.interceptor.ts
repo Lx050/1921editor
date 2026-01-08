@@ -63,25 +63,28 @@ export class LoggingInterceptor implements NestInterceptor {
 
     // 根据错误类型记录不同的安全事件
     if (error.status === 401) {
-      this.securityLogger.logSecurityEvent({
-        type: SecurityEventType.UNAUTHORIZED_ACCESS,
-        ip,
-        userAgent,
-        endpoint: url,
-        method,
-        details: { message: error.message },
-        timestamp: new Date(),
-      });
+      // 检查是否是登录失败
+      if (url.includes('/auth/login')) {
+        this.securityLogger.logLoginFailed(
+          ip,
+          error.message || 'Invalid credentials',
+          userAgent,
+        );
+      } else {
+        this.securityLogger.logSecurityEvent({
+          type: SecurityEventType.UNAUTHORIZED_ACCESS,
+          ip,
+          userAgent,
+          endpoint: url,
+          method,
+          details: { message: error.message },
+          timestamp: new Date(),
+        });
+      }
     } else if (error.status === 403) {
       this.securityLogger.logAccessDenied(request.user?.id, ip, url, method);
     } else if (error.status === 429) {
       this.securityLogger.logRateLimitExceeded(ip, url, error.limit || 10);
-    } else if (url.includes('/auth/login') && error.status === 401) {
-      this.securityLogger.logLoginFailed(
-        ip,
-        error.message || 'Invalid credentials',
-        userAgent,
-      );
     }
 
     // 检测潜在的攻击模式

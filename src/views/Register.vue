@@ -126,13 +126,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '../stores/userStore'
 import { register, type RegisterDto } from '../api/auth'
 import toast from '../composables/useToast'
 
 const router = useRouter()
-const userStore = useUserStore()
-
 const formData = ref<RegisterDto>({
   email: '',
   password: '',
@@ -173,9 +170,9 @@ const handleRegister = async () => {
   loading.value = true
 
   try {
-    const response = await register(formData.value)
+    await register(formData.value)
 
-    toast.success(response.message || '注册成功！请查收验证邮件')
+    toast.success('注册成功！请查收验证邮件')
 
     // 注册成功后跳转到登录页面
     // 因为注册后需要验证邮箱才能登录

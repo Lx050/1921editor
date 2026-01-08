@@ -131,12 +131,13 @@ const handleLogin = async () => {
       emailVerified: response.user.emailVerified
     })
 
-    // 保存租户信息 - tenant 嵌套在 user 里
-    if (response.user.tenant) {
+    // 保存租户信息 - tenant 在根对象或者 user 里（兼容处理）
+    const tenant = response.tenant || (response.user as any).tenant
+    if (tenant) {
       userStore.setCurrentTenant({
-        id: response.user.tenant.id,
-        name: response.user.tenant.name,
-        slug: response.user.tenant.slug
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug
       })
     }
 

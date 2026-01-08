@@ -23,7 +23,8 @@ export class EmailService {
   private initializeTransporter(): void {
     const host = this.configService.get<string>('EMAIL_HOST');
     const port = parseInt(this.configService.get<string>('EMAIL_PORT', '465'));
-    const secure = this.configService.get<string>('EMAIL_SECURE', 'true') === 'true';
+    const secure =
+      this.configService.get<string>('EMAIL_SECURE', 'true') === 'true';
     const user = this.configService.get<string>('EMAIL_USER');
     const pass = this.configService.get<string>('EMAIL_PASS');
 
@@ -46,7 +47,8 @@ export class EmailService {
    * 获取发件人信息
    */
   private getFromAddress(): string {
-    const fromName = this.configService.get<string>('EMAIL_FROM_NAME') || '内容管理系统';
+    const fromName =
+      this.configService.get<string>('EMAIL_FROM_NAME') || '内容管理系统';
     const fromEmail = this.configService.get<string>('EMAIL_USER');
     return `"${fromName}" <${fromEmail}>`;
   }

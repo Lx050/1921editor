@@ -1,9 +1,9 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class SeedDefaultStyles1736431000000 implements MigrationInterface {
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // 插入默认标题样式
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // 插入默认标题样式
+    await queryRunner.query(`
       INSERT INTO style_templates (id, name, type, preview, full_example, is_custom, tenant_id, owner_id) VALUES
       ('10000000-0000-0000-0000-000000000001', 'Mac窗口标题', 'title', 
       '<div style="background: #f0f0f0; border-radius: 6px; padding: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"><div style="display: flex; gap: 4px; margin-bottom: 6px;"><div style="width: 8px; height: 8px; border-radius: 50%; background: #ff5f56;"></div><div style="width: 8px; height: 8px; border-radius: 50%; background: #ffbd2e;"></div><div style="width: 8px; height: 8px; border-radius: 50%; background: #27c93f;"></div></div><div style="height: 4px; background: #ddd; border-radius: 2px; width: 60%;"></div></div>',
@@ -25,9 +25,11 @@ export class SeedDefaultStyles1736431000000 implements MigrationInterface {
       '<section class="_135editor" data-role="paragraph" style="margin: 30px 0; text-align: center;"><span style="font-size: 60px; color: #f0f0f0; font-family: Arial, sans-serif; line-height: 0.5; display: block;">“</span><section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #333333; background-color: transparent; margin: -20px 20px 0;"><p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify"><span style="font-weight: 400; color: #000000; text-shadow: none; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, ''Microsoft YaHei'', SimHei, STHeiti;">{{CONTENT}}</span></p></section><span style="font-size: 60px; color: #f0f0f0; font-family: Arial, sans-serif; line-height: 0.5; display: block; margin-top: 10px;">”</span></section>',
       false, NULL, NULL)
     `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DELETE FROM style_templates WHERE is_custom = false`);
-    }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `DELETE FROM style_templates WHERE is_custom = false`,
+    );
+  }
 }

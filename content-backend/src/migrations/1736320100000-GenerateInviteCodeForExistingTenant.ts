@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class GenerateInviteCodeForExistingTenant1736320100000
-  implements MigrationInterface
-{
+export class GenerateInviteCodeForExistingTenant1736320100000 implements MigrationInterface {
   name = 'GenerateInviteCodeForExistingTenant1736320100000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -14,11 +12,14 @@ export class GenerateInviteCodeForExistingTenant1736320100000
       inviteCode += chars.charAt(randomIndex);
     }
 
-    await queryRunner.query(`
+    await queryRunner.query(
+      `
       UPDATE tenants
       SET "inviteCode" = $1, "inviteCodeExpires" = NULL
       WHERE "inviteCode" IS NULL
-    `, [inviteCode]);
+    `,
+      [inviteCode],
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

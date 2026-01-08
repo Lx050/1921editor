@@ -106,7 +106,8 @@ export class AuthService {
 
     // 4. 创建用户
     const hashedPassword = await this.passwordHashService.hash(password);
-    const verificationToken = this.tokenService.generateEmailVerificationToken();
+    const verificationToken =
+      this.tokenService.generateEmailVerificationToken();
 
     const user = this.userRepository.create({
       tenantId: tenant.id,
@@ -338,7 +339,10 @@ export class AuthService {
     await this.passwordResetRepository.save(resetToken);
 
     // 8. 发送密码已修改通知
-    await this.emailService.sendPasswordChangedNotification(user.email, user.name);
+    await this.emailService.sendPasswordChangedNotification(
+      user.email,
+      user.name,
+    );
 
     this.logger.log(`密码重置成功: ${user.email}`);
 
@@ -396,7 +400,10 @@ export class AuthService {
     await this.userRepository.save(user);
 
     // 6. 发送密码已修改通知
-    await this.emailService.sendPasswordChangedNotification(user.email, user.name);
+    await this.emailService.sendPasswordChangedNotification(
+      user.email,
+      user.name,
+    );
 
     this.logger.log(`密码修改成功: ${user.email}`);
 

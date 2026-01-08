@@ -168,9 +168,7 @@ export class ArticleService {
       status: ArticleStatus.ADJUSTED,
       updatedAt: new Date(),
     });
-    this.logger.log(
-      `[updateStep3Content] 更新成功 - ID: ${id}, 状�? ADJUSTED`,
-    );
+    this.logger.log(`[updateStep3Content] 更新成功 - ID: ${id}, 状�? ADJUSTED`);
     this.triggerSync(id);
     return this.findOne(id);
   }
@@ -227,9 +225,7 @@ export class ArticleService {
       order: { createdAt: 'DESC' },
     });
 
-    this.logger.log(
-      `📋 找到 ${articles.length} 篇文章（租户共享）`,
-    );
+    this.logger.log(`📋 找到 ${articles.length} 篇文章（租户共享）`);
 
     return articles;
   }
@@ -248,9 +244,10 @@ export class ArticleService {
    */
   async saveDraft(id: string, user?: User) {
     const article = await this.articleRepository.findOne({
-      where: user?.id && user?.tenantId
-        ? { id, ownerId: user.id, tenantId: user.tenantId }
-        : { id },
+      where:
+        user?.id && user?.tenantId
+          ? { id, ownerId: user.id, tenantId: user.tenantId }
+          : { id },
     });
 
     if (!article) {
@@ -263,7 +260,9 @@ export class ArticleService {
         status: ArticleStatus.DRAFT,
         updatedAt: new Date(),
       });
-      this.logger.log(`Article ${id} saved as draft by user ${user?.id ?? 'anonymous'}`);
+      this.logger.log(
+        `Article ${id} saved as draft by user ${user?.id ?? 'anonymous'}`,
+      );
     } else {
       // 更新修改时间
       await this.articleRepository.update(id, {
@@ -290,4 +289,3 @@ export class ArticleService {
     this.logger.log(`Article ${id} soft deleted`);
   }
 }
-

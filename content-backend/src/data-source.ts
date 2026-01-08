@@ -19,13 +19,7 @@ export const AppDataSource = new DataSource({
   url: process.env.DATABASE_URL || configService.get<string>('DATABASE_URL'),
   synchronize: false, // 必须关闭
   logging: process.env.NODE_ENV === 'development',
-  entities: [
-    User,
-    Article,
-    Tenant,
-    EmailVerificationToken,
-    PasswordResetToken,
-  ],
+  entities: [User, Article, Tenant, EmailVerificationToken, PasswordResetToken],
   migrations: [path.join(__dirname, 'migrations/*{.ts,.js}')],
   subscribers: [path.join(__dirname, 'subscribers/*{.ts,.js}')],
 });

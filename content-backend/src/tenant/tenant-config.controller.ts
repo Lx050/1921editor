@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Request,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TenantConfigService } from './tenant-config.service';
 import { ConfigService } from '@nestjs/config';

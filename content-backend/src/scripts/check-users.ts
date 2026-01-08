@@ -14,14 +14,14 @@ async function checkAndCreateTestUser() {
   // 检查现有用户
   const users = await userRepo.find();
   console.log(`\n现有用户数量: ${users.length}`);
-  users.forEach(u => {
+  users.forEach((u) => {
     console.log(`- ${u.email} (${u.name}) - 验证状态: ${u.emailVerified}`);
   });
 
   // 检查租户
   const tenants = await tenantRepo.find();
   console.log(`\n现有租户数量: ${tenants.length}`);
-  tenants.forEach(t => {
+  tenants.forEach((t) => {
     console.log(`- ${t.name} (${t.slug}) - 邀请码: ${t.inviteCode || '无'}`);
   });
 

@@ -523,12 +523,7 @@ const goToPreviousStep = () => {
   router.push('/step2')
 }
 
-const startNew = () => {
-  if (confirm('确定要放弃当前草稿，开始解析新文章吗？')) {
-    appStore.resetApp()
-    router.push('/step1')
-  }
-}
+
 
 const updatePreviewHtmlRef = () => {
   const html = getCurrentPreviewHtmlString()

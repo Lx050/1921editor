@@ -80,11 +80,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { verifyEmail, type VerifyEmailDto } from '../api/auth'
 import toast from '../composables/useToast'
 
-const router = useRouter()
 const route = useRoute()
 
 const loading = ref(true)

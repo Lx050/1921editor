@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { styleService, StyleTemplate } from '../services/styleService';
+// @ts-ignore
 import { getAllStyles, updateStyle as updateLocalStorageStyle, deleteStyle as deleteLocalStorageStyle } from '../styles/styleStorage';
 import { useUserStore } from './userStore';
 

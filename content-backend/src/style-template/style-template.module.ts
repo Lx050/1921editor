@@ -5,9 +5,9 @@ import { StyleTemplateService } from './style-template.service';
 import { StyleTemplateController } from './style-template.controller';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([StyleTemplate])],
-    controllers: [StyleTemplateController],
-    providers: [StyleTemplateService],
-    exports: [StyleTemplateService],
+  imports: [TypeOrmModule.forFeature([StyleTemplate])],
+  controllers: [StyleTemplateController],
+  providers: [StyleTemplateService],
+  exports: [StyleTemplateService],
 })
-export class StyleTemplateModule { }
+export class StyleTemplateModule {}

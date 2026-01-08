@@ -8,10 +8,7 @@ import { User } from '../entities/user.entity';
 import { TenantModule } from '../tenant/tenant.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Article, User]),
-    TenantModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Article, User]), TenantModule],
   controllers: [ArticleController],
   providers: [ArticleService, FileCleanupService],
   exports: [ArticleService],

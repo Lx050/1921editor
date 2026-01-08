@@ -128,8 +128,7 @@ export class SystemInitService {
         this.configService.get<string>('INIT_ADMIN_EMAIL') ||
         'admin@example.com',
       adminPassword:
-        this.configService.get<string>('INIT_ADMIN_PASSWORD') ||
-        'Admin123456',
+        this.configService.get<string>('INIT_ADMIN_PASSWORD') || 'Admin123456',
       adminName:
         this.configService.get<string>('INIT_ADMIN_NAME') || '系统管理员',
       tenantName:

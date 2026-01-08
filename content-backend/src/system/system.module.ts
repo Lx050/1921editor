@@ -9,16 +9,9 @@ import { InviteCodeService } from '../services/invite-code.service';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Tenant, User]),
-    ConfigModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Tenant, User]), ConfigModule],
   controllers: [SystemInitController],
-  providers: [
-    SystemInitService,
-    PasswordHashService,
-    InviteCodeService,
-  ],
+  providers: [SystemInitService, PasswordHashService, InviteCodeService],
   exports: [SystemInitService],
 })
 export class SystemModule {}
