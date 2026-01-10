@@ -112,7 +112,9 @@ export class AuthService {
     const defaultTenant = await this.resolveDefaultTenant();
     if (defaultTenant && defaultTenant.isActive) {
       await this.ensureMembership(userId, defaultTenant.id);
-      const hasDefault = tenants.some((tenant) => tenant.id === defaultTenant.id);
+      const hasDefault = tenants.some(
+        (tenant) => tenant.id === defaultTenant.id,
+      );
       if (!hasDefault) {
         tenants.unshift(defaultTenant);
       }
@@ -202,7 +204,9 @@ export class AuthService {
 
     if (createTenant) {
       if (!tenantName || !tenantSlug || !wechatAppId || !wechatAppSecret) {
-        throw new BadRequestException('创建组织需填写组织名称、标识与公众号密钥');
+        throw new BadRequestException(
+          '创建组织需填写组织名称、标识与公众号密钥',
+        );
       }
 
       const existingTenant = await this.tenantRepository.findOne({
@@ -277,7 +281,10 @@ export class AuthService {
       }
 
       let shouldSave = false;
-      if (targetRole === UserRole.ADMIN && existingUser.role !== UserRole.ADMIN) {
+      if (
+        targetRole === UserRole.ADMIN &&
+        existingUser.role !== UserRole.ADMIN
+      ) {
         existingUser.role = UserRole.ADMIN;
         shouldSave = true;
       }
@@ -632,7 +639,7 @@ export class AuthService {
       throw new BadRequestException('未找到可用的组织');
     }
 
-    let activeTenant =
+    const activeTenant =
       tenants.find((item) => item.id === user.tenantId) || tenants[0];
 
     if (!activeTenant) {
@@ -820,5 +827,4 @@ export class AuthService {
 
     return { message: '密码修改成功' };
   }
-
 }

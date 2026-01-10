@@ -129,7 +129,8 @@ export class TenantController {
       throw new ForbiddenException('Only admin can create tenants');
     }
 
-    const inviteCode = dto.inviteCode?.trim() || this.inviteCodeService.generate();
+    const inviteCode =
+      dto.inviteCode?.trim() || this.inviteCodeService.generate();
     const inviteCodeExpires = dto.inviteCodeExpires
       ? new Date(dto.inviteCodeExpires)
       : null;

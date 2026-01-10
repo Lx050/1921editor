@@ -14,7 +14,12 @@ import {
   UsePipes,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ArticleService } from './article.service';
 import {
   CreateArticleDto,
@@ -123,7 +128,12 @@ export class ArticleController {
     @Request() req: { user: any },
   ) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
-    return this.articleService.updateStep1(id, dto.config, req.user?.id, tenantId);
+    return this.articleService.updateStep1(
+      id,
+      dto.config,
+      req.user?.id,
+      tenantId,
+    );
   }
 
   @Put(':id/content')
@@ -135,7 +145,12 @@ export class ArticleController {
     @Request() req: { user: any },
   ) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
-    return this.articleService.updateStep2(id, dto.content, req.user?.id, tenantId);
+    return this.articleService.updateStep2(
+      id,
+      dto.content,
+      req.user?.id,
+      tenantId,
+    );
   }
 
   @Put(':id/images')

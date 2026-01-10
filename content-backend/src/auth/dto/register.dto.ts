@@ -50,7 +50,9 @@ export class RegisterDto {
     required: false,
   })
   @IsOptional()
-  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @ValidateIf(
+    (_, value) => value !== undefined && value !== null && value !== '',
+  )
   @IsString()
   tenantName?: string;
 
@@ -60,7 +62,9 @@ export class RegisterDto {
     required: false,
   })
   @IsOptional()
-  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @ValidateIf(
+    (_, value) => value !== undefined && value !== null && value !== '',
+  )
   @IsString()
   @Matches(/^[\p{L}\p{N}-]+$/u, {
     message: '组织标识仅支持中文、英文、数字和短横线',
@@ -73,7 +77,9 @@ export class RegisterDto {
     required: false,
   })
   @IsOptional()
-  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @ValidateIf(
+    (_, value) => value !== undefined && value !== null && value !== '',
+  )
   @IsString()
   wechatAppId?: string;
 
@@ -82,7 +88,9 @@ export class RegisterDto {
     required: false,
   })
   @IsOptional()
-  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @ValidateIf(
+    (_, value) => value !== undefined && value !== null && value !== '',
+  )
   @IsString()
   wechatAppSecret?: string;
 }

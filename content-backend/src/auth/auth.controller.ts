@@ -146,11 +146,11 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: '切换当前组织' })
   @ApiResponse({ status: 200, description: '切换成功，返回新 token' })
-  async switchTenant(
-    @Request() req,
-    @Body() switchTenantDto: SwitchTenantDto,
-  ) {
-    return this.authService.switchTenant(req.user.sub, switchTenantDto.tenantId);
+  async switchTenant(@Request() req, @Body() switchTenantDto: SwitchTenantDto) {
+    return this.authService.switchTenant(
+      req.user.sub,
+      switchTenantDto.tenantId,
+    );
   }
 
   /**

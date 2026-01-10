@@ -7,6 +7,7 @@ export interface TenantInfo {
     id: string
     name: string
     slug: string
+    isDefault?: boolean
 }
 
 export const useUserStore = defineStore('user', () => {

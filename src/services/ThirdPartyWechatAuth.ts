@@ -251,11 +251,13 @@ export class ThirdPartyWechatAuth {
   }
 
   /**
-   * 生成state参数
+   * 生成state参数（用于 OAuth CSRF 保护，待第三方平台配置完成后启用）
+   * 当用户重定向到微信授权页面时，会带上这个 state 值；
+   * 微信回调时会返回相同的 state，通过 validateState() 验证防止 CSRF 攻击。
    */
-  private generateState(): string {
-    return Math.random().toString(36).substr(2, 15) + Date.now().toString(36);
-  }
+  // private generateState(): string {
+  //   return Math.random().toString(36).substr(2, 15) + Date.now().toString(36);
+  // }
 
   /**
    * 验证state参数

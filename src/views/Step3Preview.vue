@@ -629,7 +629,7 @@ onMounted(async () => {
             localPreviewUrl: img.localPreviewUrl || proxyUrl,
             proxyUrl: proxyUrl
           }
-        }).filter((img): img is WechatImage => Boolean(img))
+        }).filter(Boolean) as WechatImage[]
 
         console.log('[Step3] 有效图片数量:', validImages.length, '张（已过滤 blob）')
         appStore.setWechatImages(validImages)
