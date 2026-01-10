@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
+import { UserTenant } from './user-tenant.entity';
 
 @Entity('tenants')
 export class Tenant {
@@ -49,4 +50,7 @@ export class Tenant {
   // === 关联关系 ===
   @OneToMany(() => User, (user) => user.tenant)
   users: User[];
+
+  @OneToMany(() => UserTenant, (membership) => membership.tenant)
+  memberships: UserTenant[];
 }

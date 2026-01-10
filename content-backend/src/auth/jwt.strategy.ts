@@ -5,15 +5,18 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { UserTenant } from '../entities/user-tenant.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(JwtStrategy.name);
 
   constructor(
-    configService: ConfigService,
+    private configService: ConfigService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(UserTenant)
+    private userTenantRepository: Repository<UserTenant>,
   ) {
     const secret = configService.get<string>('JWT_SECRET');
     if (!secret) {
@@ -49,12 +52,35 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found in database');
     }
 
+    if (!user.isActive) {
+      this.logger.warn(`⚠️ 账号已禁用: userId=${userId}`);
+      throw new UnauthorizedException('User is inactive');
+    }
+
+    const tenantId =
+      payload.tenantId ||
+      user.tenantId ||
+      this.configService.get<string>('DEFAULT_TENANT_ID') ||
+      '00000000-0000-0000-0000-000000000001';
+
+    const membership = await this.userTenantRepository.findOne({
+      where: { userId: user.id, tenantId },
+    });
+
+    if (!membership) {
+      this.logger.warn(
+        `⚠️ 用户不属于租户: userId=${userId}, tenantId=${tenantId}`,
+      );
+      throw new UnauthorizedException('User not in tenant');
+    }
+
     this.logger.debug(`✅ 用户验证成功: ${user.name} (${user.id})`);
 
     return {
       sub: user.id,
+      id: user.id,
       email: user.email,
-      tenantId: user.tenantId,
+      tenantId,
       role: user.role,
     };
   }

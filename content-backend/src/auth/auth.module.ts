@@ -3,9 +3,9 @@ import { AuthService } from './auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Tenant } from '../entities/tenant.entity';
+import { UserTenant } from '../entities/user-tenant.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
-import { TenantModule } from '../tenant/tenant.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -21,10 +21,10 @@ import { InviteCodeService } from '../services/invite-code.service';
     TypeOrmModule.forFeature([
       User,
       Tenant,
+      UserTenant,
       EmailVerificationToken,
       PasswordResetToken,
     ]),
-    TenantModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

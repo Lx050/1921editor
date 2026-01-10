@@ -2,6 +2,7 @@
  * 第三方微信公众号授权服务
  * 用于获得用户授权，让用户可以发布内容到自己的公众号
  */
+import { tokenStorage } from '../utils/tokenStorage';
 
 export class ThirdPartyWechatAuth {
   private static instance: ThirdPartyWechatAuth;
@@ -10,8 +11,12 @@ export class ThirdPartyWechatAuth {
   private storeAuthCallback!: (authData: any) => void;
 
   constructor() {
-    this.openPlatformAppId = process.env.REACT_APP_WECHAT_OPEN_APP_ID!;
-    this.callbackUrl = process.env.REACT_APP_DOMAIN + '/auth/callback';
+    const env = (import.meta as any)?.env || {};
+    this.openPlatformAppId = env.VITE_WECHAT_OPEN_APP_ID || '';
+    const origin =
+      (typeof window !== 'undefined' && window.location?.origin) || '';
+    const baseDomain = env.VITE_APP_DOMAIN || origin;
+    this.callbackUrl = `${baseDomain}/settings/wechat/callback`;
   }
 
   static getInstance(): ThirdPartyWechatAuth {
@@ -36,11 +41,15 @@ export class ThirdPartyWechatAuth {
    */
   async startAuthorization(): Promise<string> {
     try {
+      if (!this.openPlatformAppId) {
+        throw new Error('未配置微信开放平台 AppID');
+      }
+
       // 生成预授权码
       const preAuthCode = await this.generatePreAuthCode();
 
-      // 构造授权URL
-      const authUrl = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${this.openPlatformAppId}&redirect_uri=${encodeURIComponent(this.callbackUrl)}&response_type=code&scope=snsapi_base&component_appid=${this.openPlatformAppId}&pre_auth_code=${preAuthCode}&state=${this.generateState()}#wechat_redirect`;
+      // 构造第三方平台授权URL
+      const authUrl = `https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=${this.openPlatformAppId}&pre_auth_code=${preAuthCode}&redirect_uri=${encodeURIComponent(this.callbackUrl)}`;
 
       console.log('请用户访问授权URL:', authUrl);
 
@@ -62,6 +71,7 @@ export class ThirdPartyWechatAuth {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
         },
         body: JSON.stringify({
           component_appid: this.openPlatformAppId,
@@ -87,8 +97,8 @@ export class ThirdPartyWechatAuth {
    */
   async handleAuthCallback(code: string, state: string): Promise<any> {
     try {
-      // 验证state参数
-      if (!this.validateState(state)) {
+      // 验证state参数（回调场景可能为空）
+      if (state && !this.validateState(state)) {
         throw new Error('无效的state参数');
       }
 
@@ -115,6 +125,7 @@ export class ThirdPartyWechatAuth {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
         },
         body: JSON.stringify({
           code,
@@ -156,6 +167,7 @@ export class ThirdPartyWechatAuth {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
         },
         body: JSON.stringify({
           app_id: authInfo.authorizer_appid,
@@ -206,6 +218,7 @@ export class ThirdPartyWechatAuth {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
+          ...this.getAuthHeaders(),
         },
         body: JSON.stringify({
           app_id: authInfo.authorizer_appid,
@@ -264,6 +277,7 @@ export class ThirdPartyWechatAuth {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
+          ...this.getAuthHeaders(),
         },
         body: JSON.stringify(authInfo),
       });
@@ -287,7 +301,11 @@ export class ThirdPartyWechatAuth {
       }
 
       // 从后端获取
-      const response = await fetch(`/api/wechat/get-auth/${appId}`);
+      const response = await fetch(`/api/wechat/get-auth/${appId}`, {
+        headers: {
+          ...this.getAuthHeaders(),
+        },
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -320,7 +338,11 @@ export class ThirdPartyWechatAuth {
    */
   async getAuthorizedAccounts(): Promise<WechatAuthInfo[]> {
     try {
-      const response = await fetch('/api/wechat/authorized-accounts');
+      const response = await fetch('/api/wechat/authorized-accounts', {
+        headers: {
+          ...this.getAuthHeaders(),
+        },
+      });
       const data = await response.json();
 
       return data.success ? data.data : [];
@@ -349,6 +371,9 @@ export class ThirdPartyWechatAuth {
 
       await fetch(`/api/wechat/remove-auth/${appId}`, {
         method: 'DELETE',
+        headers: {
+          ...this.getAuthHeaders(),
+        },
       });
 
       console.log(`已移除公众号 ${appId} 的授权`);
@@ -356,6 +381,14 @@ export class ThirdPartyWechatAuth {
     } catch (error) {
       console.error('移除授权失败:', error);
     }
+  }
+
+  private getAuthHeaders(): Record<string, string> {
+    const token = tokenStorage.getToken();
+    if (!token) {
+      return {};
+    }
+    return { Authorization: `Bearer ${token}` };
   }
 }
 

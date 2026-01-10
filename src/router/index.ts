@@ -111,11 +111,36 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('../views/ResetPassword.vue'),
+    meta: {
+      title: '重置密码'
+    }
+  },
+  {
     path: '/verify-email',
     name: 'VerifyEmail',
     component: () => import('../views/VerifyEmail.vue'),
     meta: {
       title: '验证邮箱'
+    }
+  },
+  {
+    path: '/settings/wechat/confirm',
+    name: 'WechatCredentialConfirm',
+    component: () => import('../views/Settings/WechatCredentialsConfirm.vue'),
+    meta: {
+      title: '确认公众号密钥'
+    }
+  },
+  {
+    path: '/settings/wechat/callback',
+    name: 'WechatAuthCallback',
+    component: () => import('../views/Settings/WechatCallback.vue'),
+    meta: {
+      title: '公众号授权回调',
+      requiresAuth: true
     }
   },
   {

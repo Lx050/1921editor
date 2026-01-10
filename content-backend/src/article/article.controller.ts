@@ -12,8 +12,9 @@ import {
   BadRequestException,
   ValidationPipe,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ArticleService } from './article.service';
 import {
   CreateArticleDto,
@@ -25,8 +26,11 @@ import type { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('articles')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('articles')
 export class ArticleController {
   constructor(
@@ -64,12 +68,19 @@ export class ArticleController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.articleService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: { user: any }) {
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
+    return this.articleService.findOne(id, tenantId);
   }
 
   @Get(':id/file')
-  getFile(@Param('id') id: string, @Res() res: Response) {
+  async getFile(
+    @Param('id') id: string,
+    @Res() res: Response,
+    @Request() req: { user: any },
+  ) {
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
+    await this.articleService.assertTenantAccess(id, tenantId);
     // 🔒 安全验证：确保 ID 只包含安全字符
     if (!/^[a-zA-Z0-9-_.]+$/.test(id)) {
       throw new BadRequestException('Invalid file ID format');
@@ -111,7 +122,8 @@ export class ArticleController {
     @Body() dto: UpdateArticleConfigDto,
     @Request() req: { user: any },
   ) {
-    return this.articleService.updateStep1(id, dto.config, req.user?.id);
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
+    return this.articleService.updateStep1(id, dto.config, req.user?.id, tenantId);
   }
 
   @Put(':id/content')
@@ -122,7 +134,8 @@ export class ArticleController {
     @Body() dto: UpdateArticleContentDto,
     @Request() req: { user: any },
   ) {
-    return this.articleService.updateStep2(id, dto.content, req.user?.id);
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
+    return this.articleService.updateStep2(id, dto.content, req.user?.id, tenantId);
   }
 
   @Put(':id/images')
@@ -133,11 +146,17 @@ export class ArticleController {
     @Body() body: any,
     @Request() req: { user: any },
   ) {
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     console.log(
       '[Controller] 收到图片数据:',
       JSON.stringify(body?.images?.slice(0, 1)),
     );
-    return this.articleService.updateStep3(id, body.images, req.user?.id);
+    return this.articleService.updateStep3(
+      id,
+      body.images,
+      req.user?.id,
+      tenantId,
+    );
   }
 
   @Put(':id/step3-content')
@@ -148,16 +167,19 @@ export class ArticleController {
     @Body() dto: UpdateArticleContentDto,
     @Request() req: { user: any },
   ) {
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.updateStep3Content(
       id,
       dto.content,
       req.user?.id,
+      tenantId,
     );
   }
 
   @Post(':id/publish')
   publish(@Param('id') id: string, @Request() req: { user: any }) {
-    return this.articleService.publish(id, req.user?.id);
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
+    return this.articleService.publish(id, req.user?.id, tenantId);
   }
 
   @Post(':id/save-draft')
@@ -170,7 +192,8 @@ export class ArticleController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.articleService.delete(id);
+  remove(@Param('id') id: string, @Request() req: { user: any }) {
+    const tenantId = req.user?.tenantId || this.getDefaultTenantId();
+    return this.articleService.delete(id, tenantId);
   }
 }

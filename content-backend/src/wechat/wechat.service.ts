@@ -11,6 +11,10 @@ import { Blob } from 'buffer';
 @Injectable()
 export class WechatService {
   private readonly logger = new Logger(WechatService.name);
+  private readonly directTokenCache = new Map<
+    string,
+    { token: string; expiresAt: number }
+  >();
 
   constructor(
     private configService: ConfigService,
@@ -22,6 +26,22 @@ export class WechatService {
     @InjectRepository(WechatPlatformConfig)
     private platformConfigRepository: Repository<WechatPlatformConfig>,
   ) {}
+
+  private getComponentAppId(): string {
+    return (
+      this.configService.get<string>('WECHAT_COMPONENT_APP_ID') ||
+      this.configService.get<string>('WECHAT_OPEN_APP_ID') ||
+      ''
+    );
+  }
+
+  private getComponentAppSecret(): string {
+    return (
+      this.configService.get<string>('WECHAT_COMPONENT_APP_SECRET') ||
+      this.configService.get<string>('WECHAT_OPEN_APP_SECRET') ||
+      ''
+    );
+  }
 
   /**
    * 获取第三方平台 Component Access Token
@@ -44,10 +64,8 @@ export class WechatService {
       );
     }
 
-    const appId = this.configService.get<string>('WECHAT_COMPONENT_APP_ID');
-    const appSecret = this.configService.get<string>(
-      'WECHAT_COMPONENT_APP_SECRET',
-    );
+    const appId = this.getComponentAppId();
+    const appSecret = this.getComponentAppSecret();
 
     const url =
       'https://api.weixin.qq.com/cgi-bin/component/api_component_token';
@@ -76,7 +94,7 @@ export class WechatService {
    */
   async getPreAuthCode(): Promise<string> {
     const componentAccessToken = await this.getComponentAccessToken();
-    const appId = this.configService.get<string>('WECHAT_COMPONENT_APP_ID');
+    const appId = this.getComponentAppId();
 
     const url = `https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode?component_access_token=${componentAccessToken}`;
     const response = await this.httpService.axiosRef.post(url, {
@@ -96,7 +114,7 @@ export class WechatService {
    */
   async exchangeAuthCode(tenantId: string, authCode: string): Promise<any> {
     const componentAccessToken = await this.getComponentAccessToken();
-    const appId = this.configService.get<string>('WECHAT_COMPONENT_APP_ID');
+    const appId = this.getComponentAppId();
 
     const url = `https://api.weixin.qq.com/cgi-bin/component/api_query_auth?component_access_token=${componentAccessToken}`;
     const response = await this.httpService.axiosRef.post(url, {
@@ -145,6 +163,13 @@ export class WechatService {
     tenantId: string,
     authorizerAppId?: string,
   ): Promise<string> {
+    const tenant = await this.tenantRepository.findOne({
+      where: { id: tenantId },
+    });
+    if (tenant?.wechatAppId && tenant.wechatAppSecret) {
+      return await this.getDirectAccessToken(tenantId, tenant);
+    }
+
     // 如果没传 authorizerAppId，默认取该租户下最新的已激活授权
     let authorizer: WechatAuthorizer | null;
     if (authorizerAppId) {
@@ -175,6 +200,40 @@ export class WechatService {
     return await this.refreshAuthorizerToken(authorizer);
   }
 
+  private async getDirectAccessToken(
+    tenantId: string,
+    tenant?: Tenant,
+  ): Promise<string> {
+    const cached = this.directTokenCache.get(tenantId);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.token;
+    }
+
+    const targetTenant =
+      tenant ||
+      (await this.tenantRepository.findOne({ where: { id: tenantId } }));
+
+    if (!targetTenant?.wechatAppId || !targetTenant.wechatAppSecret) {
+      throw new NotFoundException('该租户未配置微信公众号');
+    }
+
+    const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${targetTenant.wechatAppId}&secret=${targetTenant.wechatAppSecret}`;
+    const response = await this.httpService.axiosRef.get(url);
+    const data = response.data;
+
+    if (data.errcode) {
+      throw new Error(`获取AccessToken失败: ${data.errmsg}`);
+    }
+
+    const expiresAt = Date.now() + (data.expires_in - 300) * 1000;
+    this.directTokenCache.set(tenantId, {
+      token: data.access_token,
+      expiresAt,
+    });
+
+    return data.access_token;
+  }
+
   /**
    * 刷新授权方 AccessToken
    */
@@ -182,9 +241,7 @@ export class WechatService {
     authorizer: WechatAuthorizer,
   ): Promise<string> {
     const componentAccessToken = await this.getComponentAccessToken();
-    const componentAppId = this.configService.get<string>(
-      'WECHAT_COMPONENT_APP_ID',
-    );
+    const componentAppId = this.getComponentAppId();
 
     const url = `https://api.weixin.qq.com/cgi-bin/component/api_authorizer_token?component_access_token=${componentAccessToken}`;
     const response = await this.httpService.axiosRef.post(url, {
@@ -215,9 +272,7 @@ export class WechatService {
    */
   async updateAuthorizerInfo(authorizer: WechatAuthorizer): Promise<void> {
     const componentAccessToken = await this.getComponentAccessToken();
-    const componentAppId = this.configService.get<string>(
-      'WECHAT_COMPONENT_APP_ID',
-    );
+    const componentAppId = this.getComponentAppId();
 
     const url = `https://api.weixin.qq.com/cgi-bin/component/api_get_authorizer_info?component_access_token=${componentAccessToken}`;
     const response = await this.httpService.axiosRef.post(url, {
@@ -264,7 +319,7 @@ export class WechatService {
 
   async uploadImage(tenantId: string, file: Express.Multer.File): Promise<any> {
     const accessToken = await this.getAuthorizerAccessToken(tenantId);
-    const url = `https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${accessToken}`;
+    const url = `https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${accessToken}&type=image`;
 
     const formData = new FormData();
     formData.append(

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { tokenStorage } from '../utils/tokenStorage'
+import { useConfigStore } from './configStore'
 
 export interface TenantInfo {
     id: string
@@ -16,6 +17,10 @@ export const useUserStore = defineStore('user', () => {
     // 🏢 多租户支持
     const currentTenant = ref<TenantInfo | null>(
         JSON.parse(localStorage.getItem('currentTenant') || 'null')
+    )
+
+    const tenants = ref<TenantInfo[]>(
+        JSON.parse(localStorage.getItem('tenants') || '[]')
     )
 
     const isLoggedIn = computed(() => !!token.value && tokenStorage.isTokenValid(token.value))
@@ -44,31 +49,46 @@ export const useUserStore = defineStore('user', () => {
         currentTenant.value = tenant
         if (tenant) {
             localStorage.setItem('currentTenant', JSON.stringify(tenant))
+            try {
+                const configStore = useConfigStore()
+                configStore.fetchBackendConfig(tenant.id)
+            } catch (error) {
+                console.error('Failed to sync WeChat config', error)
+            }
         } else {
             localStorage.removeItem('currentTenant')
         }
+    }
+
+    const setTenants = (list: TenantInfo[]) => {
+        tenants.value = list
+        localStorage.setItem('tenants', JSON.stringify(list))
     }
 
     const logout = () => {
         token.value = ''
         userInfo.value = null
         currentTenant.value = null
+        tenants.value = []
         // 🔒 使用安全的方法清除认证信息
         tokenStorage.clearAuth()
         localStorage.removeItem('currentTenant')
         localStorage.removeItem('userInfo') // Fix: Explicitly remove userInfo
+        localStorage.removeItem('tenants')
     }
 
     return {
         token,
         userInfo,
         currentTenant,
+        tenants,
         tenantId,
         isLoggedIn,
         isAdmin,
         setToken,
         setUserInfo,
         setCurrentTenant,
+        setTenants,
         logout
     }
 })

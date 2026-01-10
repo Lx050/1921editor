@@ -15,6 +15,7 @@ export interface WechatImage {
     mediaId: string;        // 微信 media_id
     url: string;            // 微信返回的图片 URL（用于最终HTML输出）
     localPreviewUrl?: string; // 本地预览 URL（Blob URL，用于预览显示）
+    proxyUrl?: string;      // 代理 URL（用于预览防盗链）
     name: string;           // 原始文件名
     status: UploadStatus;   // 上传状态
     errorMsg?: string;      // 错误信息

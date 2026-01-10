@@ -85,8 +85,20 @@ export class ArticleService {
     return savedArticle;
   }
 
-  async findOne(id: string) {
-    const article = await this.articleRepository.findOne({ where: { id } });
+  async assertTenantAccess(id: string, tenantId: string) {
+    const article = await this.articleRepository.findOne({
+      where: { id, tenantId },
+    });
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+    return article;
+  }
+
+  async findOne(id: string, tenantId?: string) {
+    const article = tenantId
+      ? await this.assertTenantAccess(id, tenantId)
+      : await this.articleRepository.findOne({ where: { id } });
     if (!article) throw new NotFoundException('Article not found');
 
     // 附加参与者姓�?
@@ -104,28 +116,49 @@ export class ArticleService {
     };
   }
 
-  async updateStep1(id: string, config: any, userId?: string) {
+  async updateStep1(
+    id: string,
+    config: any,
+    userId?: string,
+    tenantId?: string,
+  ) {
+    if (tenantId) {
+      await this.assertTenantAccess(id, tenantId);
+    }
     if (userId) await this.addParticipant(id, userId, 'editors');
-    await this.articleRepository.update(id, {
+    await this.articleRepository.update(tenantId ? { id, tenantId } : { id }, {
       config,
       updatedAt: new Date(),
     });
     this.triggerSync(id);
-    return this.findOne(id);
+    return this.findOne(id, tenantId);
   }
 
-  async updateStep2(id: string, content: string, userId?: string) {
+  async updateStep2(
+    id: string,
+    content: string,
+    userId?: string,
+    tenantId?: string,
+  ) {
+    if (tenantId) {
+      await this.assertTenantAccess(id, tenantId);
+    }
     if (userId) await this.addParticipant(id, userId, 'editors');
-    await this.articleRepository.update(id, {
+    await this.articleRepository.update(tenantId ? { id, tenantId } : { id }, {
       content,
       status: ArticleStatus.PARSED,
       updatedAt: new Date(),
     });
     this.triggerSync(id);
-    return this.findOne(id);
+    return this.findOne(id, tenantId);
   }
 
-  async updateStep3(id: string, images: any[], userId?: string) {
+  async updateStep3(
+    id: string,
+    images: any[],
+    userId?: string,
+    tenantId?: string,
+  ) {
     this.logger.log(
       `[updateStep3] 🖼�?保存图片 - 文章ID: ${id}, 用户ID: ${userId}, 图片数量: ${images?.length || 0}`,
     );
@@ -133,8 +166,11 @@ export class ArticleService {
       `[updateStep3] 图片数据: ${JSON.stringify(images?.slice(0, 2))}`,
     ); // 只打印前2�?
 
+    if (tenantId) {
+      await this.assertTenantAccess(id, tenantId);
+    }
     if (userId) await this.addParticipant(id, userId, 'editors');
-    await this.articleRepository.update(id, {
+    await this.articleRepository.update(tenantId ? { id, tenantId } : { id }, {
       images,
       status: ArticleStatus.ADJUSTED,
       updatedAt: new Date(),
@@ -142,19 +178,24 @@ export class ArticleService {
 
     this.logger.log(`[updateStep3] �?图片保存成功 - 文章ID: ${id}`);
     this.triggerSync(id);
-    return this.findOne(id);
+    return this.findOne(id, tenantId);
   }
 
   // Step3 内容保存 - 设置状态为 ADJUSTED
-  async updateStep3Content(id: string, content: string, userId?: string) {
+  async updateStep3Content(
+    id: string,
+    content: string,
+    userId?: string,
+    tenantId?: string,
+  ) {
     this.logger.log(
       `[updateStep3Content] 开始保�?- ID: ${id}, 用户ID: ${userId}`,
     );
 
     // 先验证文章存�?
-    const existingArticle = await this.articleRepository.findOne({
-      where: { id },
-    });
+    const existingArticle = tenantId
+      ? await this.articleRepository.findOne({ where: { id, tenantId } })
+      : await this.articleRepository.findOne({ where: { id } });
     if (!existingArticle) {
       this.logger.error(`[updateStep3Content] 文章不存�?- ID: ${id}`);
       throw new NotFoundException('Article not found');
@@ -163,17 +204,20 @@ export class ArticleService {
     this.logger.log(`[updateStep3Content] 文章存在: ${existingArticle.title}`);
 
     if (userId) await this.addParticipant(id, userId, 'editors');
-    await this.articleRepository.update(id, {
+    await this.articleRepository.update(tenantId ? { id, tenantId } : { id }, {
       content,
       status: ArticleStatus.ADJUSTED,
       updatedAt: new Date(),
     });
     this.logger.log(`[updateStep3Content] 更新成功 - ID: ${id}, 状�? ADJUSTED`);
     this.triggerSync(id);
-    return this.findOne(id);
+    return this.findOne(id, tenantId);
   }
 
-  async publish(id: string, userId?: string) {
+  async publish(id: string, userId?: string, tenantId?: string) {
+    if (tenantId) {
+      await this.assertTenantAccess(id, tenantId);
+    }
     if (userId) await this.addParticipant(id, userId, 'editors');
     // TODO: Simulate WeChat Publish
     const result = {
@@ -182,12 +226,12 @@ export class ArticleService {
       published_at: new Date(),
     };
 
-    await this.articleRepository.update(id, {
+    await this.articleRepository.update(tenantId ? { id, tenantId } : { id }, {
       wechatResult: result as any,
       status: ArticleStatus.PUBLISHED,
     });
     this.triggerSync(id);
-    return this.findOne(id);
+    return this.findOne(id, tenantId);
   }
 
   async findAll(user: User) {
@@ -233,8 +277,8 @@ export class ArticleService {
   /**
    * 删除 Article（注意：文件清理�?FileCleanupService 处理�?
    */
-  async delete(id: string): Promise<void> {
-    const article = await this.findOne(id);
+  async delete(id: string, tenantId?: string): Promise<void> {
+    const article = await this.findOne(id, tenantId);
     await this.articleRepository.remove(article);
     this.logger.log(`Article ${id} deleted`);
   }
@@ -275,7 +319,7 @@ export class ArticleService {
 
     this.triggerSync(id);
 
-    return this.findOne(id);
+    return this.findOne(id, user?.tenantId);
   }
 
   /**

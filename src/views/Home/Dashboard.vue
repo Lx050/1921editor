@@ -13,11 +13,11 @@
           <!-- 左侧：用户信息 -->
           <div class="flex items-center space-x-3">
             <div class="h-9 w-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm">
-              {{ userStore.userInfo?.name?.charAt(0) || 'U' }}
+              {{ userStore.userInfo?.displayName?.charAt(0) || userStore.userInfo?.name?.charAt(0) || 'U' }}
             </div>
             <div>
               <p class="text-xs text-gray-500">
-                {{ userStore.userInfo?.name || '创作者' }} · {{ userStore.currentTenant?.name || '默认组织' }}
+                {{ userStore.userInfo?.displayName || userStore.userInfo?.name || '创作者' }} · {{ userStore.currentTenant?.name || '默认组织' }}
               </p>
             </div>
           </div>
@@ -570,13 +570,21 @@ const fetchArticles = async () => {
 // 首次加载
 onMounted(() => {
   console.log('🏠 Dashboard组件已挂载')
-  fetchArticles()
+  if (userStore.isLoggedIn) {
+    fetchArticles()
+  } else {
+    loading.value = false
+  }
 })
 
 // 每次进入时刷新（处理 keep-alive 缓存情况）
 onActivated(() => {
   console.log('🔄 Dashboard被激活，刷新文章列表')
-  fetchArticles()
+  if (userStore.isLoggedIn) {
+    fetchArticles()
+  } else {
+    loading.value = false
+  }
 })
 </script>
 

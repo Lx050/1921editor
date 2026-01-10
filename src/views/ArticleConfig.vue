@@ -169,14 +169,21 @@ const startProcessing = async () => {
       
       // 3. 加载图片（如果有）
       if (article.value.images && Array.isArray(article.value.images)) {
-        const wechatImages = article.value.images.map((img: any, index: number) => ({
-          id: `article_img_${index}_${Date.now()}`,
-          mediaId: '',
-          url: img.url || img.path || '',
-          name: img.name || `image_${index + 1}`,
-          status: 'success' as const,
-          localPreviewUrl: img.url || img.path || ''
-        }))
+        const { getWechatProxyUrl, restoreWechatUrl } = await import('../utils/wechatApi')
+        const wechatImages = article.value.images.map((img: any, index: number) => {
+          const rawUrl = img.url || img.proxyUrl || img.path || ''
+          const normalizedUrl = restoreWechatUrl(rawUrl)
+          const proxyUrl = img.proxyUrl || getWechatProxyUrl(normalizedUrl)
+          return {
+            id: `article_img_${index}_${Date.now()}`,
+            mediaId: img.mediaId || '',
+            url: normalizedUrl || rawUrl,
+            proxyUrl: proxyUrl,
+            name: img.name || `image_${index + 1}`,
+            status: 'success' as const,
+            localPreviewUrl: proxyUrl || normalizedUrl || rawUrl
+          }
+        })
         
         appStore.addWechatImages(wechatImages)
         console.log('[ArticleConfig] Loaded images:', wechatImages.length)

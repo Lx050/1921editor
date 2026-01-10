@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { tenantApi } from '../utils/api'
+import { tokenStorage } from '../utils/tokenStorage'
 
 export type WorkMode = 'daily' | 'three_rural' | 'reprint'
 
@@ -8,15 +9,17 @@ export interface WechatConfig {
 	id: string
 	name: string
 	appId: string
-	appSecret: string
+	appSecretMasked?: string
+	hasSecret?: boolean
 }
 
 // 默认配置
 const DEFAULT_WECHAT_CONFIG: WechatConfig = {
 	id: 'default',
 	name: 'Lx05.art',
-	appId: 'wxc75aebc24fb0d06a',
-	appSecret: '16e0edfc579fd560a0c0f8e9e44bc711'
+	appId: '',
+	appSecretMasked: '',
+	hasSecret: false
 }
 
 // HTML 头部常量 - 日常模式
@@ -341,7 +344,13 @@ export const useConfigStore = defineStore('config', () => {
 		const storedAccounts = localStorage.getItem('wechat_accounts')
 		if (storedAccounts) {
 			try {
-				savedAccounts.value = JSON.parse(storedAccounts)
+				const parsedAccounts = JSON.parse(storedAccounts)
+				savedAccounts.value = parsedAccounts.map((account: WechatConfig) => ({
+					...account,
+					appSecretMasked: account.appSecretMasked || '',
+					hasSecret: account.hasSecret ?? false
+				}))
+				localStorage.setItem('wechat_accounts', JSON.stringify(savedAccounts.value))
 
 				// 确保默认账号名称是最新的
 				const defaultAcc = savedAccounts.value.find(a => a.id === 'default')
@@ -366,6 +375,33 @@ export const useConfigStore = defineStore('config', () => {
 		const storedMode = localStorage.getItem('config_mode') as WorkMode
 		if (storedMode && DEFAULT_HEADERS[storedMode]) {
 			setMode(storedMode)
+		}
+
+		// 登录状态下同步一次后端微信配置，修正本地缓存
+		const storedTenant = localStorage.getItem('currentTenant')
+		const storedUserInfo = localStorage.getItem('userInfo')
+		const hasAuth = !!tokenStorage.getToken() || !!storedUserInfo
+		if (hasAuth) {
+			let tenantId: string | undefined
+			if (storedTenant) {
+				try {
+					const tenant = JSON.parse(storedTenant)
+					tenantId = tenant?.id
+				} catch (e) {
+					console.error('Failed to parse stored tenant', e)
+				}
+			}
+			if (!tenantId && storedUserInfo) {
+				try {
+					const userInfo = JSON.parse(storedUserInfo)
+					tenantId = userInfo?.tenantId
+				} catch (e) {
+					console.error('Failed to parse stored user info', e)
+				}
+			}
+			if (tenantId) {
+				fetchBackendConfig(tenantId)
+			}
 		}
 	}
 
@@ -421,17 +457,35 @@ export const useConfigStore = defineStore('config', () => {
 		try {
 			const res = await tenantApi.getWechatConfig(tenantId)
 			if (res.data && res.data.appId) {
-				wechatConfig.value = {
+				const nextConfig = {
 					...wechatConfig.value,
 					appId: res.data.appId,
-					appSecret: res.data.appSecret
+					appSecretMasked: res.data.appSecretMasked || '',
+					hasSecret: !!res.data.hasSecret
 				}
+				wechatConfig.value = nextConfig
+
+				const accountIndex = savedAccounts.value.findIndex(
+					account => account.id === nextConfig.id
+				)
+				if (accountIndex >= 0) {
+					savedAccounts.value[accountIndex] = {
+						...savedAccounts.value[accountIndex],
+						appId: nextConfig.appId,
+						appSecretMasked: nextConfig.appSecretMasked,
+						hasSecret: nextConfig.hasSecret
+					}
+				} else {
+					savedAccounts.value.push(nextConfig)
+				}
+				localStorage.setItem('wechat_accounts', JSON.stringify(savedAccounts.value))
 				console.log('WeChat config updated from backend')
 			}
 		} catch (e) {
 			console.error('Failed to fetch WeChat config', e)
 		}
 	}
+
 
 	// 初始化调用
 	init()

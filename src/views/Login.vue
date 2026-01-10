@@ -126,6 +126,7 @@ const handleLogin = async () => {
       id: response.user.id,
       email: response.user.email,
       name: response.user.name,
+      displayName: response.user.displayName,
       role: response.user.role,
       tenantId: response.user.tenantId,
       emailVerified: response.user.emailVerified
@@ -141,8 +142,15 @@ const handleLogin = async () => {
       })
     }
 
+    const tenants = response.tenants || []
+    userStore.setTenants(tenants)
+
     toast.success('登录成功')
-    router.push('/')
+    if (tenants.length > 1) {
+      router.push('/tenant-select')
+    } else {
+      router.push('/')
+    }
   } catch (error: any) {
     console.error('登录失败:', error)
     errorMessage.value = error.response?.data?.message || '登录失败，请检查邮箱和密码'

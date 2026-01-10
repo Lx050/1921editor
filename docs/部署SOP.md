@@ -9,11 +9,112 @@
 - **服务器地址**: 101.42.158.32
 - **SSH密钥**: `c:/Users/Lx050/.ssh/editor135.pem`
 - **用户**: root
-- **项目目录**: `/root/layout-engine`
-- **服务运行目录**: `/var/www/layout-engine`
-- **服务端口**: 1921
-- **域名**: https://layout.lx05.art
-- **PM2应用名**: layout-engine
+- **项目目录**: `/root/paiban`
+- **服务运行目录**: Docker 容器内 Nginx
+- **服务端口**: 1922 (宿主) -> 80 (容器)
+- **域名**: http://paiban.lx05.art
+- **部署方式**: Docker Compose
+
+## 当前生产环境（Docker）
+
+### 关键文件
+- **后端运行期配置**: `/root/paiban/.env`
+- **前端构建期配置**: `/root/paiban/.env.production`
+- **Nginx 配置（容器内）**: `nginx.conf`
+- **Compose 配置**: `docker-compose.yml`
+
+### 微信模式说明（当前默认）
+- **直连模式**: 直接使用租户的 `wechatAppId/wechatAppSecret`（后台“公众号管理”填写并邮箱确认）。
+- **第三方授权**: 需要企业认证的微信开放平台 `component_appid/component_appsecret`；未配置时不会影响直连模式。
+
+## Docker 部署/更新流程（推荐）
+
+### 1. 本地准备（构建期变量）
+```bash
+# 修改 .env.production（前端构建期变量）
+VITE_APP_DOMAIN=http://paiban.lx05.art
+VITE_WECHAT_OPEN_APP_ID=REPLACE_ME
+```
+
+注意：
+- **前端变量必须在构建时注入**，修改 `.env.production` 后必须重建前端容器。
+
+### 2. 上传代码到服务器
+推荐方式：
+- 若服务器目录是 git 仓库：`git pull`
+- 若非仓库：打包上传并解压覆盖（见“打包上传示例”）
+
+打包上传示例（在本地 WSL/Git Bash 中）：
+```bash
+tar -czf paiban.tar.gz \
+  --exclude=node_modules \
+  --exclude=dist \
+  --exclude=.git \
+  --exclude=.env \
+  --exclude=content-backend/node_modules \
+  --exclude=content-backend/dist \
+  .
+
+scp -i "c:/Users/Lx050/.ssh/editor135.pem" paiban.tar.gz root@101.42.158.32:/root/
+```
+
+服务器解压与覆盖：
+```bash
+cd /root
+timestamp=$(date +%Y%m%d_%H%M%S)
+mkdir -p paiban_backup_$timestamp
+cp /root/paiban/.env paiban_backup_$timestamp/ || true
+cp -r /root/paiban/content-backend/uploads paiban_backup_$timestamp/ || true
+cp -r /root/paiban/content-backend/logs paiban_backup_$timestamp/ || true
+
+rm -rf /root/paiban
+mkdir -p /root/paiban
+tar -xzf /root/paiban.tar.gz -C /root/paiban
+
+cp /root/paiban_backup_$timestamp/.env /root/paiban/.env
+mkdir -p /root/paiban/content-backend
+cp -r /root/paiban_backup_$timestamp/uploads /root/paiban/content-backend/ || true
+cp -r /root/paiban_backup_$timestamp/logs /root/paiban/content-backend/ || true
+```
+
+### 3. 构建并启动容器
+```bash
+cd /root/paiban
+docker compose build frontend backend
+docker compose up -d frontend backend
+```
+
+### 4. 数据库迁移（如有）
+```bash
+cd /root/paiban
+docker compose run --rm backend npm run migration:run
+```
+
+### 5. 检查状态
+```bash
+docker compose ps
+```
+
+## 直连模式配置与验证
+
+1. 登录系统 → 公众号管理  
+2. 申请修改密钥（AppID/AppSecret）→ 邮箱确认  
+3. 上传图片 / 创建草稿测试  
+
+> 若租户未配置 AppID/Secret，将提示“该租户未授权微信公众号”。
+
+## 常见注意事项（Docker）
+
+1. **前端变量不生效**：
+   - 修改 `.env.production` 后必须重建前端容器。
+2. **后端变量不生效**：
+   - 修改 `/root/paiban/.env` 后需重建 backend 容器。
+3. **回滚**：
+   - 使用 `/root/paiban_backup_YYYYMMDD_HHMMSS` 恢复 `.env/uploads/logs`。
+
+---
+
+## 旧版部署流程（PM2，已弃用）
 
 ## 部署流程
 

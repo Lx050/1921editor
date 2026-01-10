@@ -197,6 +197,16 @@ export const tenantApi = {
   getWechatConfig: (tenantId: string) => {
     return api.get(`/tenants/${tenantId}/wechat-config`)
   },
+  getPublicWechatConfig: (slug?: string) => {
+    const params = slug ? { params: { slug } } : undefined
+    return api.get('/tenants/public-wechat-config', params)
+  },
+  requestWechatCredentialChange: (payload: { appId: string; appSecret: string }) => {
+    return api.post('/tenants/wechat-credentials/request', payload)
+  },
+  confirmWechatCredentialChange: (payload: { token: string }) => {
+    return api.post('/tenants/wechat-credentials/confirm', payload)
+  },
 }
 
 // 导出默认实例

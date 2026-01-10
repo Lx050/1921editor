@@ -11,6 +11,11 @@ export interface TokenStorageOptions {
 }
 
 class TokenStorage {
+  private isBrowser = typeof window !== 'undefined';
+  private isDevelopment =
+    (import.meta as any)?.env?.DEV ??
+    process.env.NODE_ENV === 'development';
+
   /**
    * 设置 token 到 httpOnly cookie
    * 注意：在纯前端环境中，httpOnly cookie 无法直接设置
@@ -19,28 +24,23 @@ class TokenStorage {
    * 2. 生产环境：需要后端设置 httpOnly cookie
    */
   setToken(token: string, _options?: Partial<TokenStorageOptions>): void {
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    if (!this.isBrowser) return;
 
-    if (isDevelopment) {
-      console.warn('⚠️  Using localStorage in development mode - not secure for production!');
-      // 开发环境暂时使用 localStorage
-      localStorage.setItem('auth_token', token);
-      return;
+    if (!this.isDevelopment) {
+      console.warn('⚠️  Using localStorage fallback in production until httpOnly cookies are implemented.');
     }
-
-    // 生产环境应该通过后端设置 httpOnly cookie
-    // 这里只是占位，实际设置需要后端响应头
-    console.warn('Token should be set via httpOnly cookie from server response');
+    localStorage.setItem('auth_token', token);
   }
 
   /**
    * 获取 token
    */
   getToken(): string | null {
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    if (!this.isBrowser) return null;
 
-    if (isDevelopment) {
-      return localStorage.getItem('auth_token');
+    const localToken = localStorage.getItem('auth_token');
+    if (localToken) {
+      return localToken;
     }
 
     // 尝试从 document.cookie 获取（仅适用于非 httpOnly 的 cookie）
@@ -60,14 +60,11 @@ class TokenStorage {
    * 移除 token
    */
   removeToken(): void {
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    if (!this.isBrowser) return;
 
-    if (isDevelopment) {
-      localStorage.removeItem('auth_token');
-      return;
-    }
+    localStorage.removeItem('auth_token');
 
-    // 设置过期时间为过去的 cookie
+    // 设置过期时间为过去的 cookie（仅对非 httpOnly 的 cookie 有效）
     document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; sameSite=strict; secure';
   }
 

@@ -224,4 +224,50 @@ export class EmailService {
       throw error;
     }
   }
+
+  /**
+   * 发送微信公众号密钥变更确认邮件
+   * @param email 收件人邮箱
+   * @param name 用户名称
+   * @param tenantName 租户名称
+   * @param confirmUrl 确认链接
+   */
+  async sendWechatCredentialChangeEmail(
+    email: string,
+    name: string,
+    tenantName: string,
+    confirmUrl: string,
+  ): Promise<void> {
+    if (!this.transporter) {
+      this.logger.warn(`邮件传输器未初始化，跳过发送密钥确认邮件到 ${email}`);
+      return;
+    }
+
+    const mailOptions = {
+      from: this.getFromAddress(),
+      to: email,
+      subject: `确认更新 ${tenantName} 的公众号密钥`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">公众号密钥更新确认</h2>
+          <p>您好 ${name}，</p>
+          <p>我们收到您更新 <strong>${tenantName}</strong> 公众号密钥的请求。</p>
+          <p>请点击下面的链接完成确认：</p>
+          <p>
+            <a href="${confirmUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">确认更新</a>
+          </p>
+          <p>如果您没有发起该请求，请忽略此邮件。</p>
+          <p style="color: #999; font-size: 12px;">此链接将在 30 分钟后失效。</p>
+        </div>
+      `,
+    };
+
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      this.logger.log(`密钥确认邮件已发送到 ${email}: ${info.messageId}`);
+    } catch (error) {
+      this.logger.error(`发送密钥确认邮件失败到 ${email}:`, error);
+      throw error;
+    }
+  }
 }

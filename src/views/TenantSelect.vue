@@ -17,8 +17,8 @@
       <!-- 主体列表区域 -->
       <div class="bg-white md:shadow-2xl md:rounded-3xl flex-1 md:flex-initial overflow-hidden flex flex-col border-none md:border md:border-white/20">
         
-        <!-- 搜索栏 -->
-        <div class="p-4 md:p-6 pb-2 border-b border-slate-50">
+        <!-- 搜索栏 + 加入组织 -->
+        <div class="p-4 md:p-6 pb-3 border-b border-slate-50 space-y-3">
           <div class="relative group">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg class="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -32,17 +32,51 @@
               class="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl text-sm transition-all outline-none"
             >
           </div>
+          <div class="space-y-2">
+            <input
+              v-model="displayNameInput"
+              type="text"
+              placeholder="填写加入该组织的显示名称"
+              class="w-full px-3 py-2.5 bg-slate-50 border border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl text-sm transition-all outline-none"
+            />
+            <div class="flex items-center gap-2">
+              <input
+                v-model="inviteCodeInput"
+                type="text"
+                placeholder="输入邀请码加入组织"
+                class="flex-1 px-3 py-2.5 bg-slate-50 border border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl text-sm transition-all outline-none"
+              />
+              <button
+                @click="handleJoinTenant"
+                :disabled="!inviteCodeInput || !displayNameInput || isJoining"
+                class="px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ isJoining ? '加入中...' : '加入' }}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+          <!-- 当前组织提示 -->
+          <div v-if="currentTenant" class="rounded-2xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-xs text-blue-700 flex items-center justify-between">
+            <span>当前组织：{{ currentTenant.name }}</span>
+            <span class="font-semibold">{{ currentTenant.slug }}</span>
+          </div>
           
           <!-- 默认组织 (置顶显示) -->
-          <div v-if="!searchQuery" class="space-y-2">
+          <div v-if="!searchQuery && defaultTenant" class="space-y-2">
             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">常用</h3>
             <div
-              @click="selectTenant(null)"
+              @click="selectTenant(defaultTenant)"
               class="relative bg-blue-50/50 border border-blue-100 rounded-2xl p-4 cursor-pointer transition-all active:scale-[0.98] md:hover:shadow-lg md:hover:shadow-blue-500/10 md:hover:-translate-y-0.5 group"
             >
+              <span
+                v-if="isCurrentTenant(defaultTenant)"
+                class="absolute right-3 top-3 text-[10px] font-bold text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-200"
+              >
+                当前
+              </span>
               <div class="flex items-center space-x-4">
                 <div class="flex-shrink-0 h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
                   <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,8 +84,8 @@
                   </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <h3 class="text-[15px] font-bold text-slate-900 truncate">默认组织空间</h3>
-                  <p class="text-xs text-blue-600 font-medium">全局配置模式</p>
+                  <h3 class="text-[15px] font-bold text-slate-900 truncate">{{ defaultTenant.name }}</h3>
+                  <p class="text-xs text-blue-600 font-medium">{{ defaultTenant.slug }}</p>
                 </div>
                 <div class="h-8 w-8 rounded-full bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,9 +119,24 @@
                 v-for="(tenant, index) in filteredTenants"
                 :key="tenant.id"
                 @click="selectTenant(tenant)"
-                class="bg-white border border-slate-100 rounded-2xl p-4 cursor-pointer transition-all active:scale-[0.98] md:hover:border-blue-200 md:hover:shadow-xl md:hover:shadow-slate-200/50 md:hover:-translate-y-0.5 group animate-in fade-in slide-in-from-bottom-2"
+                class="bg-white border border-slate-100 rounded-2xl p-4 cursor-pointer transition-all active:scale-[0.98] md:hover:border-blue-200 md:hover:shadow-xl md:hover:shadow-slate-200/50 md:hover:-translate-y-0.5 group animate-in fade-in slide-in-from-bottom-2 relative"
                 :style="{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }"
               >
+                <div class="absolute right-3 top-3 flex items-center gap-2">
+                  <span
+                    v-if="isCurrentTenant(tenant)"
+                    class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100"
+                  >
+                    当前
+                  </span>
+                  <button
+                    v-if="!tenant.isDefault"
+                    @click.stop="handleLeaveTenant(tenant)"
+                    class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100 hover:bg-red-100"
+                  >
+                    退出
+                  </button>
+                </div>
                 <div class="flex items-center space-x-4">
                   <div 
                     class="flex-shrink-0 h-12 w-12 rounded-xl flex items-center justify-center text-lg font-bold shadow-sm transition-transform group-hover:scale-110"
@@ -135,13 +184,21 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { TenantInfo } from '../stores/userStore'
-import api from '../utils/api'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/userStore'
+import { listTenants, switchTenant, joinTenant, leaveTenant, type TenantInfo } from '../api/auth'
+import toast from '../composables/useToast'
 
-const tenants = ref<TenantInfo[]>([])
+const router = useRouter()
+const userStore = useUserStore()
+const tenants = computed(() => userStore.tenants || [])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const searchQuery = ref('')
+const inviteCodeInput = ref('')
+const displayNameInput = ref('')
+const isJoining = ref(false)
+const isLeaving = ref(false)
 
 // 模拟组织列表样式
 const avatarStyles = [
@@ -159,10 +216,28 @@ const getAvatarStyles = (name: string) => {
 }
 
 // 组织检索过滤
+const defaultTenant = computed(() => {
+  return tenants.value.find(t => t.isDefault) || tenants.value.find(t => t.slug === 'default') || null
+})
+
+const currentTenant = computed(() => {
+  if (userStore.currentTenant?.id) return userStore.currentTenant
+  const idFromUser = userStore.userInfo?.tenantId
+  return tenants.value.find(t => t.id === idFromUser) || defaultTenant.value || null
+})
+
+const isCurrentTenant = (tenant: TenantInfo | null) => {
+  if (!tenant) return false
+  return currentTenant.value?.id === tenant.id
+}
+
 const filteredTenants = computed(() => {
-  if (!searchQuery.value) return tenants.value
+  const baseTenants = searchQuery.value
+    ? tenants.value
+    : tenants.value.filter(t => !defaultTenant.value || t.id !== defaultTenant.value.id)
+  if (!searchQuery.value) return baseTenants
   const query = searchQuery.value.toLowerCase()
-  return tenants.value.filter(t => 
+  return baseTenants.filter(t => 
     t.name.toLowerCase().includes(query) || 
     t.slug.toLowerCase().includes(query)
   )
@@ -173,8 +248,8 @@ const loadTenants = async () => {
   error.value = null
   
   try {
-    const response = await api.get('/tenants')
-    tenants.value = response.data
+    const response = await listTenants()
+    userStore.setTenants(response.tenants || [])
   } catch (e) {
     error.value = '加载组织列表失败，请重试'
     console.error('Failed to load tenants:', e)
@@ -183,12 +258,118 @@ const loadTenants = async () => {
   }
 }
 
-const selectTenant = (_tenant: TenantInfo | null) => {
+const selectTenant = async (tenant: TenantInfo | null) => {
+  if (!tenant) return
   if ('vibrate' in navigator) navigator.vibrate(10)
-  window.location.href = '/step1'
+  try {
+    const response = await switchTenant({ tenantId: tenant.id })
+    userStore.setToken(response.accessToken)
+    userStore.setUserInfo({
+      id: response.user.id,
+      email: response.user.email,
+      name: response.user.name,
+      displayName: response.user.displayName,
+      role: response.user.role,
+      tenantId: response.user.tenantId,
+      emailVerified: response.user.emailVerified
+    })
+    userStore.setCurrentTenant({
+      id: response.tenant.id,
+      name: response.tenant.name,
+      slug: response.tenant.slug
+    })
+    userStore.setTenants(response.tenants || [])
+    toast.success(`已切换至 ${response.tenant.name}`)
+    router.push('/step1')
+  } catch (e) {
+    console.error('Failed to switch tenant:', e)
+    error.value = '切换组织失败，请重试'
+  }
+}
+
+const handleJoinTenant = async () => {
+  if (!inviteCodeInput.value || !displayNameInput.value) {
+    toast.warning('请输入邀请码和显示名称')
+    return
+  }
+  if (isJoining.value) return
+
+  isJoining.value = true
+  try {
+    const response = await joinTenant({
+      inviteCode: inviteCodeInput.value.trim(),
+      displayName: displayNameInput.value.trim()
+    })
+    userStore.setToken(response.accessToken)
+    userStore.setUserInfo({
+      id: response.user.id,
+      email: response.user.email,
+      name: response.user.name,
+      displayName: response.user.displayName,
+      role: response.user.role,
+      tenantId: response.user.tenantId,
+      emailVerified: response.user.emailVerified
+    })
+    userStore.setCurrentTenant({
+      id: response.tenant.id,
+      name: response.tenant.name,
+      slug: response.tenant.slug
+    })
+    userStore.setTenants(response.tenants || [])
+    inviteCodeInput.value = ''
+    displayNameInput.value = ''
+    toast.success(`已加入并切换至 ${response.tenant.name}`)
+    router.push('/step1')
+  } catch (e) {
+    console.error('Failed to join tenant:', e)
+    toast.error('加入组织失败，请检查邀请码')
+  } finally {
+    isJoining.value = false
+  }
+}
+
+const handleLeaveTenant = async (tenant: TenantInfo) => {
+  if (tenant.isDefault) {
+    toast.warning('默认组织不可退出')
+    return
+  }
+  if (isLeaving.value) return
+  const confirmed = confirm(`确定要退出「${tenant.name}」吗？`)
+  if (!confirmed) return
+
+  isLeaving.value = true
+  try {
+    const response = await leaveTenant({ tenantId: tenant.id })
+    userStore.setToken(response.accessToken)
+    userStore.setUserInfo({
+      id: response.user.id,
+      email: response.user.email,
+      name: response.user.name,
+      displayName: response.user.displayName,
+      role: response.user.role,
+      tenantId: response.user.tenantId,
+      emailVerified: response.user.emailVerified
+    })
+    userStore.setCurrentTenant({
+      id: response.tenant.id,
+      name: response.tenant.name,
+      slug: response.tenant.slug
+    })
+    userStore.setTenants(response.tenants || [])
+    toast.success('已退出组织')
+  } catch (e) {
+    console.error('Failed to leave tenant:', e)
+    toast.error('退出组织失败，请稍后再试')
+  } finally {
+    isLeaving.value = false
+  }
 }
 
 onMounted(() => {
+  if (!userStore.isLoggedIn) {
+    router.push('/login')
+    return
+  }
   loadTenants()
 })
 </script>

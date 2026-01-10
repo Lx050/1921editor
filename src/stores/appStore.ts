@@ -208,8 +208,14 @@ export const useAppStore = defineStore('app', () => {
     console.log('[Store] 初始化用户元数据, userInfo:', userInfo)
 
     if (userInfo) {
-      // 优先级：name > nickname > username > email
-      const name = userInfo.name || userInfo.nickname || userInfo.username || userInfo.email || ''
+      // 优先级：displayName > name > nickname > username > email
+      const name =
+        userInfo.displayName ||
+        userInfo.name ||
+        userInfo.nickname ||
+        userInfo.username ||
+        userInfo.email ||
+        ''
       if (name) {
         console.log('[Store] 自动填充编辑姓名:', name)
         editorInput.value = name

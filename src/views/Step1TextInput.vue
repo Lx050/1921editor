@@ -233,6 +233,11 @@ const handleDragLeave = () => {
 // 统一的文件处理逻辑 (V2: 支持 ZIP 和 DOCX)
 const processFile = async (file) => {
   errorMessage.value = ''
+  extractedImages.value = []
+  uploadManager.clear()
+  appStore.clearWechatImages()
+  appStore.updateUploadProgress({ total: 0, completed: 0, failed: 0, uploading: 0 })
+  appStore.setIsUploading(false)
   
   // V2: 检查是否是压缩包文件
   if (isArchiveFile(file)) {
@@ -261,9 +266,8 @@ const processArchiveFile = async (file) => {
       imageCount: result.imageFiles.length
     })
 
-    // 累加提取的图片 (V2: 允许图片重复/累加)
-    extractedImages.value = [...extractedImages.value, ...result.imageFiles]
-    console.log('[Step1] 新增', result.imageFiles.length, '张图片，总计', extractedImages.value.length)
+    extractedImages.value = result.imageFiles
+    console.log('[Step1] 提取', result.imageFiles.length, '张图片')
     
     // 如果有 docx 文件，处理第一个 (V2: 文档直接替换)
     if (result.docxFiles.length > 0) {
@@ -892,6 +896,10 @@ const clearText = () => {
   appStore.setRawText('')
   errorMessage.value = ''
   extractedImages.value = []  // V2: 清空提取的图片
+  uploadManager.clear()
+  appStore.clearWechatImages()
+  appStore.updateUploadProgress({ total: 0, completed: 0, failed: 0, uploading: 0 })
+  appStore.setIsUploading(false)
 }
 
 // 前往下一步 (V2: 并行启动图片上传)

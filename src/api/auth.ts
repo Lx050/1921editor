@@ -7,11 +7,23 @@ export interface LoginDto {
   password: string
 }
 
+export interface TenantInfo {
+  id: string
+  name: string
+  slug: string
+  isDefault?: boolean
+}
+
 export interface RegisterDto {
   email: string
   password: string
   name: string
   inviteCode: string
+  createTenant?: boolean
+  tenantName?: string
+  tenantSlug?: string
+  wechatAppId?: string
+  wechatAppSecret?: string
 }
 
 export interface VerifyEmailDto {
@@ -38,15 +50,31 @@ export interface AuthResponse {
     id: string
     email: string
     name: string
+    displayName?: string
     role: string
     tenantId: string
     emailVerified: boolean
   }
-  tenant: {
-    id: string
-    name: string
-    slug: string
-  }
+  tenant: TenantInfo
+  tenants: TenantInfo[]
+}
+
+export interface RegisterResponse {
+  message: string
+  userId?: string
+}
+
+export interface SwitchTenantDto {
+  tenantId: string
+}
+
+export interface JoinTenantDto {
+  inviteCode: string
+  displayName: string
+}
+
+export interface LeaveTenantDto {
+  tenantId: string
 }
 
 // ==================== 认证 API ====================
@@ -54,7 +82,7 @@ export interface AuthResponse {
 /**
  * 用户注册
  */
-export const register = async (dto: RegisterDto): Promise<AuthResponse> => {
+export const register = async (dto: RegisterDto): Promise<RegisterResponse> => {
   const response = await api.post('/auth/register', dto)
   return response.data
 }
@@ -62,7 +90,7 @@ export const register = async (dto: RegisterDto): Promise<AuthResponse> => {
 /**
  * 验证邮箱
  */
-export const verifyEmail = async (dto: VerifyEmailDto): Promise<{ message: string }> => {
+export const verifyEmail = async (dto: VerifyEmailDto): Promise<AuthResponse> => {
   const response = await api.post('/auth/verify-email', dto)
   return response.data
 }
@@ -72,6 +100,32 @@ export const verifyEmail = async (dto: VerifyEmailDto): Promise<{ message: strin
  */
 export const login = async (dto: LoginDto): Promise<AuthResponse> => {
   const response = await api.post('/auth/login', dto)
+  return response.data
+}
+
+export const listTenants = async (): Promise<{ tenants: TenantInfo[] }> => {
+  const response = await api.get('/auth/tenants')
+  return response.data
+}
+
+export const switchTenant = async (
+  dto: SwitchTenantDto
+): Promise<AuthResponse> => {
+  const response = await api.post('/auth/switch-tenant', dto)
+  return response.data
+}
+
+export const joinTenant = async (
+  dto: JoinTenantDto
+): Promise<AuthResponse> => {
+  const response = await api.post('/auth/join-tenant', dto)
+  return response.data
+}
+
+export const leaveTenant = async (
+  dto: LeaveTenantDto
+): Promise<AuthResponse> => {
+  const response = await api.post('/auth/leave-tenant', dto)
   return response.data
 }
 

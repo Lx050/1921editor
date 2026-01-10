@@ -4,3 +4,6 @@ export * from './verify-email.dto';
 export * from './forgot-password.dto';
 export * from './reset-password.dto';
 export * from './change-password.dto';
+export * from './switch-tenant.dto';
+export * from './join-tenant.dto';
+export * from './leave-tenant.dto';

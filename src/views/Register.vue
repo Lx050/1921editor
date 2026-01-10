@@ -29,6 +29,30 @@
           <p class="text-gray-500 text-xs">Professional Layout Engine</p>
         </div>
 
+        <!-- 注册方式选择 -->
+        <div class="flex bg-gray-100 rounded-xl p-1 mb-4">
+          <button
+            type="button"
+            @click="registerMode = 'join'"
+            :class="[
+              'flex-1 py-2 text-sm font-medium rounded-lg transition-all',
+              registerMode === 'join' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+            ]"
+          >
+            加入组织
+          </button>
+          <button
+            type="button"
+            @click="registerMode = 'create'"
+            :class="[
+              'flex-1 py-2 text-sm font-medium rounded-lg transition-all',
+              registerMode === 'create' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+            ]"
+          >
+            注册新组织
+          </button>
+        </div>
+
         <!-- 表单 -->
         <form @submit.prevent="handleRegister" class="space-y-4">
           <!-- 姓名 -->
@@ -80,18 +104,66 @@
             />
           </div>
 
-          <!-- 邀请码 -->
-          <div>
+          <!-- 加入组织 -->
+          <div v-if="registerMode === 'join'">
             <label class="block text-sm font-medium text-black mb-1.5">企业邀请码</label>
             <input
               v-model="formData.inviteCode"
               type="text"
               required
-              placeholder="12位邀请码"
-              maxlength="12"
-              class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all uppercase text-black placeholder:text-gray-500"
+              placeholder="请输入组织邀请码"
+              maxlength="64"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-black placeholder:text-gray-500"
             />
             <p class="mt-1 text-xs text-gray-500">请联系您的组织管理员获取邀请码</p>
+          </div>
+
+          <!-- 创建新组织 -->
+          <div v-else class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-black mb-1.5">组织名称</label>
+              <input
+                v-model="formData.tenantName"
+                type="text"
+                required
+                placeholder="例如：西大青媒"
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-black placeholder:text-gray-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-black mb-1.5">组织标识</label>
+              <input
+                v-model="formData.tenantSlug"
+                type="text"
+                required
+                placeholder="例如：西大青媒 或 xida-qingmei"
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-black placeholder:text-gray-500"
+              />
+              <p class="mt-1 text-xs text-gray-500">支持中文、英文、数字和短横线</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-black mb-1.5">公众号 AppID</label>
+              <input
+                v-model="formData.wechatAppId"
+                type="text"
+                required
+                placeholder="请输入公众号 AppID"
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-black placeholder:text-gray-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-black mb-1.5">公众号 AppSecret</label>
+              <input
+                v-model="formData.wechatAppSecret"
+                type="password"
+                required
+                placeholder="请输入公众号 AppSecret"
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-black placeholder:text-gray-500"
+              />
+            </div>
+            <p class="text-xs text-gray-500">
+              注册成功后您将成为该组织管理员，修改密钥需邮箱确认。
+            </p>
           </div>
 
           <!-- 错误提示 -->
@@ -105,7 +177,7 @@
             :disabled="loading"
             class="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30"
           >
-            {{ loading ? '注册中...' : '注册' }}
+            {{ loading ? '注册中...' : registerMode === 'create' ? '创建组织并注册' : '注册' }}
           </button>
         </form>
 
@@ -134,9 +206,15 @@ const formData = ref<RegisterDto>({
   email: '',
   password: '',
   name: '',
-  inviteCode: ''
+  inviteCode: '',
+  createTenant: false,
+  tenantName: '',
+  tenantSlug: '',
+  wechatAppId: '',
+  wechatAppSecret: ''
 })
 
+const registerMode = ref<'join' | 'create'>('join')
 const confirmPassword = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
@@ -161,16 +239,58 @@ const handleRegister = async () => {
     return
   }
 
-  // 验证邀请码
-  if (formData.value.inviteCode.length !== 12) {
-    errorMessage.value = '邀请码必须是12位'
-    return
+  let payload: RegisterDto
+
+  if (registerMode.value === 'join') {
+    const inviteCode = formData.value.inviteCode.trim()
+    if (!inviteCode) {
+      errorMessage.value = '请输入邀请码'
+      return
+    }
+    if (inviteCode.length > 64) {
+      errorMessage.value = '邀请码长度不能超过64位'
+      return
+    }
+    payload = {
+      email: formData.value.email.trim(),
+      password: formData.value.password,
+      name: formData.value.name.trim(),
+      inviteCode,
+      createTenant: false
+    }
+  } else {
+    const tenantName = formData.value.tenantName?.trim() || ''
+    const tenantSlugInput = formData.value.tenantSlug?.trim() || tenantName
+    const tenantSlug = tenantSlugInput.replace(/\s+/g, '-')
+    const wechatAppId = formData.value.wechatAppId?.trim() || ''
+    const wechatAppSecret = formData.value.wechatAppSecret?.trim() || ''
+
+    if (!tenantName || !tenantSlug || !wechatAppId || !wechatAppSecret) {
+      errorMessage.value = '请填写完整的组织与公众号信息'
+      return
+    }
+    if (!/^[\p{L}\p{N}-]+$/u.test(tenantSlug)) {
+      errorMessage.value = '组织标识仅支持中文、英文、数字和短横线'
+      return
+    }
+
+    payload = {
+      email: formData.value.email.trim(),
+      password: formData.value.password,
+      name: formData.value.name.trim(),
+      inviteCode: '',
+      createTenant: true,
+      tenantName,
+      tenantSlug,
+      wechatAppId,
+      wechatAppSecret
+    }
   }
 
   loading.value = true
 
   try {
-    await register(formData.value)
+    await register(payload)
 
     toast.success('注册成功！请查收验证邮件')
 
@@ -179,7 +299,13 @@ const handleRegister = async () => {
     router.push('/login?email=' + encodeURIComponent(formData.value.email))
   } catch (error: any) {
     console.error('注册失败:', error)
-    errorMessage.value = error.response?.data?.message || '注册失败，请检查输入信息'
+    const errorData = error.response?.data
+    const message = Array.isArray(errorData?.errors)
+      ? errorData.errors.join('；')
+      : Array.isArray(errorData?.message)
+      ? errorData.message.join('；')
+      : errorData?.message || '注册失败，请检查输入信息'
+    errorMessage.value = message
   } finally {
     loading.value = false
   }

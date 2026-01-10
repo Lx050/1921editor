@@ -113,6 +113,8 @@ export class TenantConfigController {
         articleTable: config.articleTable,
         tenantName: tenant.name,
         tenantSlug: tenant.slug,
+        inviteCode: tenant.inviteCode,
+        inviteCodeExpires: tenant.inviteCodeExpires,
       },
     };
   }

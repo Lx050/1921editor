@@ -150,8 +150,7 @@
                 <input v-model="form.appId" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">AppSecret</label>
-                <input v-model="form.appSecret" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <p class="text-xs text-gray-500">AppSecret 仅可在后台配置，此处不再展示。</p>
               </div>
             </div>
           </div>
@@ -181,8 +180,7 @@ const showModal = ref(false)
 const isEditing = ref(false)
 const form = ref<Partial<WechatConfig>>({
   name: '',
-  appId: '',
-  appSecret: ''
+  appId: ''
 })
 
 const maskAppId = (id: string) => {
@@ -198,8 +196,7 @@ const openAddAccountModal = () => {
   isEditing.value = false
   form.value = {
     name: '',
-    appId: '',
-    appSecret: ''
+    appId: ''
   }
   showModal.value = true
 }
@@ -211,7 +208,7 @@ const openEditAccountModal = (account: WechatConfig) => {
 }
 
 const saveAccount = () => {
-  if (!form.value.name || !form.value.appId || !form.value.appSecret) {
+  if (!form.value.name || !form.value.appId) {
     alert('请填写完整信息')
     return
   }
@@ -220,7 +217,8 @@ const saveAccount = () => {
     id: isEditing.value ? (form.value.id || '') : Date.now().toString(),
     name: form.value.name || '',
     appId: form.value.appId || '',
-    appSecret: form.value.appSecret || ''
+    appSecretMasked: form.value.appSecretMasked || '',
+    hasSecret: form.value.hasSecret ?? false
   }
 
   configStore.saveAccount(account)

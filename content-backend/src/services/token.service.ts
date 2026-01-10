@@ -24,6 +24,14 @@ export class TokenService {
   }
 
   /**
+   * 生成微信密钥变更令牌
+   * @returns UUID 令牌
+   */
+  generateWechatCredentialToken(): string {
+    return uuidv4();
+  }
+
+  /**
    * 计算令牌过期时间
    * @param seconds 秒数
    * @returns 过期时间 Date 对象
@@ -52,4 +60,9 @@ export class TokenService {
    * 密码重置令牌过期时间（1小时）
    */
   readonly PASSWORD_RESET_EXPIRY = 60 * 60; // 3600 秒
+
+  /**
+   * 微信密钥变更令牌过期时间（30分钟）
+   */
+  readonly WECHAT_CREDENTIAL_CHANGE_EXPIRY = 30 * 60; // 1800 秒
 }

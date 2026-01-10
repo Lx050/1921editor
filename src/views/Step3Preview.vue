@@ -216,7 +216,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
 import { buildHtml } from '../utils/styleAssembler'
-import { createDraft, uploadImage, getWechatProxyUrl } from '../utils/wechatApi'
+import { createDraft, uploadImage, getWechatProxyUrl, restoreWechatUrl } from '../utils/wechatApi'
 import { copyToClipboard } from '../utils/clipboard'
 import ImageReplacer from '../components/ImageReplacer.vue'
 import QuickImageStrip from '../components/QuickImageStrip.vue'
@@ -225,6 +225,7 @@ import { articleApi } from '../utils/api'
 import toast from '../composables/useToast'
 import DOMPurify from 'dompurify'
 import type { DraftArticle, WechatImage, WechatUploadResponse } from '@/types'
+import { tokenStorage } from '../utils/tokenStorage'
 
 const router = useRouter()
 const route = useRoute()
@@ -238,6 +239,17 @@ const errorMessage = ref('')
 const activeTab = ref('preview')
 const copyButtonText = ref('复制HTML代码')
 const previewFrame = ref<HTMLIFrameElement | null>(null)
+
+const buildAuthHeaders = () => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  }
+  const token = tokenStorage.getToken()
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
+}
 
 // V2: 图片替换相关状态
 const selectedPlaceholder = ref<string | null>(null)
@@ -406,12 +418,13 @@ const handleImageSelect = (image: WechatImage) => {
   }
   
   // 使用本地预览 URL 进行预览显示
-  const previewUrl = image.localPreviewUrl || image.url
+  const previewUrl = image.localPreviewUrl || image.proxyUrl || getWechatProxyUrl(image.url)
+  const wechatUrl = restoreWechatUrl(image.url || image.proxyUrl || previewUrl)
   
   // 记录替换（保存微信 URL 用于最终输出，本地 URL 用于预览）
   imageReplacements.value[placeholderId] = {
     previewUrl: previewUrl,
-    wechatUrl: image.url
+    wechatUrl: wechatUrl
   }
   console.log('[Step3] 直接替换:', placeholderId, '->', previewUrl)
   
@@ -602,10 +615,20 @@ onMounted(async () => {
         console.log('[Step3] 后端返回的图片数据:', JSON.stringify(article.images))
         const backendImages = (article.images || []) as WechatImage[]
         const validImages = backendImages.map((img) => {
-          if (img.url && img.url.startsWith('blob:')) {
+          const rawUrl = img.url || img.proxyUrl || ''
+          if (rawUrl && rawUrl.startsWith('blob:')) {
             return null
           }
-          return img
+
+          const normalizedUrl = restoreWechatUrl(rawUrl)
+          const proxyUrl = img.proxyUrl || getWechatProxyUrl(normalizedUrl)
+
+          return {
+            ...img,
+            url: normalizedUrl || img.url,
+            localPreviewUrl: img.localPreviewUrl || proxyUrl,
+            proxyUrl: proxyUrl
+          }
         }).filter((img): img is WechatImage => Boolean(img))
 
         console.log('[Step3] 有效图片数量:', validImages.length, '张（已过滤 blob）')
@@ -1014,6 +1037,11 @@ const saveDraft = async () => {
   console.log('=== [Step3] 开始保存草稿 ===')
   
   try {
+    if (!tokenStorage.getToken()) {
+      toast.warning('请先登录后再保存')
+      return false
+    }
+
     // 清理内容块，移除编辑器内部字段
     const cleanedBlocks = contentBlocks.value.map(block => ({
       type: block.type,
@@ -1038,9 +1066,7 @@ const saveDraft = async () => {
       // 1. 保存内容 (使用 Step3 专用端点)
       saveTasks.push(fetch(`/api/articles/${articleId}/step3-content`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
+        headers: buildAuthHeaders(),
         body: JSON.stringify({ content: cleanContent })
       }).then(async r => {
         if (!r.ok) {
@@ -1054,14 +1080,13 @@ const saveDraft = async () => {
       const imagesToSave = appStore.wechatImages
         .filter(img => img.status === 'success' && img.mediaId)
         .map(img => {
-          let proxyUrl = ''
-          if (img.url && !img.url.startsWith('blob:')) {
-            proxyUrl = getWechatProxyUrl(img.url)
-          }
+          const normalizedUrl = restoreWechatUrl(img.url || img.proxyUrl || '')
+          const proxyUrl = normalizedUrl ? getWechatProxyUrl(normalizedUrl) : ''
           return {
             id: img.id,
             mediaId: img.mediaId,
-            url: proxyUrl,
+            url: normalizedUrl || img.url,
+            proxyUrl: proxyUrl,
             name: img.name,
             status: img.status
           }
@@ -1070,9 +1095,7 @@ const saveDraft = async () => {
       if (imagesToSave.length > 0) {
         saveTasks.push(fetch(`/api/articles/${articleId}/images`, {
           method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-          },
+          headers: buildAuthHeaders(),
           body: JSON.stringify({ images: imagesToSave })
         }).then(r => {
           if (!r.ok) throw new Error('保存图片库失败')
@@ -1095,9 +1118,7 @@ const saveDraft = async () => {
 
       saveTasks.push(fetch(`/api/articles/${articleId}/config`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
+        headers: buildAuthHeaders(),
         body: JSON.stringify({ config: fullConfig })
       }).then(r => {
         if (!r.ok) throw new Error('保存配置失败')
@@ -1116,9 +1137,7 @@ const saveDraft = async () => {
       // Step 1: 创建文章（只传 title 和 config）
       const createResponse = await fetch('/api/articles', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
+        headers: buildAuthHeaders(),
         body: JSON.stringify({ 
           title,
           config: appStore.styleConfig
@@ -1136,9 +1155,7 @@ const saveDraft = async () => {
       // Step 2: Step3 内容保存（设置状态为 ADJUSTED）
       const updateResponse = await fetch(`/api/articles/${data.id}/step3-content`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
+        headers: buildAuthHeaders(),
         body: JSON.stringify({ content: cleanContent })
       })
       
@@ -1151,14 +1168,13 @@ const saveDraft = async () => {
       const newArticleImages = appStore.wechatImages
         .filter(img => img.status === 'success' && img.mediaId)
         .map(img => {
-          let proxyUrl = ''
-          if (img.url && !img.url.startsWith('blob:')) {
-            proxyUrl = getWechatProxyUrl(img.url)
-          }
+          const normalizedUrl = restoreWechatUrl(img.url || img.proxyUrl || '')
+          const proxyUrl = normalizedUrl ? getWechatProxyUrl(normalizedUrl) : ''
           return {
             id: img.id,
             mediaId: img.mediaId,
-            url: proxyUrl,
+            url: normalizedUrl || img.url,
+            proxyUrl: proxyUrl,
             name: img.name,
             status: img.status
           }
@@ -1168,9 +1184,7 @@ const saveDraft = async () => {
         console.log('[Step3] 新文章保存图片:', newArticleImages.length, '张')
         await fetch(`/api/articles/${data.id}/images`, {
           method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-          },
+          headers: buildAuthHeaders(),
           body: JSON.stringify({ images: newArticleImages })
         })
       }

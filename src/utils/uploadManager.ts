@@ -20,6 +20,8 @@ interface UploadTask {
     retryCount: number;
     status: 'pending' | 'uploading' | 'success' | 'failed';
     result?: WechatImage;
+    batchId: number;
+    abortController?: AbortController;
 }
 
 /**
@@ -32,6 +34,7 @@ export class UploadManager {
     private onCompleteCallback?: (results: WechatImage[]) => void;
     private onImageUploadedCallback?: (image: WechatImage) => void;
     private startTime: number = 0;  // V2: 添加上传开始时间
+    private batchId: number = 0;
 
     /**
      * 设置进度回调
@@ -73,6 +76,7 @@ export class UploadManager {
                 file,
                 retryCount: 0,
                 status: 'pending',
+                batchId: this.batchId,
             };
             this.queue.push(task);
         }
@@ -114,11 +118,20 @@ export class UploadManager {
      * 上传单个文件
      */
     private async uploadFile(task: UploadTask): Promise<void> {
+        if (task.batchId !== this.batchId) {
+            return;
+        }
         // 创建本地预览 URL（Blob URL）
         const localPreviewUrl = URL.createObjectURL(task.file);
 
         try {
-            const response = await uploadImage(task.file);
+            const abortController = new AbortController();
+            task.abortController = abortController;
+            const response = await uploadImage(task.file, { signal: abortController.signal });
+
+            if (task.batchId !== this.batchId) {
+                return;
+            }
 
             task.status = 'success';
             // 🔑 关键：将微信原始 URL 转换为代理 URL，确保其他用户/设备可访问
@@ -136,10 +149,44 @@ export class UploadManager {
             this.onImageUploadedCallback?.(task.result);
             this.notifyProgress();
         } catch (error) {
+            if (task.batchId !== this.batchId) {
+                return;
+            }
+
+            const errorMessage =
+                error instanceof Error ? error.message : '上传失败';
+            const statusCode = (error as any)?.response?.status;
+            const isCanceled =
+                (error as any)?.name === 'CanceledError' ||
+                (error as any)?.code === 'ERR_CANCELED';
+
+            if (isCanceled) {
+                task.status = 'failed';
+                task.result = {
+                    id: task.id,
+                    mediaId: '',
+                    url: '',
+                    name: task.file.name,
+                    status: 'failed',
+                    errorMsg: '上传已取消',
+                    file: task.file,
+                };
+                this.notifyProgress();
+                return;
+            }
+
             console.error('[Upload Manager] 上传失败:', task.file.name, error);
 
+            const nonRetryable =
+                statusCode === 401 ||
+                statusCode === 403 ||
+                statusCode === 404 ||
+                statusCode === 429 ||
+                errorMessage.includes('未授权微信公众号') ||
+                errorMessage.includes('Unauthorized');
+
             // 重试逻辑
-            if (task.retryCount < MAX_RETRY_COUNT) {
+            if (!nonRetryable && task.retryCount < MAX_RETRY_COUNT) {
                 task.retryCount++;
                 task.status = 'pending';
 
@@ -156,12 +203,16 @@ export class UploadManager {
                     url: '',
                     name: task.file.name,
                     status: 'failed',
-                    errorMsg: error instanceof Error ? error.message : '上传失败',
+                    errorMsg: errorMessage,
                     file: task.file,
                 };
             }
 
             this.notifyProgress();
+
+            if (errorMessage.includes('未授权微信公众号')) {
+                this.clear();
+            }
         }
     }
 
@@ -228,8 +279,15 @@ export class UploadManager {
      * 清空队列
      */
     clear(): void {
+        this.batchId++;
+        for (const task of this.queue) {
+            if (task.abortController && task.status === 'uploading') {
+                task.abortController.abort();
+            }
+        }
         this.queue = [];
         this.activeUploads = 0;
+        this.notifyProgress();
     }
 
     /**

@@ -12,6 +12,7 @@ import {
   Param,
   Delete,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -23,6 +24,7 @@ import {
   ApiProperty,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 class ExchangeAuthDto {
   @ApiProperty({
@@ -101,6 +103,7 @@ export class WechatController {
    * 生成预授权码 PreAuthCode
    */
   @Post('pre-auth-code')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '生成预授权码',
     description: '获取用于引导用户扫码授权的 pre_auth_code',
@@ -109,9 +112,9 @@ export class WechatController {
   async getPreAuthCode() {
     try {
       const preAuthCode = await this.wechatService.getPreAuthCode();
-      const componentAppId = this.configService.get<string>(
-        'WECHAT_COMPONENT_APP_ID',
-      );
+      const componentAppId =
+        this.configService.get<string>('WECHAT_COMPONENT_APP_ID') ||
+        this.configService.get<string>('WECHAT_OPEN_APP_ID');
       return {
         success: true,
         pre_auth_code: preAuthCode,
@@ -126,6 +129,7 @@ export class WechatController {
    * 授权回调 - 接收 auth_code 并换取令牌
    */
   @Post('exchange-auth')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '通过 auth_code 换取令牌',
     description: '在用户扫码授权回调后调用，完成租户与公众号的关联',
@@ -148,6 +152,7 @@ export class WechatController {
    * 获取租户已授权的公众号列表
    */
   @Get('authorized-accounts')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '获取已授权账号列表',
     description: '获取当前租户下所有已授权的微信公众号及其基本信息',
@@ -166,6 +171,7 @@ export class WechatController {
   // === 兼容旧接口的发布/上传方法 (已改造为使用 AuthorizerToken) ===
 
   @Get('status')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '检查微信授权状态 (旧接口兼容)',
     description: '获取当前租户下所有已授权的微信账号',
@@ -177,6 +183,7 @@ export class WechatController {
   }
 
   @Post('upload')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '上传图片到微信临时素材',
     description: '为文章发布准备图片资源',
@@ -197,6 +204,7 @@ export class WechatController {
   }
 
   @Post('draft')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '创建微信草稿',
     description: '将文章内容同步到微信公众号草稿箱',
@@ -217,6 +225,7 @@ export class WechatController {
   }
 
   @Delete(':appId')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '解约/移除微信账号授权',
     description: '从本系统中逻辑移除对该公众号的授权，不再展示',

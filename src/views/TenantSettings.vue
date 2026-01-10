@@ -135,6 +135,50 @@
       </div>
     </div>
 
+    <!-- 邀请码设置 -->
+    <div class="config-section">
+      <div class="section-header">
+        <h2>邀请码设置</h2>
+        <el-tag v-if="config.inviteCode" type="success">已配置</el-tag>
+        <el-tag v-else type="warning">未配置</el-tag>
+      </div>
+
+      <div class="config-description">
+        <p>管理员可设置组织邀请码，支持中文、英文和标点；邀请码必须全局唯一。</p>
+        <p class="hint-text">💡 修改后立即生效，其他成员需使用新邀请码加入。</p>
+      </div>
+
+      <div class="config-input">
+        <el-input
+          v-model="inviteCodeInput"
+          placeholder="例如：一见青心，媒你不行"
+          clearable
+          :disabled="loading || !userStore.isAdmin"
+        >
+          <template #prepend>邀请码</template>
+        </el-input>
+        <el-button
+          type="primary"
+          :loading="inviteCodeLoading"
+          @click="updateInviteCode"
+          :disabled="!inviteCodeInput || !userStore.isAdmin"
+        >
+          保存邀请码
+        </el-button>
+      </div>
+
+      <div v-if="config.inviteCode" class="config-details">
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="当前邀请码">
+            {{ config.inviteCode }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="config.inviteCodeExpires" label="过期时间">
+            {{ new Date(config.inviteCodeExpires).toLocaleString() }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+    </div>
+
     <!-- 租户信息 -->
     <div class="tenant-info">
       <h3>当前租户信息</h3>
@@ -184,15 +228,21 @@ import { ref, onMounted } from 'vue';
 import api from '../utils/api';
 import { ElMessage } from 'element-plus';
 import { Link } from '@element-plus/icons-vue';
+import { useUserStore } from '../stores/userStore';
 
+const userStore = useUserStore();
 const userTableUrl = ref('');
 const articleTableUrl = ref('');
 const loading = ref(false);
+const inviteCodeLoading = ref(false);
+const inviteCodeInput = ref('');
 const config = ref<any>({
   userTable: null,
   articleTable: null,
   tenantName: '',
   tenantSlug: '',
+  inviteCode: '',
+  inviteCodeExpires: null,
 });
 
 // 加载当前配置
@@ -212,6 +262,9 @@ onMounted(async () => {
       }
       if (config.value.articleTable?.tableUrl) {
         articleTableUrl.value = config.value.articleTable.tableUrl;
+      }
+      if (config.value.inviteCode) {
+        inviteCodeInput.value = config.value.inviteCode;
       }
     } else {
       console.warn('[TenantSettings] API返回失败:', res.data);
@@ -286,6 +339,41 @@ async function configureArticleTable() {
     ElMessage.error(message);
   } finally {
     loading.value = false;
+  }
+}
+
+// 更新邀请码
+async function updateInviteCode() {
+  const inviteCode = inviteCodeInput.value.trim();
+  if (!inviteCode) {
+    ElMessage.warning('请输入邀请码');
+    return;
+  }
+
+  if (!userStore.isAdmin) {
+    ElMessage.error('仅管理员可修改邀请码');
+    return;
+  }
+
+  if (!userStore.tenantId) {
+    ElMessage.error('未获取到当前租户信息');
+    return;
+  }
+
+  inviteCodeLoading.value = true;
+  try {
+    const res = await api.post(`/tenants/${userStore.tenantId}/invite-code`, {
+      inviteCode,
+    });
+    config.value.inviteCode = res.data.inviteCode;
+    config.value.inviteCodeExpires = res.data.inviteCodeExpires || null;
+    inviteCodeInput.value = res.data.inviteCode;
+    ElMessage.success('邀请码更新成功');
+  } catch (error: any) {
+    const message = error.response?.data?.message || '邀请码更新失败';
+    ElMessage.error(message);
+  } finally {
+    inviteCodeLoading.value = false;
   }
 }
 </script>

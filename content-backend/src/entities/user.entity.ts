@@ -7,8 +7,10 @@ import {
   ManyToOne,
   JoinColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
 import { Tenant } from './tenant.entity';
+import { UserTenant } from './user-tenant.entity';
 
 export enum UserRole {
   ADMIN = 'ADMIN', // 租户管理员
@@ -31,6 +33,9 @@ export class User {
   @ManyToOne(() => Tenant, (tenant) => tenant.users, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'tenantId' })
   tenant: Tenant;
+
+  @OneToMany(() => UserTenant, (membership) => membership.user)
+  memberships: UserTenant[];
 
   // === 用户信息 ===
   @Column({ unique: true })

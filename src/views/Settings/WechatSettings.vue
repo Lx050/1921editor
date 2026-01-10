@@ -1,77 +1,57 @@
 <template>
   <div class="wechat-settings max-w-4xl mx-auto py-8 px-4">
-    <div class="mb-8 flex justify-between items-center">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">公众号管理</h1>
-        <p class="mt-1 text-sm text-gray-500">管理您的微信公众号配置，设置默认发布的账号。</p>
-      </div>
-      <button
-        @click="openAddAccountModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-        </svg>
-        添加公众号
-      </button>
+    <div class="mb-8 flex flex-col gap-2">
+      <h1 class="text-2xl font-bold text-gray-900">公众号管理</h1>
+      <p class="text-sm text-gray-500">
+        仅租户管理员可修改公众号密钥，更新需邮箱确认。
+      </p>
     </div>
 
-    <!-- 账号列表 -->
-    <div class="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul v-if="configStore.savedAccounts.length > 0" class="divide-y divide-gray-200">
-        <li v-for="account in configStore.savedAccounts" :key="account.id">
-          <div class="px-4 py-4 sm:px-6 hover:bg-gray-50 transition-colors">
-            <div class="flex items-center justify-between">
-              <div class="flex-1 min-w-0" @click="selectAccount(account.id)">
-                <div class="flex items-center cursor-pointer">
-                  <p class="text-sm font-medium text-blue-600 truncate mr-2">{{ account.name }}</p>
-                  <span v-if="configStore.wechatConfig.id === account.id" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    默认
-                  </span>
-                </div>
-                <div class="mt-2 flex">
-                  <div class="flex items-center text-sm text-gray-500">
-                    <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                    </svg>
-                    <p>AppID: {{ maskAppId(account.appId) }}</p>
-                  </div>
-                </div>
-              </div>
-              <div class="flex space-x-4">
-                <button 
-                  @click="openEditAccountModal(account)" 
-                  class="text-gray-400 hover:text-blue-600 transition-colors"
-                  title="编辑"
-                >
-                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
-                </button>
-                <button 
-                  @click="deleteAccount(account.id)" 
-                  class="text-gray-400 hover:text-red-600 transition-colors"
-                  title="删除"
-                >
-                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </li>
-      </ul>
-      <div v-else class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">暂无公众号</h3>
-        <p class="mt-1 text-sm text-gray-500">点击右上角按钮添加您的第一个公众号配置。</p>
+    <div class="bg-white shadow rounded-lg p-6 space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="space-y-1">
+          <p class="text-sm text-gray-500">当前组织</p>
+          <p class="text-lg font-semibold text-gray-900">
+            {{ tenantName }}
+          </p>
+        </div>
+        <button
+          @click="openRequestModal"
+          :disabled="!canEdit"
+          class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          申请修改密钥
+        </button>
+      </div>
+
+      <div class="border-t border-gray-100 pt-6 grid gap-4 md:grid-cols-2">
+        <div class="bg-gray-50 rounded-lg p-4">
+          <p class="text-xs text-gray-500 mb-1">AppID</p>
+          <p class="text-sm font-semibold text-gray-900">
+            {{ maskAppId(configStore.wechatConfig.appId) || '-' }}
+          </p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+          <p class="text-xs text-gray-500 mb-1">AppSecret</p>
+          <p class="text-sm font-semibold text-gray-900">
+            {{ secretDisplay }}
+          </p>
+        </div>
+      </div>
+
+      <div class="text-xs text-gray-400 leading-relaxed">
+        说明：密钥不会展示明文，修改需要邮件确认，旧密钥会被覆盖并销毁。
       </div>
     </div>
 
-    <!-- 编辑弹窗 -->
+    <div class="mt-8">
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold text-gray-900">公众号授权</h2>
+        <p class="text-sm text-gray-500">用于将组织公众号与平台绑定，支持素材上传与草稿同步。</p>
+      </div>
+      <WechatAuthManager />
+    </div>
+
     <div v-if="showModal" class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="showModal = false">
@@ -80,27 +60,45 @@
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ isEditing ? '编辑公众号' : '添加公众号' }}</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">申请修改公众号密钥</h3>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">名称</label>
-                <input v-model="form.name" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="例如：我的公众号">
+                <label class="block text-sm font-medium text-gray-700">新 AppID</label>
+                <input
+                  v-model="form.appId"
+                  type="text"
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="请输入新的 AppID"
+                >
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">AppID</label>
-                <input v-model="form.appId" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <label class="block text-sm font-medium text-gray-700">新 AppSecret</label>
+                <input
+                  v-model="form.appSecret"
+                  type="password"
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="请输入新的 AppSecret"
+                >
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">AppSecret</label>
-                <input v-model="form.appSecret" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-              </div>
+              <p class="text-xs text-gray-400">
+                提交后将发送确认邮件给当前管理员，确认后才会生效。
+              </p>
             </div>
           </div>
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button @click="saveAccount" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-              保存
+            <button
+              @click="submitRequest"
+              type="button"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+              :disabled="loading"
+            >
+              {{ loading ? '发送中...' : '发送确认邮件' }}
             </button>
-            <button @click="showModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            <button
+              @click="showModal = false"
+              type="button"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            >
               取消
             </button>
           </div>
@@ -111,64 +109,78 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useConfigStore, type WechatConfig } from '../../stores/configStore'
+import { computed, ref, onMounted } from 'vue'
+import { useConfigStore } from '../../stores/configStore'
+import { useUserStore } from '../../stores/userStore'
+import { tenantApi } from '../../utils/api'
+import toast from '../../composables/useToast'
+import WechatAuthManager from '../../components/WechatAuthManager.vue'
 
 const configStore = useConfigStore()
+const userStore = useUserStore()
 
 const showModal = ref(false)
-const isEditing = ref(false)
-const form = ref<Partial<WechatConfig>>({
-  name: '',
+const loading = ref(false)
+const form = ref({
   appId: '',
   appSecret: ''
 })
 
+const tenantName = computed(() => {
+  return userStore.currentTenant?.name || '未选择组织'
+})
+
+const canEdit = computed(() => userStore.isAdmin)
+
+const secretDisplay = computed(() => {
+  if (configStore.wechatConfig.appSecretMasked) {
+    return configStore.wechatConfig.appSecretMasked
+  }
+  if (configStore.wechatConfig.hasSecret) {
+    return '****'
+  }
+  return '未设置'
+})
+
 const maskAppId = (id: string) => {
   if (!id) return ''
-  return id.length > 8 ? id.substring(0, 4) + '****' + id.substring(id.length - 4) : id
+  return id.length > 8 ? `${id.substring(0, 4)}****${id.substring(id.length - 4)}` : id
 }
 
-const selectAccount = (id: string) => {
-  configStore.selectAccount(id)
-}
-
-const openAddAccountModal = () => {
-  isEditing.value = false
-  form.value = {
-    name: '',
-    appId: '',
-    appSecret: ''
+const openRequestModal = () => {
+  if (!canEdit.value) {
+    toast.error('仅管理员可以修改公众号密钥')
+    return
   }
+  form.value = { appId: '', appSecret: '' }
   showModal.value = true
 }
 
-const openEditAccountModal = (account: WechatConfig) => {
-  isEditing.value = true
-  form.value = { ...account }
-  showModal.value = true
-}
-
-const saveAccount = () => {
-  if (!form.value.name || !form.value.appId || !form.value.appSecret) {
-    alert('请填写完整信息')
+const submitRequest = async () => {
+  if (!form.value.appId || !form.value.appSecret) {
+    toast.error('请填写完整的 AppID 和 AppSecret')
     return
   }
 
-  const account: WechatConfig = {
-    id: isEditing.value ? (form.value.id || '') : Date.now().toString(),
-    name: form.value.name || '',
-    appId: form.value.appId || '',
-    appSecret: form.value.appSecret || ''
+  loading.value = true
+  try {
+    await tenantApi.requestWechatCredentialChange({
+      appId: form.value.appId.trim(),
+      appSecret: form.value.appSecret.trim()
+    })
+    toast.success('确认邮件已发送，请查收邮箱')
+    showModal.value = false
+  } catch (error: any) {
+    console.error('请求失败:', error)
+    toast.error(error.response?.data?.message || '发送失败，请稍后重试')
+  } finally {
+    loading.value = false
   }
-
-  configStore.saveAccount(account)
-  showModal.value = false
 }
 
-const deleteAccount = (id: string) => {
-  if (confirm('确定要删除该公众号配置吗？')) {
-    configStore.removeAccount(id)
+onMounted(() => {
+  if (userStore.currentTenant?.id) {
+    configStore.fetchBackendConfig(userStore.currentTenant.id)
   }
-}
+})
 </script>

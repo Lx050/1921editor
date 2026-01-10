@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_API_TIMEOUT: string
   readonly VITE_NODE_ENV: string
   readonly VITE_WECHAT_APP_ID: string
+  readonly VITE_WECHAT_OPEN_APP_ID: string
+  readonly VITE_APP_DOMAIN: string
   readonly VITE_ENABLE_DEBUG: string
   readonly VITE_ENABLE_MOCK: string
 }

@@ -1,4 +1,12 @@
-import { IsEmail, IsString, MinLength, IsOptional } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsOptional,
+  IsBoolean,
+  Matches,
+  ValidateIf,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
@@ -26,4 +34,55 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   inviteCode?: string;
+
+  @ApiProperty({
+    description: '是否创建新组织',
+    example: false,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  createTenant?: boolean;
+
+  @ApiProperty({
+    description: '新组织名称（创建组织时必填）',
+    example: '西大青媒',
+    required: false,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @IsString()
+  tenantName?: string;
+
+  @ApiProperty({
+    description: '新组织标识（创建组织时必填）',
+    example: 'xida-qingmei',
+    required: false,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @IsString()
+  @Matches(/^[\p{L}\p{N}-]+$/u, {
+    message: '组织标识仅支持中文、英文、数字和短横线',
+  })
+  tenantSlug?: string;
+
+  @ApiProperty({
+    description: '新组织公众号 AppID（创建组织时必填）',
+    example: 'wxc75aebc24fb0d06a',
+    required: false,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @IsString()
+  wechatAppId?: string;
+
+  @ApiProperty({
+    description: '新组织公众号 AppSecret（创建组织时必填）',
+    required: false,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @IsString()
+  wechatAppSecret?: string;
 }

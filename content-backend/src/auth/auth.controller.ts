@@ -21,6 +21,9 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
   ChangePasswordDto,
+  SwitchTenantDto,
+  JoinTenantDto,
+  LeaveTenantDto,
 } from './dto';
 
 /**
@@ -121,5 +124,56 @@ export class AuthController {
         role: req.user.role,
       },
     };
+  }
+
+  /**
+   * 获取当前用户可访问的组织列表
+   */
+  @Get('tenants')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '获取用户的组织列表' })
+  @ApiResponse({ status: 200, description: '成功返回组织列表' })
+  async listTenants(@Request() req) {
+    return this.authService.listTenants(req.user.sub);
+  }
+
+  /**
+   * 切换当前租户
+   */
+  @Post('switch-tenant')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '切换当前组织' })
+  @ApiResponse({ status: 200, description: '切换成功，返回新 token' })
+  async switchTenant(
+    @Request() req,
+    @Body() switchTenantDto: SwitchTenantDto,
+  ) {
+    return this.authService.switchTenant(req.user.sub, switchTenantDto.tenantId);
+  }
+
+  /**
+   * 加入组织（通过邀请码）
+   */
+  @Post('join-tenant')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '加入组织（邀请码）' })
+  @ApiResponse({ status: 200, description: '加入成功' })
+  async joinTenant(@Request() req, @Body() joinTenantDto: JoinTenantDto) {
+    return this.authService.joinTenantByInviteCode(req.user.sub, joinTenantDto);
+  }
+
+  /**
+   * 退出组织
+   */
+  @Post('leave-tenant')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '退出组织' })
+  @ApiResponse({ status: 200, description: '退出成功' })
+  async leaveTenant(@Request() req, @Body() leaveTenantDto: LeaveTenantDto) {
+    return this.authService.leaveTenant(req.user.sub, leaveTenantDto);
   }
 }

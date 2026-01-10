@@ -23,6 +23,7 @@ import { join } from 'path';
 // import { WebhookModule } from './webhook/webhook.module'; // 已移除：依赖飞书模块
 import { SystemModule } from './system/system.module';
 import { StyleTemplateModule } from './style-template/style-template.module';
+import { WechatModule } from './wechat/wechat.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { StyleTemplateModule } from './style-template/style-template.module';
     }),
     NanoBananaModule,
     StyleTemplateModule,
+    WechatModule,
     // WebhookModule, // 已移除：依赖飞书模块
   ],
   controllers: [AppController],
