@@ -32,7 +32,7 @@ export class StyleTemplateController {
   constructor(
     private readonly styleService: StyleTemplateService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   private getDefaultTenantId(): string {
     return (

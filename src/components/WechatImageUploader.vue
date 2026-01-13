@@ -183,25 +183,26 @@ const uploadImage = async (uploadFile: UploadFile) => {
     });
     document.dispatchEvent(event);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('图片上传失败:', error);
 
+    const errorMessage = error instanceof Error ? error.message : '上传失败'
     uploadFile.status = 'error';
-    uploadFile.error = error.message;
+    uploadFile.error = errorMessage;
 
     // 添加到结果列表
     uploadResults.value.push({
       id: uploadFile.id,
       name: uploadFile.name,
       success: false,
-      error: error.message,
+      error: errorMessage,
     });
 
     // 触发失败事件
     const event = new CustomEvent('image-upload-error', {
       detail: {
         file: uploadFile,
-        error: error
+        error: errorMessage
       }
     });
     document.dispatchEvent(event);
@@ -223,7 +224,7 @@ const removeImage = (index: number) => {
 const getMediaIds = (): string[] => {
   return files.value
     .filter(f => f.status === 'success' && f.media_id)
-    .map(f => f.media_id!);
+    .map(f => f.media_id as string);
 };
 
 // 清空列表

@@ -275,7 +275,13 @@ export const useAppStore = defineStore('app', () => {
     isUploading.value = false
   }
 
-  const initializeUserMetadata = (userInfo: any): void => {
+  const initializeUserMetadata = (userInfo: {
+    displayName?: string
+    name?: string
+    nickname?: string
+    username?: string
+    email?: string
+  } | null): void => {
     if (userInfo) {
       const name = userInfo.displayName || userInfo.name || userInfo.nickname || userInfo.username || userInfo.email || ''
       if (name) editorInput.value = name

@@ -161,7 +161,7 @@ export const mergeImageWithCaption = (text: string): string => {
  */
 export const convertConsecutiveImagesToDouble = (text: string): string => {
     // 先清洗所有图注
-    let cleanedText = cleanAllCaptions(text)
+    const cleanedText = cleanAllCaptions(text)
 
     // 匹配连续的图片标记（中间可能有空行或换行）
     // 支持 & 或 &caption 格式

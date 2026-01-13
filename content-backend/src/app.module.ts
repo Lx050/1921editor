@@ -25,12 +25,14 @@ import { SystemModule } from './system/system.module';
 import { StyleTemplateModule } from './style-template/style-template.module';
 import { WechatModule } from './wechat/wechat.module';
 import { FeishuModule } from './feishu/feishu.module';
+import { CacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CacheModule,
     ScheduleModule.forRoot(), // 启用定时任务
     ThrottlerModule.forRoot([
       {

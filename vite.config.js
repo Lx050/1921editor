@@ -122,25 +122,52 @@ export default defineConfig({
           return `assets/[name]-[hash][extname]`
         },
         // 手动代码分割 - 解决300KB+体积警告
-        manualChunks: {
-          // Vue核心和常用库打包在一起（基础框架）
-          'vendor-vue': ['vue', 'vue-router', 'pinia'],
+        manualChunks: (id) => {
+          // 将 node_modules 中的包进行分包
+          if (id.includes('node_modules')) {
+            // Vue 核心
+            if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
+              return 'vendor-vue'
+            }
 
-          // 文档处理相关库（Docx解析）- 大库单独打包，懒加载
-          'vendor-docx': ['mammoth'],
+            // Element Plus UI 库（大，单独分包）
+            if (id.includes('element-plus')) {
+              return 'vendor-element'
+            }
 
-          // 压缩包处理库
-          'vendor-zip': ['jszip'],
+            // 文档处理（mammoth 大库）
+            if (id.includes('mammoth')) {
+              return 'vendor-docx'
+            }
 
-          // 7z-wasm 单独打包（大库，懒加载）
-          'vendor-7z': ['7z-wasm'],
+            // HTTP 客户端
+            if (id.includes('axios')) {
+              return 'vendor-http'
+            }
 
-          // QRCode生成器
-          'vendor-qrcode': ['qrcode'],
+            // 安全库
+            if (id.includes('dompurify')) {
+              return 'vendor-utils'
+            }
 
-          // 工具库
-          'vendor-utils': ['dompurify'],
+            // 压缩库
+            if (id.includes('jszip')) {
+              return 'vendor-zip'
+            }
 
+            // 7z-wasm
+            if (id.includes('7z-wasm')) {
+              return 'vendor-7z'
+            }
+
+            // QRCode
+            if (id.includes('qrcode')) {
+              return 'vendor-qrcode'
+            }
+
+            // 其他第三方库
+            return 'vendor-other'
+          }
         }
       }
     },

@@ -93,7 +93,7 @@ onMounted(async () => {
     if (userStore.currentTenant?.id) {
       await configStore.fetchBackendConfig(userStore.currentTenant.id)
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('确认失败:', error)
     errorMessage.value = error.response?.data?.message || '确认链接无效或已过期'
   } finally {

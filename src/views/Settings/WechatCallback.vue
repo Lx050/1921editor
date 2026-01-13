@@ -84,7 +84,7 @@ onMounted(async () => {
     } else {
       error.value = data.error || '换取授权失败'
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     error.value = '网络错误，请稍后重试'
   } finally {
     loading.value = false

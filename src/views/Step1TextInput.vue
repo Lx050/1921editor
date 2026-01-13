@@ -328,7 +328,7 @@ const processDocxFile = async (file: File): Promise<void> => {
     // 配置 mammoth 选项 - 增强版：保留样式信息
     const options = {
       // 自定义图片处理：将图片alt属性作为图注
-      convertImage: mammoth.images.imgElement((image: any) => {
+      convertImage: mammoth.images.imgElement((image) => {
         // 如果图片有alt属性，将其作为图注
         const alt = image.alt || ''
         if (alt && alt.trim()) {
@@ -357,13 +357,13 @@ const processDocxFile = async (file: File): Promise<void> => {
         "p[style-name='Figure Caption'] => p.caption:fresh",
       ],
       // 使用 transformDocument 来提取更多样式信息
-      transformDocument: (mammoth as any).transforms.paragraph((paragraph: any) => {
+      transformDocument: mammoth.transforms.paragraph((paragraph) => {
         // 检查段落的样式信息
         if (paragraph.styleId || paragraph.styleName) {
           mammothLogger.debug('段落样式:', {
             styleId: paragraph.styleId,
             styleName: paragraph.styleName,
-            text: paragraph.children?.map((c: any) => c.value).join(' ').substring(0, 50)
+            text: paragraph.children?.map((c) => c.value ?? '').join(' ').substring(0, 50)
           })
         }
         return paragraph
@@ -371,7 +371,7 @@ const processDocxFile = async (file: File): Promise<void> => {
     }
 
     const result = await mammoth.convertToHtml({ arrayBuffer }, options)
-    let html = result.value
+    const html = result.value
 
     step1Logger.debug('Mammoth 解析完成, HTML 前100字:', html.substring(0, 100))
 

@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const props = defineProps<{
+defineProps<{
   previewHtml: string
   showMobileFrame: boolean
   wechatTitle?: string

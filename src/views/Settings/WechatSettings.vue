@@ -170,7 +170,7 @@ const submitRequest = async () => {
     })
     toast.success('确认邮件已发送，请查收邮箱')
     showModal.value = false
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('请求失败:', error)
     toast.error(error.response?.data?.message || '发送失败，请稍后重试')
   } finally {

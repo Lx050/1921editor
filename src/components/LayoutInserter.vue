@@ -94,7 +94,7 @@ defineOptions({
   name: 'LayoutInserter'
 })
 
-const props = defineProps<{
+defineProps<{
   index: number
 }>()
 

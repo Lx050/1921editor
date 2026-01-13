@@ -15,6 +15,7 @@ import { PasswordHashService } from '../services/password-hash.service';
 import { EmailService } from '../services/email.service';
 import { TokenService } from '../services/token.service';
 import { InviteCodeService } from '../services/invite-code.service';
+import { TenantModule } from '../tenant/tenant.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { InviteCodeService } from '../services/invite-code.service';
       EmailVerificationToken,
       PasswordResetToken,
     ]),
+    TenantModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

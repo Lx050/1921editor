@@ -284,7 +284,7 @@ export class MemoryCache {
   /**
    * 估算对象大小
    */
-  private estimateObjectSize(obj: any): number {
+  private estimateObjectSize(obj: unknown): number {
     if (obj === null || obj === undefined) return 0
     if (typeof obj === 'boolean') return 4
     if (typeof obj === 'number') return 8
@@ -294,7 +294,7 @@ export class MemoryCache {
         return obj.reduce((sum, item) => sum + this.estimateObjectSize(item), 0) + 24
       } else {
         return Object.keys(obj).reduce((sum, key) => {
-          return sum + key.length * 2 + this.estimateObjectSize(obj[key])
+          return sum + key.length * 2 + this.estimateObjectSize((obj as Record<string, unknown>)[key])
         }, 0) + 24
       }
     }
@@ -333,14 +333,14 @@ export class MemoryCache {
 export const memoryCache = MemoryCache.getInstance()
 
 // 缓存装饰器
-export function cached(ttl?: number, keyGenerator?: (...args: any[]) => string) {
-  return (_target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+export function cached(ttl?: number, keyGenerator?: (...args: unknown[]) => string) {
+  return (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (this: unknown, ...args: unknown[]) {
       const cacheKey = keyGenerator ? keyGenerator(...args) : `${propertyKey}:${JSON.stringify(args)}`
 
-      return memoryCache.getOrSet(cacheKey, () => originalMethod.apply(this, args), ttl)
+      return memoryCache.getOrSet(cacheKey, () => originalMethod.apply(this, args as never), ttl)
     }
 
     return descriptor

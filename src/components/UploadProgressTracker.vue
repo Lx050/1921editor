@@ -131,7 +131,7 @@ interface TaskProgress {
   speed?: number
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   title: '上传进度',
   showControls: true,
   autoHide: false
@@ -202,7 +202,7 @@ const clearAll = () => {
 const getTaskName = (task: TaskProgress): string => {
   if (task.url) {
     // 从URL提取文件名
-    const matches = task.url.match(/\/([^\/]+\.(png|jpg|jpeg|gif|webp|avif))$/i)
+    const matches = task.url.match(/\/([^/]+\.(png|jpg|jpeg|gif|webp|avif))$/i)
     return matches ? matches[1] : task.url
   }
   return task.id

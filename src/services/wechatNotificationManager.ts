@@ -3,11 +3,34 @@
  * 根据用户习惯和场景智能选择提醒方式
  */
 
+// 微信 SDK 类型定义
+interface WxMiniProgram {
+  postMessage(message: { data: { type: string; title: string; message: string } }): void
+}
+
+interface WxSDK {
+  miniProgram: WxMiniProgram
+}
+
 // 声明 window.wx
 declare global {
   interface Window {
-    wx: any;
+    wx?: WxSDK
   }
+}
+
+// Battery API 类型定义
+interface BatteryManager {
+  level: number
+  charging: boolean
+  chargingTime: number
+  dischargingTime: number
+  addEventListener(type: 'levelchange', listener: () => void): void
+  removeEventListener(type: 'levelchange', listener: () => void): void
+}
+
+interface NavigatorWithBattery extends Navigator {
+  getBattery?: () => Promise<BatteryManager>
 }
 
 interface NotificationOptions {
@@ -241,7 +264,7 @@ export class WechatNotificationManager {
    * 优化通知内容
    */
   private optimizeNotificationContent(options: NotificationOptions, context: NotificationContext): NotificationOptions {
-    let optimized = { ...options };
+    const optimized = { ...options };
 
     // 根据电池状态调整
     if (context.batteryLevel < 0.2) {
@@ -304,12 +327,13 @@ export class WechatNotificationManager {
       this.notificationHistory.set(title, []);
     }
 
-    this.notificationHistory.get(title)!.push(timestamp);
-
-    // 保留最近100条记录
-    const history = this.notificationHistory.get(title)!;
-    if (history.length > 100) {
-      history.splice(0, history.length - 100);
+    const history = this.notificationHistory.get(title);
+    if (history) {
+      history.push(timestamp);
+      // 保留最近100条记录
+      if (history.length > 100) {
+        history.splice(0, history.length - 100);
+      }
     }
 
     // 更新用户行为
@@ -353,8 +377,9 @@ export class WechatNotificationManager {
   private async getBatteryLevel(): Promise<number> {
     if ('getBattery' in navigator) {
       try {
-        const battery = await (navigator as any).getBattery();
-        return battery.level;
+        const nav = navigator as NavigatorWithBattery
+        const battery = nav.getBattery ? await nav.getBattery() : null;
+        return battery?.level ?? 1.0;
       } catch {
         return 1.0; // 无法获取，假设满电
       }
@@ -459,19 +484,28 @@ class InAppNotificationChannel extends WechatNotificationChannel {
 class SystemNotificationChannel extends WechatNotificationChannel {
   async send(options: NotificationOptions): Promise<void> {
     if ('Notification' in navigator && Notification.permission === 'granted') {
-      const notification = new Notification(options.title, {
+      // 扩展的 Notification 选项类型
+      const extendedNotificationOptions: NotificationOptions & {
+        body: string
+        icon?: string
+        badge?: string
+        silent?: boolean
+        requireInteraction?: boolean
+        tag?: string
+      } = {
         body: options.message,
         icon: '/icons/wechat-notification.png',
         badge: '/icons/wechat-badge.png',
         silent: options.vibration === false,
         requireInteraction: options.persistent,
         tag: 'wechat-renewal',
-      } as any);
+      }
+      const notification = new Notification(options.title, extendedNotificationOptions)
 
       if (options.actions && options.actions.length > 0) {
         // 注意：某些浏览器可能不支持通知操作按钮
         notification.onclick = () => {
-          options.actions![0].action();
+          options.actions?.[0]?.action();
           notification.close();
         };
       }

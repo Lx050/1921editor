@@ -7,7 +7,7 @@ export interface WorkerTask {
   id: string
   type: 'PROCESS_DOCX' | 'EXTRACT_IMAGES' | 'PROCESS_WITH_IMAGES'
   file: File
-  options?: any
+  options?: Record<string, unknown>
   timeout?: number
 }
 
@@ -20,7 +20,7 @@ export interface WorkerProgress {
 export interface WorkerResult {
   id: string
   type: 'SUCCESS' | 'IMAGES_EXTRACTED' | 'PROCESS_WITH_IMAGES_SUCCESS'
-  payload: any
+  payload: unknown
 }
 
 export interface WorkerError {

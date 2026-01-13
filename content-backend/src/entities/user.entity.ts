@@ -41,8 +41,8 @@ export class User {
   @Column({ unique: true })
   email: string; // 邮箱（必填，全局唯一）
 
-  @Column()
-  password: string; // 加密后的密码
+  @Column({ select: false })
+  password: string; // 加密后的密码（默认不查询）
 
   @Column()
   name: string;

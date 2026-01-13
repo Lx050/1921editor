@@ -297,7 +297,7 @@ const handleRegister = async () => {
     // 注册成功后跳转到登录页面
     // 因为注册后需要验证邮箱才能登录
     router.push('/login?email=' + encodeURIComponent(formData.value.email))
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('注册失败:', error)
     const errorData = error.response?.data
     const message = Array.isArray(errorData?.errors)

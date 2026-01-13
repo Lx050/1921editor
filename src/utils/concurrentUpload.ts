@@ -145,7 +145,7 @@ export class ConcurrentUploadManager {
     processor: (item: T) => Promise<R>
   ): Promise<PromiseSettledResult<R>[]> {
     const results: Promise<PromiseSettledResult<R>>[] = []
-    const executing: Promise<any>[] = []
+    const executing: Array<Promise<PromiseSettledResult<R>>> = []
 
     for (const item of items) {
       const promise = processor(item)
@@ -154,7 +154,7 @@ export class ConcurrentUploadManager {
 
       results.push(promise)
 
-      const e: Promise<any> = promise.finally(() => {
+      const e: Promise<PromiseSettledResult<R>> = promise.finally(() => {
         const index = executing.indexOf(e)
         if (index > -1) {
           executing.splice(index, 1)
@@ -488,7 +488,7 @@ export class ConcurrentUploadManager {
       // 注意：上面的 onload 会覆盖前面的 onload，所以需要合并
       const originalOnload = img.onload;
       img.onload = () => {
-        if (originalOnload) (originalOnload as any).call(img);
+        if (originalOnload) originalOnload.call(img);
         URL.revokeObjectURL(objectURL);
       };
     })

@@ -117,14 +117,16 @@ onUnmounted(() => {
 });
 
 // 处理token更新事件
-function handleTokenUpdated(event: any) {
-  console.log('微信token已更新:', event.detail);
+function handleTokenUpdated(event: Event) {
+  const customEvent = event as CustomEvent<unknown>
+  console.log('微信token已更新:', customEvent.detail);
   checkLoginStatus();
 }
 
 // 处理需要重新授权事件
-function handleReauthRequired(event: any) {
-  console.log('需要重新授权:', event.detail);
+function handleReauthRequired(event: Event) {
+  const customEvent = event as CustomEvent<unknown>
+  console.log('需要重新授权:', customEvent.detail);
   checkLoginStatus();
 
   // 可以显示更明显的提醒

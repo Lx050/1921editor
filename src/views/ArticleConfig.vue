@@ -149,11 +149,11 @@ const startProcessing = async () => {
           const savedBlocks = JSON.parse(article.value.content)
           if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
             // 重新生成 block IDs 并恢复到 appStore
-            const restoredBlocks = savedBlocks.map((block: any, index: number) => ({
+            const restoredBlocks = savedBlocks.map((block: Partial<ContentBlock> & { aiImageUrl?: string }, index: number) => ({
               id: `restored_${index}_${Date.now()}`,
               type: block.type || 'body',
               text: block.text || '',
-              source: 'restored',
+              source: 'restored' as const,
               meta: block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}
             }))
             
@@ -170,7 +170,7 @@ const startProcessing = async () => {
       // 3. 加载图片（如果有）
       if (article.value.images && Array.isArray(article.value.images)) {
         const { getWechatProxyUrl, restoreWechatUrl } = await import('../utils/wechatApi')
-        const wechatImages = article.value.images.map((img: any, index: number) => {
+        const wechatImages = article.value.images.map((img: Partial<WechatImage> & { url?: string; proxyUrl?: string; path?: string; mediaId?: string }, index: number) => {
           const rawUrl = img.url || img.proxyUrl || img.path || ''
           const normalizedUrl = restoreWechatUrl(rawUrl)
           const proxyUrl = img.proxyUrl || getWechatProxyUrl(normalizedUrl)
@@ -209,9 +209,10 @@ const startProcessing = async () => {
     } else {
       router.push('/step1')
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[ArticleConfig] Failed to load article data:', err)
-    error.value = err.message || '加载文章数据失败'
+    const message = err instanceof Error ? err.message : '加载文章数据失败'
+    error.value = message
   } finally {
     loading.value = false
   }
@@ -227,8 +228,9 @@ onMounted(async () => {
       selectedAccountId.value =
         configStore.wechatConfig.id || configStore.savedAccounts[0].id
     }
-  } catch (err: any) {
-    error.value = err.response?.data?.message || '无法加载文章信息'
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { message?: string } } }
+    error.value = error.response?.data?.message || '无法加载文章信息'
   } finally {
     loading.value = false
   }

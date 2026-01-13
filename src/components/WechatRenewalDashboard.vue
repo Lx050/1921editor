@@ -383,7 +383,7 @@ async function loadAccounts(): Promise<void> {
     const response = await fetch('/api/wechat/accounts');
     const data = await response.json();
 
-    accounts.value = data.map((account: any) => ({
+    accounts.value = data.map((account: Omit<WechatAccount, 'healthScore' | 'autoRenewalEnabled'>) => ({
       ...account,
       healthScore: calculateHealthScore(account),
       autoRenewalEnabled: account.autoRenewal !== false,
@@ -396,7 +396,7 @@ async function loadAccounts(): Promise<void> {
 /**
  * 计算账号健康分数
  */
-function calculateHealthScore(account: any): number {
+function calculateHealthScore(account: Omit<WechatAccount, 'healthScore' | 'autoRenewalEnabled'>): number {
   const now = Date.now();
   const expiresAt = account.tokenData.expires_at;
   const daysToExpiry = (expiresAt - now) / (24 * 60 * 60 * 1000);

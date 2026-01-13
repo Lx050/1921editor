@@ -25,11 +25,11 @@ export function createAppError(
 /**
  * 包装异步函数，提供统一错误处理
  */
-export function withErrorHandler<T extends (...args: any[]) => Promise<any>>(
+export function withErrorHandler<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   errorMessage?: string
-): (...args: Parameters<T>) => Promise<ReturnType<T> | void> {
-  return async (...args: Parameters<T>): Promise<ReturnType<T> | void> => {
+): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | void> {
+  return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>> | void> => {
     try {
       return await fn(...args)
     } catch (error) {

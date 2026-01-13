@@ -10,6 +10,11 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Tenant } from './tenant.entity';
+import type {
+  ArticleConfig,
+  ArticleImage,
+  WechatPublishResult,
+} from './article.types';
 
 export enum ArticleStatus {
   DRAFT = 'DRAFT',
@@ -36,13 +41,13 @@ export class Article {
   title: string;
 
   @Column('jsonb', { nullable: true })
-  config: any; // Step 1: Layout/Style config
+  config: ArticleConfig; // Step 1: Layout/Style config
 
   @Column('text', { nullable: true })
   content: string; // Step 2: Parsed text
 
   @Column('jsonb', { default: [] })
-  images: any[]; // Step 3: Image metadata (url, caption)
+  images: ArticleImage[]; // Step 3: Image metadata (url, caption)
 
   @Column({
     type: 'enum',
@@ -52,7 +57,7 @@ export class Article {
   status: ArticleStatus;
 
   @Column('jsonb', { nullable: true })
-  wechatResult: any; // Step 4: WeChat publish result
+  wechatResult: WechatPublishResult; // Step 4: WeChat publish result
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'ownerId' })

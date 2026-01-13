@@ -339,6 +339,7 @@ import { useConfigStore } from '../../stores/configStore'
 import { useAppStore } from '../../stores/appStore'
 import { getArticles, getArticle, type Article } from '../../api/article'
 import toast from '../../composables/useToast'
+import type { ContentBlock } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -398,12 +399,12 @@ const continueEdit = async (id: string) => {
       try {
         const savedBlocks = JSON.parse(article.content)
         if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
-          const restoreBlocksRecursively = (blocks: any[]): any[] => {
-            return blocks.map((block: any) => ({
+          const restoreBlocksRecursively = (blocks: Partial<ContentBlock>[]): ContentBlock[] => {
+            return blocks.map((block: Partial<ContentBlock> & { aiImageUrl?: string; children?: Partial<ContentBlock>[] }) => ({
               id: block.id || `restored_${Math.random().toString(36).substr(2, 9)}`,
               type: block.type || 'body',
               text: block.text || '',
-              source: 'restored',
+              source: 'restored' as const,
               meta: block.meta || (block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}),
               children: block.children ? restoreBlocksRecursively(block.children) : undefined
             }))
@@ -411,7 +412,7 @@ const continueEdit = async (id: string) => {
           const restoredBlocks = restoreBlocksRecursively(savedBlocks)
           appStore.setContentBlocks(restoredBlocks)
           hasContentBlocks = true
-          const rawText = savedBlocks.map((b: any) => b.text || '').join('\n\n')
+          const rawText = savedBlocks.map((b: Partial<ContentBlock>) => b.text || '').join('\n\n')
           appStore.setRawText(rawText)
         }
       } catch (e) {
@@ -424,7 +425,7 @@ const continueEdit = async (id: string) => {
     } else {
       router.push('/step1')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     toast.error('加载失败')
   } finally {
     loading.value = false
@@ -441,7 +442,7 @@ const fetchArticles = async () => {
   loading.value = true
   try {
     articles.value = await getArticles()
-  } catch (error: any) {
+  } catch (error: unknown) {
     toast.error('列表加载失败')
   } finally {
     loading.value = false

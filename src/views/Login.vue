@@ -151,7 +151,7 @@ const handleLogin = async () => {
     } else {
       router.push('/')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('登录失败:', error)
     errorMessage.value = error.response?.data?.message || '登录失败，请检查邮箱和密码'
   } finally {

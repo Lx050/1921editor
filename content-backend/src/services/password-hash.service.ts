@@ -30,7 +30,7 @@ export class PasswordHashService {
 
   /**
    * 验证密码强度
-   * 规则：最少8位，必须包含大小写字母和数字
+   * 规则：最少8位，必须包含大小写字母、数字和特殊字符
    * @param password 密码
    * @returns 是否符合强度要求
    */
@@ -55,6 +55,11 @@ export class PasswordHashService {
       return false;
     }
 
+    // 必须包含特殊字符
+    if (!/[!@#$%^&*]/.test(password)) {
+      return false;
+    }
+
     return true;
   }
 
@@ -64,7 +69,8 @@ export class PasswordHashService {
    * @returns 随机密码
    */
   generateRandom(length: number = 12): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'; // 排除易混淆字符
+    const chars =
+      'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*'; // 包含特殊字符
     let password = '';
     for (let i = 0; i < length; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));

@@ -225,7 +225,7 @@ import CreateDraftFormModal from '../components/CreateDraftFormModal.vue'
 import { articleApi } from '../utils/api'
 import toast from '../composables/useToast'
 import DOMPurify from 'dompurify'
-import type { DraftArticle, WechatImage, WechatUploadResponse, BlockType } from '@/types'
+import type { DraftArticle, WechatImage, WechatUploadResponse, BlockType, ContentBlock } from '@/types'
 import type { ImageReplacement, DraftFormState, ExternalImage, SavedBlock } from '@/types/preview'
 import { tokenStorage } from '../utils/tokenStorage'
 
@@ -415,6 +415,45 @@ const successfulWechatImages = computed(() =>
 const resolveArticleId = (value: unknown): string | null =>
   typeof value === 'string' ? value : null
 
+// 递归计算块内图片数量
+const countImages = (block: ContentBlock): number => {
+  let count = 0
+  if (block.type === 'image_single' || block.type === 'image_single_caption' || (block.meta && block.meta.aiImageUrl)) {
+    count = 1
+  } else if (block.type === 'image_double' || block.type === 'image_double_caption') {
+    count = 2
+  } else if (block.type === 'container' && block.children) {
+    count = block.children.reduce((acc: number, child: ContentBlock) => acc + countImages(child), 0)
+  }
+  return count
+}
+
+// 根据全局图片索引查找对应的块和块内偏移
+const findBlockByImageIndex = (blocks: ContentBlock[], targetIndex: number): { block: ContentBlock; offset: number } | null => {
+  let currentIndex = 0
+
+  const traverse = (list: ContentBlock[]): { block: ContentBlock; offset: number } | null => {
+    for (const block of list) {
+      const imgCount = countImages(block)
+      
+      // 如果目标索引在这个块的范围内
+      if (targetIndex >= currentIndex && targetIndex < currentIndex + imgCount) {
+        if (block.type === 'container') {
+           // 递归容器内部
+           return traverse(block.children || [])
+        } else {
+           // 找到了目标叶子节点
+           return { block, offset: targetIndex - currentIndex }
+        }
+      }
+      currentIndex += imgCount
+    }
+    return null
+  }
+  
+  return traverse(blocks)
+}
+
 // V2: 处理微信图片选择 - 直接替换，无需确认
 const handleImageSelect = (image: WechatImage): void => {
   const placeholderId = selectedPlaceholder.value
@@ -427,11 +466,69 @@ const handleImageSelect = (image: WechatImage): void => {
   const previewUrl = image.localPreviewUrl || image.proxyUrl || getWechatProxyUrl(image.url)
   const wechatUrl = restoreWechatUrl(image.url || image.proxyUrl || previewUrl)
 
-  // 记录替换（保存微信 URL 用于最终输出，本地 URL 用于预览）
+  // 1. 更新前端临时预览 Map (用于 iframe 实时显示)
   imageReplacements.value[placeholderId] = {
     previewUrl: previewUrl,
     wechatUrl: wechatUrl
   }
+
+  // 2. 核心修复：将替换关系持久化到 Block 的 meta 中
+  // 解析 placeholderId (格式: image_5 或 image_5_1)
+  try {
+    const parts = placeholderId.split('_') // ["image", "5", "1"?]
+    if (parts.length >= 2) {
+      const globalImageIndex = parseInt(parts[1], 10)
+      const subIndex = parts.length > 2 ? parseInt(parts[2], 10) : 0 // 1-based index from styleAssembler if double
+      
+      // 查找对应的块
+      const result = findBlockByImageIndex(contentBlocks.value, globalImageIndex)
+      
+      if (result && result.block) {
+        const block = result.block
+        step3Logger.debug('找到对应的块:', block.id, block.type)
+
+        const newMeta = { ...block.meta }
+
+        if (block.type === 'image_double' || block.type === 'image_double_caption') {
+           // 双图处理
+           const existingUrls = Array.isArray(newMeta.replacementUrls) ? newMeta.replacementUrls : undefined
+           const urls = existingUrls ? [...existingUrls] : ['', '']
+           // styleAssembler 生成的 subIndex 是 1 或 2，对应数组索引 0 或 1
+           // 但是 globalImageIndex 是针对 block 的起始索引。
+           // 对于 double image，countImages 返回 2。
+           // 如果 placeholder 是 image_5_1，说明是第6组图片的第1张？
+           // 让我们回顾 styleAssembler:
+           // addDoubleImagePlaceholderMarkers 用的是 `image_${imageIndex}_${counter}`
+           // 其中 imageIndex 是通过 accumulated count 传进来的。
+           // 如果 block 是 double，它占用了 imageIndex 和 imageIndex+1 ? 
+           // 不，styleAssembler 的 imageCounter 是一次性加 countImages(block)。
+           // 所以 imageIndex 是该 block "起始" 的图片索引。
+           // 比如前面有 5 张图，当前是 double，那么 imageIndex 是 5。
+           // 生成的 placeholder 是 image_5_1 和 image_5_2。
+           
+           // 解析出的 subIndex 是 1 或 2
+           // 所以数组索引是 subIndex - 1
+           if (subIndex === 1) urls[0] = wechatUrl
+           if (subIndex === 2) urls[1] = wechatUrl
+           
+           newMeta.replacementUrls = urls
+           step3Logger.debug('更新双图 Block Meta:', urls)
+        } else {
+           // 单图处理
+           newMeta.replacementUrl = wechatUrl
+           step3Logger.debug('更新单图 Block Meta:', wechatUrl)
+        }
+        
+        // 更新 Store，触发自动保存
+        appStore.updateBlockMeta(block.id, newMeta)
+      } else {
+        step3Logger.warn('未找到对应的 Block:', placeholderId)
+      }
+    }
+  } catch (e) {
+    step3Logger.error('解析 Block 映射失败:', e)
+  }
+
   step3Logger.debug('直接替换:', placeholderId, '->', previewUrl)
 
   // 优化：直接修改 iframe 中的 DOM，避免 reload 导致的闪烁
@@ -778,25 +875,28 @@ const getCurrentPreviewHtmlString = (): string => {
 
 // 生成HTML
 const generateHtml = async (): Promise<void> => {
+  if (isGenerating.value) return
+  
   isGenerating.value = true
   errorMessage.value = ''
 
   try {
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    if (contentBlocks.value.length === 0) {
-      throw new Error('没有内容块可处理')
+    // 确保有样式配置
+    if (!appStore.styleConfig) {
+       // 尝试加载默认配置...
     }
 
-    const styleConfig = appStore.styleConfig
-    step3Logger.debug('生成HTML，样式配置:', styleConfig)
-
-    // V2: 生成带占位符标记的 HTML
-    finalHtml.value = buildHtml(contentBlocks.value, styleConfig, true)
-    previewHtml.value = finalHtml.value
-
-    // 清除之前的替换记录
-    imageReplacements.value = {}
+    // 关键修正：传入 urlTransformer，将微信 URL 转为代理 URL
+    const html = buildHtml(
+      contentBlocks.value, 
+      appStore.styleConfig, 
+      true,
+      (url) => getWechatProxyUrl(url) // V2: 自动代理化
+    )
+    
+    finalHtml.value = html
     selectedPlaceholder.value = null
   } catch (error: unknown) {
     step3Logger.error('生成HTML失败:', error)
@@ -825,7 +925,16 @@ watch(activeTab, (newTab) => {
 const getOutputHtml = (): string => {
   let html = finalHtml.value
   
-  // 应用所有图片替换（使用微信 URL 用于最终输出）
+  // 1. 全局还原微信 URL (将代理链接转回原始链接)
+  html = html.replace(/src="([^"]+)"/g, (match, src) => {
+      // 解码 HTML 实体 (如果有)
+      const cleanSrc = src.replace(/&amp;/g, '&')
+      const original = restoreWechatUrl(cleanSrc)
+      return `src="${original}"`
+  })
+  
+  // 2. 应用所有图片替换（使用微信 URL 用于最终输出）
+  // 虽然 styleAssembler 可能已经处理了大部分，但如果有未保存的临时替换，这里再次覆盖
   for (const [placeholderId, urls] of Object.entries(imageReplacements.value) as Array<[string, ImageReplacement]>) {
     const imageUrl = urls.wechatUrl || urls.previewUrl
     const imgTagRegex = new RegExp(`<img([^>]*data-placeholder="${placeholderId}"[^>]*)>`, 'g')
@@ -836,7 +945,7 @@ const getOutputHtml = (): string => {
     })
   }
   
-  // 移除 data-placeholder 属性（最终输出不需要）
+  // 3. 移除 data-placeholder 属性（最终输出不需要）
   html = html.replace(/ data-placeholder="[^"]*"/g, '')
   
   return html

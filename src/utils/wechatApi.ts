@@ -133,22 +133,28 @@ export async function createDraft(article: DraftArticle): Promise<DraftCreateRes
  * @param originalUrl 原始微信图片 URL
  * @returns 代理后的 URL
  */
+/**
+ * 将微信图片 URL 转换为代理 URL
+ * @param originalUrl 原始微信图片 URL
+ * @returns 代理后的 URL
+ */
 export function getWechatProxyUrl(originalUrl: string): string {
     if (!originalUrl || !originalUrl.startsWith('http')) {
         return originalUrl;
     }
 
     // 如果已经是代理 URL 或本地 URL，直接返回
-    if (originalUrl.includes('/wechat-image-proxy') || originalUrl.startsWith('blob:') || originalUrl.startsWith('data:')) {
+    if (originalUrl.includes('/wechat/image-proxy') || originalUrl.startsWith('blob:') || originalUrl.startsWith('data:')) {
         return originalUrl;
     }
 
-    // 提取 qpic.cn 域名之后的部分（支持 mmbiz.qpic.cn, mmecoa.qpic.cn 等所有子域名）
+    // V2: 对接后端 /wechat/image-proxy?url=...
     try {
         const url = new URL(originalUrl);
+        // 支持 qpic.cn 所有子域名
         if (url.hostname.endsWith('.qpic.cn') || url.hostname === 'qpic.cn') {
-            // 保留完整路径，包含子域名信息
-            return `/wechat-image-proxy/${url.hostname}${url.pathname}${url.search}`;
+            // 使用 encodeURIComponent 编码整个 URL
+            return `/api/wechat/image-proxy?url=${encodeURIComponent(originalUrl)}`;
         }
     } catch (e) {
         console.warn('[WeChat API] URL 解析失败:', originalUrl);
@@ -165,6 +171,23 @@ export function getWechatProxyUrl(originalUrl: string): string {
 export function restoreWechatUrl(possibleUrl: string): string {
     if (!possibleUrl) return possibleUrl;
 
+    // V2: 解析 /api/wechat/image-proxy?url=...
+    if (possibleUrl.includes('/wechat/image-proxy')) {
+        try {
+            // 可能包含 full host or just path
+            // 如果是 /api/wechat... 需要构造个 dummy host 来解析 search params
+            const dummyBase = 'http://dummy.com';
+            const urlObj = new URL(possibleUrl, dummyBase);
+            const rawUrl = urlObj.searchParams.get('url');
+            if (rawUrl) {
+                return decodeURIComponent(rawUrl);
+            }
+        } catch (e) {
+            console.warn('[WeChat API] 还原 URL 失败:', possibleUrl, e);
+        }
+    }
+
+    // 兼容旧格式 (如果有)
     if (possibleUrl.startsWith('/wechat-image-proxy/')) {
         const raw = possibleUrl.replace('/wechat-image-proxy/', '');
         return `https://${raw}`;

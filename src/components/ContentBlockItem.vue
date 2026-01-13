@@ -203,11 +203,17 @@ import type { ContentBlock, BlockType } from '../types'
 import { getBlockTypeDisplayName } from '../utils/styleAssembler'
 import LayoutInserter from './LayoutInserter.vue'
 
+interface BlockTypeOption {
+  value: BlockType
+  label: string
+  icon: string
+}
+
 const props = defineProps<{
   block: ContentBlock
   index: number
   selectedId: string | null
-  typeOptions: any[]
+  typeOptions: BlockTypeOption[]
 }>()
 
 const emit = defineEmits(['select', 'delete', 'updateText', 'changeType', 'generateAi', 'insertText', 'insertImage', 'insertContainer', 'move', 'openMerge'])

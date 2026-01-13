@@ -9,9 +9,13 @@ import { TenantModule } from '../tenant/tenant.module';
 import { FeishuModule } from '../feishu/feishu.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Article, User]), TenantModule, FeishuModule],
+  imports: [
+    TypeOrmModule.forFeature([Article, User]),
+    TenantModule,
+    FeishuModule,
+  ],
   controllers: [ArticleController],
   providers: [ArticleService, FileCleanupService],
   exports: [ArticleService],
 })
-export class ArticleModule { }
+export class ArticleModule {}

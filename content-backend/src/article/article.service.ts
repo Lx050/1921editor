@@ -15,7 +15,7 @@ export class ArticleService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private bitableSyncService: BitableSyncService,
-  ) { }
+  ) {}
 
   // 飞书同步功能已恢复
   private async triggerSync(id: string) {
@@ -239,44 +239,96 @@ export class ArticleService {
     return this.findOne(id, tenantId);
   }
 
-  async findAll(user: User) {
+  /**
+   * 分页查询文章列表
+   * @param user 用户信息
+   * @param page 页码（从 1 开始）
+   * @param limit 每页数量
+   */
+  async findAll(user: User, page: number = 1, limit: number = 20) {
     this.logger.log(
-      `🔍 查询文章列表 - 用户ID: ${user?.id ?? 'anonymous'}, 租户ID: ${user.tenantId}`,
+      `🔍 查询文章列表 - 用户ID: ${user?.id ?? 'anonymous'}, 租户ID: ${user.tenantId}, 页码: ${page}, 每页: ${limit}`,
     );
 
-    // 按租户查询所有文章（同一组织共享文章池）
-    const articles = await this.articleRepository.find({
+    // 限制每页最大数量，防止性能问题
+    const safeLimit = Math.min(limit, 100);
+    const safePage = Math.max(page, 1);
+
+    // 按租户查询文章（同一组织共享文章池）
+    const [articles, total] = await this.articleRepository.findAndCount({
       where: {
-        tenantId: user.tenantId, // 只按租户过滤，不按个人过�?
+        tenantId: user.tenantId,
       },
-      relations: ['owner'], // 加载文章所有者信�?
+      relations: ['owner'],
       order: { createdAt: 'DESC' },
+      skip: (safePage - 1) * safeLimit,
+      take: safeLimit,
     });
 
-    this.logger.log(`📋 找到 ${articles.length} 篇文章（租户共享）`);
-    articles.forEach((article, index) => {
-      this.logger.log(
-        `  ${index + 1}. ${article.title} (${article.status}) - 创建�? ${article.owner?.name || article.ownerId}`,
-      );
-    });
+    const totalPages = Math.ceil(total / safeLimit);
 
-    return articles;
+    this.logger.log(
+      `📋 找到 ${articles.length} 篇文章（第 ${safePage}/${totalPages} 页，共 ${total} 篇）`,
+    );
+
+    return {
+      data: articles,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages,
+        hasNext: safePage < totalPages,
+        hasPrev: safePage > 1,
+      },
+    };
   }
 
-  async findAllByTenant(tenantId: string) {
-    this.logger.log(`🔍 查询文章列表 - 租户ID: ${tenantId} (public)`);
+  /**
+   * 分页查询租户文章列表（公开接口）
+   * @param tenantId 租户ID
+   * @param page 页码（从 1 开始）
+   * @param limit 每页数量
+   */
+  async findAllByTenant(
+    tenantId: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
+    this.logger.log(
+      `🔍 查询文章列表 - 租户ID: ${tenantId}, 页码: ${page}, 每页: ${limit} (public)`,
+    );
 
-    const articles = await this.articleRepository.find({
+    const safeLimit = Math.min(limit, 100);
+    const safePage = Math.max(page, 1);
+
+    const [articles, total] = await this.articleRepository.findAndCount({
       where: {
         tenantId,
       },
       relations: ['owner'],
       order: { createdAt: 'DESC' },
+      skip: (safePage - 1) * safeLimit,
+      take: safeLimit,
     });
 
-    this.logger.log(`📋 找到 ${articles.length} 篇文章（租户共享）`);
+    const totalPages = Math.ceil(total / safeLimit);
 
-    return articles;
+    this.logger.log(
+      `📋 找到 ${articles.length} 篇文章（第 ${safePage}/${totalPages} 页，共 ${total} 篇）`,
+    );
+
+    return {
+      data: articles,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages,
+        hasNext: safePage < totalPages,
+        hasPrev: safePage > 1,
+      },
+    };
   }
 
   /**

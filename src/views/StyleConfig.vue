@@ -236,7 +236,7 @@
               <!-- 完整模板HTML -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                  完整模板HTML（必须包含 {{CONTENT}} 占位符）
+                  完整模板HTML（必须包含 {{ CONTENT }} 占位符）
                 </label>
                 <textarea
                   v-model="editForm.fullExample"

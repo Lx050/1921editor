@@ -109,7 +109,7 @@ const verifyEmailAddress = async (token: string) => {
 
     success.value = true
     toast.success('邮箱验证成功！')
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('验证失败:', err)
     error.value = err.response?.data?.message || '验证链接无效或已过期'
   } finally {

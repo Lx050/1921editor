@@ -15,6 +15,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as crypto from 'crypto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WechatService } from './wechat.service';
 import {
@@ -244,7 +247,7 @@ export class WechatController {
   @Get('image-proxy')
   @ApiOperation({
     summary: '微信图片代理',
-    description: '代理访问微信图片以绕过防盗链',
+    description: '代理访问微信图片以绕过防盗链 (带本地缓存)',
   })
   async proxyImage(@Query('url') url: string, @Res() res: Response) {
     if (!url) {
@@ -253,21 +256,61 @@ export class WechatController {
     }
 
     try {
+      // 1. 计算缓存路径
+      const cacheDir = path.join(process.cwd(), 'uploads', 'cache');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+
+      // 猜测扩展名
+      let ext = '.jpg'; // 默认
+      try {
+        const urlObj = new URL(url);
+        const fmt = urlObj.searchParams.get('wx_fmt');
+        if (fmt) ext = `.${fmt}`;
+      } catch (e) {
+        // URL 解析失败，忽略
+      }
+
+      const hash = crypto.createHash('md5').update(url).digest('hex');
+      const filename = `${hash}${ext}`;
+      const filePath = path.join(cacheDir, filename);
+
+      // 2. 检查缓存
+      if (fs.existsSync(filePath)) {
+        // 增加强缓存头
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+        return res.sendFile(filePath);
+      }
+
+      // 3. 下载并缓存
       const response = await this.wechatService.getProxyImageStream(url);
 
-      // 转发 Content-Type
+      // 设置响应头
       const contentType = response.headers['content-type'];
       if (contentType) {
         res.setHeader('Content-Type', contentType);
       }
-
-      // 设置强缓存 (一年)
       res.setHeader('Cache-Control', 'public, max-age=31536000');
 
+      // 创建写入流
+      const writer = fs.createWriteStream(filePath);
+
+      // 双路管道：一路给用户，一路写入硬盘
       response.data.pipe(res);
+      response.data.pipe(writer);
+
+      writer.on('error', (err) => {
+        console.error('[ImageCache] Write error:', err);
+        writer.end();
+        // 尝试删除可能损坏的文件
+        fs.unlink(filePath, () => {});
+      });
     } catch (error) {
       // console.error('Proxy error:', error.message);
-      res.status(404).send('Image unavailable');
+      if (!res.headersSent) {
+        res.status(404).send('Image unavailable');
+      }
     }
   }
 }

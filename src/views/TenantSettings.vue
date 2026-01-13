@@ -230,13 +230,27 @@ import { ElMessage } from 'element-plus';
 import { Link } from '@element-plus/icons-vue';
 import { useUserStore } from '../stores/userStore';
 
+interface TableConfig {
+  tableUrl: string
+  [key: string]: unknown
+}
+
+interface TenantConfig {
+  userTable?: TableConfig | null
+  articleTable?: TableConfig | null
+  tenantName: string
+  tenantSlug: string
+  inviteCode: string
+  inviteCodeExpires: string | null
+}
+
 const userStore = useUserStore();
 const userTableUrl = ref('');
 const articleTableUrl = ref('');
 const loading = ref(false);
 const inviteCodeLoading = ref(false);
 const inviteCodeInput = ref('');
-const config = ref<any>({
+const config = ref<TenantConfig>({
   userTable: null,
   articleTable: null,
   tenantName: '',
@@ -269,19 +283,20 @@ onMounted(async () => {
     } else {
       console.warn('[TenantSettings] API返回失败:', res.data);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[TenantSettings] 加载配置失败:', error);
+    const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string }
     console.error('[TenantSettings] 错误详情:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
+      status: err.response?.status,
+      statusText: err.response?.status,
+      data: err.response?.data,
+      message: err.message
     });
-    
-    if (error.response?.status === 401) {
+
+    if (err.response?.status === 401) {
       ElMessage.error('未登录或登录已过期，请重新登录');
     } else {
-      ElMessage.error('加载配置失败: ' + (error.response?.data?.message || error.message));
+      ElMessage.error('加载配置失败: ' + (err.response?.data?.message || err.message || '未知错误'));
     }
   }
 });
@@ -306,8 +321,9 @@ async function configureUserTable() {
         tableUrl: userTableUrl.value,
       };
     }
-  } catch (error: any) {
-    const message = error.response?.data?.message || '配置失败';
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } }
+    const message = err.response?.data?.message || '配置失败';
     ElMessage.error(message);
   } finally {
     loading.value = false;
@@ -334,8 +350,9 @@ async function configureArticleTable() {
         tableUrl: articleTableUrl.value,
       };
     }
-  } catch (error: any) {
-    const message = error.response?.data?.message || '配置失败';
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } }
+    const message = err.response?.data?.message || '配置失败';
     ElMessage.error(message);
   } finally {
     loading.value = false;
@@ -369,8 +386,9 @@ async function updateInviteCode() {
     config.value.inviteCodeExpires = res.data.inviteCodeExpires || null;
     inviteCodeInput.value = res.data.inviteCode;
     ElMessage.success('邀请码更新成功');
-  } catch (error: any) {
-    const message = error.response?.data?.message || '邀请码更新失败';
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } }
+    const message = err.response?.data?.message || '邀请码更新失败';
     ElMessage.error(message);
   } finally {
     inviteCodeLoading.value = false;

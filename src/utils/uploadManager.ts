@@ -7,7 +7,7 @@ import type { WechatImage, UploadProgress } from '@/types';
 import { uploadImage, getWechatProxyUrl } from './wechatApi';
 
 // V2.1: 调高并发数至 8，视环境稳定性而定。配合后端 Token 锁，高并发更安全。
-const MAX_CONCURRENT_UPLOADS = 8;
+const MAX_CONCURRENT_UPLOADS = 2;
 const MAX_RETRY_COUNT = 3;         // 最大重试次数
 const RETRY_BASE_DELAY = 1000;     // 重试基础延迟（毫秒）
 

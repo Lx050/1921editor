@@ -133,7 +133,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { useStyleStore } from '../stores/styleStore'
-import { sanitizeHtml, sanitizeHtmlForPreview } from '../utils/sanitizeHtml'
+import { sanitizeHtmlForPreview } from '../utils/sanitizeHtml'
 
 const router = useRouter()
 const appStore = useAppStore()

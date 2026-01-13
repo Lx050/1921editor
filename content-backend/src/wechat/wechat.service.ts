@@ -26,7 +26,7 @@ export class WechatService {
     private authorizerRepository: Repository<WechatAuthorizer>,
     @InjectRepository(WechatPlatformConfig)
     private platformConfigRepository: Repository<WechatPlatformConfig>,
-  ) { }
+  ) {}
 
   private getComponentAppId(): string {
     return (
@@ -204,9 +204,11 @@ export class WechatService {
       return this.refreshLocks.get(lockKey)!;
     }
 
-    const refreshPromise = this.refreshAuthorizerToken(authorizer).finally(() => {
-      this.refreshLocks.delete(lockKey);
-    });
+    const refreshPromise = this.refreshAuthorizerToken(authorizer).finally(
+      () => {
+        this.refreshLocks.delete(lockKey);
+      },
+    );
 
     this.refreshLocks.set(lockKey, refreshPromise);
     return refreshPromise;
@@ -334,7 +336,9 @@ export class WechatService {
     // V2: 从 add_material (永久素材，慢) 切换为 uploadimg (CDN接口，极速)
     const url = `https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${accessToken}`;
 
-    this.logger.log(`[Wechat API] 开始上传图片到微信 CDN: ${file.originalname}`);
+    this.logger.log(
+      `[Wechat API] 开始上传图片到微信 CDN: ${file.originalname}`,
+    );
     const startTime = Date.now();
 
     const formData = new FormData();
@@ -351,7 +355,9 @@ export class WechatService {
 
       const duration = Date.now() - startTime;
       if (response.data.errcode) {
-        this.logger.error(`[Wechat API] 上传失败 (${duration}ms): ${JSON.stringify(response.data)}`);
+        this.logger.error(
+          `[Wechat API] 上传失败 (${duration}ms): ${JSON.stringify(response.data)}`,
+        );
       } else {
         this.logger.log(`[Wechat API] 上传成功 (${duration}ms)`);
       }
@@ -359,7 +365,9 @@ export class WechatService {
       return response.data;
     } catch (error: any) {
       const duration = Date.now() - startTime;
-      this.logger.error(`[Wechat API] 上传网络异常 (${duration}ms): ${error.message}`);
+      this.logger.error(
+        `[Wechat API] 上传网络异常 (${duration}ms): ${error.message}`,
+      );
       throw error;
     }
   }

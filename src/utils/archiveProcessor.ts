@@ -44,8 +44,9 @@ function isDocxFile(filename: string): boolean {
  * 从 ArrayBuffer 或 Uint8Array 创建 File 对象
  */
 function createFileFromBuffer(buffer: ArrayBuffer | Uint8Array, filename: string, mimeType: string): File {
-    // 强制转换为 any 以绕过 strict TS BlobPart 检查，或者使用正确的 ArrayBufferView
-    const blob = new Blob([buffer] as any[], { type: mimeType })
+    // 将 buffer 转换为 BlobPart 类型
+    const blobPart = buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : buffer
+    const blob = new Blob([blobPart], { type: mimeType })
     return new File([blob], filename, { type: mimeType })
 }
 
@@ -134,7 +135,7 @@ async function extractWithJSZip(file: File): Promise<ExtractResult> {
 
     // V6: 使用智能解码处理文件名乱码
     const zip = await JSZip.loadAsync(arrayBuffer, {
-        decodeFileName: (bytes: any) => {
+        decodeFileName: (bytes: Uint8Array | string) => {
             if (typeof bytes === 'string') return bytes;
             return decodeFilename(new Uint8Array(bytes));
         }

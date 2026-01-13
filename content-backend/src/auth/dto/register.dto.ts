@@ -17,7 +17,10 @@ export class RegisterDto {
   @IsEmail({}, { message: '邮箱格式不正确' })
   email: string;
 
-  @ApiProperty({ description: '密码', example: 'SecurePassword123!' })
+  @ApiProperty({
+    description: '密码（至少8位，包含大小写字母、数字和特殊字符）',
+    example: 'SecurePass123!',
+  })
   @IsString()
   @MinLength(8, { message: '密码至少8位' })
   password: string;

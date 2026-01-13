@@ -7,8 +7,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { User, UserRole } from '../entities/user.entity';
 import { Tenant } from '../entities/tenant.entity';
 import { UserTenant } from '../entities/user-tenant.entity';
@@ -18,6 +18,7 @@ import { PasswordHashService } from '../services/password-hash.service';
 import { EmailService } from '../services/email.service';
 import { TokenService } from '../services/token.service';
 import { InviteCodeService } from '../services/invite-code.service';
+import { TenantMembershipService } from '../tenant/tenant-membership.service';
 import {
   RegisterDto,
   LoginDto,
@@ -46,17 +47,18 @@ export class AuthService {
     private userRepository: Repository<User>,
     @InjectRepository(Tenant)
     private tenantRepository: Repository<Tenant>,
-    @InjectRepository(UserTenant)
-    private userTenantRepository: Repository<UserTenant>,
     @InjectRepository(EmailVerificationToken)
     private emailVerificationRepository: Repository<EmailVerificationToken>,
     @InjectRepository(PasswordResetToken)
     private passwordResetRepository: Repository<PasswordResetToken>,
+    @InjectDataSource()
+    private dataSource: DataSource,
     private jwtService: JwtService,
     private passwordHashService: PasswordHashService,
     private emailService: EmailService,
     private tokenService: TokenService,
     private inviteCodeService: InviteCodeService,
+    private tenantMembershipService: TenantMembershipService,
   ) {}
 
   private async resolveDefaultTenant(): Promise<Tenant | null> {
@@ -76,61 +78,6 @@ export class AuthService {
       tenant.id === this.defaultTenantId ||
       tenant.slug === this.defaultTenantSlug
     );
-  }
-
-  private async ensureMembership(
-    userId: string,
-    tenantId: string,
-    displayName?: string,
-  ) {
-    const existing = await this.userTenantRepository.findOne({
-      where: { userId, tenantId },
-    });
-    if (!existing) {
-      const membership = this.userTenantRepository.create({
-        userId,
-        tenantId,
-        displayName: displayName?.trim() || undefined,
-      });
-      await this.userTenantRepository.save(membership);
-    } else if (displayName && existing.displayName !== displayName.trim()) {
-      existing.displayName = displayName.trim();
-      await this.userTenantRepository.save(existing);
-    }
-  }
-
-  private async getUserTenants(userId: string): Promise<Tenant[]> {
-    const memberships = await this.userTenantRepository.find({
-      where: { userId },
-      relations: ['tenant'],
-    });
-
-    const tenants = memberships
-      .map((membership) => membership.tenant)
-      .filter((tenant): tenant is Tenant => Boolean(tenant && tenant.isActive));
-
-    const defaultTenant = await this.resolveDefaultTenant();
-    if (defaultTenant && defaultTenant.isActive) {
-      await this.ensureMembership(userId, defaultTenant.id);
-      const hasDefault = tenants.some(
-        (tenant) => tenant.id === defaultTenant.id,
-      );
-      if (!hasDefault) {
-        tenants.unshift(defaultTenant);
-      }
-    }
-
-    return tenants;
-  }
-
-  private async getMembershipDisplayName(
-    userId: string,
-    tenantId: string,
-  ): Promise<string | undefined> {
-    const membership = await this.userTenantRepository.findOne({
-      where: { userId, tenantId },
-    });
-    return membership?.displayName?.trim() || undefined;
   }
 
   private buildAuthResponse(
@@ -194,7 +141,7 @@ export class AuthService {
     // 1. 验证密码强度
     if (!this.passwordHashService.validateStrength(password)) {
       throw new BadRequestException(
-        '密码强度不足：至少8位，必须包含大小写字母和数字',
+        '密码强度不足：至少8位，必须包含大小写字母、数字和特殊字符',
       );
     }
 
@@ -273,11 +220,17 @@ export class AuthService {
         throw new UnauthorizedException('该账号已被禁用');
       }
 
-      await this.ensureMembership(existingUser.id, tenant.id);
+      await this.tenantMembershipService.ensureMembership(
+        existingUser.id,
+        tenant.id,
+      );
 
       const defaultTenant = await this.resolveDefaultTenant();
       if (defaultTenant?.id && defaultTenant.isActive) {
-        await this.ensureMembership(existingUser.id, defaultTenant.id);
+        await this.tenantMembershipService.ensureMembership(
+          existingUser.id,
+          defaultTenant.id,
+        );
       }
 
       let shouldSave = false;
@@ -332,40 +285,55 @@ export class AuthService {
       };
     }
 
-    // 4. 创建用户
+    // 4. 创建用户（使用事务确保数据一致性）
     const hashedPassword = await this.passwordHashService.hash(password);
     const verificationToken =
       this.tokenService.generateEmailVerificationToken();
 
-    const user = this.userRepository.create({
-      tenantId: tenant.id,
-      email,
-      password: hashedPassword,
-      name,
-      role: targetRole,
-      emailVerified: false,
-      verificationToken,
-      isActive: true,
+    // 使用事务创建用户和相关记录
+    const user = await this.dataSource.transaction(async (manager) => {
+      // 创建用户
+      const newUser = manager.create(User, {
+        tenantId: tenant.id,
+        email,
+        password: hashedPassword,
+        name,
+        role: targetRole,
+        emailVerified: false,
+        verificationToken,
+        isActive: true,
+      });
+      const savedUser = await manager.save(newUser);
+
+      // 创建成员关系
+      const membership = manager.create(UserTenant, {
+        userId: savedUser.id,
+        tenantId: tenant.id,
+      });
+      await manager.save(membership);
+
+      // 如果有默认租户，也添加成员关系
+      const defaultTenant = await this.resolveDefaultTenant();
+      if (defaultTenant?.id && defaultTenant.isActive) {
+        const defaultMembership = manager.create(UserTenant, {
+          userId: savedUser.id,
+          tenantId: defaultTenant.id,
+        });
+        await manager.save(defaultMembership);
+      }
+
+      // 保存邮箱验证令牌
+      const emailVerificationToken = manager.create(EmailVerificationToken, {
+        email,
+        token: verificationToken,
+        expiresAt: this.tokenService.calculateExpiry(
+          this.tokenService.EMAIL_VERIFICATION_EXPIRY,
+        ),
+      });
+      await manager.save(emailVerificationToken);
+
+      return savedUser;
     });
-
-    await this.userRepository.save(user);
-
-    await this.ensureMembership(user.id, tenant.id);
-
-    const defaultTenant = await this.resolveDefaultTenant();
-    if (defaultTenant?.id && defaultTenant.isActive) {
-      await this.ensureMembership(user.id, defaultTenant.id);
-    }
-
-    // 5. 保存邮箱验证令牌
-    const emailVerificationToken = this.emailVerificationRepository.create({
-      email,
-      token: verificationToken,
-      expiresAt: this.tokenService.calculateExpiry(
-        this.tokenService.EMAIL_VERIFICATION_EXPIRY,
-      ),
-    });
-    await this.emailVerificationRepository.save(emailVerificationToken);
 
     // 6. 发送验证邮件
     const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
@@ -423,7 +391,7 @@ export class AuthService {
     this.logger.log(`邮箱验证成功: ${user.email}`);
 
     // 6. 生成 JWT Token
-    const tenants = await this.getUserTenants(user.id);
+    const tenants = await this.tenantMembershipService.getUserTenants(user.id);
     const activeTenant =
       tenants.find((item) => item.id === user.tenantId) || tenants[0];
     if (!activeTenant) {
@@ -433,10 +401,11 @@ export class AuthService {
       user.tenantId = activeTenant.id;
       await this.userRepository.save(user);
     }
-    const displayName = await this.getMembershipDisplayName(
-      user.id,
-      activeTenant.id,
-    );
+    const displayName =
+      await this.tenantMembershipService.getMembershipDisplayName(
+        user.id,
+        activeTenant.id,
+      );
     return this.buildAuthResponse(user, activeTenant, tenants, displayName);
   }
 
@@ -486,7 +455,7 @@ export class AuthService {
     this.logger.log(`用户登录成功: ${user.email}, 租户: ${user.tenant?.name}`);
 
     // 6. 生成 JWT Token
-    const tenants = await this.getUserTenants(user.id);
+    const tenants = await this.tenantMembershipService.getUserTenants(user.id);
     const activeTenant =
       tenants.find((item) => item.id === user.tenantId) || tenants[0];
 
@@ -499,15 +468,16 @@ export class AuthService {
       await this.userRepository.save(user);
     }
 
-    const displayName = await this.getMembershipDisplayName(
-      user.id,
-      activeTenant.id,
-    );
+    const displayName =
+      await this.tenantMembershipService.getMembershipDisplayName(
+        user.id,
+        activeTenant.id,
+      );
     return this.buildAuthResponse(user, activeTenant, tenants, displayName);
   }
 
   async listTenants(userId: string) {
-    const tenants = await this.getUserTenants(userId);
+    const tenants = await this.tenantMembershipService.getUserTenants(userId);
     return {
       tenants: tenants.map((item) => ({
         id: item.id,
@@ -518,144 +488,59 @@ export class AuthService {
     };
   }
 
+  /**
+   * 切换当前租户
+   * 委托给 TenantMembershipService 处理
+   */
   async switchTenant(userId: string, tenantId: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('用户不存在');
-    }
-
-    if (!tenantId) {
-      throw new BadRequestException('tenantId is required');
-    }
-
-    let membership = await this.userTenantRepository.findOne({
-      where: { userId, tenantId },
-      relations: ['tenant'],
-    });
-
-    if (!membership) {
-      const defaultTenant = await this.resolveDefaultTenant();
-      if (defaultTenant?.id === tenantId && defaultTenant.isActive) {
-        await this.ensureMembership(userId, tenantId);
-        membership = await this.userTenantRepository.findOne({
-          where: { userId, tenantId },
-          relations: ['tenant'],
-        });
-      }
-    }
-
-    if (!membership?.tenant || !membership.tenant.isActive) {
-      throw new UnauthorizedException('没有该组织的访问权限');
-    }
-
-    user.tenantId = tenantId;
-    await this.userRepository.save(user);
-
-    const tenants = await this.getUserTenants(userId);
-    return this.buildAuthResponse(
-      user,
-      membership.tenant,
-      tenants,
-      membership.displayName,
-    );
-  }
-
-  async joinTenantByInviteCode(userId: string, dto: JoinTenantDto) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('用户不存在');
-    }
-
-    const inviteCode = dto.inviteCode?.trim();
-    if (!inviteCode) {
-      throw new BadRequestException('邀请码不能为空');
-    }
-
-    const displayName = dto.displayName?.trim();
-    if (!displayName) {
-      throw new BadRequestException('成员名称不能为空');
-    }
-
-    const tenant = await this.tenantRepository.findOne({
-      where: { inviteCode },
-    });
-    if (!tenant) {
-      throw new BadRequestException('邀请码无效');
-    }
-    if (this.inviteCodeService.isExpired(tenant.inviteCodeExpires)) {
-      throw new BadRequestException('邀请码已过期');
-    }
-    if (!tenant.isActive) {
-      throw new BadRequestException('组织已被停用');
-    }
-
-    await this.ensureMembership(userId, tenant.id, displayName);
-
-    const defaultTenant = await this.resolveDefaultTenant();
-    if (defaultTenant?.id && defaultTenant.isActive) {
-      await this.ensureMembership(userId, defaultTenant.id);
-    }
-
-    user.tenantId = tenant.id;
-    await this.userRepository.save(user);
-
-    const tenants = await this.getUserTenants(userId);
-    return this.buildAuthResponse(user, tenant, tenants, displayName);
-  }
-
-  async leaveTenant(userId: string, dto: LeaveTenantDto) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('用户不存在');
-    }
-
-    const tenantId = dto.tenantId;
-    if (!tenantId) {
-      throw new BadRequestException('tenantId is required');
-    }
-
-    const tenant = await this.tenantRepository.findOne({
-      where: { id: tenantId },
-    });
-    if (!tenant) {
-      throw new NotFoundException('组织不存在');
-    }
-
-    if (this.isDefaultTenant(tenant)) {
-      throw new BadRequestException('默认组织不可退出');
-    }
-
-    const membership = await this.userTenantRepository.findOne({
-      where: { userId, tenantId },
-    });
-    if (!membership) {
-      throw new BadRequestException('未加入该组织');
-    }
-
-    await this.userTenantRepository.remove(membership);
-
-    const tenants = await this.getUserTenants(userId);
-    if (!tenants.length) {
-      throw new BadRequestException('未找到可用的组织');
-    }
-
-    const activeTenant =
-      tenants.find((item) => item.id === user.tenantId) || tenants[0];
-
-    if (!activeTenant) {
-      throw new BadRequestException('未找到可用的组织');
-    }
-
-    if (activeTenant.id !== user.tenantId) {
-      user.tenantId = activeTenant.id;
-      await this.userRepository.save(user);
-    }
-
-    const displayName = await this.getMembershipDisplayName(
+    const result = await this.tenantMembershipService.switchTenant(
       userId,
-      activeTenant.id,
+      tenantId,
     );
-    return this.buildAuthResponse(user, activeTenant, tenants, displayName);
+    const tenants = await this.tenantMembershipService.getUserTenants(userId);
+    return this.buildAuthResponse(
+      result.user,
+      result.tenant,
+      tenants,
+      result.displayName,
+    );
+  }
+
+  /**
+   * 通过邀请码加入租户
+   * 委托给 TenantMembershipService 处理
+   */
+  async joinTenantByInviteCode(userId: string, dto: JoinTenantDto) {
+    const result = await this.tenantMembershipService.joinTenantByInviteCode(
+      userId,
+      dto.inviteCode,
+      dto.displayName,
+    );
+    const tenants = await this.tenantMembershipService.getUserTenants(userId);
+    return this.buildAuthResponse(
+      result.user,
+      result.tenant,
+      tenants,
+      result.displayName,
+    );
+  }
+
+  /**
+   * 退出租户
+   * 委托给 TenantMembershipService 处理
+   */
+  async leaveTenant(userId: string, dto: LeaveTenantDto) {
+    const result = await this.tenantMembershipService.leaveTenant(
+      userId,
+      dto.tenantId,
+    );
+    const tenants = await this.tenantMembershipService.getUserTenants(userId);
+    return this.buildAuthResponse(
+      result.user,
+      result.tenant,
+      tenants,
+      result.displayName,
+    );
   }
 
   /**
@@ -713,7 +598,7 @@ export class AuthService {
     // 1. 验证密码强度
     if (!this.passwordHashService.validateStrength(newPassword)) {
       throw new BadRequestException(
-        '密码强度不足：至少8位，必须包含大小写字母和数字',
+        '密码强度不足：至少8位，必须包含大小写字母、数字和特殊字符',
       );
     }
 
@@ -799,7 +684,7 @@ export class AuthService {
     // 3. 验证新密码强度
     if (!this.passwordHashService.validateStrength(newPassword)) {
       throw new BadRequestException(
-        '密码强度不足：至少8位，必须包含大小写字母和数字',
+        '密码强度不足：至少8位，必须包含大小写字母、数字和特殊字符',
       );
     }
 

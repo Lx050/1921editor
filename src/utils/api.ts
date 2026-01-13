@@ -101,10 +101,23 @@ api.interceptors.response.use(
   }
 )
 
+// API 通用类型定义
+interface ApiParams {
+  [key: string]: string | number | boolean | undefined
+}
+
+interface ContentData {
+  [key: string]: unknown
+}
+
+interface ImageData {
+  [key: string]: unknown
+}
+
 // API 方法封装
 export const contentApi = {
   // 获取内容列表
-  getContents: (params?: any) => {
+  getContents: (params?: ApiParams) => {
     return api.get('/content', { params })
   },
 
@@ -114,12 +127,12 @@ export const contentApi = {
   },
 
   // 创建内容
-  createContent: (data: any) => {
+  createContent: (data: ContentData) => {
     return api.post('/content', data)
   },
 
   // 更新内容
-  updateContent: (id: string, data: any) => {
+  updateContent: (id: string, data: ContentData) => {
     return api.put(`/content/${id}`, data)
   },
 
@@ -129,7 +142,7 @@ export const contentApi = {
   },
 
   // 批量创建
-  batchCreateContent: (contents: any[]) => {
+  batchCreateContent: (contents: ContentData[]) => {
     return api.post('/content/batch', { contents })
   },
 
@@ -139,7 +152,7 @@ export const contentApi = {
   },
 
   // 搜索内容
-  searchContent: (q: string, params?: any) => {
+  searchContent: (q: string, params?: ApiParams) => {
     return api.get('/content/search', { params: { q, ...params } })
   },
 
@@ -167,7 +180,7 @@ export const articleApi = {
   },
 
   // 更新文章图片 (Step3)
-  updateStep3: (id: string, images: any[]) => {
+  updateStep3: (id: string, images: ImageData[]) => {
     return api.put(`/articles/${id}/images`, { images })
   },
 }
@@ -180,7 +193,7 @@ export const webhookApi = {
   },
 
   // 推送内容
-  pushContent: (content: any, source?: string) => {
+  pushContent: (content: ContentData, source?: string) => {
     return api.post('/webhook/content', { content, source })
   },
 }

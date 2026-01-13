@@ -35,12 +35,12 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends Record<string, unknown>">
 import { ref, computed, watch } from 'vue';
 import type { CSSProperties } from 'vue';
 
-interface Props {
-  items: any[]
+interface Props<T> {
+  items: T[]
   itemHeight?: number | ((index: number) => number)
   containerHeight?: number
   overscan?: number
@@ -49,15 +49,15 @@ interface Props {
   buffer?: number
 }
 
-interface VirtualItem {
+interface VirtualItem<T> {
   index: number
-  data: any
+  data: T
   top: number
   height: number
   bottom: number
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props<T>>(), {
   itemHeight: 50,
   containerHeight: 400,
   overscan: 5,
@@ -68,7 +68,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   scroll: [{ scrollTop: number; scrollLeft: number }]
-  itemVisible: [{ item: any; index: number }]
+  itemVisible: [{ item: T; index: number }]
 }>()
 
 const containerRef = ref<HTMLElement>()
@@ -93,7 +93,7 @@ const visibleItems = computed(() => {
     Math.ceil((scrollTop.value + containerHeight.value) / getAverageItemHeight()) + props.overscan
   )
 
-  const items: VirtualItem[] = []
+  const items: VirtualItem<T>[] = []
   let currentTop = 0
 
   for (let i = 0; i < props.items.length; i++) {
@@ -135,7 +135,7 @@ const viewportStyle = computed((): CSSProperties => ({
 // 获取项目高度
 const getItemHeight = (index: number): number => {
   if (typeof props.itemHeight === 'function') {
-    return props.itemHeight!(index)
+    return (props.itemHeight as (index: number) => number)(index)
   }
   return props.itemHeight
 }
@@ -151,12 +151,13 @@ const getAverageItemHeight = (): number => {
 }
 
 // 获取项目唯一标识
-const getItemKey = (item: VirtualItem): any => {
-  return item.data[props.keyField] ?? item.index
+const getItemKey = (item: VirtualItem<T>): string | number => {
+  const keyValue = item.data[props.keyField]
+  return (keyValue as string | number | undefined) ?? item.index
 }
 
 // 获取项目样式
-const getItemStyle = (item: VirtualItem): CSSProperties => {
+const getItemStyle = (item: VirtualItem<T>): CSSProperties => {
   return {
     position: 'absolute' as const,
     top: `${item.top}px`,

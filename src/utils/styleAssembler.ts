@@ -15,7 +15,8 @@ import { useAppStore } from '../stores/appStore'
 export function buildHtml(
 	contentBlocks: ContentBlock[],
 	styleConfig: StyleConfig | null = null,
-	addPlaceholderMarkers: boolean = false
+	addPlaceholderMarkers: boolean = false,
+	urlTransformer?: (url: string) => string
 ): string {
 	const countImages = (block: ContentBlock): number => {
 		let count = 0
@@ -45,13 +46,13 @@ export function buildHtml(
 		let blockHtml: string = ''
 
 		if (styleConfig) {
-			blockHtml = buildStyledBlock(block, styleConfig, addPlaceholderMarkers, imageCounter)
+			blockHtml = buildStyledBlock(block, styleConfig, addPlaceholderMarkers, imageCounter, false, urlTransformer)
 			htmlParts.push(blockHtml)
 			imageCounter += countImages(block)
 		}
 	})
 
-	// 添加HTML尾部
+	// ... footer logic unchanged ...
 	let footer = configStore.currentFooter
 	const appStore = useAppStore()
 
@@ -63,7 +64,6 @@ export function buildHtml(
 		.replace(/{{SOURCE_ACCOUNT}}/g, appStore.sourceAccount || '校团委青年媒体中心')
 		.replace(/{{EDITOR_INPUT}}/g, appStore.editorInput || ' ')
 
-	// 特殊处理：如果 TEAM_PROJECT 为空，移除整行
 	if (appStore.teamProject) {
 		footer = footer.replace(/<p v-if="{{TEAM_PROJECT}}">.*?<\/p>/g, `<p>社会实践专项：${appStore.teamProject}</p>`)
 	} else {
@@ -86,8 +86,10 @@ function buildStyledBlock(
 	styleConfig: StyleConfig,
 	addPlaceholderMarkers: boolean = false,
 	imageIndex: number = 0,
-	isInsideContainer: boolean = false
+	isInsideContainer: boolean = false,
+	urlTransformer?: (url: string) => string
 ): string {
+	// ... existing validation and normalization ...
 	if (!block || typeof block !== 'object') {
 		throw new Error('Invalid block: must be an object')
 	}
@@ -99,9 +101,6 @@ function buildStyledBlock(
 		return value.replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim()
 	}
 
-	// 容器逻辑：
-	// 1. 小标题 (title) 无论是否在容器内，都保留其选择的组件样式（因为标题带图标，属于内容的一部分）
-	// 2. 正文 (body) 和 引言 (intro) 如果在容器内，则强制使用兜底样式（因为容器本身已经套了正文样式的大边框）
 	let blockStyle: StyleTemplate | null = null
 	if (block.type === 'title') {
 		blockStyle = styleConfig.title || null
@@ -113,7 +112,9 @@ function buildStyledBlock(
 	// AI 生成图片优先渲染
 	if (block.meta && block.meta.aiImageUrl) {
 		let html = IMAGE_TEMPLATES.single
-		html = html.replace(/src="[^"]*"/, `src="${block.meta.aiImageUrl}"`)
+		let url = block.meta.aiImageUrl
+		if (urlTransformer) url = urlTransformer(url)
+		html = html.replace(/src="[^"]*"/, `src="${url}"`)
 		if (addPlaceholderMarkers) {
 			html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
 		}
@@ -130,17 +131,52 @@ function buildStyledBlock(
 			return applyStyle(content, blockStyle, 'intro')
 		case 'image_single': {
 			let html = IMAGE_TEMPLATES.single
+			// V2: 优先使用替换的图片 URL
+			if (block.meta && block.meta.replacementUrl) {
+				let url = block.meta.replacementUrl
+				if (urlTransformer) url = urlTransformer(url)
+				html = html.replace(/src="[^"]*"/, `src="${url}"`)
+			}
 			if (addPlaceholderMarkers) html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
 			return html
 		}
 		case 'image_single_caption': {
 			let html = IMAGE_TEMPLATES.single_caption
 			html = html.replace('{{caption}}', normalizeCaptionText(content))
+			// V2: 优先使用替换的图片 URL
+			if (block.meta && block.meta.replacementUrl) {
+				let url = block.meta.replacementUrl
+				if (urlTransformer) url = urlTransformer(url)
+				html = html.replace(/src="[^"]*"/, `src="${url}"`)
+			}
 			if (addPlaceholderMarkers) html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
 			return html
 		}
 		case 'image_double': {
 			let html = IMAGE_TEMPLATES.double
+			// V2: 优先使用替换的图片 URL 数组
+			if (block.meta && Array.isArray(block.meta.replacementUrls)) {
+				const [url1, url2] = block.meta.replacementUrls
+				if (url1) {
+					let finalUrl1 = url1
+					if (urlTransformer) finalUrl1 = urlTransformer(url1)
+					html = html.replace(/src="[^"]*"/, `src="${finalUrl1}"`)
+				}
+				if (url2) {
+					let finalUrl2 = url2
+					if (urlTransformer) finalUrl2 = urlTransformer(url2)
+
+					let firstIndex = html.indexOf('src="')
+					if (firstIndex !== -1) {
+						let secondIndex = html.indexOf('src="', firstIndex + 5)
+						if (secondIndex !== -1) {
+							const before = html.substring(0, secondIndex)
+							const after = html.substring(html.indexOf('"', secondIndex + 5))
+							html = before + `src="${finalUrl2}` + after
+						}
+					}
+				}
+			}
 			if (addPlaceholderMarkers) html = addDoubleImagePlaceholderMarkers(html, `image_${imageIndex}`)
 			return html
 		}
@@ -155,19 +191,43 @@ function buildStyledBlock(
 				if (parts.length >= 2) { c1 = parts[0]; c2 = parts.slice(1).join(' ') }
 			}
 			html = html.replace('{{caption1}}', normalizeCaptionText(c1)).replace('{{caption2}}', normalizeCaptionText(c2))
+
+			// V2: 优先使用替换的图片 URL 数组
+			if (block.meta && Array.isArray(block.meta.replacementUrls)) {
+				const [url1, url2] = block.meta.replacementUrls
+				if (url1) {
+					let finalUrl1 = url1
+					if (urlTransformer) finalUrl1 = urlTransformer(url1)
+					html = html.replace(/src="[^"]*"/, `src="${finalUrl1}"`)
+				}
+				if (url2) {
+					let finalUrl2 = url2
+					if (urlTransformer) finalUrl2 = urlTransformer(url2)
+
+					let firstIndex = html.indexOf('src="')
+					if (firstIndex !== -1) {
+						let secondIndex = html.indexOf('src="', firstIndex + 5)
+						if (secondIndex !== -1) {
+							const before = html.substring(0, secondIndex)
+							const after = html.substring(html.indexOf('"', secondIndex + 5))
+							html = before + `src="${finalUrl2}` + after
+						}
+					}
+				}
+			}
+
 			if (addPlaceholderMarkers) html = addDoubleImagePlaceholderMarkers(html, `image_${imageIndex}`)
 			return html
 		}
 		case 'container': {
-			// 递归渲染子块，标记为 isInsideContainer = true
+			// 递归渲染子块
 			const childrenHtml = block.children?.map((child, idx) => {
 				const prevImagesCount = block.children?.slice(0, idx).reduce((acc, curr) =>
 					acc + (curr.type.startsWith('image_') || (curr.meta && curr.meta.aiImageUrl) ? 1 : 0), 0) || 0;
-				return buildStyledBlock(child, styleConfig, addPlaceholderMarkers, imageIndex + prevImagesCount, true)
+				// Pass `urlTransformer` down
+				return buildStyledBlock(child, styleConfig, addPlaceholderMarkers, imageIndex + prevImagesCount, true, urlTransformer)
 			}).join('\n') || ''
 
-			// 容器整体使用选中的“正文样式”套壳
-			// 优先级：配置中显式指定的 container 样式 > body 样式 > 无样式
 			const containerStyle = styleConfig.container || styleConfig.body || null
 			return applyStyle(childrenHtml, containerStyle, 'container')
 		}

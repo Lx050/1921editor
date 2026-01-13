@@ -87,7 +87,17 @@
       "Bash(git checkout:*)",
       "Bash(git pull:*)",
       "Bash(git merge:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git stash:*)",
+      "Bash(npm install)",
+      "Bash(npm run test)",
+      "Bash(timeout:*)",
+      "Bash(npm run lint:fix:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git reset:*)"
     ]
   }
 }

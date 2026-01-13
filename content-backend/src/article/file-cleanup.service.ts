@@ -108,9 +108,10 @@ export class FileCleanupService {
       // 2. 图片文件
       if (article.images && Array.isArray(article.images)) {
         for (const img of article.images) {
-          if (img.url || img.path) {
+          const imageUrl = img.url || img.path;
+          if (imageUrl) {
             // 将 URL 路径转为文件系统路径
-            const imagePath = this.urlToFilePath(img.url || img.path);
+            const imagePath = this.urlToFilePath(imageUrl);
             if (imagePath) {
               filesToDelete.push(imagePath);
             }

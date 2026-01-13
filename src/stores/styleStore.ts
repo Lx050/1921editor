@@ -79,10 +79,10 @@ export const useStyleStore = defineStore('style', () => {
     async function fetchLocalStyles(): Promise<StyleTemplateWithSource[]> {
         const localStyles = getAllStyles();
         return [
-            ...localStyles.title.map((s: any) => ({ ...s, type: 'title' as const, source: 'local' as const })),
-            ...localStyles.body.map((s: any) => ({ ...s, type: 'body' as const, source: 'local' as const })),
-            ...localStyles.intro.map((s: any) => ({ ...s, type: 'intro' as const, source: 'local' as const })),
-            ...(localStyles.container || []).map((s: any) => ({ ...s, type: 'container' as const, source: 'local' as const })),
+            ...localStyles.title.map((s: StyleTemplate) => ({ ...s, type: 'title' as const, source: 'local' as const })),
+            ...localStyles.body.map((s: StyleTemplate) => ({ ...s, type: 'body' as const, source: 'local' as const })),
+            ...localStyles.intro.map((s: StyleTemplate) => ({ ...s, type: 'intro' as const, source: 'local' as const })),
+            ...(localStyles.container || []).map((s: StyleTemplate) => ({ ...s, type: 'container' as const, source: 'local' as const })),
         ];
     }
 
@@ -97,8 +97,9 @@ export const useStyleStore = defineStore('style', () => {
             // 新添加的样式是 API 样式
             apiStyles.value.unshift({ ...newStyle, source: 'api' });
             return newStyle;
-        } catch (err: any) {
-            error.value = err.message || '添加样式失败';
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '添加样式失败';
+            error.value = message;
             throw err;
         }
     }
@@ -136,8 +137,9 @@ export const useStyleStore = defineStore('style', () => {
                 apiStyles.value[index] = { ...updated, source: 'api' };
             }
             return updated;
-        } catch (err: any) {
-            error.value = err.message || '更新样式失败';
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '更新样式失败';
+            error.value = message;
             throw err;
         }
     }
@@ -171,8 +173,9 @@ export const useStyleStore = defineStore('style', () => {
             // 云端样式：所有人都可以删除
             await styleService.deleteStyle(id);
             apiStyles.value = apiStyles.value.filter(s => s.id !== id);
-        } catch (err: any) {
-            error.value = err.message || '删除样式失败';
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '删除样式失败';
+            error.value = message;
             throw err;
         }
     }

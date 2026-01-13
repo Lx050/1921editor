@@ -65,7 +65,10 @@ export class WechatTokenManager {
     }
 
     const refreshedToken = this.tokens.get(openid);
-    return refreshedToken!.access_token;
+    if (!refreshedToken) {
+      throw new Error(`Token not found for openid: ${openid}`);
+    }
+    return refreshedToken.access_token;
   }
 
   /**

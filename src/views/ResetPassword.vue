@@ -135,7 +135,7 @@ const handleReset = async () => {
     await resetPassword(formData.value)
     success.value = true
     toast.success('密码重置成功')
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('重置失败:', error)
     errorMessage.value = error.response?.data?.message || '重置失败，请稍后重试'
   } finally {

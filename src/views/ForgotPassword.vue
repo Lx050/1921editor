@@ -99,7 +99,7 @@ const handleForgotPassword = async () => {
     await forgotPassword(formData.value)
     successMessage.value = '如果该邮箱存在，密码重置邮件已发送'
     toast.success('邮件已发送')
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('发送失败:', error)
     errorMessage.value = error.response?.data?.message || '发送失败，请稍后重试'
   } finally {

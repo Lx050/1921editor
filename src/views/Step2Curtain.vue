@@ -156,19 +156,31 @@
 
         <!-- 内容 -->
         <div class="p-6 flex-1 overflow-y-auto space-y-6">
-          <div class="space-y-2">
-            <label class="block text-sm font-bold text-gray-700">粘贴或导入新文章内容</label>
+          <div 
+            class="space-y-2 transition-all duration-200 rounded-xl"
+            :class="[
+              isMergeDragging ? 'bg-blue-50 ring-2 ring-blue-500 ring-offset-2 scale-[1.01]' : ''
+            ]"
+            @dragover.prevent="isMergeDragging = true"
+            @dragleave.prevent="isMergeDragging = false"
+            @drop.prevent="handleMergeDrop"
+          >
+            <label class="block text-sm font-bold text-gray-700 flex justify-between items-center">
+              <span>粘贴或导入新文章内容</span>
+              <span v-if="isMergeDragging" class="text-blue-600 text-xs animate-pulse">释放即可导入文档/压缩包</span>
+              <span v-else class="text-gray-400 text-xs font-normal">支持拖拽 .docx 或 .zip 到此处</span>
+            </label>
             <textarea
               v-model="mergeContent"
               class="w-full h-64 p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm leading-relaxed"
-              placeholder="请在这里粘贴您想要合并的内容，或通过上方按钮导入文档..."
+              :class="{'bg-transparent': isMergeDragging}"
+              placeholder="请在这里粘贴您想要合并的内容，或直接将 .docx/.zip 文件拖入此框..."
             ></textarea>
             
             <div v-if="mergeErrorMessage" class="text-xs text-red-500 mt-1 flex items-center gap-1">
               <span>⚠</span>
               <span>{{ mergeErrorMessage }}</span>
             </div>
-
           </div>
 
           <div class="flex items-center gap-6 p-4 bg-blue-50/50 rounded-xl border border-blue-100/50">
@@ -364,6 +376,7 @@ const onOpenMerge = (params: { index: number, id?: string } | number): void => {
 
 const mergeFileInput: Ref<HTMLInputElement | null> = ref(null)
 const mergeErrorMessage: Ref<string> = ref('')
+const isMergeDragging = ref(false)
 
 const triggerMergeFileUpload = (): void => {
   if (mergeFileInput.value) mergeFileInput.value.click()
@@ -372,6 +385,14 @@ const triggerMergeFileUpload = (): void => {
 const handleMergeFileUpload = (event: Event): void => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
+  if (file) {
+    processMergeFile(file)
+  }
+}
+
+const handleMergeDrop = (event: DragEvent): void => {
+  isMergeDragging.value = false
+  const file = event.dataTransfer?.files?.[0]
   if (file) {
     processMergeFile(file)
   }
@@ -424,7 +445,7 @@ const processMergeDocx = async (file: File | Blob): Promise<void> => {
 
     // 配置 mammoth 选项 (与 Step 1 保持一致)
     const options = {
-      convertImage: mammoth.images.imgElement((image: any) => {
+      convertImage: mammoth.images.imgElement((image) => {
         const alt = image.alt || ''
         return Promise.resolve({ src: "", alt: alt.startsWith('&') ? alt : `&${alt}` })
       }),
@@ -541,7 +562,7 @@ onMounted(() => {
         if (parsed?.rawText) appStore.setRawText(parsed.rawText)
         if (parsed?.styleConfig) appStore.setStyleConfig(parsed.styleConfig)
         if (Array.isArray(parsed?.contentBlocks) && parsed.contentBlocks.length > 0) {
-          const restoredBlocks = parsed.contentBlocks.map((block: any, index: number) => ({
+          const restoredBlocks = parsed.contentBlocks.map((block: Partial<ContentBlock>, index: number) => ({
             id: `local_${index}_${Date.now()}`,
             type: block.type || 'body',
             text: block.text || '',

@@ -33,7 +33,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { getBlockTypeOptions } from '../utils/styleAssembler'
 
-const props = defineProps({
+defineProps({
   blockType: {
     type: String,
     required: true

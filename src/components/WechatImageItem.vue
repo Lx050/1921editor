@@ -31,14 +31,15 @@
 
 <script setup lang="ts">
 import LazyImage from './LazyImage.vue'
+import type { WechatImage } from '@/types'
 
 defineProps<{
-  image: any & { displayUrl: string }
+  image: WechatImage & { displayUrl: string }
   selectedPlaceholder?: string | null
   mobileLayout?: boolean
 }>()
 
 defineEmits<{
-  (e: 'select', image: any): void
+  (e: 'select', image: WechatImage & { displayUrl: string }): void
 }>()
 </script>

@@ -1,5 +1,5 @@
 import { AppDataSource } from '../data-source';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { Tenant } from '../entities/tenant.entity';
 import { PasswordHashService } from '../services/password-hash.service';
 
@@ -42,7 +42,7 @@ async function checkAndCreateTestUser() {
       email: 'test@example.com',
       password: hashedPassword,
       name: '测试用户',
-      role: 'ADMIN',
+      role: UserRole.ADMIN,
       emailVerified: true, // 测试用户自动验证
       isActive: true,
     });

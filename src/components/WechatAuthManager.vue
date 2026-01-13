@@ -242,6 +242,10 @@
 import { ref, onMounted, computed } from 'vue';
 import { ThirdPartyWechatAuth } from '../services/ThirdPartyWechatAuth';
 
+interface WechatFuncInfo {
+  [key: string]: unknown
+}
+
 interface WechatAuthInfo {
   authorizer_appid: string;
   authorizer_access_token: string;
@@ -249,7 +253,7 @@ interface WechatAuthInfo {
   expires_in: number;
   nick_name: string;
   head_img: string;
-  func_info: any;
+  func_info: WechatFuncInfo;
   authorizedAt: number;
   lastUsed?: number;
 }
@@ -303,7 +307,7 @@ onMounted(async () => {
 const initializeAuth = async () => {
   try {
     wechatAuth.initialize({
-      storeAuth: (authData: any) => {
+      storeAuth: (authData: WechatAuthInfo) => {
         // 存储到localStorage
         const existingAuths = JSON.parse(localStorage.getItem('wechat_auths') || '{}');
         existingAuths[authData.authorizer_appid] = authData;
@@ -514,9 +518,10 @@ const removeAccount = async () => {
     await saveAccounts();
     closeRemoveModal();
     alert('授权已移除');
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('移除授权失败:', error);
-    alert('移除授权失败: ' + error.message);
+    const message = error instanceof Error ? error.message : '移除授权失败'
+    alert('移除授权失败: ' + message);
   } finally {
     setLoading('', false);
   }

@@ -136,12 +136,12 @@ function runLighthouse() {
 function checkServer() {
   console.log(`🔍 检查服务器是否运行在 ${config.url}...`);
 
-    const req = http.request(config.url, (res) => {
+    const req = http.request(config.url, () => {
     console.log('✅ 服务器运行正常');
     runLighthouse();
   });
 
-  req.on('error', (err) => {
+  req.on('error', () => {
     console.error(`❌ 无法连接到 ${config.url}`);
     console.error('请确保开发服务器正在运行 (npm run dev)');
     process.exit(1);
