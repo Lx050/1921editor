@@ -72,7 +72,7 @@
               @insertText="onInsertText"
               @insertImage="onInsertImage"
               @insertContainer="onInsertContainer"
-              @move="onMoveBlockToContainer"
+              @move="onMoveBlock"
             />
           </TransitionGroup>
         </div>
@@ -214,9 +214,9 @@ const onInsertContainer = (index: number) => {
   appStore.createContainer(index + 1)
 }
 
-// 移动块到容器
-const onMoveBlockToContainer = ({ blockId, containerId }: { blockId: string, containerId: string }) => {
-  appStore.moveBlockToContainer(blockId, containerId)
+// 移动块
+const onMoveBlock = (params: { blockId: string, targetId: string, position: 'top' | 'bottom' | 'inside' }) => {
+  appStore.moveBlock(params.blockId, params.targetId, params.position)
 }
 
 // 确认删除块 - 防止误删除

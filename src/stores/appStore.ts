@@ -147,7 +147,7 @@ export const useAppStore = defineStore('app', () => {
     } as ContentBlock)
   }
 
-  const moveBlockToContainer = (blockId: string, containerId: string): void => {
+  const moveBlock = (blockId: string, targetId: string, position: 'top' | 'bottom' | 'inside'): void => {
     let blockToMove: ContentBlock | undefined;
 
     // 1. 从原位置移除
@@ -164,17 +164,37 @@ export const useAppStore = defineStore('app', () => {
     };
 
     removeFromList(contentBlocks.value);
+    if (!blockToMove) return;
 
-    // 2. 添加到容器
-    if (blockToMove) {
-      const container = findBlockRecursive(contentBlocks.value, containerId);
-      if (container && container.type === 'container') {
-        if (!container.children) container.children = [];
-        container.children.push(blockToMove);
+    // 2. 找到目标块及其父容器
+    const findParent = (list: ContentBlock[]): { parent: ContentBlock[] | null, index: number } | null => {
+      const idx = list.findIndex(b => b.id === targetId);
+      if (idx !== -1) return { parent: list, index: idx };
+      for (const b of list) {
+        if (b.children) {
+          const res = findParent(b.children);
+          if (res) return res;
+        }
+      }
+      return null;
+    };
+
+    const targetInfo = findParent(contentBlocks.value);
+
+    if (position === 'inside') {
+      const target = findBlockRecursive(contentBlocks.value, targetId);
+      if (target && target.type === 'container') {
+        if (!target.children) target.children = [];
+        target.children.push(blockToMove);
       } else {
-        // 如果容器没找到，放回顶层末尾（安全机制）
         contentBlocks.value.push(blockToMove);
       }
+    } else if (targetInfo && targetInfo.parent) {
+      const insertIdx = position === 'top' ? targetInfo.index : targetInfo.index + 1;
+      targetInfo.parent.splice(insertIdx, 0, blockToMove);
+    } else {
+      // 安全回退：放到顶层末尾
+      contentBlocks.value.push(blockToMove);
     }
   }
 
@@ -336,7 +356,7 @@ export const useAppStore = defineStore('app', () => {
     clearWechatImages,
     resetApp,
     initializeUserMetadata,
-    moveBlockToContainer,
+    moveBlock,
     createContainer,
     deleteBlock
   }
