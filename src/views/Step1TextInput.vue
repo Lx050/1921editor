@@ -109,8 +109,8 @@
         </div>
       </div>
 
-      <!-- V5: 元数据确认区域 -->
-      <div v-if="localText && userStore.tenantId" class="mt-4 border rounded-xl overflow-hidden shadow-sm">
+      <!-- V5: 元数据确认区域 - 三下乡模式默认显示 -->
+      <div v-if="localText" class="mt-4 border rounded-xl overflow-hidden shadow-sm">
         <div class="px-4 py-2 bg-gray-50 border-b flex items-center justify-between">
           <span class="text-xs font-bold text-gray-600">三下乡模式：信息识别结果 (确认后可同步飞书)</span>
           <span class="text-[10px] text-gray-400 font-normal">如果识别错误，请在此手动修改</span>
@@ -501,16 +501,18 @@ const extractMetadataFromText = (text) => {
   }
 
   // 开始执行提取
-  const teamName = findMetadata(['队伍名称', '团队名称', '实践队', '团队'], ['负责人', '专项'])
+  const teamNameLabels = ['队伍名称', '团队名称', '实践队', '团队', '社会实践队', '冬令营团队', '寒假社会实践队']
+  const teamName = findMetadata(teamNameLabels, ['负责人', '专项'])
+  
   if (teamName) {
     console.log('[Step1] 自动解析团队名称:', teamName)
     appStore.teamName = teamName
   } else {
     // 降级兜底：查找包含 "社会实践队" 的行
     for (const line of lines) {
-        if (line.includes('社会实践队') || line.includes('实践队')) {
+        if (line.includes('社会实践队') || line.includes('实践队') || line.includes('实践团')) {
             const fallback = cleanMetadataValue(line)
-            if (fallback && fallback.length > 2 && fallback.length < 30) {
+            if (fallback && fallback.length > 2 && fallback.length < 40) {
                  appStore.teamName = fallback
                  break
             }
@@ -518,11 +520,11 @@ const extractMetadataFromText = (text) => {
     }
   }
 
-  appStore.teamProject = findMetadata(['队伍专项', '项目专项', '专项', '项目名称', '项目'], ['负责人'])
-  appStore.teamDepartment = findMetadata(['所属院系', '院系', '学院', '学校'], ['负责人', '联系'])
-  appStore.teamLeader = findMetadata(['负责人', '队长', '带队老师', '指导老师'], ['联系', '电话'])
-  appStore.teamContact = findMetadata(['联系方式', '联系电话', '电话', '手机'], ['专项'])
-  appStore.sourceAccount = findMetadata(['来源', '转载自', '公众号', '原文来源'])
+  appStore.teamProject = findMetadata(['队伍专项', '项目专项', '专项', '项目名称', '项目', '活动名称', '社会实践专项'], ['负责人'])
+  appStore.teamDepartment = findMetadata(['所属院系', '院系', '学院', '学校', '单位'], ['负责人', '联系'])
+  appStore.teamLeader = findMetadata(['负责人', '队长', '带队老师', '指导老师', '联系人'], ['联系', '电话'])
+  appStore.teamContact = findMetadata(['联系方式', '联系电话', '电话', '手机', '联系号码'], ['专项'])
+  appStore.sourceAccount = findMetadata(['来源', '转载自', '公众号', '原文来源', '来源出处'])
   
   // 文案作者特殊处理
   const authorsRaw = findMetadata(['文案', '图文', '撰稿', '作者'])

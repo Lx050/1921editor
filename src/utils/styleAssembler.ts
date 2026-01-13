@@ -48,12 +48,20 @@ export function buildHtml(
 	const appStore = useAppStore()
 
 	footer = footer
-		.replace(/{{PLANNERS}}/g, appStore.plannerNames.join(' ') || ' ')
-		.replace(/{{COPYWRITERS}}/g, appStore.copywriterNames.join(' ') || ' ')
-		.replace(/{{EDITORS}}/g, appStore.editorNames.join(' ') || ' ')
-		.replace(/{{TEAM_NAME}}/g, appStore.teamName || '"团队名称待填写"')
-		.replace(/{{SOURCE_ACCOUNT}}/g, appStore.sourceAccount || '"来源公众号待填写"')
+		.replace(/{{PLANNERS}}/g, appStore.plannerNames.join(' ') || '王雪 宋欣翼')
+		.replace(/{{COPYWRITERS}}/g, appStore.copywriterNames.join(' ') || (appStore.editorInput || ' '))
+		.replace(/{{EDITORS}}/g, appStore.editorNames.join(' ') || '朱梦鹤')
+		.replace(/{{TEAM_NAME}}/g, appStore.teamName || '社会实践队')
+		.replace(/{{SOURCE_ACCOUNT}}/g, appStore.sourceAccount || '校团委青年媒体中心')
 		.replace(/{{EDITOR_INPUT}}/g, appStore.editorInput || ' ')
+
+	// 特殊处理：如果 TEAM_PROJECT 为空，移除整行
+	if (appStore.teamProject) {
+		footer = footer.replace(/<p v-if="{{TEAM_PROJECT}}">.*?<\/p>/g, `<p>社会实践专项：${appStore.teamProject}</p>`)
+	} else {
+		footer = footer.replace(/<p v-if="{{TEAM_PROJECT}}">.*?<\/p>/g, '')
+	}
+	footer = footer.replace(/{{TEAM_PROJECT}}/g, appStore.teamProject || '')
 
 	footer = `<div id="editable-footer" contenteditable="true" style="outline: none;">${footer}</div>`
 	htmlParts.push(footer)
