@@ -77,8 +77,8 @@
         />
       </div>
 
-      <!-- 团队名称 (三下乡模式) -->
-      <div v-if="configStore.mode === 'three_rural'" class="space-y-1">
+      <!-- 团队名称 (三下乡 & 日常 & 寒假模式) -->
+      <div v-if="['three_rural', 'daily', 'winter_practice'].includes(configStore.mode)" class="space-y-1">
         <label class="block text-xs font-semibold text-gray-700">团队名称</label>
         <input 
           v-model="appStore.teamName"
@@ -113,6 +113,28 @@
             <button @click="removeFromArray(appStore.copywriterNames, index)" class="text-gray-400 hover:text-red-500">×</button>
           </div>
           <button @click="appStore.copywriterNames.push('')" class="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center">+ 添加作者</button>
+        </div>
+      </div>
+
+      <!-- 三下乡/寒假模式 专项信息 -->
+      <div v-if="['three_rural', 'winter_practice'].includes(configStore.mode)" class="space-y-3 pt-2 border-t">
+        <div class="text-[10px] font-bold text-gray-400 uppercase">专项详情 (用于同步飞书)</div>
+        
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-gray-700">队伍专项</label>
+          <input v-model="appStore.teamProject" type="text" placeholder="未识别" class="w-full px-3 py-2 text-sm border rounded-lg outline-none" />
+        </div>
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-gray-700">负责人</label>
+          <input v-model="appStore.teamLeader" type="text" placeholder="未识别" class="w-full px-3 py-2 text-sm border rounded-lg outline-none" />
+        </div>
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-gray-700">所属院系</label>
+          <input v-model="appStore.teamDepartment" type="text" placeholder="未识别" class="w-full px-3 py-2 text-sm border rounded-lg outline-none" />
+        </div>
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-gray-700">联系方式</label>
+          <input v-model="appStore.teamContact" type="text" placeholder="未识别" class="w-full px-3 py-2 text-sm border rounded-lg outline-none" />
         </div>
       </div>
 

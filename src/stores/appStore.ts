@@ -161,7 +161,7 @@ export const useAppStore = defineStore('app', () => {
     deleteBlockRecursive(contentBlocks.value, id)
   }
 
-  const moveBlock = (blockId: string, targetId: string, position: 'top' | 'bottom' | 'inside'): void => {
+  const moveBlock = (blockId: string, targetId: string, position: 'top' | 'bottom' | 'inside', options: { flatten?: boolean } = {}): void => {
     let blockToMove: ContentBlock | undefined
 
     // 1. 从原位置移除
@@ -180,14 +180,20 @@ export const useAppStore = defineStore('app', () => {
     findAndRemove(contentBlocks.value)
     if (!blockToMove) return
 
-    // 2. 插入到新位置
+    // 2. 如果需要拆散嵌套 (Flatten)
+    let blocksToInsert: ContentBlock[] = [blockToMove]
+    if (options.flatten && blockToMove.type === 'container' && blockToMove.children) {
+      blocksToInsert = blockToMove.children
+    }
+
+    // 3. 插入到新位置
     if (position === 'inside') {
       const target = findBlockRecursive(contentBlocks.value, targetId)
       if (target && target.type === 'container') {
         if (!target.children) target.children = []
-        target.children.push(blockToMove)
+        target.children.push(...blocksToInsert)
       } else {
-        contentBlocks.value.push(blockToMove)
+        contentBlocks.value.push(...blocksToInsert)
       }
     } else {
       const findTargetParent = (list: ContentBlock[]): { parent: ContentBlock[], index: number } | null => {
@@ -205,11 +211,37 @@ export const useAppStore = defineStore('app', () => {
       const info = findTargetParent(contentBlocks.value)
       if (info) {
         const insertIdx = position === 'top' ? info.index : info.index + 1
-        info.parent.splice(insertIdx, 0, blockToMove)
+        info.parent.splice(insertIdx, 0, ...blocksToInsert)
       } else {
-        contentBlocks.value.push(blockToMove)
+        contentBlocks.value.push(...blocksToInsert)
       }
     }
+  }
+
+  const mergeBlocks = (newBlocks: ContentBlock[], options: { index?: number, relativeToId?: string, asGroup?: boolean } = {}): void => {
+    let blocksToInsert = newBlocks
+
+    if (options.asGroup) {
+      const container: ContentBlock = {
+        id: `container_merge_${Date.now()}`,
+        type: 'container',
+        text: '',
+        children: newBlocks
+      }
+      blocksToInsert = [container]
+    }
+
+    if (options.relativeToId) {
+      const parentList = findParentList(contentBlocks.value, options.relativeToId)
+      if (parentList) {
+        const idx = parentList.findIndex(b => b.id === options.relativeToId)
+        parentList.splice(idx + 1, 0, ...blocksToInsert)
+        return
+      }
+    }
+
+    const insertIdx = options.index !== undefined ? options.index : contentBlocks.value.length
+    contentBlocks.value.splice(insertIdx, 0, ...blocksToInsert)
   }
 
   const setStyleConfig = (config: Partial<StyleConfig>): void => {
@@ -307,6 +339,7 @@ export const useAppStore = defineStore('app', () => {
     insertImageBlock,
     insertTextBlock,
     insertContainerBlock,
+    mergeBlocks,
     deleteBlock,
     moveBlock,
     setStyleConfig,

@@ -22,14 +22,23 @@ export class ArticleService {
             // 并行更新配置、内容和图片库
             const saveTasks = []
 
-            const cleanedBlocks = appStore.contentBlocks.map(block => {
+            // 递归清理 Block 数据，保留 children
+            const cleanBlockRecursive = (block: any): any => {
                 const blockMeta = block.meta as Record<string, any> | undefined;
-                return {
+                const cleaned: any = {
                     type: block.type,
                     text: block.text || '',
                     ...(blockMeta?.aiImageUrl ? { aiImageUrl: blockMeta.aiImageUrl } : {})
                 };
-            })
+
+                if (block.children && Array.isArray(block.children) && block.children.length > 0) {
+                    cleaned.children = block.children.map(cleanBlockRecursive);
+                }
+
+                return cleaned;
+            };
+
+            const cleanedBlocks = appStore.contentBlocks.map(cleanBlockRecursive)
             const cleanContent = JSON.stringify(cleanedBlocks)
 
             // 1. 更新配置 (包含 rawText 和从文档提取的元数据)

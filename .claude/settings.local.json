@@ -81,7 +81,13 @@
       "Bash(docker logs:*)",
       "Bash(node:*)",
       "Bash(docker exec:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Skill(git-merge-to-develop)",
+      "Skill(git-merge-to-develop:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git add:*)"
     ]
   }
 }

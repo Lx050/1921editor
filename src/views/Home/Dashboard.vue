@@ -306,7 +306,7 @@
 
         <div v-else class="grid grid-cols-1 gap-4">
           <div
-            v-for="(article, index) in articles"
+            v-for="article in articles"
             :key="article.id"
             class="group relative bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100/50 hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden"
           >
@@ -338,7 +338,6 @@ import { useUserStore } from '../../stores/userStore'
 import { useConfigStore } from '../../stores/configStore'
 import { useAppStore } from '../../stores/appStore'
 import { getArticles, getArticle, type Article } from '../../api/article'
-import api from '../../utils/api'
 import toast from '../../composables/useToast'
 
 const router = useRouter()
@@ -355,7 +354,6 @@ watch(() => userStore.currentTenant?.id, (newId) => {
 const articles = ref<Article[]>([])
 const loading = ref(true)
 const showSettings = ref(false)
-const isDeleting = ref(false)
 
 const startWork = (mode: 'daily' | 'three_rural' | 'reprint' | 'winter_practice') => {
   appStore.resetApp()
@@ -385,6 +383,13 @@ const continueEdit = async (id: string) => {
         if (meta.editorInput !== undefined) appStore.editorInput = meta.editorInput
         if (meta.teamName !== undefined) appStore.teamName = meta.teamName
         if (meta.sourceAccount !== undefined) appStore.sourceAccount = meta.sourceAccount
+        if (meta.teamProject !== undefined) appStore.teamProject = meta.teamProject
+        if (meta.teamDepartment !== undefined) appStore.teamDepartment = meta.teamDepartment
+        if (meta.teamLeader !== undefined) appStore.teamLeader = meta.teamLeader
+        if (meta.teamContact !== undefined) appStore.teamContact = meta.teamContact
+        if (meta.copywriterNames !== undefined) appStore.copywriterNames = meta.copywriterNames
+        if (meta.plannerNames !== undefined) appStore.plannerNames = meta.plannerNames
+        if (meta.editorNames !== undefined) appStore.editorNames = meta.editorNames
       }
     }
     
@@ -441,11 +446,6 @@ const fetchArticles = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const handleLogoutConfirmed = () => {
-  userStore.logout()
-  router.push('/')
 }
 
 onMounted(() => { if (userStore.isLoggedIn) fetchArticles() })

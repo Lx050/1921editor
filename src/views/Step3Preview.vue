@@ -211,41 +211,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch, type Ref } from 'vue'
+import { useRouter, useRoute, type Router } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
 import { buildHtml } from '../utils/styleAssembler'
 import { createDraft, uploadImage, getWechatProxyUrl, restoreWechatUrl } from '../utils/wechatApi'
 import { copyToClipboard, copyHtmlToClipboard } from '../utils/clipboard'
+import { createLogger } from '../utils/logger'
 import ImageReplacer from '../components/ImageReplacer.vue'
 import QuickImageStrip from '../components/QuickImageStrip.vue'
 import CreateDraftFormModal from '../components/CreateDraftFormModal.vue'
 import { articleApi } from '../utils/api'
 import toast from '../composables/useToast'
 import DOMPurify from 'dompurify'
-import type { DraftArticle, WechatImage, WechatUploadResponse } from '@/types'
+import type { DraftArticle, WechatImage, WechatUploadResponse, BlockType } from '@/types'
+import type { ImageReplacement, DraftFormState, ExternalImage, SavedBlock } from '@/types/preview'
 import { tokenStorage } from '../utils/tokenStorage'
 
-const router = useRouter()
+defineOptions({
+  name: 'Step3Preview'
+})
+
+const router: Router = useRouter()
 const route = useRoute()
 const appStore = useAppStore()
 const configStore = useConfigStore()
+const step3Logger = createLogger('Step3')
+const previewLogger = createLogger('Preview')
 
-const isGenerating = ref(false)
-const finalHtml = ref('')
-const previewHtml = ref('')
-const errorMessage = ref('')
-const activeTab = ref('preview')
-const copyButtonText = ref('复制预览')
-const previewFrame = ref<HTMLIFrameElement | null>(null)
+const isGenerating: Ref<boolean> = ref(false)
+const finalHtml: Ref<string> = ref('')
+const previewHtml: Ref<string> = ref('')
+const errorMessage: Ref<string> = ref('')
+const activeTab: Ref<'preview' | 'code'> = ref('preview')
+const copyButtonText: Ref<string> = ref('复制预览')
+const previewFrame: Ref<HTMLIFrameElement | null> = ref(null)
 
 // 根据当前选项卡获取复制按钮文本
-const getCopyButtonLabel = () => {
+const getCopyButtonLabel = (): string => {
   return activeTab.value === 'preview' ? '复制预览' : '复制代码'
 }
 
-const buildAuthHeaders = () => {
+const buildAuthHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json'
   }
@@ -257,7 +265,7 @@ const buildAuthHeaders = () => {
 }
 
 // V2: 图片替换相关状态
-const selectedPlaceholder = ref<string | null>(null)
+const selectedPlaceholder: Ref<string | null> = ref(null)
 
 // 监听选项卡切换，更新复制按钮文本
 watch(activeTab, () => {
@@ -286,40 +294,28 @@ watch(
     () => appStore.editorNames
   ],
   () => {
-    console.log('[Step3] 检测到元数据变化，重新生成 HTML...')
+    step3Logger.debug('检测到元数据变化，重新生成 HTML...')
     regenerate()
   },
   { deep: true }
 )
-type ImageReplacement = {
-  previewUrl: string
-  wechatUrl?: string
-}
 
-type DraftFormState = {
-  title: string
-  coverImageId: string
-  author: string
-  digest: string
-  showCover: boolean
-}
-
-const imageReplacements = ref<Record<string, ImageReplacement>>({})
-const lastScrollTop = ref(0) // 记录 iframe 滚动位置
+const imageReplacements: Ref<Record<string, ImageReplacement>> = ref({})
+const lastScrollTop: Ref<number> = ref(0) // 记录 iframe 滚动位置
 
 // V2: 草稿创建相关状态
-const showDraftModal = ref(false)
-const showMobileFrame = ref(false)
-const isCreatingDraft = ref(false)
-const isUploadingCover = ref(false)
-const isSharing = ref(false) // 新增：分享状态
-const showMobileSidebar = ref(false)
-const draftError = ref('')
-const draftSuccess = ref('')
-const aiImageProgress = ref('') // 新增：AI 图片上传进度提示
-const isSaving = ref(false)
-const hasAutoSaved = ref(false)
-const draftForm = ref<DraftFormState>({
+const showDraftModal: Ref<boolean> = ref(false)
+const showMobileFrame: Ref<boolean> = ref(false)
+const isCreatingDraft: Ref<boolean> = ref(false)
+const isUploadingCover: Ref<boolean> = ref(false)
+const isSharing: Ref<boolean> = ref(false)
+const showMobileSidebar: Ref<boolean> = ref(false)
+const draftError: Ref<string> = ref('')
+const draftSuccess: Ref<string> = ref('')
+const aiImageProgress: Ref<string> = ref('')
+const isSaving: Ref<boolean> = ref(false)
+const hasAutoSaved: Ref<boolean> = ref(false)
+const draftForm: Ref<DraftFormState> = ref({
   title: '',
   coverImageId: '',
   author: '',
@@ -328,7 +324,7 @@ const draftForm = ref<DraftFormState>({
 })
 
 // V2: 从内容块中提取标题（第一行通常是大标题）
-const extractTitleFromContent = () => {
+const extractTitleFromContent = (): string => {
   const blocks = contentBlocks.value
   const firstBlock = blocks[0]
   if (firstBlock && firstBlock.text && firstBlock.text.trim()) {
@@ -341,35 +337,35 @@ const extractTitleFromContent = () => {
 }
 
 // V2: 打开草稿弹窗，自动填充标题
-const openDraftModal = () => {
+const openDraftModal = (): void => {
   if (!draftForm.value.title) {
     draftForm.value.title = extractTitleFromContent()
   }
-  
+
   draftError.value = ''
   draftSuccess.value = ''
   showDraftModal.value = true
 }
 
 // V2: 处理封面上传
-const handleCoverUpload = async (file: File | null) => {
+const handleCoverUpload = async (file: File | null): Promise<void> => {
   if (!file) return
-  
+
   // 检查文件类型
   if (!file.type.match(/^image\/(jpeg|png)$/)) {
     draftError.value = '封面图仅支持 JPG/PNG 格式'
     return
   }
-  
+
   // 检查文件大小 (2MB)
   if (file.size > 2 * 1024 * 1024) {
     draftError.value = '封面图大小不能超过 2MB'
     return
   }
-  
+
   isUploadingCover.value = true
   draftError.value = ''
-  
+
   try {
     // 1. 上传图片到微信
     const response: WechatUploadResponse = await uploadImage(file)
@@ -379,26 +375,26 @@ const handleCoverUpload = async (file: File | null) => {
     if (!mediaId || !url) {
       throw new Error('封面上传失败：缺少 media_id 或 url')
     }
-    
+
     // 2. 创建图片对象并添加到 Store
     const newImage: WechatImage = {
       id: `cover_${Date.now()}`,
       mediaId,
       url,
-      localPreviewUrl: URL.createObjectURL(file), // 用于本地显示（虽然在select中不直接显示图片，但为了数据完整性）
+      localPreviewUrl: URL.createObjectURL(file),
       name: file.name,
       status: 'success',
       file: file
     }
-    
+
     // 添加到 store
     appStore.addWechatImages([newImage])
-    
+
     // 3. 自动选中
     draftForm.value.coverImageId = mediaId
-    
+
   } catch (error: unknown) {
-    console.error('[Step3] 封面上传失败:', error)
+    step3Logger.error('封面上传失败:', error)
     const message = error instanceof Error ? error.message : '封面上传失败，请重试'
     draftError.value = message
   } finally {
@@ -420,27 +416,27 @@ const resolveArticleId = (value: unknown): string | null =>
   typeof value === 'string' ? value : null
 
 // V2: 处理微信图片选择 - 直接替换，无需确认
-const handleImageSelect = (image: WechatImage) => {
+const handleImageSelect = (image: WechatImage): void => {
   const placeholderId = selectedPlaceholder.value
   if (!placeholderId) {
-    console.log('[Step3] 请先选择右侧预览中的占位符')
+    step3Logger.debug('请先选择右侧预览中的占位符')
     return
   }
-  
+
   // 使用本地预览 URL 进行预览显示
   const previewUrl = image.localPreviewUrl || image.proxyUrl || getWechatProxyUrl(image.url)
   const wechatUrl = restoreWechatUrl(image.url || image.proxyUrl || previewUrl)
-  
+
   // 记录替换（保存微信 URL 用于最终输出，本地 URL 用于预览）
   imageReplacements.value[placeholderId] = {
     previewUrl: previewUrl,
     wechatUrl: wechatUrl
   }
-  console.log('[Step3] 直接替换:', placeholderId, '->', previewUrl)
-  
+  step3Logger.debug('直接替换:', placeholderId, '->', previewUrl)
+
   // 优化：直接修改 iframe 中的 DOM，避免 reload 导致的闪烁
   updateIframeImageDom(placeholderId, previewUrl)
-  
+
   // 清除选择状态
   selectedPlaceholder.value = null
 }
@@ -453,7 +449,7 @@ watch(
     const prevId = resolveArticleId(oldId)
     // 只有当从一个文章切换到另一个文章时才清空 (避免 Step2 -> Step3 或 刷新页面时的误清空)
     if (nextId && prevId && nextId !== prevId) {
-      console.log('[Step3] 切换文章，清空图片 Store')
+      step3Logger.debug('切换文章，清空图片 Store')
       appStore.setWechatImages([])
       isGenerating.value = true // 重置加载状态
     }
@@ -463,21 +459,21 @@ watch(
 // 自动保存图片逻辑 (增加 loading 检查，防止初始加载时覆盖为空)
 watch(wechatImages, async (newImages) => {
   if (isGenerating.value) {
-    console.log('[Step3] 正在加载中，跳过自动保存')
+    step3Logger.debug('正在加载中，跳过自动保存')
     return
   }
-  
+
   const articleId = resolveArticleId(route.params.id)
   if (!articleId) return
 
   // 安全检查：如果有图片仅仅是 blob 且没有 mediaId，说明正在上传中
-  // 此时绝对不能保存，否则会因为“净化逻辑”把这张图当作垃圾丢弃，导致图片丢失
-  const hasPendingUpload = newImages.some(img => 
+  // 此时绝对不能保存，否则会因为"净化逻辑"把这张图当作垃圾丢弃，导致图片丢失
+  const hasPendingUpload = newImages.some(img =>
     img.url && img.url.startsWith('blob:') && !img.mediaId
   )
 
   if (hasPendingUpload) {
-    console.log('[Step3] 检测到正在上传的图片 (Blob)，暂停自动保存，等待上传完成...')
+    step3Logger.debug('检测到正在上传的图片 (Blob)，暂停自动保存，等待上传完成...')
     return // ⛔️ 终止保存，等待 upload 完成更新 URL 后再次触发 watch
   }
 
@@ -500,24 +496,24 @@ watch(wechatImages, async (newImages) => {
 
   if (persistentImages.length !== newImages.length) {
     // 如果数量不一致，说明有被过滤的图，这很不正常 (因为 Pending 的已经被拦截了)
-    console.warn('[Step3] 警告：部分图片未通过持久化检查，将不被保存', newImages.length, '->', persistentImages.length)
+    step3Logger.warn('警告：部分图片未通过持久化检查，将不被保存', newImages.length, '->', persistentImages.length)
   }
 
-  console.log('[Step3] 自动保存图片到后端:', persistentImages.length)
+  step3Logger.debug('自动保存图片到后端:', persistentImages.length)
   try {
     await articleApi.updateStep3(articleId, persistentImages)
   } catch (e) {
-    console.error('保存图片失败', e)
+    step3Logger.error('保存图片失败', e)
   }
 }, { deep: true })
 
 // 同步 Modal 表单数据
-const updateDraftForm = (newForm: Partial<DraftFormState>) => {
+const updateDraftForm = (newForm: Partial<DraftFormState>): void => {
   draftForm.value = { ...draftForm.value, ...newForm }
 }
 
 // 新增：直接更新 iframe DOM
-const updateIframeImageDom = (placeholderId: string, newUrl: string) => {
+const updateIframeImageDom = (placeholderId: string, newUrl: string): void => {
   const doc = previewFrame.value?.contentDocument
   if (!doc) return
 
@@ -533,22 +529,22 @@ const updateIframeImageDom = (placeholderId: string, newUrl: string) => {
       img.style.boxShadow = 'none'
     })
 
-    console.log('[Step3] DOM 更新成功，已直接反映在 iframe 中')
+    previewLogger.debug('DOM 更新成功，已直接反映在 iframe 中')
   } catch (e) {
-    console.warn('[Step3] DOM 更新失败:', e)
+    previewLogger.warn('DOM 更新失败:', e)
     // 如果 DOM 操作失败，回退到整体刷新 HTML
     updatePreviewHtmlRef()
   }
 }
 
-const goToPreviousStep = () => {
+const goToPreviousStep = (): void => {
   appStore.currentStep = 2
   router.push('/step2')
 }
 
 
 
-const updatePreviewHtmlRef = () => {
+const updatePreviewHtmlRef = (): void => {
   const html = getCurrentPreviewHtmlString()
   // 净化 HTML 以防注入，同时保留 data-placeholder 等自定义属性
   previewHtml.value = DOMPurify.sanitize(html, {
@@ -580,7 +576,7 @@ onMounted(async () => {
         appStore.setCurrentArticleId(article.id)
         draftForm.value.title = article.title
 
-        console.log('[Step3] 文章数据加载完成')
+        step3Logger.debug('文章数据加载完成')
 
         if (article.config) {
           appStore.setStyleConfig(article.config)
@@ -591,20 +587,24 @@ onMounted(async () => {
             if (meta.editorInput !== undefined) appStore.editorInput = meta.editorInput
             if (meta.teamName !== undefined) appStore.teamName = meta.teamName
             if (meta.sourceAccount !== undefined) appStore.sourceAccount = meta.sourceAccount
-            if (meta.copywriterNames) appStore.copywriterNames = meta.copywriterNames
-            if (meta.plannerNames) appStore.plannerNames = meta.plannerNames
-            if (meta.editorNames) appStore.editorNames = meta.editorNames
-            console.log('[Step3] 元数据恢复完成')
+            if (meta.teamProject !== undefined) appStore.teamProject = meta.teamProject
+            if (meta.teamDepartment !== undefined) appStore.teamDepartment = meta.teamDepartment
+            if (meta.teamLeader !== undefined) appStore.teamLeader = meta.teamLeader
+            if (meta.teamContact !== undefined) appStore.teamContact = meta.teamContact
+            if (meta.copywriterNames !== undefined) appStore.copywriterNames = meta.copywriterNames
+            if (meta.plannerNames !== undefined) appStore.plannerNames = meta.plannerNames
+            if (meta.editorNames !== undefined) appStore.editorNames = meta.editorNames
+            step3Logger.debug('元数据恢复完成')
           }
         }
 
         if (article.content) {
           try {
-            const savedBlocks = JSON.parse(article.content)
+            const savedBlocks = JSON.parse(article.content) as SavedBlock[]
             if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
-              const restoredBlocks = savedBlocks.map((block: any, index: number) => ({
+              const restoredBlocks = savedBlocks.map((block: SavedBlock, index: number) => ({
                 id: `restored_${index}_${Date.now()}`,
-                type: block.type || 'body',
+                type: (block.type || 'body') as BlockType,
                 text: block.text || '',
                 source: 'restored',
                 meta: block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}
@@ -612,7 +612,7 @@ onMounted(async () => {
 
               appStore.setContentBlocks(restoredBlocks)
 
-              const rawText = savedBlocks.map((b: any) => b.text || '').join('\n\n')
+              const rawText = savedBlocks.map((b: SavedBlock) => b.text || '').join('\n\n')
               appStore.setRawText(rawText)
             } else {
               appStore.setRawText(article.content)
@@ -622,7 +622,7 @@ onMounted(async () => {
           }
         }
 
-        console.log('[Step3] 后端返回的图片数据:', JSON.stringify(article.images))
+        step3Logger.debug('后端返回的图片数据:', JSON.stringify(article.images))
         const backendImages = (article.images || []) as WechatImage[]
         const validImages = backendImages.map((img) => {
           const rawUrl = img.url || img.proxyUrl || ''
@@ -641,11 +641,11 @@ onMounted(async () => {
           }
         }).filter(Boolean) as WechatImage[]
 
-        console.log('[Step3] 有效图片数量:', validImages.length, '张（已过滤 blob）')
+        step3Logger.debug('有效图片数量:', validImages.length, '张（已过滤 blob）')
         appStore.setWechatImages(validImages)
       }
     } catch (e) {
-      console.error('[Step3] 加载文章失败:', e)
+      step3Logger.error('加载文章失败:', e)
       errorMessage.value = '加载文章数据失败'
     } finally {
       isGenerating.value = false
@@ -654,7 +654,7 @@ onMounted(async () => {
 
   // 改进：如果没有任何内容块，说明是空跳转，应该回到第一步而不是第二步
   if (contentBlocks.value.length === 0) {
-    console.warn('[Step3] 无内容块，重定向到第一步')
+    step3Logger.warn('无内容块，重定向到第一步')
     router.push('/step1')
     return
   }
@@ -670,7 +670,7 @@ onMounted(async () => {
 })
 
 // V2: 设置 iframe 点击处理器
-const setupIframeClickHandler = () => {
+const setupIframeClickHandler = (): void => {
   if (!previewFrame.value) return
 
   try {
@@ -687,8 +687,8 @@ const setupIframeClickHandler = () => {
 
     // 查找并绑定所有占位符图片的点击事件
     const placeholderImages = iframeDoc.querySelectorAll<HTMLImageElement>('img[data-placeholder]')
-    console.log('[Step3] 找到占位符图片数量:', placeholderImages.length)
-    
+    previewLogger.debug('找到占位符图片数量:', placeholderImages.length)
+
     placeholderImages.forEach((img) => {
       img.style.cursor = 'pointer'
       
@@ -725,8 +725,8 @@ const setupIframeClickHandler = () => {
         img.style.outline = '3px solid #3b82f6'
         img.style.outlineOffset = '2px'
         img.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.4)'
-        
-        console.log('[Step3] 选中占位符:', placeholderId)
+
+        previewLogger.debug('选中占位符:', placeholderId)
       })
     })
 
@@ -736,31 +736,31 @@ const setupIframeClickHandler = () => {
     if (editableFooter) {
       editableFooter.style.outline = '1px dashed transparent'
       editableFooter.style.transition = 'outline 0.2s'
-      
+
       // 聚焦时高亮
       editableFooter.addEventListener('focus', () => {
         editableFooter.style.outline = '2px solid #3b82f6'
       })
-      
+
       // blur 时保存并移除高亮
       editableFooter.addEventListener('blur', () => {
         editableFooter.style.outline = '1px dashed transparent'
         // 将编辑后的 footer 内容同步回 store
         const newFooterHtml = editableFooter.innerHTML
         configStore.setFooter(newFooterHtml)
-        console.log('[Step3] Footer 编辑已同步到 store')
+        previewLogger.debug('Footer 编辑已同步到 store')
       })
-      
-      console.log('[Step3] Footer 已设置为可编辑')
+
+      previewLogger.debug('Footer 已设置为可编辑')
     }
 
   } catch (e) {
-    console.warn('[Step3] 无法设置 iframe 点击处理器:', e)
+    previewLogger.warn('无法设置 iframe 点击处理器:', e)
   }
 }
 
 // 辅助：生成当前预览 HTML 字符串
-const getCurrentPreviewHtmlString = () => {
+const getCurrentPreviewHtmlString = (): string => {
   let html = finalHtml.value
   
   // 应用所有图片替换（使用预览 URL）
@@ -777,7 +777,7 @@ const getCurrentPreviewHtmlString = () => {
 }
 
 // 生成HTML
-const generateHtml = async () => {
+const generateHtml = async (): Promise<void> => {
   isGenerating.value = true
   errorMessage.value = ''
 
@@ -789,17 +789,17 @@ const generateHtml = async () => {
     }
 
     const styleConfig = appStore.styleConfig
-    console.log('[Step3] 生成HTML，样式配置:', styleConfig)
+    step3Logger.debug('生成HTML，样式配置:', styleConfig)
 
     // V2: 生成带占位符标记的 HTML
     finalHtml.value = buildHtml(contentBlocks.value, styleConfig, true)
     previewHtml.value = finalHtml.value
-    
+
     // 清除之前的替换记录
     imageReplacements.value = {}
     selectedPlaceholder.value = null
   } catch (error: unknown) {
-    console.error('[Step3] 生成HTML失败:', error)
+    step3Logger.error('生成HTML失败:', error)
     const message = error instanceof Error ? error.message : '生成HTML时发生未知错误'
     errorMessage.value = message
   } finally {
@@ -822,7 +822,7 @@ watch(activeTab, (newTab) => {
 })
 
 // V2: 生成最终输出 HTML（使用微信 URL）
-const getOutputHtml = () => {
+const getOutputHtml = (): string => {
   let html = finalHtml.value
   
   // 应用所有图片替换（使用微信 URL 用于最终输出）
@@ -843,7 +843,7 @@ const getOutputHtml = () => {
 }
 
 // 智能复制：根据当前选项卡使用不同的复制方法
-const copyHtml = async () => {
+const copyHtml = async (): Promise<void> => {
   const htmlToCopy = getOutputHtml()
 
   let result: { ok: boolean; method: string; error?: unknown }
@@ -853,29 +853,29 @@ const copyHtml = async () => {
     const iframeBody = previewFrame.value?.contentDocument?.body
     const plainText = iframeBody?.innerText || ''
     result = await copyHtmlToClipboard(htmlToCopy, plainText)
-    
+
     if (result.ok) {
       showCopySuccess()
       toast.success('预览内容已复制，可直接粘贴到微信编辑器')
     } else {
-      console.error('Preview copy failed:', result.error)
+      step3Logger.error('Preview copy failed:', result.error)
       toast.error('复制失败，请切换到代码模式复制')
     }
   } else {
     // 代码模式：使用纯文本复制 HTML 源代码
     result = await copyToClipboard(htmlToCopy)
-    
+
     if (result.ok) {
       showCopySuccess()
       toast.success('HTML 代码已复制')
     } else {
-      console.error('Code copy failed:', result.error)
+      step3Logger.error('Code copy failed:', result.error)
       alert('复制失败，请手动选择代码进行复制')
     }
   }
 }
 
-const showCopySuccess = () => {
+const showCopySuccess = (): void => {
   copyButtonText.value = '已复制!'
   setTimeout(() => {
     copyButtonText.value = getCopyButtonLabel()
@@ -884,7 +884,7 @@ const showCopySuccess = () => {
 
 
 
-const submitDraft = async () => {
+const submitDraft = async (): Promise<void> => {
   if (!draftForm.value.title || !draftForm.value.coverImageId) return
 
   isCreatingDraft.value = true
@@ -900,9 +900,8 @@ const submitDraft = async () => {
       '<img[^>]+src="(https:\\/\\/(?:ark\\.cn-beijing\\.volces\\.com|image\\.pollinations\\.ai)[^"]+)"[^>]*>',
       'g'
     )
-    type ExternalImage = { original: string; tag: string }
     const externalImages: ExternalImage[] = []
-    
+
     let match: RegExpExecArray | null = null
     while ((match = externalImageRegex.exec(content)) !== null) {
       externalImages.push({
@@ -912,7 +911,7 @@ const submitDraft = async () => {
     }
 
     if (externalImages.length > 0) {
-      console.log(`[Step3] 检测到 ${externalImages.length} 张外部AI图片，开始优化并发上传...`)
+      step3Logger.debug(`检测到 ${externalImages.length} 张外部AI图片，开始优化并发上传...`)
       aiImageProgress.value = `初始化上传管理器...`
 
       try {
@@ -935,7 +934,7 @@ const submitDraft = async () => {
 
           aiImageProgress.value = `${progress.message} (${stats.completed}/${stats.total}) - ${overallProgress}%`
 
-          console.log(`[Step3] ${progress.taskId}: ${progress.message}`)
+          step3Logger.debug(`${progress.taskId}: ${progress.message}`)
         })
 
         // 提取所有图片URL
@@ -973,17 +972,17 @@ const submitDraft = async () => {
           })
 
           aiImageProgress.value = `✓ AI图片处理完成: ${replacedCount}/${imageUrls.length} 张成功`
-          console.log(`[Step3] AI图片处理完成 - 成功: ${replacedCount}, 失败: ${errors.length}`)
+          step3Logger.debug(`AI图片处理完成 - 成功: ${replacedCount}, 失败: ${errors.length}`)
         }
 
         // 处理错误（如果有部分失败）
         if (errors.length > 0) {
-          console.error(`[Step3] 部分AI图片处理失败:`, errors)
+          step3Logger.error(`部分AI图片处理失败:`, errors)
           // 不抛出错误，允许部分成功的情况
         }
 
       } catch (uploadError: unknown) {
-        console.error('[Step3] AI图片批量处理失败:', uploadError)
+        step3Logger.error('AI图片批量处理失败:', uploadError)
         const message = uploadError instanceof Error ? uploadError.message : String(uploadError)
         throw new Error(`AI图片处理失败: ${message}`)
       }
@@ -1012,7 +1011,7 @@ const submitDraft = async () => {
       throw new Error('创建草稿失败: 缺少草稿 ID')
     }
     draftSuccess.value = draftId
-    console.log('[Step3] 草稿创建成功:', result)
+    step3Logger.debug('草稿创建成功:', result)
 
     // 保存草稿数据到sessionStorage（用于预览页面）
     sessionStorage.setItem('wechat_draft_id', draftId)
@@ -1031,7 +1030,7 @@ const submitDraft = async () => {
     }, 3000)
 
   } catch (error: unknown) {
-    console.error('[Step3] 创建草稿失败:', error)
+    step3Logger.error('创建草稿失败:', error)
     draftError.value = error instanceof Error ? error.message : '创建草稿失败，请检查网络或配置'
     aiImageProgress.value = '' // 清除进度提示
   } finally {
@@ -1044,19 +1043,19 @@ const submitDraft = async () => {
 }
 
 
-const regenerate = async () => {
+const regenerate = async (): Promise<void> => {
   await generateHtml()
 }
 
 
 
 // 保存草稿到后端 - 保存内容和样式配置
-const saveDraft = async () => {
-  if (isSaving.value) return
-  
+const saveDraft = async (): Promise<boolean> => {
+  if (isSaving.value) return false
+
   isSaving.value = true
-  console.log('=== [Step3] 开始保存草稿 ===')
-  
+  step3Logger.debug('=== 开始保存草稿 ===')
+
   try {
     if (!tokenStorage.getToken()) {
       toast.warning('请先登录后再保存')
@@ -1069,19 +1068,19 @@ const saveDraft = async () => {
       text: block.text || '',
       ...(block.meta?.aiImageUrl ? { aiImageUrl: block.meta.aiImageUrl } : {})
     }))
-    
+
     const cleanContent = JSON.stringify(cleanedBlocks)
     const articleId = appStore.currentArticleId
-    
-    console.log('[Step3] 当前文章ID:', articleId)
-    console.log('[Step3] 清理后的内容块数量:', cleanedBlocks.length)
-    console.log('[Step3] 内容预览:', cleanContent.substring(0, 200) + '...')
-    console.log('[Step3] 样式配置:', appStore.styleConfig)
+
+    step3Logger.debug('当前文章ID:', articleId)
+    step3Logger.debug('清理后的内容块数量:', cleanedBlocks.length)
+    step3Logger.debug('内容预览:', cleanContent.substring(0, 200) + '...')
+    step3Logger.debug('样式配置:', appStore.styleConfig)
     
     if (articleId) {
       // 🚀 并行优化：内容、图片库、样式配置同时保存
-      console.log('[Step3] 正在并行保存内容、图片和配置...')
-      
+      step3Logger.debug('正在并行保存内容、图片和配置...')
+
       const saveTasks = []
 
       // 1. 保存内容 (使用 Step3 专用端点)
@@ -1112,7 +1111,7 @@ const saveDraft = async () => {
             status: img.status
           }
         })
-      
+
       if (imagesToSave.length > 0) {
         saveTasks.push(fetch(`/api/articles/${articleId}/images`, {
           method: 'PUT',
@@ -1148,7 +1147,7 @@ const saveDraft = async () => {
 
       // 等待所有任务完成
       const results = await Promise.all(saveTasks)
-      console.log('[Step3] 并行保存完成:', results)
+      step3Logger.debug('并行保存完成:', results)
       
       toast.success('草稿已保存（内容、图片、样式同步完成）')
     } else {
@@ -1202,20 +1201,20 @@ const saveDraft = async () => {
         })
       
       if (newArticleImages.length > 0) {
-        console.log('[Step3] 新文章保存图片:', newArticleImages.length, '张')
+        step3Logger.debug('新文章保存图片:', newArticleImages.length, '张')
         await fetch(`/api/articles/${data.id}/images`, {
           method: 'PUT',
           headers: buildAuthHeaders(),
           body: JSON.stringify({ images: newArticleImages })
         })
       }
-      
+
       toast.success('文章已创建并保存！')
     }
-    
+
     return true // 返回成功状态
   } catch (error: unknown) {
-    console.error('保存失败:', error)
+    step3Logger.error('保存失败:', error)
     const message = error instanceof Error ? error.message : String(error)
     toast.error('保存失败: ' + message)
     return false
@@ -1225,7 +1224,7 @@ const saveDraft = async () => {
 }
 
 // 协作分享链接生成
-const copyShareLink = async () => {
+const copyShareLink = async (): Promise<void> => {
   if (isSharing.value) return
   isSharing.value = true
   
@@ -1250,12 +1249,12 @@ const copyShareLink = async () => {
     if (result.ok) {
       toast.success('协作链接已复制到剪贴板！发送给他人即可同步编辑。', 5000)
     } else {
-      console.warn('剪贴板 API 失败，尝试备选方案', result.error)
+      step3Logger.warn('剪贴板 API 失败，尝试备选方案', result.error)
       alert(`协作链接（请手动复制）:\n${shareUrl}`)
     }
     
   } catch (err: unknown) {
-    console.error('[Step3] 分享失败:', err)
+    step3Logger.error('分享失败:', err)
     const message = err instanceof Error ? err.message : '未知错误'
     toast.error('共享生成失败: ' + message)
   } finally {

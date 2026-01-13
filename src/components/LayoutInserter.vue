@@ -59,13 +59,21 @@
         <!-- 容器区块 -->
         <div class="col-span-2 border-t pt-3 space-y-2">
            <div class="text-[10px] font-bold text-gray-400 px-1">功能/嵌套</div>
-           <button
-              @click="insertContent('container')"
-              class="w-full p-2 text-sm rounded-lg hover:bg-purple-50 active:bg-purple-100 text-gray-700 flex items-center justify-center gap-3 transition-all border border-transparent hover:border-purple-100"
-            >
-              <span class="text-xl">📦</span>
-              <span class="text-xs font-bold">内容组合 (Content Group)</span>
-            </button>
+            <button
+               @click="insertContent('container')"
+               class="w-full p-2 text-sm rounded-lg hover:bg-purple-50 active:bg-purple-100 text-gray-700 flex items-center justify-center gap-3 transition-all border border-transparent hover:border-purple-100"
+             >
+               <span class="text-xl">📦</span>
+               <span class="text-xs font-bold">内容组合 (Content Group)</span>
+             </button>
+             
+             <button
+                @click="$emit('openMerge', index)"
+                class="w-full mt-2 p-2 text-sm rounded-lg hover:bg-blue-50 active:bg-blue-100 text-blue-600 flex items-center justify-center gap-3 transition-all border border-blue-100"
+             >
+               <span class="text-xl">➕</span>
+               <span class="text-xs font-bold">导入合并 (Import/Merge)</span>
+             </button>
         </div>
       </div>
     </div>
@@ -82,18 +90,32 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-interface EmitEvents {
-  insertImage: [imageType: string]
-  insertText: [textType: string]
-  insertContainer: []
+defineOptions({
+  name: 'LayoutInserter'
+})
+
+const props = defineProps<{
+  index: number
+}>()
+
+const emit = defineEmits<{
+  (e: 'insertImage', imageType: string): void
+  (e: 'insertText', textType: string): void
+  (e: 'insertContainer'): void
+  (e: 'openMerge', index: number): void
+}>()
+
+// 内容选项类型定义
+interface ContentOption {
+  value: string
+  label: string
+  icon: string
+  type: 'text' | 'image' | 'container'
 }
 
-const emit = defineEmits<EmitEvents>()
-
 const menuVisible = ref(false)
-
 // 文本内容块选项
-const textOptions = [
+const textOptions: ContentOption[] = [
   {
     value: 'title',
     label: '标题',
@@ -119,9 +141,8 @@ const textOptions = [
     type: 'text'
   }
 ]
-
 // 图片模板选项
-const imageOptions = [
+const imageOptions: ContentOption[] = [
   {
     value: 'single',
     label: '单图',
@@ -147,40 +168,36 @@ const imageOptions = [
     type: 'image'
   }
 ]
-
-// 合并所有选项（用于查找）
-const insertOptions = [
-  ...textOptions, 
-  ...imageOptions,
-  { value: 'container', label: '容器', icon: '📦', type: 'container' }
-]
-
+// 选项类型映射（用于快速查找）
+const optionTypeMap = new Map<string, 'text' | 'image' | 'container'>()
+textOptions.forEach(opt => optionTypeMap.set(opt.value, 'text'))
+imageOptions.forEach(opt => optionTypeMap.set(opt.value, 'image'))
+optionTypeMap.set('container', 'container')
 // 切换菜单显示
 const toggleMenu = (event: MouseEvent) => {
   event.stopPropagation()
   menuVisible.value = !menuVisible.value
 }
-
 // 关闭菜单
 const closeMenu = () => {
   menuVisible.value = false
 }
-
 // 插入内容
 const insertContent = (optionValue: string) => {
-  const option = insertOptions.find(opt => opt.value === optionValue)
-  if (option) {
-    if (option.type === 'text') {
-      // 插入文本内容块
+  const type = optionTypeMap.get(optionValue)
+
+  switch (type) {
+    case 'text':
       emit('insertText', optionValue)
-    } else if (option.type === 'image') {
-      // 插入图片模板
+      break
+    case 'image':
       emit('insertImage', optionValue)
-    } else if (option.type === 'container') {
-      // 插入容器
+      break
+    case 'container':
       emit('insertContainer')
-    }
+      break
   }
+
   closeMenu()
 }
 </script>

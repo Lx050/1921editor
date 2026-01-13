@@ -187,9 +187,11 @@
     <!-- 底部插入器 -->
     <div class="flex justify-center mt-2">
       <LayoutInserter
+        :index="props.index"
         @insert-image="$emit('insertImage', { index: props.index, type: $event, id: props.block.id })"
         @insert-text="$emit('insertText', { index: props.index, type: $event, id: props.block.id })"
         @insert-container="$emit('insertContainer', props.index, props.block.id)"
+        @open-merge="$emit('openMerge', { index: props.index, id: props.block.id })"
       />
     </div>
   </div>
@@ -208,7 +210,7 @@ const props = defineProps<{
   typeOptions: any[]
 }>()
 
-const emit = defineEmits(['select', 'delete', 'updateText', 'changeType', 'generateAi', 'insertText', 'insertImage', 'insertContainer', 'move'])
+const emit = defineEmits(['select', 'delete', 'updateText', 'changeType', 'generateAi', 'insertText', 'insertImage', 'insertContainer', 'move', 'openMerge'])
 
 const dragPos = ref<'none' | 'top' | 'bottom' | 'inside'>('none')
 
