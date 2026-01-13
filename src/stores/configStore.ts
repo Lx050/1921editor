@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { tenantApi } from '../utils/api'
 import { tokenStorage } from '../utils/tokenStorage'
 
-export type WorkMode = 'daily' | 'three_rural' | 'reprint'
+export type WorkMode = 'daily' | 'three_rural' | 'reprint' | 'winter_practice'
 
 export interface WechatConfig {
 	id: string
@@ -165,6 +165,42 @@ const THREE_RURAL_FOOTER = `
 </section>
 `
 
+// HTML 头部和尾部 - 寒假社会实践模式 (Winter Practice)
+const WINTER_PRACTICE_HEADER = `
+<section data-role="outer" class="article135" style="font-size:14px;letter-spacing:1.75px;line-height:1.75em;font-family:微软雅黑, Microsoft YaHe;">
+  <section style="margin: 10px auto; text-align: center;">
+    <p style="font-size: 18px; color: #1a5cad; font-weight: bold; margin-bottom: 5px;">寒假社会实践专项系列</p>
+    <section style="height: 2px; background: linear-gradient(to right, transparent, #1a5cad, transparent); width: 80%; margin: 0 auto;"></section>
+  </section>
+</section>
+`
+
+const WINTER_PRACTICE_FOOTER = `
+<section class="article135" style="line-height:1.75;font-size:14px;background:none;padding:20px 0;letter-spacing:1.5px;font-family:微软雅黑,MicrosoftYaHe;" data-role="outer">
+    <section style="border-top: 1px solid #1a5cad; margin: 20px auto; width: 80%; opacity: 0.3;"></section>
+    
+    <section style="text-align: center; color: #333;">
+        <p style="margin-bottom: 8px;">
+            <strong style="color: #1a5cad; font-size: 16px;">校团委青年媒体中心</strong>
+        </p>
+        
+        <div style="font-size: 13px; color: #666; line-height: 2;">
+            <p>图文来源：{{TEAM_NAME}}</p>
+            <p>所属合集：寒假社会实践专版</p>
+            <p>本期编辑：{{EDITOR_INPUT}}</p>
+            <p>文案作者：{{COPYWRITERS}}</p>
+            <p>审稿校对：王雪 宋欣翼</p>
+            <p>责任编辑：朱梦鹤</p>
+        </div>
+
+        <section style="margin-top: 20px;">
+            <img src="https://mmbiz.qlogo.cn/sz_mmbiz_jpg/viactygias9W2lZ8qnEWJGO01fwFZAFuWXX03KIb26nbcLQrusdXrQKFhicdekeus1sb4RRQKUe0hBL9vobdr6QJQ/640" 
+                 style="width: 180px; display: inline-block;"/>
+        </section>
+    </section>
+</section>
+`
+
 // HTML 头部常量 - 转载模式
 const REPRINT_HEADER = `
 <!-- 转载模式头部 -->
@@ -270,13 +306,15 @@ const REPRINT_FOOTER = `
 const DEFAULT_HEADERS = {
 	daily: DAILY_HEADER,
 	three_rural: THREE_RURAL_HEADER,
-	reprint: REPRINT_HEADER
+	reprint: REPRINT_HEADER,
+	winter_practice: WINTER_PRACTICE_HEADER
 }
 
 const DEFAULT_FOOTERS = {
 	daily: DAILY_FOOTER,
 	three_rural: THREE_RURAL_FOOTER,
-	reprint: REPRINT_FOOTER
+	reprint: REPRINT_FOOTER,
+	winter_practice: WINTER_PRACTICE_FOOTER
 }
 
 export const useConfigStore = defineStore('config', () => {

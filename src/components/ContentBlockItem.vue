@@ -21,8 +21,8 @@
         isSelected
           ? 'ring-2 ring-blue-400 shadow-lg bg-white border-blue-100'
           : 'bg-white hover:shadow-md border-transparent hover:border-gray-200',
-        block.type === 'container' ? 'bg-purple-50/10' : '',
-        dragPos === 'inside' ? 'ring-2 ring-purple-400 bg-purple-50/30' : ''
+        block.type === 'container' ? 'bg-gray-50/30' : '',
+        dragPos === 'inside' ? 'ring-2 ring-blue-400 bg-blue-50/30' : ''
       ]"
     >
       <!-- 顶部栏：类型标签 + 操作按钮 -->
@@ -56,7 +56,7 @@
           <button 
             v-if="block.type !== 'container'"
             @click.stop="$emit('generateAi', block)"
-            class="p-1.5 rounded hover:bg-purple-100 text-purple-500 transition-colors"
+            class="p-1.5 rounded hover:bg-blue-100 text-blue-500 transition-colors"
             title="AI 图像化"
           >
             <span>✨</span>
@@ -74,9 +74,9 @@
       </div>
 
       <!-- 容器内容：递归渲染子块 -->
-      <div v-if="block.type === 'container'" class="space-y-3 min-h-[60px] p-2 bg-purple-50/20 rounded-lg border border-purple-100/50">
-        <div v-if="!block.children || block.children.length === 0" class="text-center py-4 text-xs text-purple-300 italic">
-          拖拽其他块到此处进行嵌套
+      <div v-if="block.type === 'container'" class="space-y-3 min-h-[60px] p-2 bg-gray-50/50 rounded-lg border border-gray-100">
+        <div v-if="!block.children || block.children.length === 0" class="text-center py-4 text-xs text-gray-400 italic">
+          拖拽其他块到此处进行组合
         </div>
         <ContentBlockItem
           v-for="(child, childIndex) in block.children"
@@ -85,15 +85,15 @@
           :index="childIndex"
           :selectedId="selectedId"
           :typeOptions="typeOptions"
-          @select="$emit('select', $event)"
-          @delete="$emit('delete', $event)"
-          @changeType="$emit('changeType', $event.id, $event.type)"
-          @generateAi="$emit('generateAi', $event)"
-          @insertText="$emit('insertText', $event)"
-          @insertImage="$emit('insertImage', $event)"
-          @insertContainer="$emit('insertContainer', $event)"
+          @select="id => $emit('select', id)"
+          @delete="id => $emit('delete', id)"
+          @changeType="(id, type) => $emit('changeType', id, type)"
+          @generateAi="b => $emit('generateAi', b)"
+          @insertText="p => $emit('insertText', p)"
+          @insertImage="p => $emit('insertImage', p)"
+          @insertContainer="(index, id) => $emit('insertContainer', index, id)"
           @updateText="(id, text) => $emit('updateText', id, text)"
-          @move="$emit('move', $event)"
+          @move="p => $emit('move', p)"
         />
       </div>
 
@@ -187,9 +187,9 @@
     <!-- 底部插入器 -->
     <div class="flex justify-center mt-2">
       <LayoutInserter
-        @insert-image="$emit('insertImage', { index: props.index, type: $event })"
-        @insert-text="$emit('insertText', { index: props.index, type: $event })"
-        @insert-container="$emit('insertContainer', props.index)"
+        @insert-image="$emit('insertImage', { index: props.index, type: $event, id: props.block.id })"
+        @insert-text="$emit('insertText', { index: props.index, type: $event, id: props.block.id })"
+        @insert-container="$emit('insertContainer', props.index, props.block.id)"
       />
     </div>
   </div>

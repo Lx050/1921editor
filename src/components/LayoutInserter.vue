@@ -64,7 +64,7 @@
               class="w-full p-2 text-sm rounded-lg hover:bg-purple-50 active:bg-purple-100 text-gray-700 flex items-center justify-center gap-3 transition-all border border-transparent hover:border-purple-100"
             >
               <span class="text-xl">📦</span>
-              <span class="text-xs font-bold">嵌套容器 (Nested Container)</span>
+              <span class="text-xs font-bold">内容组合 (Content Group)</span>
             </button>
         </div>
       </div>

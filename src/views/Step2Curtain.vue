@@ -178,7 +178,8 @@ const getBlockTypeOptions = () => {
     { value: 'image_single', label: '单图', icon: '🖼️' },
     { value: 'image_single_caption', label: '单图+注', icon: '🖼️📝' },
     { value: 'image_double', label: '双图', icon: '🖼️🖼️' },
-    { value: 'image_double_caption', label: '双图+注', icon: '🖼️📝' }
+    { value: 'image_double_caption', label: '双图+注', icon: '🖼️📝' },
+    { value: 'container', label: '容器', icon: '📦' }
   ]
 }
 
@@ -193,7 +194,7 @@ const onUpdateBlockText = (blockId: string, text: string) => {
 }
 
 // 插入文本
-const onInsertText = ({ index, type }: { index: number, type: string }) => {
+const onInsertText = ({ index, type, id }: { index: number, type: string, id?: string }) => {
   const defaultTexts: Record<string, string> = {
     'title': '新的标题内容',
     'body': '新的正文内容，点击这里开始编辑...',
@@ -201,17 +202,17 @@ const onInsertText = ({ index, type }: { index: number, type: string }) => {
     'outro': '新的结尾内容，点击这里开始编辑...'
   }
   const defaultText = defaultTexts[type] || '新内容，点击编辑...'
-  appStore.insertTextBlock(index + 1, type as BlockType, defaultText)
+  appStore.insertTextBlock(index + 1, type as BlockType, defaultText, id)
 }
 
 // 插入图片
-const onInsertImage = ({ index, type }: { index: number, type: string }) => {
-  appStore.insertImageBlock(index + 1, type as 'single' | 'single_caption' | 'double' | 'double_caption')
+const onInsertImage = ({ index, type, id }: { index: number, type: string, id?: string }) => {
+  appStore.insertImageBlock(index + 1, type as 'single' | 'single_caption' | 'double' | 'double_caption', id)
 }
 
 // 插入容器
-const onInsertContainer = (index: number) => {
-  appStore.createContainer(index + 1)
+const onInsertContainer = (index: number, id?: string) => {
+  appStore.insertContainerBlock(index + 1, id)
 }
 
 // 移动块
@@ -254,16 +255,6 @@ const goToPreviousStep = () => {
 
 const goToNextStep = () => {
   if (contentBlocks.value.length > 0) {
-    // 验证是否有装饰样式配置
-    const styleConfig = appStore.styleConfig
-    const hasTitleStyle = styleConfig?.title && styleConfig.title.fullExample
-    const hasBodyStyle = styleConfig?.body && styleConfig.body.fullExample
-    const hasIntroStyle = styleConfig?.intro && styleConfig.intro.fullExample
-
-    if (!hasTitleStyle && !hasBodyStyle && !hasIntroStyle) {
-      alert('请先在左侧选择装饰样式后再进入预览阶段！')
-      return
-    }
     router.push('/step3')
   }
 }

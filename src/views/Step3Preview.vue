@@ -659,16 +659,7 @@ onMounted(async () => {
     return
   }
 
-  const styleConfig = appStore.styleConfig
-  const hasTitleStyle = styleConfig?.title && styleConfig.title.fullExample
-  const hasBodyStyle = styleConfig?.body && styleConfig.body.fullExample
-  const hasIntroStyle = styleConfig?.intro && styleConfig.intro.fullExample
-
-  if (!hasTitleStyle && !hasBodyStyle && !hasIntroStyle) {
-    console.warn('[Step3] 无样式配置，重定向到样式选择')
-    router.push('/style-config')
-    return
-  }
+// 移除样式强制检查，允许使用默认兜底样式
 
   await regenerate()
 

@@ -145,7 +145,7 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <!-- 日常模式 -->
           <div
             @click="startWork('daily')"
@@ -166,7 +166,7 @@
                 </div>
               </div>
               <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                适用于日常公众号图文排版，支持标准格式和多图模式，提供灵活的创作体验。
+                适用于日常公众号图文排版，支持标准格式和多图模式。
               </p>
               <div class="flex items-center text-orange-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                 <span>立即开始</span>
@@ -192,12 +192,12 @@
                   🏡
                 </div>
                 <div>
-                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors">三下乡模式</h3>
+                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors">三下乡</h3>
                   <span class="text-xs text-green-600 font-medium">专项模板</span>
                 </div>
               </div>
               <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                三下乡社会实践专项活动排版模板，符合特定规范，助力实践活动宣传。
+                三下乡社会实践专项活动排版模板。
               </p>
               <div class="flex items-center text-green-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                 <span>立即开始</span>
@@ -228,9 +228,40 @@
                 </div>
               </div>
               <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                标准化转载文章排版，自动处理引用和格式转换，让内容复用更简单。
+                标准化转载文章排版，自动处理转换内容。
               </p>
               <div class="flex items-center text-purple-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                <span>立即开始</span>
+                <svg class="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- 寒假社会实践集锦模式 -->
+          <div
+            @click="startWork('winter_practice')"
+            class="group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100/50 p-8 cursor-pointer hover:shadow-2xl hover:border-blue-200 hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+          >
+            <!-- 背景装饰 -->
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="absolute -top-4 -right-4 w-20 h-20 bg-blue-100/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+
+            <div class="relative">
+              <div class="flex items-center space-x-5 mb-6">
+                <div class="h-16 w-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-blue-500/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                  ❄️
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">寒假实践</h3>
+                  <span class="text-xs text-blue-600 font-medium">专项集锦</span>
+                </div>
+              </div>
+              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                寒假社会实践合集，支持多团队内容嵌套展现。
+              </p>
+              <div class="flex items-center text-blue-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                 <span>立即开始</span>
                 <svg class="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
@@ -243,7 +274,6 @@
 
       <!-- 📄 最近草稿 -->
       <section class="relative">
-
         <div class="flex items-center justify-between mb-8">
           <div>
             <h2 class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
@@ -263,7 +293,6 @@
           <div class="inline-flex flex-col items-center">
             <div class="relative">
               <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-              <div class="absolute inset-0 w-12 h-12 border-4 border-transparent border-l-blue-400 rounded-full animate-spin" style="animation-delay: 0.15s; animation-direction: reverse;"></div>
             </div>
             <p class="mt-4 text-gray-600 font-medium">加载中...</p>
           </div>
@@ -271,18 +300,7 @@
 
         <div v-else-if="articles.length === 0" class="text-center py-16 bg-white/60 backdrop-blur-sm rounded-2xl border border-dashed border-gray-200">
           <div class="inline-flex flex-col items-center">
-            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            </div>
             <p class="text-gray-600 font-medium">暂无草稿，快去创建第一篇排版吧！</p>
-            <button
-              @click="startWork('daily')"
-              class="mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              立即开始创作
-            </button>
           </div>
         </div>
 
@@ -290,52 +308,18 @@
           <div
             v-for="(article, index) in articles"
             :key="article.id"
-            class="group relative bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100/50 hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden animate-fade-in"
-            :style="{ animationDelay: `${index * 100}ms` }"
+            class="group relative bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100/50 hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden"
           >
-            <!-- 左侧装饰线 -->
-            <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300"></div>
-
-            <a
-              @click="continueEdit(article.id)"
-              class="block p-6 cursor-pointer"
-            >
+            <a @click="continueEdit(article.id)" class="block p-6 cursor-pointer">
               <div class="flex items-start justify-between">
                 <div class="flex-1 min-w-0 mr-4">
                   <div class="flex items-center mb-2">
                     <h3 class="text-base font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors mr-3">
                       {{ article.title || '无标题' }}
                     </h3>
-                    <span
-                      class="px-3 py-1 inline-flex text-xs font-medium rounded-full backdrop-blur-sm border"
-                      :class="getStatusClass(article.status)"
-                    >
-                      {{ formatStatus(article.status) }}
-                    </span>
                   </div>
                   <div class="flex items-center text-sm text-gray-500">
-                    <svg class="flex-shrink-0 mr-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
                     <span>最后编辑: {{ formatDate(article.updatedAt) }}</span>
-                  </div>
-                </div>
-                <div class="flex-shrink-0 flex items-center space-x-2">
-                  <!-- 删除按钮 -->
-                  <button
-                    @click.stop="confirmDeleteArticle(article)"
-                    class="w-9 h-9 md:w-10 md:h-10 bg-gray-50 rounded-lg flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition-all"
-                    title="删除文章"
-                  >
-                    <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-400 hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                  </button>
-                  <!-- 编辑图标 -->
-                  <div class="w-9 h-9 md:w-10 md:h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
-                    <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
                   </div>
                 </div>
               </div>
@@ -362,10 +346,8 @@ const userStore = useUserStore()
 const configStore = useConfigStore()
 const appStore = useAppStore()
 
-// 同步微信配置
 watch(() => userStore.currentTenant?.id, (newId) => {
   if (newId) {
-    console.log('[Dashboard] 同步租户微信配置:', newId)
     configStore.fetchBackendConfig(newId)
   }
 }, { immediate: true })
@@ -375,41 +357,9 @@ const loading = ref(true)
 const showSettings = ref(false)
 const isDeleting = ref(false)
 
-// 删除文章确认
-const confirmDeleteArticle = async (article: Article) => {
-  if (isDeleting.value) return
-  
-  const confirmed = confirm(`确定要删除文章「${article.title || '无标题'}」吗？\n\n此操作不可恢复。`)
-  if (!confirmed) return
-  
-  isDeleting.value = true
-  
-  try {
-    await api.delete(`/articles/${article.id}`)
-    
-    // 从列表中移除
-    articles.value = articles.value.filter(a => a.id !== article.id)
-    
-    toast.success('文章已删除')
-  } catch (error: any) {
-    console.error('删除文章失败:', error)
-    toast.error(error.response?.data?.message || '删除失败，请重试')
-  } finally {
-    isDeleting.value = false
-  }
-}
-
-const startWork = (mode: 'daily' | 'three_rural' | 'reprint') => {
-  console.log('[Dashboard] 开始创作，模式:', mode)
-  console.log('[Dashboard] 当前用户信息:', userStore.userInfo)
-  
-  // 确保每次新建排版时都彻底清空旧数据
+const startWork = (mode: 'daily' | 'three_rural' | 'reprint' | 'winter_practice') => {
   appStore.resetApp()
-  // 自动填充登录用户的姓名到编辑字段
   appStore.initializeUserMetadata(userStore.userInfo)
-  
-  console.log('[Dashboard] 初始化后编辑字段:', appStore.editorInput)
-  
   configStore.setMode(mode)
   router.push('/step1')
 }
@@ -421,220 +371,88 @@ const handleLogout = () => {
   }
 }
 
-// 继续编辑文章 - 直接恢复状态并跳转到正确的步骤
 const continueEdit = async (id: string) => {
   try {
     loading.value = true
-    console.log('=== [Dashboard] continueEdit 开始 ===')
-    console.log('[Dashboard] 文章ID:', id)
-    
-    // 🚀 重要：先重置所有状态，防止上一个文章的数据（如尾部元数据）残留
     appStore.resetApp()
-    
-    // 获取文章详情
     const article = await getArticle(id)
-    console.log('[Dashboard] 获取到的文章:', {
-      id: article.id,
-      title: article.title,
-      status: article.status,
-      hasConfig: !!article.config,
-      contentLength: article.content?.length || 0,
-      contentPreview: article.content?.substring(0, 100)
-    })
-    
-    // 1. 设置当前文章 ID
     appStore.setCurrentArticleId(article.id)
     
-    // 2. 恢复样式配置与元数据
     if (article.config) {
       appStore.setStyleConfig(article.config)
-      
-      // 恢复元数据
       if (article.config.metadata) {
         const meta = article.config.metadata
         if (meta.editorInput !== undefined) appStore.editorInput = meta.editorInput
         if (meta.teamName !== undefined) appStore.teamName = meta.teamName
         if (meta.sourceAccount !== undefined) appStore.sourceAccount = meta.sourceAccount
-        if (meta.copywriterNames) appStore.copywriterNames = meta.copywriterNames
-        if (meta.plannerNames) appStore.plannerNames = meta.plannerNames
-        if (meta.editorNames) appStore.editorNames = meta.editorNames
       }
-      console.log('[Dashboard] 已恢复样式配置与元数据')
     }
     
-    // 3. 解析保存的内容并恢复到 contentBlocks
     let hasContentBlocks = false
     if (article.content) {
-      console.log('[Dashboard] 尝试解析内容...')
       try {
         const savedBlocks = JSON.parse(article.content)
-        console.log('[Dashboard] 解析结果:', {
-          isArray: Array.isArray(savedBlocks),
-          length: savedBlocks?.length,
-          firstBlock: savedBlocks?.[0]
-        })
         if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
-          const restoredBlocks = savedBlocks.map((block: any, index: number) => ({
-            id: `restored_${index}_${Date.now()}`,
-            type: block.type || 'body',
-            text: block.text || '',
-            source: 'restored',
-            meta: block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}
-          }))
-          
+          const restoreBlocksRecursively = (blocks: any[]): any[] => {
+            return blocks.map((block: any) => ({
+              id: block.id || `restored_${Math.random().toString(36).substr(2, 9)}`,
+              type: block.type || 'body',
+              text: block.text || '',
+              source: 'restored',
+              meta: block.meta || (block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}),
+              children: block.children ? restoreBlocksRecursively(block.children) : undefined
+            }))
+          }
+          const restoredBlocks = restoreBlocksRecursively(savedBlocks)
           appStore.setContentBlocks(restoredBlocks)
           hasContentBlocks = true
-          console.log('[Dashboard] ✅ 已恢复 contentBlocks:', restoredBlocks.length)
-          
-          // 同时重建 rawText，以便返回 Step1 时也能显示文本
           const rawText = savedBlocks.map((b: any) => b.text || '').join('\n\n')
           appStore.setRawText(rawText)
-          console.log('[Dashboard] ✅ 已重建 rawText:', rawText.length, '字符')
         }
-      } catch (parseError) {
-        // 如果不是 JSON，当作原始文本处理
-        console.log('[Dashboard] JSON解析失败，当作原始文本:', parseError)
+      } catch (e) {
         appStore.setRawText(article.content)
       }
-    } else {
-      console.log('[Dashboard] ⚠️ 文章无内容')
     }
-    
-    // 4. 统一走 Step3（已编辑），状态不再作为跳转依据
-    const status = article.status
-    const hasImages = Array.isArray(article.images) && article.images.length > 0
-    const hasContent = Boolean(article.content) || hasContentBlocks || hasImages
 
-    console.log('[Dashboard] 决策参数:', { status, hasContentBlocks, hasImages, hasContent })
-
-    if (hasContent) {
-      console.log('[Dashboard] → 跳转到 Step3')
+    if (article.content || hasContentBlocks) {
       router.push('/step3/' + article.id)
     } else {
-      console.log('[Dashboard] → 跳转到 Step1')
       router.push('/step1')
     }
   } catch (error: any) {
-    console.error('加载文章失败:', error)
-    toast.error('加载文章失败: ' + (error.message || '未知错误'))
+    toast.error('加载失败')
   } finally {
     loading.value = false
   }
-}
-
-const getStatusClass = (status: string) => {
-  const edited = 'bg-blue-100/80 text-blue-700 border-blue-200'
-  const map: Record<string, string> = {
-    'DRAFT': edited,
-    'PARSED': edited,
-    'ADJUSTED': edited,
-    'PUBLISHED': 'bg-green-100/80 text-green-700 border-green-200'
-  }
-  return map[status] || edited
-}
-
-const formatStatus = (status: string) => {
-  const map: Record<string, string> = {
-    'DRAFT': '已编辑',
-    'PARSED': '已编辑',
-    'ADJUSTED': '已编辑',
-    'PUBLISHED': '已发布'
-  }
-  return map[status] || '已编辑'
 }
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleString('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
   })
 }
 
-// 获取文章列表函数
 const fetchArticles = async () => {
   loading.value = true
   try {
-    const res = await getArticles()
-    console.log(`📋 获取到 ${res.length} 篇文章`)
-    articles.value = res
+    articles.value = await getArticles()
   } catch (error: any) {
-    console.error('❌ 获取文章列表失败:', error)
-    toast.error('获取文章列表失败')
+    toast.error('列表加载失败')
   } finally {
     loading.value = false
   }
 }
 
-// 首次加载
-onMounted(() => {
-  console.log('🏠 Dashboard组件已挂载')
-  if (userStore.isLoggedIn) {
-    fetchArticles()
-  } else {
-    loading.value = false
-  }
-})
+const handleLogoutConfirmed = () => {
+  userStore.logout()
+  router.push('/')
+}
 
-// 每次进入时刷新（处理 keep-alive 缓存情况）
-onActivated(() => {
-  console.log('🔄 Dashboard被激活，刷新文章列表')
-  if (userStore.isLoggedIn) {
-    fetchArticles()
-  } else {
-    loading.value = false
-  }
-})
+onMounted(() => { if (userStore.isLoggedIn) fetchArticles() })
+onActivated(() => { if (userStore.isLoggedIn) fetchArticles() })
 </script>
 
 <style scoped>
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* 平滑滚动 */
-html {
-  scroll-behavior: smooth;
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
+.animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>

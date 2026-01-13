@@ -5,7 +5,7 @@ import type { ContentBlock, StyleConfig, BlockType, WechatImage, UploadProgress 
 import { useUserStore } from './userStore'
 
 export const useAppStore = defineStore('app', () => {
-  // 状态（明确类型注解，无向后兼容）
+  // 状态
   const currentStep: Ref<number> = ref(1)
   const currentArticleId: Ref<string | null> = ref(null)
   const rawText: Ref<string> = ref('')
@@ -13,20 +13,19 @@ export const useAppStore = defineStore('app', () => {
   const styleConfig: Ref<StyleConfig | null> = ref(null)
 
   // V3 新增状态：参与者姓名（用于自动化尾部）
-  // 固定人员：责编 - 朱梦鹤，审核 - 王雪 宋欣翼
-  const plannerNames: Ref<string[]> = ref(['王雪', '宋欣翼'])  // 审核/校对
-  const copywriterNames: Ref<string[]> = ref([])                 // 文案/图片来源（需从文档解析）
-  const editorNames: Ref<string[]> = ref(['朱梦鹤'])             // 责编（固定）
+  const plannerNames: Ref<string[]> = ref(['王雪', '宋欣翼'])
+  const copywriterNames: Ref<string[]> = ref([])
+  const editorNames: Ref<string[]> = ref(['朱梦鹤'])
 
-  // V4 新增状态：尾部可变字段（用于不同模式）
-  const teamName: Ref<string> = ref('')           // 团队名称（三下乡模式，需从文档解析）
-  const teamProject: Ref<string> = ref('')        // 队伍专项（三下乡模式，需从文档解析）
-  const teamDepartment: Ref<string> = ref('')     // 所属院系（三下乡模式，需从文档解析）
-  const teamLeader: Ref<string> = ref('')         // 负责人（三下乡模式，需从文档解析）
-  const teamContact: Ref<string> = ref('')        // 联系方式（三下乡模式，需从文档解析）
-  const sourceAccount: Ref<string> = ref('')      // 来源公众号名称（转载模式，需从文档解析）
-  const imageSource: Ref<string> = ref('')        // 图片来源（日常模式）
-  const editorInput: Ref<string> = ref('')        // 编辑人员（用户填写，默认为空）
+  // V4 新增状态：尾部可变字段
+  const teamName: Ref<string> = ref('')
+  const teamProject: Ref<string> = ref('')
+  const teamDepartment: Ref<string> = ref('')
+  const teamLeader: Ref<string> = ref('')
+  const teamContact: Ref<string> = ref('')
+  const sourceAccount: Ref<string> = ref('')
+  const imageSource: Ref<string> = ref('')
+  const editorInput: Ref<string> = ref('')
 
   // V2 新增状态：微信图片上传相关
   const wechatImages: Ref<WechatImage[]> = ref([])
@@ -38,199 +37,185 @@ export const useAppStore = defineStore('app', () => {
   })
   const isUploading: Ref<boolean> = ref(false)
 
-  // 操作（严格类型注解）
-  const setStep = (step: number): void => {
-    if (typeof step !== 'number' || step < 1 || step > 3) {
-      throw new Error('Invalid step: must be a number between 1 and 3')
+  // 辅助函数：递归查找 Block
+  const findBlockRecursive = (blocks: ContentBlock[], id: string): ContentBlock | undefined => {
+    for (const block of blocks) {
+      if (block.id === id) return block
+      if (block.children) {
+        const found = findBlockRecursive(block.children, id)
+        if (found) return found
+      }
     }
+    return undefined
+  }
+
+  // 辅助函数：找到包含某个 block 的父级列表
+  const findParentList = (list: ContentBlock[], targetId: string): ContentBlock[] | null => {
+    const idx = list.findIndex(b => b.id === targetId)
+    if (idx !== -1) return list
+    for (const b of list) {
+      if (b.children) {
+        const res = findParentList(b.children, targetId)
+        if (res) return res
+      }
+    }
+    return null
+  }
+
+  // 辅助函数：递归删除 Block
+  const deleteBlockRecursive = (blocks: ContentBlock[], id: string): boolean => {
+    const index = blocks.findIndex(b => b.id === id)
+    if (index !== -1) {
+      blocks.splice(index, 1)
+      return true
+    }
+    for (const block of blocks) {
+      if (block.children && deleteBlockRecursive(block.children, id)) return true
+    }
+    return false
+  }
+
+  // 操作
+  const setStep = (step: number): void => {
     currentStep.value = step
   }
 
   const setCurrentArticleId = (id: string | null): void => {
-    if (id !== null && typeof id !== 'string') {
-      throw new Error('Invalid article ID: must be a string or null')
-    }
     currentArticleId.value = id
   }
 
   const setRawText = (text: string): void => {
-    if (typeof text !== 'string') {
-      throw new Error('Invalid text: must be a string')
-    }
     rawText.value = text
   }
 
   const setContentBlocks = (blocks: ContentBlock[]): void => {
-    if (!Array.isArray(blocks)) {
-      throw new Error('Invalid blocks: must be an array')
-    }
     contentBlocks.value = blocks
   }
 
-  const findBlockRecursive = (blocks: ContentBlock[], id: string): ContentBlock | undefined => {
-    for (const block of blocks) {
-      if (block.id === id) return block;
-      if (block.children) {
-        const found = findBlockRecursive(block.children, id);
-        if (found) return found;
-      }
-    }
-    return undefined;
-  }
-
   const updateBlockType = (id: string, type: BlockType): void => {
-    if (typeof id !== 'string' || typeof type !== 'string') {
-      throw new Error('Invalid parameters: id and type must be strings')
-    }
-
     const block = findBlockRecursive(contentBlocks.value, id)
-
-    if (block) {
-      block.type = type
-    }
+    if (block) block.type = type
   }
 
   const updateBlockText = (id: string, text: string): void => {
-    if (typeof id !== 'string' || typeof text !== 'string') {
-      throw new Error('Invalid parameters: id and text must be strings')
-    }
-
     const block = findBlockRecursive(contentBlocks.value, id)
-
-    if (block) {
-      block.text = text
-    }
+    if (block) block.text = text
   }
 
   const updateBlockMeta = (id: string, meta: Record<string, unknown>): void => {
     const block = findBlockRecursive(contentBlocks.value, id)
-    if (block) {
-      block.meta = { ...block.meta, ...meta }
-    }
+    if (block) block.meta = { ...(block.meta || {}), ...meta }
   }
 
-  const insertImageBlock = (index: number, imageType: 'single' | 'single_caption' | 'double' | 'double_caption'): void => {
-    if (typeof index !== 'number' || index < 0) {
-      throw new Error('Invalid index: must be a non-negative number')
+  /**
+   * 核心插入函数：支持递归插入
+   */
+  const insertBlockAt = (index: number, newBlock: ContentBlock, relativeToId?: string): void => {
+    if (relativeToId) {
+      const parentList = findParentList(contentBlocks.value, relativeToId)
+      if (parentList) {
+        const idx = parentList.findIndex(b => b.id === relativeToId)
+        parentList.splice(idx + 1, 0, newBlock)
+        return
+      }
     }
+    // 默认插入到顶层
+    contentBlocks.value.splice(index, 0, newBlock)
+  }
 
-    // 转换图片类型名称
-    let blockType: BlockType;
-    if (imageType === 'single') blockType = 'image_single';
-    else if (imageType === 'single_caption') blockType = 'image_single_caption';
-    else if (imageType === 'double') blockType = 'image_double';
-    else blockType = 'image_double_caption';
+  const insertImageBlock = (index: number, imageType: 'single' | 'single_caption' | 'double' | 'double_caption', relativeToId?: string): void => {
+    let blockType: BlockType
+    if (imageType === 'single') blockType = 'image_single'
+    else if (imageType === 'single_caption') blockType = 'image_single_caption'
+    else if (imageType === 'double') blockType = 'image_double'
+    else blockType = 'image_double_caption'
 
-    contentBlocks.value.splice(index + 1, 0, {
-      id: `image_${Date.now()}`,
+    const newBlock: ContentBlock = {
+      id: `image_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       type: blockType,
       text: ''
-    } as ContentBlock)
+    }
+    insertBlockAt(index, newBlock, relativeToId)
   }
 
-  const insertTextBlock = (
-    index: number,
-    textType: BlockType,
-    text: string
-  ): void => {
-    if (typeof index !== 'number' || index < 0) {
-      throw new Error('Invalid index: must be a non-negative number')
-    }
-    if (typeof textType !== 'string' || typeof text !== 'string') {
-      throw new Error('Invalid parameters: textType and text must be strings')
-    }
-
-    contentBlocks.value.splice(index, 0, {
-      id: `text_${Date.now()}`,
+  const insertTextBlock = (index: number, textType: BlockType, text: string, relativeToId?: string): void => {
+    const newBlock: ContentBlock = {
+      id: `text_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       type: textType,
       text: text
-    } as ContentBlock)
-  }
-
-  const moveBlock = (blockId: string, targetId: string, position: 'top' | 'bottom' | 'inside'): void => {
-    let blockToMove: ContentBlock | undefined;
-
-    // 1. 从原位置移除
-    const removeFromList = (list: ContentBlock[]): boolean => {
-      const idx = list.findIndex(b => b.id === blockId);
-      if (idx !== -1) {
-        blockToMove = list.splice(idx, 1)[0];
-        return true;
-      }
-      for (const b of list) {
-        if (b.children && removeFromList(b.children)) return true;
-      }
-      return false;
-    };
-
-    removeFromList(contentBlocks.value);
-    if (!blockToMove) return;
-
-    // 2. 找到目标块及其父容器
-    const findParent = (list: ContentBlock[]): { parent: ContentBlock[] | null, index: number } | null => {
-      const idx = list.findIndex(b => b.id === targetId);
-      if (idx !== -1) return { parent: list, index: idx };
-      for (const b of list) {
-        if (b.children) {
-          const res = findParent(b.children);
-          if (res) return res;
-        }
-      }
-      return null;
-    };
-
-    const targetInfo = findParent(contentBlocks.value);
-
-    if (position === 'inside') {
-      const target = findBlockRecursive(contentBlocks.value, targetId);
-      if (target && target.type === 'container') {
-        if (!target.children) target.children = [];
-        target.children.push(blockToMove);
-      } else {
-        contentBlocks.value.push(blockToMove);
-      }
-    } else if (targetInfo && targetInfo.parent) {
-      const insertIdx = position === 'top' ? targetInfo.index : targetInfo.index + 1;
-      targetInfo.parent.splice(insertIdx, 0, blockToMove);
-    } else {
-      // 安全回退：放到顶层末尾
-      contentBlocks.value.push(blockToMove);
     }
+    insertBlockAt(index, newBlock, relativeToId)
   }
 
-  const createContainer = (index: number): void => {
-    contentBlocks.value.splice(index, 0, {
-      id: `container_${Date.now()}`,
+  const insertContainerBlock = (index: number, relativeToId?: string): void => {
+    const newBlock: ContentBlock = {
+      id: `container_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       type: 'container',
       text: '',
       children: []
-    })
+    }
+    insertBlockAt(index, newBlock, relativeToId)
   }
 
   const deleteBlock = (id: string): void => {
-    const removeFromList = (list: ContentBlock[]): boolean => {
-      const idx = list.findIndex(b => b.id === id)
+    deleteBlockRecursive(contentBlocks.value, id)
+  }
+
+  const moveBlock = (blockId: string, targetId: string, position: 'top' | 'bottom' | 'inside'): void => {
+    let blockToMove: ContentBlock | undefined
+
+    // 1. 从原位置移除
+    const findAndRemove = (list: ContentBlock[]): boolean => {
+      const idx = list.findIndex(b => b.id === blockId)
       if (idx !== -1) {
-        list.splice(idx, 1)
+        blockToMove = list.splice(idx, 1)[0]
         return true
       }
       for (const b of list) {
-        if (b.children && removeFromList(b.children)) return true
+        if (b.children && findAndRemove(b.children)) return true
       }
       return false
     }
-    removeFromList(contentBlocks.value)
+
+    findAndRemove(contentBlocks.value)
+    if (!blockToMove) return
+
+    // 2. 插入到新位置
+    if (position === 'inside') {
+      const target = findBlockRecursive(contentBlocks.value, targetId)
+      if (target && target.type === 'container') {
+        if (!target.children) target.children = []
+        target.children.push(blockToMove)
+      } else {
+        contentBlocks.value.push(blockToMove)
+      }
+    } else {
+      const findTargetParent = (list: ContentBlock[]): { parent: ContentBlock[], index: number } | null => {
+        const idx = list.findIndex(b => b.id === targetId)
+        if (idx !== -1) return { parent: list, index: idx }
+        for (const b of list) {
+          if (b.children) {
+            const res = findTargetParent(b.children)
+            if (res) return res
+          }
+        }
+        return null
+      }
+
+      const info = findTargetParent(contentBlocks.value)
+      if (info) {
+        const insertIdx = position === 'top' ? info.index : info.index + 1
+        info.parent.splice(insertIdx, 0, blockToMove)
+      } else {
+        contentBlocks.value.push(blockToMove)
+      }
+    }
   }
 
   const setStyleConfig = (config: Partial<StyleConfig>): void => {
-    if (typeof config !== 'object' || config === null) {
-      throw new Error('Invalid config: must be a non-null object')
-    }
-
-    styleConfig.value = { ...(styleConfig.value || {}), ...config }
+    styleConfig.value = { ...(styleConfig.value || {}), ...config } as StyleConfig
   }
 
-  // V2 新增方法：微信图片管理
   const addWechatImage = (image: WechatImage): void => {
     wechatImages.value.push(image)
   }
@@ -258,21 +243,25 @@ export const useAppStore = defineStore('app', () => {
     isUploading.value = false
   }
 
+  const initializeUserMetadata = (userInfo: any): void => {
+    if (userInfo) {
+      const name = userInfo.displayName || userInfo.name || userInfo.nickname || userInfo.username || userInfo.email || ''
+      if (name) editorInput.value = name
+    }
+  }
+
   const resetApp = (): void => {
     currentStep.value = 1
     currentArticleId.value = null
     rawText.value = ''
     contentBlocks.value = []
     styleConfig.value = null
-    // V2: 重置微信图片状态
     wechatImages.value = []
     uploadProgress.value = { total: 0, completed: 0, failed: 0, uploading: 0 }
     isUploading.value = false
-    // V3: 重置参与者名称（保留固定人员，只重置需解析的字段）
-    plannerNames.value = ['王雪', '宋欣翼']  // 审核（固定）
-    copywriterNames.value = []                // 文案（需解析）
-    editorNames.value = ['朱梦鹤']            // 责编（固定）
-    // V4: 重置尾部可变字段（需从文档解析）
+    plannerNames.value = ['王雪', '宋欣翼']
+    copywriterNames.value = []
+    editorNames.value = ['朱梦鹤']
     teamName.value = ''
     teamProject.value = ''
     teamDepartment.value = ''
@@ -280,54 +269,26 @@ export const useAppStore = defineStore('app', () => {
     teamContact.value = ''
     sourceAccount.value = ''
     imageSource.value = ''
-    editorInput.value = ''  // 编辑人员（用户填写）
+    editorInput.value = ''
 
-    // 🚀 核心优化：每次重置时，如果用户已登录，自动填充姓名
     const userStore = useUserStore()
     if (userStore.userInfo) {
       initializeUserMetadata(userStore.userInfo)
     }
   }
 
-  /**
-   * 根据登录用户信息初始化元数据
-   * @param userInfo 用户信息对象
-   */
-  const initializeUserMetadata = (userInfo: any): void => {
-    // 调试打印，确保我们知道 userInfo 的结构
-    console.log('[Store] 初始化用户元数据, userInfo:', userInfo)
-
-    if (userInfo) {
-      // 优先级：displayName > name > nickname > username > email
-      const name =
-        userInfo.displayName ||
-        userInfo.name ||
-        userInfo.nickname ||
-        userInfo.username ||
-        userInfo.email ||
-        ''
-      if (name) {
-        console.log('[Store] 自动填充编辑姓名:', name)
-        editorInput.value = name
-      }
-    }
-  }
-
   return {
-    // 状态
     currentStep,
     currentArticleId,
     rawText,
     contentBlocks,
     styleConfig,
-    // V2 新增状态
     wechatImages,
     uploadProgress,
     isUploading,
     plannerNames,
     copywriterNames,
     editorNames,
-    // V4 新增状态：尾部可变字段
     teamName,
     teamProject,
     teamDepartment,
@@ -336,7 +297,6 @@ export const useAppStore = defineStore('app', () => {
     sourceAccount,
     imageSource,
     editorInput,
-    // 操作
     setStep,
     setCurrentArticleId,
     setRawText,
@@ -346,19 +306,17 @@ export const useAppStore = defineStore('app', () => {
     updateBlockMeta,
     insertImageBlock,
     insertTextBlock,
+    insertContainerBlock,
+    deleteBlock,
+    moveBlock,
     setStyleConfig,
-    // V2 新增操作
     addWechatImage,
     addWechatImages,
     setWechatImages,
     updateUploadProgress,
     setIsUploading,
     clearWechatImages,
-    resetApp,
     initializeUserMetadata,
-    moveBlock,
-    createContainer,
-    deleteBlock
+    resetApp
   }
 })
-

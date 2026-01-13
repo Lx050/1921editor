@@ -143,8 +143,7 @@ const styleStore = useStyleStore()
 const tabs = [
   { value: 'title', label: '标题' },
   { value: 'body', label: '正文' },
-  { value: 'intro', label: '引言' },
-  { value: 'container', label: '容器' }
+  { value: 'intro', label: '引言' }
 ]
 
 // 当前激活的 Tab
@@ -156,7 +155,6 @@ const currentApiStyles = computed(() => {
     case 'title': return styleStore.apiTitleStyles
     case 'body': return styleStore.apiBodyStyles
     case 'intro': return styleStore.apiIntroStyles
-    case 'container': return styleStore.apiContainerStyles || []
     default: return []
   }
 })
@@ -167,7 +165,6 @@ const currentLocalStyles = computed(() => {
     case 'title': return styleStore.localTitleStyles
     case 'body': return styleStore.localBodyStyles
     case 'intro': return styleStore.localIntroStyles
-    case 'container': return styleStore.localContainerStyles || []
     default: return []
   }
 })
