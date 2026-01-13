@@ -9,7 +9,8 @@ export type BlockType =
   | 'image_single'
   | 'image_single_caption'
   | 'image_double'
-  | 'image_double_caption';
+  | 'image_double_caption'
+  | 'container';
 
 /**
  * 内容块数据接口
@@ -19,6 +20,7 @@ export interface ContentBlock {
   type: BlockType;
   text: string;
   meta?: Record<string, unknown>;
+  children?: ContentBlock[];
 }
 
 /**
@@ -38,6 +40,7 @@ export interface StyleConfig {
   body?: StyleTemplate;
   intro?: StyleTemplate;
   outro?: StyleTemplate;
+  container?: StyleTemplate;
 }
 
 /**

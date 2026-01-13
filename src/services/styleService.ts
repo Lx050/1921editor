@@ -4,7 +4,7 @@ import api from '../utils/api';
 export interface StyleTemplate {
     id: string;
     name: string;
-    type: 'title' | 'body' | 'intro';
+    type: 'title' | 'body' | 'intro' | 'outro' | 'container';
     preview: string;
     fullExample: string;
     isCustom: boolean;

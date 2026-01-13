@@ -3,7 +3,7 @@
  * 混合存储方案：默认样式（代码） + 用户自定义样式（LocalStorage）
  */
 
-import { titleDecorations, bodyDecorations, introDecorations } from './styleTemplates'
+import { titleDecorations, bodyDecorations, introDecorations, containerDecorations } from './styleTemplates'
 
 const STORAGE_KEY = 'custom_style_templates'
 
@@ -16,7 +16,8 @@ export function getAllStyles() {
     return {
         title: [...titleDecorations, ...customStyles.title],
         body: [...bodyDecorations, ...customStyles.body],
-        intro: [...introDecorations, ...customStyles.intro]
+        intro: [...introDecorations, ...customStyles.intro],
+        container: [...(containerDecorations || []), ...(customStyles.container || [])]
     }
 }
 
@@ -36,7 +37,8 @@ export function getCustomStyles() {
     return {
         title: [],
         body: [],
-        intro: []
+        intro: [],
+        container: []
     }
 }
 
@@ -87,7 +89,7 @@ export function updateStyle(styleId, updates) {
     let updated = false
 
     // 遍历所有类型查找并更新
-    for (const type of ['title', 'body', 'intro']) {
+    for (const type of ['title', 'body', 'intro', 'container']) {
         const typeArray = customStyles[type] || []
         const index = typeArray.findIndex(s => s.id === styleId)
 
@@ -116,7 +118,7 @@ export function deleteStyle(styleId) {
     let deleted = false
 
     // 遍历所有类型查找并删除
-    for (const type of ['title', 'body', 'intro']) {
+    for (const type of ['title', 'body', 'intro', 'container']) {
         const typeArray = customStyles[type] || []
         const index = typeArray.findIndex(s => s.id === styleId)
 
@@ -160,7 +162,7 @@ export function importCustomStyles(file) {
                 const imported = JSON.parse(e.target.result)
 
                 // 验证数据格式
-                if (!imported.title || !imported.body || !imported.intro) {
+                if (!imported.title || !imported.body) {
                     reject(new Error('导入文件格式不正确'))
                     return
                 }
@@ -170,7 +172,8 @@ export function importCustomStyles(file) {
                 const merged = {
                     title: [...currentCustom.title, ...imported.title],
                     body: [...currentCustom.body, ...imported.body],
-                    intro: [...currentCustom.intro, ...imported.intro]
+                    intro: [...(currentCustom.intro || []), ...(imported.intro || [])],
+                    container: [...(currentCustom.container || []), ...(imported.container || [])]
                 }
 
                 if (saveCustomStyles(merged)) {

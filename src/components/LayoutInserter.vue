@@ -40,7 +40,7 @@
           </div>
         </div>
 
-        <!-- 图片模板区 -->
+        <!-- 图文模板区 -->
         <div class="space-y-2">
           <div class="text-[10px] font-bold text-gray-400 px-1">图文</div>
           <div class="grid grid-cols-2 gap-1.5">
@@ -54,6 +54,18 @@
               <span class="text-[10px] font-bold">{{ option.label }}</span>
             </button>
           </div>
+        </div>
+
+        <!-- 容器区块 -->
+        <div class="col-span-2 border-t pt-3 space-y-2">
+           <div class="text-[10px] font-bold text-gray-400 px-1">功能/嵌套</div>
+           <button
+              @click="insertContent('container')"
+              class="w-full p-2 text-sm rounded-lg hover:bg-purple-50 active:bg-purple-100 text-gray-700 flex items-center justify-center gap-3 transition-all border border-transparent hover:border-purple-100"
+            >
+              <span class="text-xl">📦</span>
+              <span class="text-xs font-bold">嵌套容器 (Nested Container)</span>
+            </button>
         </div>
       </div>
     </div>
@@ -73,6 +85,7 @@ import { ref } from 'vue'
 interface EmitEvents {
   insertImage: [imageType: string]
   insertText: [textType: string]
+  insertContainer: []
 }
 
 const emit = defineEmits<EmitEvents>()
@@ -136,7 +149,11 @@ const imageOptions = [
 ]
 
 // 合并所有选项（用于查找）
-const insertOptions = [...textOptions, ...imageOptions]
+const insertOptions = [
+  ...textOptions, 
+  ...imageOptions,
+  { value: 'container', label: '容器', icon: '📦', type: 'container' }
+]
 
 // 切换菜单显示
 const toggleMenu = (event: MouseEvent) => {
@@ -159,6 +176,9 @@ const insertContent = (optionValue: string) => {
     } else if (option.type === 'image') {
       // 插入图片模板
       emit('insertImage', optionValue)
+    } else if (option.type === 'container') {
+      // 插入容器
+      emit('insertContainer')
     }
   }
   closeMenu()

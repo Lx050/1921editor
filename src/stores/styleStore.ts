@@ -24,16 +24,19 @@ export const useStyleStore = defineStore('style', () => {
     const titleStyles = computed(() => styles.value.filter(s => s.type === 'title'));
     const bodyStyles = computed(() => styles.value.filter(s => s.type === 'body'));
     const introStyles = computed(() => styles.value.filter(s => s.type === 'intro'));
+    const containerStyles = computed(() => styles.value.filter(s => s.type === 'container'));
 
     // API 样式分类
     const apiTitleStyles = computed(() => apiStyles.value.filter(s => s.type === 'title'));
     const apiBodyStyles = computed(() => apiStyles.value.filter(s => s.type === 'body'));
     const apiIntroStyles = computed(() => apiStyles.value.filter(s => s.type === 'intro'));
+    const apiContainerStyles = computed(() => apiStyles.value.filter(s => s.type === 'container'));
 
     // 本地样式分类
     const localTitleStyles = computed(() => localStyles.value.filter(s => s.type === 'title'));
     const localBodyStyles = computed(() => localStyles.value.filter(s => s.type === 'body'));
     const localIntroStyles = computed(() => localStyles.value.filter(s => s.type === 'intro'));
+    const localContainerStyles = computed(() => localStyles.value.filter(s => s.type === 'container'));
 
     async function fetchStyles() {
         loading.value = true;
@@ -79,6 +82,7 @@ export const useStyleStore = defineStore('style', () => {
             ...localStyles.title.map((s: any) => ({ ...s, type: 'title' as const, source: 'local' as const })),
             ...localStyles.body.map((s: any) => ({ ...s, type: 'body' as const, source: 'local' as const })),
             ...localStyles.intro.map((s: any) => ({ ...s, type: 'intro' as const, source: 'local' as const })),
+            ...(localStyles.container || []).map((s: any) => ({ ...s, type: 'container' as const, source: 'local' as const })),
         ];
     }
 
@@ -181,16 +185,19 @@ export const useStyleStore = defineStore('style', () => {
         titleStyles,
         bodyStyles,
         introStyles,
+        containerStyles,
         // API 样式分类
         apiStyles,
         apiTitleStyles,
         apiBodyStyles,
         apiIntroStyles,
+        apiContainerStyles,
         // 本地样式分类
         localStyles,
         localTitleStyles,
         localBodyStyles,
         localIntroStyles,
+        localContainerStyles,
         // 方法
         fetchStyles,
         addStyle,

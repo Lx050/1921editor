@@ -732,3 +732,46 @@ export const introDecorations = [
 </section>`
   }
 ]
+
+// 容器装饰样式数据
+export const containerDecorations = [
+  {
+    id: 'container_simple_card',
+    name: '简约白卡片',
+    type: 'container',
+    preview: `<div style="border: 1px solid #eee; border-radius: 8px; padding: 10px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <div style="height: 10px; background: #f0f0f0; border-radius: 4px;"></div>
+    </div>`,
+    fullExample: `<section class="_135editor" style="margin: 20px 0;">
+      <section style="background: #ffffff; border: 1px solid #f0f0f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 25px; overflow: hidden;">
+        {{CONTENT}}
+      </section>
+    </section>`
+  },
+  {
+    id: 'container_soft_gradient',
+    name: '柔和渐变底',
+    type: 'container',
+    preview: `<div style="background: linear-gradient(135deg, #fff5f5 0%, #f0f4ff 100%); border-radius: 8px; padding: 10px;">
+        <div style="height: 10px; background: #fff; border-radius: 4px;"></div>
+    </div>`,
+    fullExample: `<section class="_135editor" style="margin: 25px 0;">
+      <section style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-radius: 15px; padding: 30px; border: 1px solid #eef2f3;">
+        {{CONTENT}}
+      </section>
+    </section>`
+  },
+  {
+    id: 'container_retro_paper',
+    name: '复古信纸',
+    type: 'container',
+    preview: `<div style="background: #fdf6e3; border: 1px solid #eee8d5; padding: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+        <div style="height: 10px; background: #eee8d5; border-radius: 4px;"></div>
+    </div>`,
+    fullExample: `<section class="_135editor" style="margin: 30px 0;">
+      <section style="background: #fdf6e3; background-image: radial-gradient(#eee8d5 1px, transparent 1px); background-size: 20px 20px; border: 1px solid #eee8d5; border-radius: 4px; padding: 35px; box-shadow: 5px 5px 15px rgba(0,0,0,0.05);">
+        {{CONTENT}}
+      </section>
+    </section>`
+  }
+]

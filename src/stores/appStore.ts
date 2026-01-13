@@ -67,14 +67,23 @@ export const useAppStore = defineStore('app', () => {
     contentBlocks.value = blocks
   }
 
+  const findBlockRecursive = (blocks: ContentBlock[], id: string): ContentBlock | undefined => {
+    for (const block of blocks) {
+      if (block.id === id) return block;
+      if (block.children) {
+        const found = findBlockRecursive(block.children, id);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  }
+
   const updateBlockType = (id: string, type: BlockType): void => {
     if (typeof id !== 'string' || typeof type !== 'string') {
       throw new Error('Invalid parameters: id and type must be strings')
     }
 
-    const block: ContentBlock | undefined = contentBlocks.value.find(
-      (b: ContentBlock): boolean => b.id === id
-    )
+    const block = findBlockRecursive(contentBlocks.value, id)
 
     if (block) {
       block.type = type
@@ -86,9 +95,7 @@ export const useAppStore = defineStore('app', () => {
       throw new Error('Invalid parameters: id and text must be strings')
     }
 
-    const block: ContentBlock | undefined = contentBlocks.value.find(
-      (b: ContentBlock): boolean => b.id === id
-    )
+    const block = findBlockRecursive(contentBlocks.value, id)
 
     if (block) {
       block.text = text
@@ -96,7 +103,7 @@ export const useAppStore = defineStore('app', () => {
   }
 
   const updateBlockMeta = (id: string, meta: Record<string, unknown>): void => {
-    const block = contentBlocks.value.find(b => b.id === id)
+    const block = findBlockRecursive(contentBlocks.value, id)
     if (block) {
       block.meta = { ...block.meta, ...meta }
     }
@@ -138,6 +145,61 @@ export const useAppStore = defineStore('app', () => {
       type: textType,
       text: text
     } as ContentBlock)
+  }
+
+  const moveBlockToContainer = (blockId: string, containerId: string): void => {
+    let blockToMove: ContentBlock | undefined;
+
+    // 1. 从原位置移除
+    const removeFromList = (list: ContentBlock[]): boolean => {
+      const idx = list.findIndex(b => b.id === blockId);
+      if (idx !== -1) {
+        blockToMove = list.splice(idx, 1)[0];
+        return true;
+      }
+      for (const b of list) {
+        if (b.children && removeFromList(b.children)) return true;
+      }
+      return false;
+    };
+
+    removeFromList(contentBlocks.value);
+
+    // 2. 添加到容器
+    if (blockToMove) {
+      const container = findBlockRecursive(contentBlocks.value, containerId);
+      if (container && container.type === 'container') {
+        if (!container.children) container.children = [];
+        container.children.push(blockToMove);
+      } else {
+        // 如果容器没找到，放回顶层末尾（安全机制）
+        contentBlocks.value.push(blockToMove);
+      }
+    }
+  }
+
+  const createContainer = (index: number): void => {
+    contentBlocks.value.splice(index, 0, {
+      id: `container_${Date.now()}`,
+      type: 'container',
+      text: '',
+      children: []
+    })
+  }
+
+  const deleteBlock = (id: string): void => {
+    const removeFromList = (list: ContentBlock[]): boolean => {
+      const idx = list.findIndex(b => b.id === id)
+      if (idx !== -1) {
+        list.splice(idx, 1)
+        return true
+      }
+      for (const b of list) {
+        if (b.children && removeFromList(b.children)) return true
+      }
+      return false
+    }
+    removeFromList(contentBlocks.value)
   }
 
   const setStyleConfig = (config: Partial<StyleConfig>): void => {
@@ -273,7 +335,10 @@ export const useAppStore = defineStore('app', () => {
     setIsUploading,
     clearWechatImages,
     resetApp,
-    initializeUserMetadata
+    initializeUserMetadata,
+    moveBlockToContainer,
+    createContainer,
+    deleteBlock
   }
 })
 
