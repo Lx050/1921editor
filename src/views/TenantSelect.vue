@@ -280,7 +280,7 @@ const selectTenant = async (tenant: TenantInfo | null) => {
     })
     userStore.setTenants(response.tenants || [])
     toast.success(`已切换至 ${response.tenant.name}`)
-    router.push('/step1')
+    router.push('/')
   } catch (e) {
     console.error('Failed to switch tenant:', e)
     error.value = '切换组织失败，请重试'
@@ -319,7 +319,7 @@ const handleJoinTenant = async () => {
     inviteCodeInput.value = ''
     displayNameInput.value = ''
     toast.success(`已加入并切换至 ${response.tenant.name}`)
-    router.push('/step1')
+    router.push('/')
   } catch (e) {
     console.error('Failed to join tenant:', e)
     toast.error('加入组织失败，请检查邀请码')

@@ -32,10 +32,21 @@ export class ArticleService {
             })
             const cleanContent = JSON.stringify(cleanedBlocks)
 
-            // 1. 更新配置 (包含 rawText)
+            // 1. 更新配置 (包含 rawText 和从文档提取的元数据)
             saveTasks.push(updateArticleConfig(articleId, {
                 rawText: appStore.rawText,
-                config: appStore.styleConfig // 同时保存样式配置
+                config: appStore.styleConfig, // 同时保存样式配置
+                // V5: 添加从文档提取的元数据，用于飞书同步
+                metadata: {
+                    teamName: appStore.teamName,
+                    teamProject: appStore.teamProject,
+                    teamDepartment: appStore.teamDepartment,
+                    teamLeader: appStore.teamLeader,
+                    teamContact: appStore.teamContact,
+                    editorInput: appStore.editorInput,
+                    sourceAccount: appStore.sourceAccount,
+                    copywriterNames: appStore.copywriterNames,
+                }
             }))
 
             // 2. 更新内容

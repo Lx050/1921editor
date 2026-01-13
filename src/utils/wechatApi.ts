@@ -13,17 +13,22 @@ import api from './api';
  */
 export async function uploadImage(
     file: File,
-    options?: { signal?: AbortSignal }
+    options?: { signal?: AbortSignal; timeout?: number }
 ): Promise<WechatUploadResponse> {
     try {
         const formData = new FormData();
         formData.append('image', file);
 
+        const timeout =
+            options?.timeout ??
+            parseInt(import.meta.env.VITE_WECHAT_UPLOAD_TIMEOUT || import.meta.env.VITE_API_TIMEOUT || '60000');
+
         const response = await api.post('/wechat/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
-            signal: options?.signal
+            signal: options?.signal,
+            timeout
         });
 
         const payload = response.data;

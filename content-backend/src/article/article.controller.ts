@@ -41,7 +41,7 @@ export class ArticleController {
   constructor(
     private readonly articleService: ArticleService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private getDefaultTenantId(): string {
     return (
@@ -130,7 +130,7 @@ export class ArticleController {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.updateStep1(
       id,
-      dto.config,
+      { ...dto.config, metadata: dto.metadata }, // V5: 将 metadata 合并到 config 中
       req.user?.id,
       tenantId,
     );

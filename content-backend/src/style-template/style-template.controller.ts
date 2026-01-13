@@ -23,6 +23,7 @@ import {
   UpdateStyleTemplateDto,
 } from './style-template.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { ConfigService } from '@nestjs/config';
 
 @ApiTags('style-templates')
@@ -31,7 +32,7 @@ export class StyleTemplateController {
   constructor(
     private readonly styleService: StyleTemplateService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private getDefaultTenantId(): string {
     return (
@@ -41,6 +42,7 @@ export class StyleTemplateController {
   }
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: '获取所有可用样式' })
   findAll(@Request() req: any) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
@@ -48,6 +50,7 @@ export class StyleTemplateController {
   }
 
   @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: '获取单个样式详情' })
   findOne(@Param('id') id: string, @Request() req: any) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();

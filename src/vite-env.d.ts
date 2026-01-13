@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string
   readonly VITE_API_TIMEOUT: string
+  readonly VITE_WECHAT_UPLOAD_TIMEOUT: string
   readonly VITE_NODE_ENV: string
   readonly VITE_WECHAT_APP_ID: string
   readonly VITE_WECHAT_OPEN_APP_ID: string

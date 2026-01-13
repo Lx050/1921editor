@@ -217,7 +217,7 @@ import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
 import { buildHtml } from '../utils/styleAssembler'
 import { createDraft, uploadImage, getWechatProxyUrl, restoreWechatUrl } from '../utils/wechatApi'
-import { copyToClipboard } from '../utils/clipboard'
+import { copyToClipboard, copyHtmlToClipboard } from '../utils/clipboard'
 import ImageReplacer from '../components/ImageReplacer.vue'
 import QuickImageStrip from '../components/QuickImageStrip.vue'
 import CreateDraftFormModal from '../components/CreateDraftFormModal.vue'
@@ -237,8 +237,13 @@ const finalHtml = ref('')
 const previewHtml = ref('')
 const errorMessage = ref('')
 const activeTab = ref('preview')
-const copyButtonText = ref('复制HTML代码')
+const copyButtonText = ref('复制预览')
 const previewFrame = ref<HTMLIFrameElement | null>(null)
+
+// 根据当前选项卡获取复制按钮文本
+const getCopyButtonLabel = () => {
+  return activeTab.value === 'preview' ? '复制预览' : '复制代码'
+}
 
 const buildAuthHeaders = () => {
   const headers: Record<string, string> = {
@@ -253,6 +258,11 @@ const buildAuthHeaders = () => {
 
 // V2: 图片替换相关状态
 const selectedPlaceholder = ref<string | null>(null)
+
+// 监听选项卡切换，更新复制按钮文本
+watch(activeTab, () => {
+  copyButtonText.value = getCopyButtonLabel()
+})
 
 // 监听占位符选中状态，显示提示
 watch(selectedPlaceholder, (newVal) => {
@@ -841,23 +851,43 @@ const getOutputHtml = () => {
   return html
 }
 
-// 复制HTML代码（使用微信 URL）
+// 智能复制：根据当前选项卡使用不同的复制方法
 const copyHtml = async () => {
   const htmlToCopy = getOutputHtml()
 
-  const result = await copyToClipboard(htmlToCopy)
-  if (result.ok) {
-    showCopySuccess()
+  let result: { ok: boolean; method: string; error?: unknown }
+
+  if (activeTab.value === 'preview') {
+    // 预览模式：使用富文本复制，可以直接粘贴到微信编辑器保留格式
+    const iframeBody = previewFrame.value?.contentDocument?.body
+    const plainText = iframeBody?.innerText || ''
+    result = await copyHtmlToClipboard(htmlToCopy, plainText)
+    
+    if (result.ok) {
+      showCopySuccess()
+      toast.success('预览内容已复制，可直接粘贴到微信编辑器')
+    } else {
+      console.error('Preview copy failed:', result.error)
+      toast.error('复制失败，请切换到代码模式复制')
+    }
   } else {
-    console.error('Copy failed:', result.error)
-    alert('复制失败，请手动选择代码进行复制')
+    // 代码模式：使用纯文本复制 HTML 源代码
+    result = await copyToClipboard(htmlToCopy)
+    
+    if (result.ok) {
+      showCopySuccess()
+      toast.success('HTML 代码已复制')
+    } else {
+      console.error('Code copy failed:', result.error)
+      alert('复制失败，请手动选择代码进行复制')
+    }
   }
 }
 
 const showCopySuccess = () => {
   copyButtonText.value = '已复制!'
   setTimeout(() => {
-    copyButtonText.value = '复制HTML代码'
+    copyButtonText.value = getCopyButtonLabel()
   }, 2000)
 }
 

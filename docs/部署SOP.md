@@ -37,7 +37,9 @@ VITE_WECHAT_OPEN_APP_ID=REPLACE_ME
 ```
 
 注意：
-- **前端变量必须在构建时注入**，修改 `.env.production` 后必须重建前端容器。
+- **前端变量必须在构建时注入**：修改 `.env.production` 或 `.env` 后必须重建前端容器。
+- **稳定性配置**：涉及超时限制（如 `VITE_API_TIMEOUT`）必须在打包前确认，否则构建出来的静态包会保持旧值。
+- **打包前置检查**：**强烈建议**在打包前本地运行 `npm run type-check`（前端）和后端编译检查。不要尝试把 TypeScript 错误带到服务器解决。
 
 ### 2. 上传代码到服务器
 推荐方式：
@@ -46,6 +48,7 @@ VITE_WECHAT_OPEN_APP_ID=REPLACE_ME
 
 打包上传示例（在本地 WSL/Git Bash 中）：
 ```bash
+# Windows 用户请在 PowerShell 中确保路径正确，推荐使用相对路径
 tar -czf paiban.tar.gz \
   --exclude=node_modules \
   --exclude=dist \
@@ -55,6 +58,7 @@ tar -czf paiban.tar.gz \
   --exclude=content-backend/dist \
   .
 
+# 💡 技巧：打包后检查大小，若超过 50MB 说明排除了多余资源（如 uploads）
 scp -i "c:/Users/Lx050/.ssh/editor135.pem" paiban.tar.gz root@101.42.158.32:/root/
 ```
 
@@ -111,8 +115,43 @@ docker compose ps
    - 修改 `/root/paiban/.env` 后需重建 backend 容器。
 3. **回滚**：
    - 使用 `/root/paiban_backup_YYYYMMDD_HHMMSS` 恢复 `.env/uploads/logs`。
+4. **紧急强制构建**：
+   - 如果代码修改了但容器表现仍像旧版，使用 `--no-cache`：
+     `docker compose build --no-cache backend frontend`
+5. **实时日志观察（Token 锁诊断）**：
+   - 查看后端是否在正常工作或排队刷新 Token：
+     `docker logs --tail 100 -f paiban-backend-1`
+6. **清理**：
+   - 部署成功后，记得删除本地的 `paiban.tar.gz` 节省硬盘空间。
 
 ---
+
+## 终端环境与编码注意事项（避坑指南）
+
+在执行上述部署命令（特别是 `tar`、`scp` 或涉及内容修改的脚本）时，请务必关注以下技术细节：
+
+### 1. 路径编码陷阱
+- **问题描述**: 当项目所在文件夹（如 `C:\Users\Lx050\Desktop\排版`）包含中文字符时，传统的 `tar` 命令行工具或 AI 自动修改工具可能因编码（GBK vs UTF-8）不一致而找不到文件。
+- **对策**: 
+    - 运行命令前，确保终端（CMD/PowerShell）已进入项目根目录。
+    - 在脚本中尽可能使用相对路径（`.`），避免显式书写中文字符路径。
+
+### 2. PowerShell 与 Bash 命令差异
+- **问题描述**: Windows PowerShell 默认不支持 `head`、`tail` (非别名情况下) 或 `grep` 等 Linux 标准工具。
+- **对策**: 
+    - 查看前 N 行：`Get-Content file.ts -TotalCount 20`
+    - 查看末尾：`Get-Content file.ts -Tail 20`
+    - 搜索：`Select-String "pattern" file.ts`
+
+### 3. 代码修改中的“不可见字符”
+- **问题描述**: 中文注释（如 `// 提升并发数`）中可能包含特殊的空格（如 `\u00A0`）或编码格式。直接进行字符串替换时，若匹配字符串不完全一致（即使肉眼看着一样），也会导致“Target content not found”错误。
+- **对策**: 
+    - 批量修改时，如果涉及中文注释行，优先删除受影响的行并重新插入，或者仅匹配纯英文字符部分。
+
+### 4. 转义字符与 Shell 注入
+- **问题描述**: 在通过 `ssh` 连接执行带 `"` 或 `$` 的复杂命令时，本地 Shell 可能会提前解析这些符号。
+- **对策**: 
+    - 在 `ssh` 命令后的远程脚本部分，务必使用双引号封装整个命令块，或者使用 `-<< 'EOF'` 方式进行多行输入，防止变量在本地被转义。
 
 ## 旧版部署流程（PM2，已弃用）
 

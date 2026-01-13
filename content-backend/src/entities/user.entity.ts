@@ -74,6 +74,9 @@ export class User {
   @Column({ name: 'lastloginat', nullable: true })
   lastLoginAt: Date;
 
+  @Column({ name: 'feishu_id', nullable: true })
+  feishuId: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

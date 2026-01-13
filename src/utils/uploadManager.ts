@@ -6,8 +6,8 @@
 import type { WechatImage, UploadProgress } from '@/types';
 import { uploadImage, getWechatProxyUrl } from './wechatApi';
 
-// V2: 优化配置 - 根据网络环境和微信 API 限制调整
-const MAX_CONCURRENT_UPLOADS = 5;  // 提升并发数：3 -> 5（微信 API 支持更高并发）
+// V2.1: 调高并发数至 8，视环境稳定性而定。配合后端 Token 锁，高并发更安全。
+const MAX_CONCURRENT_UPLOADS = 8;
 const MAX_RETRY_COUNT = 3;         // 最大重试次数
 const RETRY_BASE_DELAY = 1000;     // 重试基础延迟（毫秒）
 
@@ -33,7 +33,7 @@ export class UploadManager {
     private onProgressCallback?: (progress: UploadProgress) => void;
     private onCompleteCallback?: (results: WechatImage[]) => void;
     private onImageUploadedCallback?: (image: WechatImage) => void;
-    private startTime: number = 0;  // V2: 添加上传开始时间
+    private startTime: number = 0;
     private batchId: number = 0;
 
     /**
@@ -64,10 +64,9 @@ export class UploadManager {
      * 添加文件到上传队列
      */
     addFiles(files: File[]): void {
-        // V2: 记录上传开始时间
         if (this.queue.length === 0) {
             this.startTime = Date.now();
-            console.log('[Upload Manager] 开始批量上传', files.length, '个文件');
+            console.log(`[Upload Manager] [BATCH_START] 开始批量上传 ${files.length} 个文件`);
         }
 
         for (const file of files) {
@@ -81,7 +80,7 @@ export class UploadManager {
             this.queue.push(task);
         }
 
-        console.log('[Upload Manager] 添加', files.length, '个文件到队列');
+        console.log(`[Upload Manager] 已添加 ${files.length} 个文件，当前队列总计: ${this.queue.length}`);
         this.processQueue();
     }
 
@@ -98,19 +97,14 @@ export class UploadManager {
             this.activeUploads++;
             this.notifyProgress();
 
-            // V2: 记录开始时间
-            const startTime = Date.now();
-            console.log(`[Upload Manager] 开始上传: ${pendingTask.file.name} (并发: ${this.activeUploads}/${MAX_CONCURRENT_UPLOADS})`);
+            console.log(`[Upload Manager] [LAUNCH] 启动上传: ${pendingTask.file.name} (并发状态: ${this.activeUploads}/${MAX_CONCURRENT_UPLOADS})`);
 
-            // 异步处理上传
-            this.uploadFile(pendingTask).then(() => {
-                const duration = Date.now() - startTime;
-                console.log(`[Upload Manager] 上传完成: ${pendingTask.file.name}, 耗时: ${duration}ms`);
+            // 异步处理上传，不阻塞循环
+            this.uploadFile(pendingTask);
+        }
 
-                this.activeUploads--;
-                this.processQueue();
-                this.checkComplete();
-            });
+        if (this.activeUploads >= MAX_CONCURRENT_UPLOADS) {
+            console.log(`[Upload Manager] [FULL] 并发槽位已满 (${this.activeUploads}/${MAX_CONCURRENT_UPLOADS})，等待任务释放...`);
         }
     }
 
@@ -119,46 +113,43 @@ export class UploadManager {
      */
     private async uploadFile(task: UploadTask): Promise<void> {
         if (task.batchId !== this.batchId) {
+            this.activeUploads--;
             return;
         }
-        // 创建本地预览 URL（Blob URL）
+
         const localPreviewUrl = URL.createObjectURL(task.file);
 
         try {
             const abortController = new AbortController();
             task.abortController = abortController;
+
+            // 执行真实上传
             const response = await uploadImage(task.file, { signal: abortController.signal });
 
-            if (task.batchId !== this.batchId) {
-                return;
+            if (task.batchId === this.batchId) {
+                task.status = 'success';
+                const proxyUrl = getWechatProxyUrl(response.url || '');
+                task.result = {
+                    id: task.id,
+                    mediaId: response.media_id || '',
+                    url: proxyUrl,
+                    localPreviewUrl: localPreviewUrl,
+                    name: task.file.name,
+                    status: 'success',
+                };
+                console.log(`[Upload Manager] [SUCCESS] ${task.file.name} 上传成功`);
+                this.onImageUploadedCallback?.(task.result);
             }
-
-            task.status = 'success';
-            // 🔑 关键：将微信原始 URL 转换为代理 URL，确保其他用户/设备可访问
-            const proxyUrl = getWechatProxyUrl(response.url || '');
-            task.result = {
-                id: task.id,
-                mediaId: response.media_id || '',
-                url: proxyUrl,  // 使用代理 URL 以支持跨用户访问
-                localPreviewUrl: localPreviewUrl,  // 使用本地 Blob URL 进行预览
-                name: task.file.name,
-                status: 'success',
-            };
-
-            console.log('[Upload Manager] 上传成功:', task.file.name);
-            this.onImageUploadedCallback?.(task.result);
-            this.notifyProgress();
         } catch (error) {
             if (task.batchId !== this.batchId) {
+                this.activeUploads--; // 虽已失效但也要计数减一
                 return;
             }
 
-            const errorMessage =
-                error instanceof Error ? error.message : '上传失败';
-            const statusCode = (error as any)?.response?.status;
-            const isCanceled =
-                (error as any)?.name === 'CanceledError' ||
-                (error as any)?.code === 'ERR_CANCELED';
+            const errorMessage = error instanceof Error ? error.message : '上传失败';
+            console.error(`[Upload Manager] [ERROR] ${task.file.name} 失败: ${errorMessage}`);
+
+            const isCanceled = (error as any)?.name === 'CanceledError' || (error as any)?.code === 'ERR_CANCELED';
 
             if (isCanceled) {
                 task.status = 'failed';
@@ -171,47 +162,44 @@ export class UploadManager {
                     errorMsg: '上传已取消',
                     file: task.file,
                 };
-                this.notifyProgress();
-                return;
-            }
-
-            console.error('[Upload Manager] 上传失败:', task.file.name, error);
-
-            const nonRetryable =
-                statusCode === 401 ||
-                statusCode === 403 ||
-                statusCode === 404 ||
-                statusCode === 429 ||
-                errorMessage.includes('未授权微信公众号') ||
-                errorMessage.includes('Unauthorized');
-
-            // 重试逻辑
-            if (!nonRetryable && task.retryCount < MAX_RETRY_COUNT) {
-                task.retryCount++;
-                task.status = 'pending';
-
-                // 指数退避延迟
-                const delay = RETRY_BASE_DELAY * Math.pow(2, task.retryCount - 1);
-                console.log(`[Upload Manager] ${task.file.name} 将在 ${delay}ms 后重试 (第 ${task.retryCount} 次)`);
-
-                await new Promise((resolve) => setTimeout(resolve, delay));
             } else {
-                task.status = 'failed';
-                task.result = {
-                    id: task.id,
-                    mediaId: '',
-                    url: '',
-                    name: task.file.name,
-                    status: 'failed',
-                    errorMsg: errorMessage,
-                    file: task.file,
-                };
+                const statusCode = (error as any)?.response?.status;
+                const nonRetryable = statusCode === 401 || statusCode === 403 || statusCode === 429 ||
+                    errorMessage.includes('未授权') || errorMessage.includes('Unauthorized');
+
+                if (!nonRetryable && task.retryCount < MAX_RETRY_COUNT) {
+                    task.retryCount++;
+                    task.status = 'pending';
+                    const delay = RETRY_BASE_DELAY * Math.pow(2, task.retryCount - 1);
+                    console.warn(`[Upload Manager] [RETRY_WAIT] ${task.file.name} 将在 ${delay}ms 后重试 (第 ${task.retryCount} 次)`);
+
+                    setTimeout(() => {
+                        if (task.batchId === this.batchId && task.status === 'pending') {
+                            this.processQueue();
+                        }
+                    }, delay);
+                } else {
+                    task.status = 'failed';
+                    task.result = {
+                        id: task.id,
+                        mediaId: '',
+                        url: '',
+                        name: task.file.name,
+                        status: 'failed',
+                        errorMsg: errorMessage,
+                        file: task.file,
+                    };
+                }
             }
+        } finally {
+            // 🔑 无论成功与否，单次物理动作结束，槽位立即归还
+            this.activeUploads--;
+            console.log(`[Upload Manager] [RELEASE] 槽位已释放 (剩余有效并发: ${this.activeUploads}/${MAX_CONCURRENT_UPLOADS})`);
 
-            this.notifyProgress();
-
-            if (errorMessage.includes('未授权微信公众号')) {
-                this.clear();
+            if (task.batchId === this.batchId) {
+                this.notifyProgress();
+                this.processQueue(); // 递归调用处理队列
+                this.checkComplete();
             }
         }
     }
@@ -229,23 +217,14 @@ export class UploadManager {
      */
     private checkComplete(): void {
         const progress = this.getProgress();
-        if (progress.uploading === 0 && progress.completed + progress.failed === progress.total && progress.total > 0) {
-            // V2: 记录完成时间和统计信息
+        if (progress.uploading === 0 && (progress.completed + progress.failed) === progress.total && progress.total > 0) {
             const endTime = Date.now();
             const totalDuration = endTime - this.startTime;
             const results = this.queue
                 .filter((t) => t.result)
                 .map((t) => t.result as WechatImage);
 
-            console.log(`[Upload Manager] 所有上传完成:`, {
-                totalFiles: progress.total,
-                completed: progress.completed,
-                failed: progress.failed,
-                totalDuration: `${totalDuration}ms`,
-                averageDuration: progress.completed > 0 ? `${Math.round(totalDuration / progress.completed)}ms` : 'N/A',
-                concurrency: MAX_CONCURRENT_UPLOADS,
-            });
-
+            console.log(`[Upload Manager] [BATCH_COMPLETE] 全部完成! 耗时: ${totalDuration}ms, 成功: ${progress.completed}, 失败: ${progress.failed}`);
             this.onCompleteCallback?.(results);
         }
     }
@@ -266,6 +245,7 @@ export class UploadManager {
      * 重试失败的上传
      */
     retryFailed(): void {
+        console.log('[Upload Manager] 手动重试所有失败任务');
         for (const task of this.queue) {
             if (task.status === 'failed') {
                 task.status = 'pending';
@@ -279,6 +259,7 @@ export class UploadManager {
      * 清空队列
      */
     clear(): void {
+        console.log('[Upload Manager] 清空队列并停止所有任务');
         this.batchId++;
         for (const task of this.queue) {
             if (task.abortController && task.status === 'uploading') {

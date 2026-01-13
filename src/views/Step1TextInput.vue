@@ -96,14 +96,49 @@
           placeholder="请在此粘贴您的文本内容，或点击下方按钮导入 Word/ZIP 文件..."
         ></textarea>
         <div class="mt-2 flex items-center justify-between text-sm" style="color: var(--color-content-text-secondary);">
-          <span v-if="localText">{{ localText.length }} 个字符</span>
-          <span v-else>请输入文本内容</span>
-          <!-- 已提取图片数量 -->
-          <div v-if="extractedImages.length > 0" class="flex items-center text-green-600 bg-green-50 px-2 py-1 rounded text-xs">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            已提取 {{ extractedImages.length }} 张图片
+          <div class="flex items-center gap-4">
+            <span v-if="localText">{{ localText.length }} 个字符</span>
+            <span v-else>请输入文本内容</span>
+            <div v-if="extractedImages.length > 0" class="flex items-center gap-1 text-green-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              已提取 {{ extractedImages.length }} 张图片
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- V5: 元数据确认区域 -->
+      <div v-if="localText && userStore.tenantId" class="mt-4 border rounded-xl overflow-hidden shadow-sm">
+        <div class="px-4 py-2 bg-gray-50 border-b flex items-center justify-between">
+          <span class="text-xs font-bold text-gray-600">三下乡模式：信息识别结果 (确认后可同步飞书)</span>
+          <span class="text-[10px] text-gray-400 font-normal">如果识别错误，请在此手动修改</span>
+        </div>
+        <div class="p-4 bg-white grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-gray-400">队伍名称 (底部署名)</label>
+            <input v-model="appStore.teamName" class="w-full text-sm border-b focus:border-orange-500 outline-none pb-1 font-medium" placeholder="未识别" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-gray-400">队伍专项</label>
+            <input v-model="appStore.teamProject" class="w-full text-sm border-b focus:border-orange-500 outline-none pb-1 font-medium" placeholder="未识别" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-gray-400">负责人</label>
+            <input v-model="appStore.teamLeader" class="w-full text-sm border-b focus:border-orange-500 outline-none pb-1 font-medium" placeholder="未识别" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-gray-400">所属院系</label>
+            <input v-model="appStore.teamDepartment" class="w-full text-sm border-b focus:border-orange-500 outline-none pb-1 font-medium" placeholder="未识别" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-gray-400">联系方式</label>
+            <input v-model="appStore.teamContact" class="w-full text-sm border-b focus:border-orange-500 outline-none pb-1 font-medium" placeholder="未识别" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-gray-400">来源公众号</label>
+            <input v-model="appStore.sourceAccount" class="w-full text-sm border-b focus:border-orange-500 outline-none pb-1 font-medium" placeholder="未识别" />
           </div>
         </div>
       </div>
@@ -172,11 +207,13 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { useUserStore } from '../stores/userStore'
 import { extractArchive, isArchiveFile } from '../utils/archiveProcessor'
 import { uploadManager } from '../utils/uploadManager'
 
 const router = useRouter()
 const appStore = useAppStore()
+const userStore = useUserStore()
 const localText = ref('')
 const errorMessage = ref('')
 const fileInput = ref(null)
@@ -195,6 +232,10 @@ watch(localText, (newText) => {
   appStore.setRawText(newText)
   if (errorMessage.value && newText.trim()) {
     errorMessage.value = ''
+  }
+  // 如果文本长度较大且之前没有元数据，尝试提取一次（针对粘贴内容）
+  if (newText.length > 50 && !appStore.teamName) {
+    extractMetadataFromText(newText)
   }
 })
 
@@ -238,6 +279,11 @@ const processFile = async (file) => {
   appStore.clearWechatImages()
   appStore.updateUploadProgress({ total: 0, completed: 0, failed: 0, uploading: 0 })
   appStore.setIsUploading(false)
+  
+  // V5: 重置尾部可变字段，避免之前文档的数据遗留
+  appStore.teamName = ''
+  appStore.sourceAccount = ''
+  appStore.copywriterNames = []
   
   // V2: 检查是否是压缩包文件
   if (isArchiveFile(file)) {
@@ -393,79 +439,101 @@ const processDocxFile = async (file) => {
 }
 
 // V4: 从文档文本中提取元数据
+// V4: 从文档文本中提取元数据
 const extractMetadataFromText = (text) => {
+  if (!text) return
   console.log('[Step1] 开始提取文档元数据...')
   
-  // 提取模式：
-  // 1. 队伍名称：xxx  或  队伍名称:xxx
-  // 2. 团队名称：xxx
-  // 3. 来源：xxx  或  来源:xxx
-  // 4. 文案：xxx  或  图文来源：xxx
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0)
   
-  const patterns = {
-    // 三下乡模式 - 团队名称
-    teamName: [
-      /队伍名称[：:]\s*[""]?([^"""\n]+)[""]?/,
-      /团队名称[：:]\s*[""]?([^"""\n]+)[""]?/,
-      /实践队[：:]\s*[""]?([^"""\n]+)[""]?/,
-      /[""]([^"""]+)[""]\s*社会实践队/,
-      /[""]([^"""]+)[""]\s*实践队/,
-    ],
-    // 转载模式 - 来源公众号
-    sourceAccount: [
-      /来源[：:]\s*[""]?([^"""\n]+)[""]?\s*公众号/,
-      /转载自[：:]\s*[""]?([^"""\n]+)[""]?/,
-      /原文来源[：:]\s*[""]?([^"""\n]+)[""]?/,
-    ],
-    // 日常模式 - 文案作者
-    copywriters: [
-      /文案[：:]\s*([^\n]+)/,
-      /图文[：:]\s*([^\n]+)/,
-      /撰稿[：:]\s*([^\n]+)/,
-      /作者[：:]\s*([^\n]+)/,
-    ]
+  // 核心提取逻辑：寻找关键词，并尝试获取本行或下一行内容
+  const findMetadata = (labels, stopWords = []) => {
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        
+        // 1. 尝试匹配 "标签：值" 或 "标签 值"
+        for (const label of labels) {
+            const regex = new RegExp(`${label}[：:\\s]+(.*)`, 'i')
+            const match = line.match(regex)
+            if (match) {
+                let value = match[1].trim()
+                // 如果本行后面没内容，看下一行
+                if (!value && i + 1 < lines.length) {
+                    value = lines[i+1]
+                }
+                if (value) return cleanMetadataValue(value, stopWords)
+            }
+        }
+        
+        // 2. 尝试匹配单独的标签行，取下一行为值
+        for (const label of labels) {
+            if (line === label || line === label + '：' || line === label + ':') {
+                if (i + 1 < lines.length) {
+                    return cleanMetadataValue(lines[i+1], stopWords)
+                }
+            }
+        }
+    }
+    return ''
   }
-  
-  // 提取团队名称
-  for (const pattern of patterns.teamName) {
-    const match = text.match(pattern)
-    if (match && match[1]) {
-      const teamName = match[1].trim()
-      console.log('[Step1] 解析到团队名称:', teamName)
-      appStore.teamName = `"${teamName}"社会实践队`
-      break
+
+  // 通用清理函数
+  const cleanMetadataValue = (value, stopWords = []) => {
+    if (!value) return ''
+    let cleaned = value
+
+    // 1. 移除首部标记 (如 ## 或 #)
+    cleaned = cleaned.replace(/^[#\s]+/, '')
+
+    // 2. 处理行内后续标签
+    const labelStopWords = ['负责人', '专项', '项目', '院系', '学院', '所属', '联系', '电话', '手机', '作者', '文案', ...stopWords]
+    for (const word of labelStopWords) {
+        if (cleaned.includes(word + '：') || cleaned.includes(word + ':')) {
+            cleaned = cleaned.split(new RegExp(`${word}[：:]`))[0]
+        }
+    }
+    
+    // 3. 移除常见后缀
+    cleaned = cleaned.replace(/\s*(?:社会实践队|实践队|公众号)\s*$/i, '')
+    
+    // 4. 清理引用和空白
+    return cleaned.trim().replace(/^["“'‘]|["”'’]$/g, '').trim()
+  }
+
+  // 开始执行提取
+  const teamName = findMetadata(['队伍名称', '团队名称', '实践队', '团队'], ['负责人', '专项'])
+  if (teamName) {
+    console.log('[Step1] 自动解析团队名称:', teamName)
+    appStore.teamName = teamName
+  } else {
+    // 降级兜底：查找包含 "社会实践队" 的行
+    for (const line of lines) {
+        if (line.includes('社会实践队') || line.includes('实践队')) {
+            const fallback = cleanMetadataValue(line)
+            if (fallback && fallback.length > 2 && fallback.length < 30) {
+                 appStore.teamName = fallback
+                 break
+            }
+        }
     }
   }
+
+  appStore.teamProject = findMetadata(['队伍专项', '项目专项', '专项', '项目名称', '项目'], ['负责人'])
+  appStore.teamDepartment = findMetadata(['所属院系', '院系', '学院', '学校'], ['负责人', '联系'])
+  appStore.teamLeader = findMetadata(['负责人', '队长', '带队老师', '指导老师'], ['联系', '电话'])
+  appStore.teamContact = findMetadata(['联系方式', '联系电话', '电话', '手机'], ['专项'])
+  appStore.sourceAccount = findMetadata(['来源', '转载自', '公众号', '原文来源'])
   
-  // 提取来源公众号
-  for (const pattern of patterns.sourceAccount) {
-    const match = text.match(pattern)
-    if (match && match[1]) {
-      const source = match[1].trim()
-      console.log('[Step1] 解析到来源公众号:', source)
-      appStore.sourceAccount = `"${source}"公众号`
-      break
-    }
+  // 文案作者特殊处理
+  const authorsRaw = findMetadata(['文案', '图文', '撰稿', '作者'])
+  if (authorsRaw) {
+    appStore.copywriterNames = authorsRaw.split(/[、，,\s]+/).filter(Boolean)
   }
-  
-  // 提取文案作者
-  for (const pattern of patterns.copywriters) {
-    const match = text.match(pattern)
-    if (match && match[1]) {
-      // 分割多个作者（支持空格、顿号、逗号分隔）
-      const authors = match[1].trim().split(/[、，,\s]+/).filter(Boolean)
-      if (authors.length > 0) {
-        console.log('[Step1] 解析到文案作者:', authors)
-        appStore.copywriterNames = authors
-        break
-      }
-    }
-  }
-  
-  console.log('[Step1] 元数据提取完成:', {
+
+  console.log('[Step1] 元数据提取最终结果:', {
     teamName: appStore.teamName,
-    sourceAccount: appStore.sourceAccount,
-    copywriterNames: appStore.copywriterNames
+    teamProject: appStore.teamProject,
+    leader: appStore.teamLeader
   })
 }
 
@@ -902,11 +970,22 @@ const clearText = () => {
   appStore.setIsUploading(false)
 }
 
+// 前导：导入业务服务
+import { ArticleService } from '../services/articleService'
+
 // 前往下一步 (V2: 并行启动图片上传)
-const goToNextStep = () => {
+const goToNextStep = async () => {
   if (!localText.value.trim()) {
     errorMessage.value = '请输入文本内容'
     return
+  }
+
+  // V5: 重要！在跳转瞬间立即保存一次元数据到后端库，确保同步数据完整
+  try {
+    console.log('[Step1] 正在同步元数据到后端...')
+    await ArticleService.saveCurrentAsDraft()
+  } catch (err) {
+    console.error('[Step1] 背景保存失败，但不影响跳转:', err)
   }
 
   // 重置错误信息

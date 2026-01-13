@@ -61,7 +61,7 @@ export const IMAGE_TEMPLATES = {
 				</section>
                 <section class="135brush">
                     <p style="vertical-align: inherit; color: #666666; font-size: 12px; text-decoration: inherit; line-height: 1.75em;text-align:center;" align="center">
-                        <span style="color: #757576;"><span style="font-weight: 400; text-shadow: none; letter-spacing: 1.75px; font-size: 12px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{caption}}</span>&nbsp;</span>
+                        <span style="color: #757576;"><span style="font-weight: 400; text-shadow: none; letter-spacing: 1.75px; font-size: 12px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{caption}}</span></span>
                     </p>
                 </section>
 			</section>
@@ -101,7 +101,7 @@ export const IMAGE_TEMPLATES = {
                          data-width="100%" draggable="false" data-ratio="1.35" data-w="600" alt="图片1"/>
                     <section class="135brush">
                         <p style="vertical-align: inherit; color: #666666; font-size: 12px; text-decoration: inherit; line-height: 1.75em;text-align:center;" align="center">
-                            <span style="color: #757576;"><span style="font-weight: 400; text-shadow: none; letter-spacing: 1.75px; font-size: 12px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{caption1}}</span>&nbsp;</span>
+                            <span style="color: #757576;"><span style="font-weight: 400; text-shadow: none; letter-spacing: 1.75px; font-size: 12px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{caption1}}</span></span>
                         </p>
                     </section>
                 </section>
@@ -111,7 +111,7 @@ export const IMAGE_TEMPLATES = {
                          data-width="100%" draggable="false" data-ratio="1.35" data-w="600" alt="图片2"/>
                     <section class="135brush">
                         <p style="vertical-align: inherit; color: #666666; font-size: 12px; text-decoration: inherit; line-height: 1.75em;text-align:center;" align="center">
-                            <span style="color: #757576;"><span style="font-weight: 400; text-shadow: none; letter-spacing: 1.75px; font-size: 12px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{caption2}}</span>&nbsp;</span>
+                            <span style="color: #757576;"><span style="font-weight: 400; text-shadow: none; letter-spacing: 1.75px; font-size: 12px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{caption2}}</span></span>
                         </p>
                     </section>
                 </section>

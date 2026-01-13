@@ -7,7 +7,7 @@ const api = axios.create({
   baseURL: import.meta.env.PROD
     ? (import.meta.env.VITE_API_BASE_URL || '/api')
     : '/api',
-  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '20000'), // 增加超时时间
+  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '60000'), // 增加超时时间至 60s
   headers: {
     'Content-Type': 'application/json',
   },

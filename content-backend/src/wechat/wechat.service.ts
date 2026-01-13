@@ -15,6 +15,7 @@ export class WechatService {
     string,
     { token: string; expiresAt: number }
   >();
+  private readonly refreshLocks = new Map<string, Promise<string>>(); // V2: Token 刷新并发锁
 
   constructor(
     private configService: ConfigService,
@@ -25,7 +26,7 @@ export class WechatService {
     private authorizerRepository: Repository<WechatAuthorizer>,
     @InjectRepository(WechatPlatformConfig)
     private platformConfigRepository: Repository<WechatPlatformConfig>,
-  ) {}
+  ) { }
 
   private getComponentAppId(): string {
     return (
@@ -196,8 +197,19 @@ export class WechatService {
       return authorizer.authorizerAccessToken;
     }
 
-    // 需要刷新 Token
-    return await this.refreshAuthorizerToken(authorizer);
+    // V2: 需要刷新 Token，使用并发锁机制
+    const lockKey = authorizer.authorizerAppId;
+    if (this.refreshLocks.has(lockKey)) {
+      this.logger.log(`[Token Lock] 等待已有的 Token 刷新任务: ${lockKey}`);
+      return this.refreshLocks.get(lockKey)!;
+    }
+
+    const refreshPromise = this.refreshAuthorizerToken(authorizer).finally(() => {
+      this.refreshLocks.delete(lockKey);
+    });
+
+    this.refreshLocks.set(lockKey, refreshPromise);
+    return refreshPromise;
   }
 
   private async getDirectAccessToken(
@@ -319,7 +331,11 @@ export class WechatService {
 
   async uploadImage(tenantId: string, file: Express.Multer.File): Promise<any> {
     const accessToken = await this.getAuthorizerAccessToken(tenantId);
-    const url = `https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${accessToken}&type=image`;
+    // V2: 从 add_material (永久素材，慢) 切换为 uploadimg (CDN接口，极速)
+    const url = `https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${accessToken}`;
+
+    this.logger.log(`[Wechat API] 开始上传图片到微信 CDN: ${file.originalname}`);
+    const startTime = Date.now();
 
     const formData = new FormData();
     formData.append(
@@ -328,8 +344,24 @@ export class WechatService {
       file.originalname,
     );
 
-    const response = await this.httpService.axiosRef.post(url, formData);
-    return response.data;
+    try {
+      const response = await this.httpService.axiosRef.post(url, formData, {
+        timeout: 60000, // 后端也增加 60s 超时
+      });
+
+      const duration = Date.now() - startTime;
+      if (response.data.errcode) {
+        this.logger.error(`[Wechat API] 上传失败 (${duration}ms): ${JSON.stringify(response.data)}`);
+      } else {
+        this.logger.log(`[Wechat API] 上传成功 (${duration}ms)`);
+      }
+
+      return response.data;
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      this.logger.error(`[Wechat API] 上传网络异常 (${duration}ms): ${error.message}`);
+      throw error;
+    }
   }
 
   async createDraft(tenantId: string, articleData: any): Promise<any> {

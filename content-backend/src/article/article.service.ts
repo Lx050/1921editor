@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Article, ArticleStatus } from '../entities/article.entity';
 import { User } from '../entities/user.entity';
+import { BitableSyncService } from '../feishu/bitable-sync.service';
 
 @Injectable()
 export class ArticleService {
@@ -13,11 +14,15 @@ export class ArticleService {
     private articleRepository: Repository<Article>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+    private bitableSyncService: BitableSyncService,
+  ) { }
 
-  // 飞书同步功能已移除，此方法保留为空实现以避免破坏现有调用
+  // 飞书同步功能已恢复
   private async triggerSync(id: string) {
-    // 同步功能已移除
+    // 异步触发同步，不阻塞主流程
+    this.bitableSyncService.triggerArticleSync(id).catch((err) => {
+      this.logger.error(`文章同步失败: ${id}`, err);
+    });
   }
 
   /**

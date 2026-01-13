@@ -91,6 +91,15 @@ function buildStyledBlock(
 
 	const content: string = block.text || ''
 
+	const normalizeCaptionText = (value: string): string => {
+		if (!value) return ''
+		return value
+			.replace(/&nbsp;/g, ' ')
+			.replace(/\u00a0/g, ' ')
+			.replace(/\s+/g, ' ')
+			.trim()
+	}
+
 	// AI 生成图片优先渲染
 	if (block.meta && block.meta.aiImageUrl) {
 		let html = IMAGE_TEMPLATES.single
@@ -122,7 +131,8 @@ function buildStyledBlock(
 		case 'image_single_caption': {
 			let html = IMAGE_TEMPLATES.single_caption
 			// 替换图注
-			html = html.replace('{{caption}}', content)
+			const cleanedCaption = normalizeCaptionText(content)
+			html = html.replace('{{caption}}', cleanedCaption)
 
 			// V2: 添加占位符标记
 			if (addPlaceholderMarkers) {
@@ -161,7 +171,9 @@ function buildStyledBlock(
 				}
 			}
 
-			html = html.replace('{{caption1}}', c1).replace('{{caption2}}', c2)
+			const cleanedC1 = normalizeCaptionText(c1)
+			const cleanedC2 = normalizeCaptionText(c2)
+			html = html.replace('{{caption1}}', cleanedC1).replace('{{caption2}}', cleanedC2)
 
 			// V2: 添加占位符标记 - 双图分别标记为 _1 和 _2
 			if (addPlaceholderMarkers) {

@@ -63,6 +63,15 @@ export class UpdateArticleConfigDto {
   })
   @IsObject({ message: '配置必须是对象' })
   config: Record<string, any>;
+
+  @ApiProperty({
+    description: '从文档提取的元数据（用于飞书同步）',
+    required: false,
+    example: { teamName: '薪火西大', teamProject: '弘扬建党精神' },
+  })
+  @IsOptional()
+  @IsObject({ message: '元数据必须是对象' })
+  metadata?: Record<string, any>;
 }
 
 export class UpdateArticleContentDto {

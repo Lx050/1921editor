@@ -24,6 +24,7 @@ import { join } from 'path';
 import { SystemModule } from './system/system.module';
 import { StyleTemplateModule } from './style-template/style-template.module';
 import { WechatModule } from './wechat/wechat.module';
+import { FeishuModule } from './feishu/feishu.module';
 
 @Module({
   imports: [
@@ -71,7 +72,7 @@ import { WechatModule } from './wechat/wechat.module';
     NanoBananaModule,
     StyleTemplateModule,
     WechatModule,
-    // WebhookModule, // 已移除：依赖飞书模块
+    FeishuModule, // 飞书同步模块（已恢复）
   ],
   controllers: [AppController],
   providers: [

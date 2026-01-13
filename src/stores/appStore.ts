@@ -20,6 +20,10 @@ export const useAppStore = defineStore('app', () => {
 
   // V4 新增状态：尾部可变字段（用于不同模式）
   const teamName: Ref<string> = ref('')           // 团队名称（三下乡模式，需从文档解析）
+  const teamProject: Ref<string> = ref('')        // 队伍专项（三下乡模式，需从文档解析）
+  const teamDepartment: Ref<string> = ref('')     // 所属院系（三下乡模式，需从文档解析）
+  const teamLeader: Ref<string> = ref('')         // 负责人（三下乡模式，需从文档解析）
+  const teamContact: Ref<string> = ref('')        // 联系方式（三下乡模式，需从文档解析）
   const sourceAccount: Ref<string> = ref('')      // 来源公众号名称（转载模式，需从文档解析）
   const imageSource: Ref<string> = ref('')        // 图片来源（日常模式）
   const editorInput: Ref<string> = ref('')        // 编辑人员（用户填写，默认为空）
@@ -188,6 +192,10 @@ export const useAppStore = defineStore('app', () => {
     editorNames.value = ['朱梦鹤']            // 责编（固定）
     // V4: 重置尾部可变字段（需从文档解析）
     teamName.value = ''
+    teamProject.value = ''
+    teamDepartment.value = ''
+    teamLeader.value = ''
+    teamContact.value = ''
     sourceAccount.value = ''
     imageSource.value = ''
     editorInput.value = ''  // 编辑人员（用户填写）
@@ -239,6 +247,10 @@ export const useAppStore = defineStore('app', () => {
     editorNames,
     // V4 新增状态：尾部可变字段
     teamName,
+    teamProject,
+    teamDepartment,
+    teamLeader,
+    teamContact,
     sourceAccount,
     imageSource,
     editorInput,
