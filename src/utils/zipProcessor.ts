@@ -14,9 +14,16 @@ export interface ExtractResult {
 }
 
 /**
- * 支持的图片格式
+ * 支持的图片格式 (包含 HEIC/HEIF 等 iPhone 常用格式)
  */
-const SUPPORTED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+const SUPPORTED_IMAGE_EXTENSIONS = [
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp',
+    '.heic', '.heif',  // iPhone 照片格式
+    '.tiff', '.tif',   // TIFF 格式
+    '.svg',            // SVG 矢量图
+    '.ico',            // 图标
+    '.avif'            // 新一代图片格式
+];
 
 /**
  * 检查文件是否是图片
@@ -53,6 +60,13 @@ function getMimeType(filename: string): string {
         '.gif': 'image/gif',
         '.bmp': 'image/bmp',
         '.webp': 'image/webp',
+        '.heic': 'image/heic',
+        '.heif': 'image/heif',
+        '.tiff': 'image/tiff',
+        '.tif': 'image/tiff',
+        '.svg': 'image/svg+xml',
+        '.ico': 'image/x-icon',
+        '.avif': 'image/avif',
         '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     };
     return mimeTypes[ext] || 'application/octet-stream';

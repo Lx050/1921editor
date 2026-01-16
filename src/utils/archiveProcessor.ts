@@ -5,8 +5,6 @@
  * 使用 JSZip 处理 ZIP (更轻量，且方便处理编码)
  */
 
-import JSZip from 'jszip'
-
 /**
  * 提取结果接口
  */
@@ -16,9 +14,16 @@ export interface ExtractResult {
 }
 
 /**
- * 支持的图片格式
+ * 支持的图片格式 (包含 HEIC/HEIF 等 iPhone 常用格式)
  */
-const SUPPORTED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+const SUPPORTED_IMAGE_EXTENSIONS = [
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp',
+    '.heic', '.heif',  // iPhone 照片格式
+    '.tiff', '.tif',   // TIFF 格式
+    '.svg',            // SVG 矢量图
+    '.ico',            // 图标
+    '.avif'            // 新一代图片格式
+]
 
 /**
  * 检查文件是否是图片
@@ -45,7 +50,7 @@ function isDocxFile(filename: string): boolean {
  */
 function createFileFromBuffer(buffer: ArrayBuffer | Uint8Array, filename: string, mimeType: string): File {
     // 将 buffer 转换为 BlobPart 类型
-    const blobPart = buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : buffer
+    const blobPart = buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : buffer.slice()
     const blob = new Blob([blobPart], { type: mimeType })
     return new File([blob], filename, { type: mimeType })
 }
@@ -62,6 +67,13 @@ function getMimeType(filename: string): string {
         '.gif': 'image/gif',
         '.bmp': 'image/bmp',
         '.webp': 'image/webp',
+        '.heic': 'image/heic',
+        '.heif': 'image/heif',
+        '.tiff': 'image/tiff',
+        '.tif': 'image/tiff',
+        '.svg': 'image/svg+xml',
+        '.ico': 'image/x-icon',
+        '.avif': 'image/avif',
         '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     }
     return mimeTypes[ext] || 'application/octet-stream'
@@ -110,12 +122,12 @@ function decodeFilename(bytes: Uint8Array): string {
         // 尝试用 UTF-8 解码，设置 fatal: true 如果由于字节序列不合法而失败则抛错
         const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
         return utf8Decoder.decode(bytes);
-    } catch (e) {
+    } catch {
         // UTF-8 解码失败，很可能是 GBK (Windows 默认中文编码)
         try {
             const gbkDecoder = new TextDecoder('gbk');
             return gbkDecoder.decode(bytes);
-        } catch (e2) {
+        } catch {
             // 万一 GBK 也不行，退回到默认解码
             return new TextDecoder().decode(bytes);
         }
@@ -126,6 +138,7 @@ function decodeFilename(bytes: Uint8Array): string {
  * 使用 JSZip 解压 ZIP 文件 (带智能编码检测)
  */
 async function extractWithJSZip(file: File): Promise<ExtractResult> {
+    const { default: JSZip } = await import('jszip')
     const result: ExtractResult = {
         docxFiles: [],
         imageFiles: [],
@@ -135,9 +148,10 @@ async function extractWithJSZip(file: File): Promise<ExtractResult> {
 
     // V6: 使用智能解码处理文件名乱码
     const zip = await JSZip.loadAsync(arrayBuffer, {
-        decodeFileName: (bytes: Uint8Array | string) => {
+        decodeFileName: (bytes: string[] | Uint8Array<ArrayBufferLike> | Buffer<ArrayBufferLike>) => {
+            if (Array.isArray(bytes)) return bytes.join('');
             if (typeof bytes === 'string') return bytes;
-            return decodeFilename(new Uint8Array(bytes));
+            return decodeFilename(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength));
         }
     })
 
@@ -197,8 +211,8 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
         const inputDir = `/input_${Date.now()}`
         const outputDir = `/output_${Date.now()}`
 
-        try { sevenZip.FS.mkdir(inputDir) } catch (e) { }
-        try { sevenZip.FS.mkdir(outputDir) } catch (e) { }
+        try { sevenZip.FS.mkdir(inputDir) } catch { /* 目录可能已存在，忽略 */ }
+        try { sevenZip.FS.mkdir(outputDir) } catch { /* 目录可能已存在，忽略 */ }
 
         // 将压缩包写入虚拟文件系统
         const inputPath = `${inputDir}/${file.name}`

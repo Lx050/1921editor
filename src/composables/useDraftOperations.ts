@@ -348,22 +348,23 @@ export function useDraftOperations(
           }))
         }
 
-        const fullConfig = {
-          ...appStore.styleConfig,
-          metadata: {
-            editorInput: appStore.editorInput,
-            teamName: appStore.teamName,
-            sourceAccount: appStore.sourceAccount,
-            copywriterNames: appStore.copywriterNames,
-            plannerNames: appStore.plannerNames,
-            editorNames: appStore.editorNames
-          }
+        // 后端 DTO 期望 config 和 metadata 是两个独立的顶层字段
+        const metadata = {
+          editorInput: appStore.editorInput,
+          teamName: appStore.teamName,
+          sourceAccount: appStore.sourceAccount,
+          copywriterNames: appStore.copywriterNames,
+          plannerNames: appStore.plannerNames,
+          editorNames: appStore.editorNames
         }
 
         saveTasks.push(fetch(`/api/articles/${articleId}/config`, {
           method: 'PUT',
           headers: buildAuthHeaders(),
-          body: JSON.stringify({ config: fullConfig })
+          body: JSON.stringify({
+            config: appStore.styleConfig,
+            metadata: metadata
+          })
         }).then(r => {
           if (!r.ok) throw new Error('保存配置失败')
           return 'config'

@@ -1,23 +1,44 @@
-/**
- * 微信 API 服务层
- * 处理与微信公众号 API 的交互
- */
-
 import type { WechatUploadResponse, WechatImage, DraftArticle, DraftCreateResponse } from '@/types';
 import api from './api';
+import {
+    needsConversion,
+    needsCompression,
+    processImage,
+    formatFileSize,
+    DEFAULT_MAX_SIZE
+} from './imageConverter';
 
 /**
  * 上传图片到微信素材库
+ * 自动处理 HEIC/HEIF 格式转换 + 超大图片压缩
  * @param file 图片文件
  * @returns 包含 media_id 和 url 的响应
  */
 export async function uploadImage(
     file: File,
-    options?: { signal?: AbortSignal; timeout?: number }
+    options?: { signal?: AbortSignal; timeout?: number; maxSize?: number }
 ): Promise<WechatUploadResponse> {
     try {
+        let uploadFile = file;
+        const maxSize = options?.maxSize ?? DEFAULT_MAX_SIZE;
+
+        // 🚀 智能处理：格式转换 + 压缩
+        const needsProcess = needsConversion(file) || needsCompression(file, maxSize);
+
+        if (needsProcess) {
+            if (needsConversion(file)) {
+                console.log('[WeChat API] 检测到 HEIC/HEIF 格式，需要转换...');
+            }
+            if (needsCompression(file, maxSize)) {
+                console.log(`[WeChat API] 图片过大 (${formatFileSize(file.size)})，需要压缩...`);
+            }
+
+            uploadFile = await processImage(file, { maxSize });
+            console.log('[WeChat API] 图片处理完成:', file.name, `(${formatFileSize(file.size)})`, '->', uploadFile.name, `(${formatFileSize(uploadFile.size)})`);
+        }
+
         const formData = new FormData();
-        formData.append('image', file);
+        formData.append('image', uploadFile);
 
         const timeout =
             options?.timeout ??
@@ -40,7 +61,7 @@ export async function uploadImage(
             throw new Error(`上传图片失败: ${data.errmsg} (错误码: ${data.errcode})`);
         }
 
-        console.log('[WeChat API] 图片上传成功:', file.name, '-> media_id:', data.media_id);
+        console.log('[WeChat API] 图片上传成功:', uploadFile.name, '-> media_id:', data.media_id);
         return data;
     } catch (error) {
         console.error('[WeChat API] 上传图片失败:', file.name, error);
@@ -156,7 +177,7 @@ export function getWechatProxyUrl(originalUrl: string): string {
             // 使用 encodeURIComponent 编码整个 URL
             return `/api/wechat/image-proxy?url=${encodeURIComponent(originalUrl)}`;
         }
-    } catch (e) {
+    } catch {
         console.warn('[WeChat API] URL 解析失败:', originalUrl);
     }
 

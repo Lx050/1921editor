@@ -146,6 +146,37 @@
         </div>
 
         <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- 寒假社会实践集锦模式 -->
+          <div
+            @click="startWork('winter_practice')"
+            class="group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100/50 p-8 cursor-pointer hover:shadow-2xl hover:border-blue-200 hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+          >
+            <!-- 背景装饰 -->
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="absolute -top-4 -right-4 w-20 h-20 bg-blue-100/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+
+            <div class="relative">
+              <div class="flex items-center space-x-5 mb-6">
+                <div class="h-16 w-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-blue-500/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                  ❄️
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">寒假实践</h3>
+                  <span class="text-xs text-blue-600 font-medium">专项集锦</span>
+                </div>
+              </div>
+              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                寒假社会实践合集，支持多团队内容嵌套展现。
+              </p>
+              <div class="flex items-center text-blue-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                <span>立即开始</span>
+                <svg class="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
           <!-- 日常模式 -->
           <div
             @click="startWork('daily')"
@@ -238,35 +269,31 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <!-- 寒假社会实践集锦模式 -->
-          <div
-            @click="startWork('winter_practice')"
-            class="group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100/50 p-8 cursor-pointer hover:shadow-2xl hover:border-blue-200 hover:-translate-y-2 transition-all duration-300 overflow-hidden"
-          >
-            <!-- 背景装饰 -->
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="absolute -top-4 -right-4 w-20 h-20 bg-blue-100/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+      <!-- 🛠️ 实用工具 -->
+      <section class="mb-16">
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-bold bg-gradient-to-r from-gray-900 via-cyan-800 to-teal-800 bg-clip-text text-transparent mb-2">
+            实用工具
+          </h2>
+          <p class="text-gray-600 text-sm">
+            提升效率的辅助功能
+          </p>
+        </div>
 
-            <div class="relative">
-              <div class="flex items-center space-x-5 mb-6">
-                <div class="h-16 w-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-blue-500/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  ❄️
-                </div>
-                <div>
-                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">寒假实践</h3>
-                  <span class="text-xs text-blue-600 font-medium">专项集锦</span>
-                </div>
-              </div>
-              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                寒假社会实践合集，支持多团队内容嵌套展现。
-              </p>
-              <div class="flex items-center text-blue-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                <span>立即开始</span>
-                <svg class="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                </svg>
-              </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- 图片压缩工具 -->
+          <ImageCompressorTool />
+          
+          <!-- 更多工具占位 (可以后续添加) -->
+          <div class="hidden lg:flex items-center justify-center bg-gray-50/50 border-2 border-dashed border-gray-200 rounded-2xl p-8 text-gray-400">
+            <div class="text-center">
+              <svg class="w-10 h-10 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <p class="text-sm">更多工具即将上线</p>
             </div>
           </div>
         </div>
@@ -322,6 +349,16 @@
                     <span>最后编辑: {{ formatDate(article.updatedAt) }}</span>
                   </div>
                 </div>
+                <!-- 删除按钮 -->
+                <button
+                  @click.stop="handleDeleteArticle(article.id)"
+                  class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                  title="删除文章"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
               </div>
             </a>
           </div>
@@ -337,8 +374,9 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/userStore'
 import { useConfigStore } from '../../stores/configStore'
 import { useAppStore } from '../../stores/appStore'
-import { getArticles, getArticle, type Article } from '../../api/article'
+import { getArticles, getArticle, deleteArticle, type Article } from '../../api/article'
 import toast from '../../composables/useToast'
+import ImageCompressorTool from '../../components/ImageCompressorTool.vue'
 import type { ContentBlock } from '@/types'
 
 const router = useRouter()
@@ -412,10 +450,18 @@ const continueEdit = async (id: string) => {
           const restoredBlocks = restoreBlocksRecursively(savedBlocks)
           appStore.setContentBlocks(restoredBlocks)
           hasContentBlocks = true
-          const rawText = savedBlocks.map((b: Partial<ContentBlock>) => b.text || '').join('\n\n')
+          
+          const collectTextRecursively = (blocks: ContentBlock[]): string => {
+            return blocks.map(b => {
+              const currentText = b.text || ''
+              const childrenText = b.children ? collectTextRecursively(b.children) : ''
+              return currentText + (childrenText ? '\n' + childrenText : '')
+            }).join('\n\n')
+          }
+          const rawText = collectTextRecursively(restoredBlocks)
           appStore.setRawText(rawText)
         }
-      } catch (e) {
+      } catch {
         appStore.setRawText(article.content)
       }
     }
@@ -425,7 +471,7 @@ const continueEdit = async (id: string) => {
     } else {
       router.push('/step1')
     }
-  } catch (error: unknown) {
+  } catch {
     toast.error('加载失败')
   } finally {
     loading.value = false
@@ -442,10 +488,22 @@ const fetchArticles = async () => {
   loading.value = true
   try {
     articles.value = await getArticles()
-  } catch (error: unknown) {
+  } catch {
     toast.error('列表加载失败')
   } finally {
     loading.value = false
+  }
+}
+
+const handleDeleteArticle = async (id: string) => {
+  if (!confirm('确定要删除这篇草稿吗？此操作不可撤销。')) return
+  
+  try {
+    await deleteArticle(id)
+    toast.success('删除成功')
+    await fetchArticles()
+  } catch (error) {
+    toast.error('删除失败')
   }
 }
 

@@ -229,11 +229,29 @@ const THREE_RURAL_FOOTER = `
 
 // HTML 头部和尾部 - 寒假社会实践模式 (Winter Practice)
 const WINTER_PRACTICE_HEADER = `
-<section data-role="outer" class="article135" style="font-size:14px;letter-spacing:1.75px;line-height:1.75em;font-family:微软雅黑, Microsoft YaHe;">
-  <section style="margin: 10px auto; text-align: center;">
-    <p style="font-size: 18px; color: #1a5cad; font-weight: bold; margin-bottom: 5px;">寒假社会实践专项系列</p>
-    <section style="height: 2px; background: linear-gradient(to right, transparent, #1a5cad, transparent); width: 80%; margin: 0 auto;"></section>
-  </section>
+ <section data-role="outer" class="article135" label="edit by 135editor" style="font-size:14px;letter-spacing:1.75px;line-height:0.75;font-family:微软雅黑, Microsoft YaHe;" >
+	<section data-tplid="340986" data-tools="135编辑器">
+		<section data-id="undefined" class="_135editor">
+			<p style="text-align:center;" align="center">
+				<img src="https://mmbiz.qpic.cn/sz_mmbiz_gif/viactygias9W3ibK2JncMo0Bd5MgbKt7Wzg05h7zjF4IVGQzFJfZSxiaErzeGUgQxgV7iaD4p9OQ8icuiaTmvVgjgABaA/0?wx_fmt=gif&from=appmsg" class="rich_pages wxw-img js_insertlocalimg" data-s="300,640" data-type="gif" type="block" data-imgfileid="504015157" data-imgqrcoded="1" data-upload="1" style="vertical-align: baseline; width: 100%;box-sizing:border-box;max-width:100% !important;" draggable="false" data-ratio="0.3531047265987025" data-w="1079"/>
+			</p>
+		</section>
+	</section>
+	<section class="_135editor" data-tools="135编辑器" data-id="165701">
+		<section style="margin: 10px auto;"></section>
+	</section>
+	<section data-tplid="340988" data-tools="135编辑器">
+		<section data-tplid="333569" data-tools="135编辑器">
+			<section class="article135" style="line-height:0.75;font-size:14px;background:none 50% 50% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0);padding:0px;box-sizing:border-box;letter-spacing:1.75px;font-family:微软雅黑,MicrosoftYaHe;" data-role="outer" data-doubao-translate-traverse-mark="1">
+				<p style="display: none;" data-doubao-translate-traverse-mark="1">
+					<br/>
+				</p>
+				<section class="_135editor" data-doubao-translate-traverse-mark="1">
+					<mp-style-type data-value="10000"></mp-style-type>
+				</section>
+			</section>
+		</section>
+	</section>
 </section>
 `
 

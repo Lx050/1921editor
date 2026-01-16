@@ -226,7 +226,7 @@ import { articleApi } from '../utils/api'
 import toast from '../composables/useToast'
 import DOMPurify from 'dompurify'
 import type { DraftArticle, WechatImage, WechatUploadResponse, BlockType, ContentBlock } from '@/types'
-import type { ImageReplacement, DraftFormState, ExternalImage, SavedBlock } from '@/types/preview'
+import type { ImageReplacement, DraftFormState, ExternalImage } from '@/types/preview'
 import { tokenStorage } from '../utils/tokenStorage'
 
 defineOptions({
@@ -454,6 +454,44 @@ const findBlockByImageIndex = (blocks: ContentBlock[], targetIndex: number): { b
   return traverse(blocks)
 }
 
+// V2: 根据内容块元数据恢复图片替换关系 (解决刷新后预览失效问题)
+const restoreImageReplacementsFromBlocks = () => {
+  const map: Record<string, ImageReplacement> = {}
+  let imageCounter = 0
+
+  const traverse = (blocks: ContentBlock[]) => {
+    blocks.forEach(block => {
+      // 单图恢复
+      if (block.meta?.replacementUrl) {
+        const placeholderId = `image_${imageCounter}`
+        map[placeholderId] = {
+          previewUrl: getWechatProxyUrl(String(block.meta.replacementUrl)),
+          wechatUrl: String(block.meta.replacementUrl)
+        }
+      } 
+      // 双图恢复
+      else if (Array.isArray(block.meta?.replacementUrls)) {
+        block.meta.replacementUrls.forEach((url, i) => {
+          if (url) {
+            const placeholderId = `image_${imageCounter}_${i + 1}`
+            map[placeholderId] = {
+              previewUrl: getWechatProxyUrl(String(url)),
+              wechatUrl: String(url)
+            }
+          }
+        })
+      }
+      
+      // 这里的 imageCounter 必须与 styleAssembler 逻辑完全一致
+      imageCounter += countImages(block)
+    })
+  }
+  
+  traverse(contentBlocks.value)
+  imageReplacements.value = map
+  step3Logger.debug('已从内容块元数据恢复图片替换关系:', Object.keys(map).length, '项')
+}
+
 // V2: 处理微信图片选择 - 直接替换，无需确认
 const handleImageSelect = (image: WechatImage): void => {
   const placeholderId = selectedPlaceholder.value
@@ -536,6 +574,11 @@ const handleImageSelect = (image: WechatImage): void => {
 
   // 清除选择状态
   selectedPlaceholder.value = null
+
+  // 🚀 自动保存：确保替换关系持久化到后端
+  saveDraft().catch(e => {
+    step3Logger.error('自动保存替换记录失败:', e)
+  })
 }
 
 // 监听路由变化，切换文章时通过清空 store 防止图片串台
@@ -598,7 +641,7 @@ watch(wechatImages, async (newImages) => {
 
   step3Logger.debug('自动保存图片到后端:', persistentImages.length)
   try {
-    await articleApi.updateStep3(articleId, persistentImages)
+    await articleApi.updateStep3(articleId, persistentImages as unknown as { [key: string]: unknown }[])
   } catch (e) {
     step3Logger.error('保存图片失败', e)
   }
@@ -657,10 +700,10 @@ onMounted(async () => {
   // 确保 store 中的步骤与当前路由匹配
   appStore.currentStep = 3
 
-  // 🚀 关键逻辑：如果是通过 URL 直接访问已保存的文章，需要从后端加载
-  // 此时应该先重置状态，防止残留数据污染
-  if (articleId) {
-    // 只有在有 articleId 时才重置状态
+  // 🚀 优化：只有当路由 ID 与当前已加载的文章 ID 不符时，才从后端重新加载
+  // 这样如果从 Dashboard 点击跳转过来，由于数据已在 Dashboard 加载好，这里就不会重置和重传了
+  if (articleId && appStore.currentArticleId !== articleId) {
+    step3Logger.debug('检测到直接访问或切换文章，从后端加载数据:', articleId)
     appStore.resetApp()
     
     try {
@@ -697,24 +740,34 @@ onMounted(async () => {
 
         if (article.content) {
           try {
-            const savedBlocks = JSON.parse(article.content) as SavedBlock[]
+            const savedBlocks = JSON.parse(article.content)
             if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
-              const restoredBlocks = savedBlocks.map((block: SavedBlock, index: number) => ({
-                id: `restored_${index}_${Date.now()}`,
-                type: (block.type || 'body') as BlockType,
-                text: block.text || '',
-                source: 'restored',
-                meta: block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}
-              }))
-
+              const restoreBlocksRecursively = (blocks: any[]): ContentBlock[] => {
+                return blocks.map((block: any) => ({
+                  id: block.id || `restored_${Math.random().toString(36).substr(2, 9)}`,
+                  type: (block.type || 'body') as BlockType,
+                  text: block.text || '',
+                  source: 'restored',
+                  meta: block.meta || (block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}),
+                  children: block.children ? restoreBlocksRecursively(block.children) : undefined
+                }))
+              }
+              const restoredBlocks = restoreBlocksRecursively(savedBlocks)
               appStore.setContentBlocks(restoredBlocks)
 
-              const rawText = savedBlocks.map((b: SavedBlock) => b.text || '').join('\n\n')
+              const collectTextRecursively = (blocks: ContentBlock[]): string => {
+                return blocks.map(b => {
+                  const currentText = b.text || ''
+                  const childrenText = b.children ? collectTextRecursively(b.children) : ''
+                  return currentText + (childrenText ? '\n' + childrenText : '')
+                }).join('\n\n')
+              }
+              const rawText = collectTextRecursively(restoredBlocks)
               appStore.setRawText(rawText)
             } else {
               appStore.setRawText(article.content)
             }
-          } catch (parseError) {
+          } catch {
             appStore.setRawText(article.content)
           }
         }
@@ -757,6 +810,9 @@ onMounted(async () => {
   }
 
 // 移除样式强制检查，允许使用默认兜底样式
+  
+  // 🚀 核心恢复：在渲染前从 Block Meta 恢复替换关系
+  restoreImageReplacementsFromBlocks()
 
   await regenerate()
 
@@ -926,7 +982,7 @@ const getOutputHtml = (): string => {
   let html = finalHtml.value
   
   // 1. 全局还原微信 URL (将代理链接转回原始链接)
-  html = html.replace(/src="([^"]+)"/g, (match, src) => {
+  html = html.replace(/src="([^"]+)"/g, (_match, src) => {
       // 解码 HTML 实体 (如果有)
       const cleanSrc = src.replace(/&amp;/g, '&')
       const original = restoreWechatUrl(cleanSrc)
@@ -1171,15 +1227,25 @@ const saveDraft = async (): Promise<boolean> => {
       return false
     }
 
-    // 清理内容块，移除编辑器内部字段
-    const cleanedBlocks = contentBlocks.value.map(block => ({
-      type: block.type,
-      text: block.text || '',
-      ...(block.meta?.aiImageUrl ? { aiImageUrl: block.meta.aiImageUrl } : {})
-    }))
+    // 🚀 核心修复：递归清理内容块，保留嵌套结构和元数据
+    const cleanBlocksRecursively = (blocks: ContentBlock[]): any[] => {
+      return blocks.map(block => ({
+          id: block.id,
+          type: block.type,
+          text: block.text || '',
+          meta: block.meta || {},
+          children: block.children ? cleanBlocksRecursively(block.children) : undefined
+      }))
+    }
 
+    const cleanedBlocks = cleanBlocksRecursively(contentBlocks.value)
     const cleanContent = JSON.stringify(cleanedBlocks)
-    const articleId = appStore.currentArticleId
+    let articleId = appStore.currentArticleId
+    // 🛡️ 安全检查：防止 invalid ID 导致请求失败
+    if (articleId === 'undefined' || articleId === 'null') {
+      articleId = null
+      appStore.setCurrentArticleId(null)
+    }
 
     step3Logger.debug('当前文章ID:', articleId)
     step3Logger.debug('清理后的内容块数量:', cleanedBlocks.length)
@@ -1232,23 +1298,23 @@ const saveDraft = async (): Promise<boolean> => {
         }))
       }
 
-      // 3. 保存样式配置与元数据
-      const fullConfig = {
-        ...appStore.styleConfig,
-        metadata: {
-          editorInput: appStore.editorInput,
-          teamName: appStore.teamName,
-          sourceAccount: appStore.sourceAccount,
-          copywriterNames: appStore.copywriterNames,
-          plannerNames: appStore.plannerNames,
-          editorNames: appStore.editorNames
-        }
+      // 3. 保存样式配置与元数据 (注意: 后端 DTO 期望 config 和 metadata 是两个独立的顶层字段)
+      const metadata = {
+        editorInput: appStore.editorInput,
+        teamName: appStore.teamName,
+        sourceAccount: appStore.sourceAccount,
+        copywriterNames: appStore.copywriterNames,
+        plannerNames: appStore.plannerNames,
+        editorNames: appStore.editorNames
       }
 
       saveTasks.push(fetch(`/api/articles/${articleId}/config`, {
         method: 'PUT',
         headers: buildAuthHeaders(),
-        body: JSON.stringify({ config: fullConfig })
+        body: JSON.stringify({ 
+          config: appStore.styleConfig,
+          metadata: metadata
+        })
       }).then(r => {
         if (!r.ok) throw new Error('保存配置失败')
         return 'config'
@@ -1264,6 +1330,7 @@ const saveDraft = async (): Promise<boolean> => {
       const title = contentBlocks.value.find(b => b.type === 'title')?.text || '未命名文章'
       
       // Step 1: 创建文章（只传 title 和 config）
+      step3Logger.debug('正在创建新文章...', { title })
       const createResponse = await fetch('/api/articles', {
         method: 'POST',
         headers: buildAuthHeaders(),
@@ -1279,9 +1346,17 @@ const saveDraft = async (): Promise<boolean> => {
       }
       
       const data = await createResponse.json()
+      step3Logger.debug('创建文章响应:', data)
+
+      if (!data || !data.id) {
+        step3Logger.error('创建文章响应缺少 ID', data)
+        throw new Error('创建文章失败: 服务器未返回有效的文章 ID')
+      }
+
       appStore.setCurrentArticleId(data.id)
       
       // Step 2: Step3 内容保存（设置状态为 ADJUSTED）
+      step3Logger.debug('正在保存 Step3 内容...', { id: data.id })
       const updateResponse = await fetch(`/api/articles/${data.id}/step3-content`, {
         method: 'PUT',
         headers: buildAuthHeaders(),
@@ -1290,6 +1365,7 @@ const saveDraft = async (): Promise<boolean> => {
       
       if (!updateResponse.ok) {
         const errorData = await updateResponse.json().catch(() => ({}))
+        step3Logger.error('保存 Step3 内容失败', errorData)
         throw new Error(errorData.message || '保存Step3内容失败')
       }
 
