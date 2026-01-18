@@ -2,16 +2,17 @@
  * 第三方微信公众号授权服务
  * 用于获得用户授权，让用户可以发布内容到自己的公众号
  */
-import { tokenStorage } from '../utils/tokenStorage';
+import { tokenStorage } from '../utils/tokenStorage'
+import type { DraftArticle } from '../types/wechat';
 
 export class ThirdPartyWechatAuth {
   private static instance: ThirdPartyWechatAuth;
   private openPlatformAppId: string;
   private callbackUrl: string;
-  private storeAuthCallback!: (authData: any) => void;
+  private storeAuthCallback!: (authData: WechatAuthInfo | { appId: string; removed: true; removedAt: number }) => void;
 
   constructor() {
-    const env = (import.meta as any)?.env || {};
+    const env = (import.meta as { env?: ImportMetaEnv }).env || {} as ImportMetaEnv;
     this.openPlatformAppId = env.VITE_WECHAT_OPEN_APP_ID || '';
     const origin =
       (typeof window !== 'undefined' && window.location?.origin) || '';
@@ -30,8 +31,8 @@ export class ThirdPartyWechatAuth {
    * 初始化存储回调
    */
   initialize(storageCallbacks: {
-    storeAuth: (authData: any) => void;
-    getAuth: (appId: string) => any;
+    storeAuth: (authData: WechatAuthInfo | { appId: string; removed: true; removedAt: number }) => void;
+    getAuth: (appId: string) => WechatAuthInfo | null;
   }) {
     this.storeAuthCallback = storageCallbacks.storeAuth;
   }
@@ -95,7 +96,7 @@ export class ThirdPartyWechatAuth {
   /**
    * 处理授权回调
    */
-  async handleAuthCallback(code: string, state: string): Promise<any> {
+  async handleAuthCallback(code: string, state: string): Promise<WechatAuthInfo> {
     try {
       // 验证state参数（回调场景可能为空）
       if (state && !this.validateState(state)) {
@@ -150,7 +151,7 @@ export class ThirdPartyWechatAuth {
   /**
    * 发布内容到用户授权的公众号
    */
-  async publishToWechat(appId: string, content: any): Promise<any> {
+  async publishToWechat(appId: string, content: DraftArticle): Promise<{ media_id?: string; draft_id?: string }> {
     try {
       // 获取授权信息
       const authInfo = await this.getAuthInfo(appId);
@@ -394,14 +395,15 @@ export class ThirdPartyWechatAuth {
   }
 }
 
-interface WechatAuthInfo {
+export interface WechatAuthInfo {
+  appId: string;                   // 公众号 AppID
   authorizer_appid: string;        // 授权公众号的AppID
   authorizer_access_token: string;  // 授权公众号的access_token
   authorizer_refresh_token: string; // 授权公众号的refresh_token
   expires_in: number;              // access_token有效期（秒）
   nick_name: string;                // 授权公众号的昵称
   head_img: string;                // 授权公众号的头像
-  func_info: any;                 // 授权的公众号功能列表
+  func_info: number[];             // 授权的公众号功能列表
   authorizedAt: number;             // 授权时间
   lastUsed?: number;               // 最后使用时间
 }

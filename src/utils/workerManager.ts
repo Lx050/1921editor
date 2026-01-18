@@ -3,6 +3,8 @@
  * 专门管理DOCX等大文件处理的Worker
  */
 
+import { loadMammoth } from './mammothLoader'
+
 export interface WorkerTask {
   id: string
   type: 'PROCESS_DOCX' | 'EXTRACT_IMAGES' | 'PROCESS_WITH_IMAGES'
@@ -215,8 +217,7 @@ export class DocxWorkerManager {
     console.warn('[DocxWorkerManager] 降级到主线程处理:', task.id)
 
     try {
-      // 动态导入mammoth（主线程）
-      const mammoth = await import('mammoth')
+      const mammoth = await loadMammoth()
 
       // 模拟进度
       this.handleProgress(task.id, {

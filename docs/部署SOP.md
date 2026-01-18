@@ -7,7 +7,7 @@
 ## 服务器信息
 
 - **服务器地址**: 101.42.158.32
-- **SSH密钥**: `c:/Users/Lx050/.ssh/editor135.pem`
+- **SSH密钥**: `C:/Users/Lx050/Desktop/排版/paiban.pem`
 - **用户**: root
 - **项目目录**: `/root/paiban`
 - **服务运行目录**: Docker 容器内 Nginx
@@ -59,7 +59,7 @@ tar -czf paiban.tar.gz \
   .
 
 # 💡 技巧：打包后检查大小，若超过 50MB 说明排除了多余资源（如 uploads）
-scp -i "c:/Users/Lx050/.ssh/editor135.pem" paiban.tar.gz root@101.42.158.32:/root/
+scp -i "C:/Users/Lx050/Desktop/排版/paiban.pem" paiban.tar.gz root@101.42.158.32:/root/
 ```
 
 服务器解压与覆盖：
@@ -172,14 +172,14 @@ npm run build
 
 ```bash
 # 使用scp上传dist目录到服务器
-scp -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" -r src/dist root@101.42.158.32:/root/layout-engine/
+scp -o StrictHostKeyChecking=no -i "C:/Users/Lx050/Desktop/排版/paiban.pem" -r src/dist root@101.42.158.32:/root/layout-engine/
 ```
 
 ### 3. 更新服务器文件
 
 ```bash
 # 通过SSH连接服务器
-ssh -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" root@101.42.158.32
+ssh -o StrictHostKeyChecking=no -i "C:/Users/Lx050/Desktop/排版/paiban.pem" root@101.42.158.32
 
 # 清理旧文件并复制新文件
 rm -rf /var/www/layout-engine/*
@@ -270,13 +270,13 @@ pm2 update
 npm run build
 
 # 2. 上传dist
-scp -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" -r src/dist root@101.42.158.32:/root/layout-engine/
+scp -o StrictHostKeyChecking=no -i "C:/Users/Lx050/Desktop/排版/paiban.pem" -r src/dist root@101.42.158.32:/root/layout-engine/
 
 # 3. 更新服务器文件（一步到位）
-ssh -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" root@101.42.158.32 "rm -rf /var/www/layout-engine/* && cp -r /root/layout-engine/dist/* /var/www/layout-engine/ && chown -R nginx:nginx /var/www/layout-engine/"
+ssh -o StrictHostKeyChecking=no -i "C:/Users/Lx050/Desktop/排版/paiban.pem" root@101.42.158.32 "rm -rf /var/www/layout-engine/* && cp -r /root/layout-engine/dist/* /var/www/layout-engine/ && chown -R nginx:nginx /var/www/layout-engine/"
 
 # 4. 重启服务
-ssh -o StrictHostKeyChecking=no -i "c:/Users/Lx050/.ssh/editor135.pem" root@101.42.158.32 "pm2 restart layout-engine"
+ssh -o StrictHostKeyChecking=no -i "C:/Users/Lx050/Desktop/排版/paiban.pem" root@101.42.158.32 "pm2 restart layout-engine"
 ```
 
 ## 注意事项

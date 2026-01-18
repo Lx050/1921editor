@@ -10,18 +10,38 @@ export interface TenantInfo {
     isDefault?: boolean
 }
 
+export interface UserInfo {
+    id: string
+    email: string
+    name?: string
+    displayName?: string
+    role?: 'ADMIN' | 'USER'
+    tenantId?: string
+    [key: string]: unknown
+}
+
+const readStorage = <T>(key: string, fallback: T): T => {
+    const raw = localStorage.getItem(key)
+    if (!raw) return fallback
+    try {
+        return JSON.parse(raw) as T
+    } catch {
+        return fallback
+    }
+}
+
 export const useUserStore = defineStore('user', () => {
     // 🔒 使用安全的 token 存储
     const token = ref(tokenStorage.getToken() || '')
-    const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
+    const userInfo = ref<UserInfo | null>(readStorage<UserInfo | null>('userInfo', null))
 
     // 🏢 多租户支持
     const currentTenant = ref<TenantInfo | null>(
-        JSON.parse(localStorage.getItem('currentTenant') || 'null')
+        readStorage<TenantInfo | null>('currentTenant', null)
     )
 
     const tenants = ref<TenantInfo[]>(
-        JSON.parse(localStorage.getItem('tenants') || '[]')
+        readStorage<TenantInfo[]>('tenants', [])
     )
 
     const isLoggedIn = computed(() => !!token.value && tokenStorage.isTokenValid(token.value))
@@ -38,7 +58,7 @@ export const useUserStore = defineStore('user', () => {
         tokenStorage.setToken(newToken)
     }
 
-    const setUserInfo = (info: any) => {
+    const setUserInfo = (info: UserInfo) => {
         userInfo.value = info
         // 注意：用户信息不是敏感数据，可以继续使用 localStorage
         // 但在生产环境中应考虑加密存储

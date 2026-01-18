@@ -172,7 +172,8 @@ const submitRequest = async () => {
     showModal.value = false
   } catch (error: unknown) {
     console.error('请求失败:', error)
-    toast.error(error.response?.data?.message || '发送失败，请稍后重试')
+    const err = error as { response?: { data?: { message?: string } } }
+    toast.error(err.response?.data?.message || '发送失败，请稍后重试')
   } finally {
     loading.value = false
   }

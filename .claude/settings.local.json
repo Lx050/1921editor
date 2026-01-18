@@ -97,7 +97,14 @@
       "Bash(ls:*)",
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(ssh:*)",
+      "Bash(npx madge:*)",
+      "Bash(tar:*)",
+      "Bash(scp:*)",
+      "Bash(curl:*)",
+      "Bash(grep:*)"
     ]
   }
 }

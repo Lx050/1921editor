@@ -75,25 +75,25 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         tokenStorage.clearAuth()
         if (window.ElMessage) {
-          window.ElMessage.warning('Unauthorized request')
+          (window.ElMessage as { warning: (msg: string) => void }).warning('Unauthorized request')
         }
       }
     } else if (error.response?.status === 403) {
       console.error('❌ 权限不足，拒绝访问')
       if (typeof window !== 'undefined' && window.ElMessage) {
-        window.ElMessage.error('您没有权限访问该资源')
+        (window.ElMessage as { error: (msg: string) => void }).error('您没有权限访问该资源')
       }
     } else if (error.response?.status === 404) {
       console.error('❌ 请求的资源不存在')
     } else if (error.response?.status >= 500) {
       console.error('❌ 服务器错误，请稍后重试')
       if (typeof window !== 'undefined' && window.ElMessage) {
-        window.ElMessage.error('服务器错误，请稍后重试')
+        (window.ElMessage as { error: (msg: string) => void }).error('服务器错误，请稍后重试')
       }
     } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
       console.error('⏱️ 请求超时，请检查网络连接')
       if (typeof window !== 'undefined' && window.ElMessage) {
-        window.ElMessage.error('请求超时，请检查网络连接')
+        (window.ElMessage as { error: (msg: string) => void }).error('请求超时，请检查网络连接')
       }
     }
 

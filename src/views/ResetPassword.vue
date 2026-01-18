@@ -32,7 +32,7 @@
               v-model="formData.newPassword"
               type="password"
               required
-              placeholder="至少8位，包含大小写字母和数字"
+              placeholder="至少8位，包含字母和数字"
               class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-black placeholder:text-gray-500"
             />
           </div>
@@ -122,11 +122,10 @@ const handleReset = async () => {
 
   if (
     formData.value.newPassword.length < 8 ||
-    !/[A-Z]/.test(formData.value.newPassword) ||
-    !/[a-z]/.test(formData.value.newPassword) ||
+    !/[A-Za-z]/.test(formData.value.newPassword) ||
     !/[0-9]/.test(formData.value.newPassword)
   ) {
-    errorMessage.value = '密码必须至少8位，并包含大小写字母和数字'
+    errorMessage.value = '密码必须至少8位，并包含字母和数字'
     return
   }
 
@@ -137,7 +136,8 @@ const handleReset = async () => {
     toast.success('密码重置成功')
   } catch (error: unknown) {
     console.error('重置失败:', error)
-    errorMessage.value = error.response?.data?.message || '重置失败，请稍后重试'
+    const err = error as { response?: { data?: { message?: string } } }
+    errorMessage.value = err.response?.data?.message || '重置失败，请稍后重试'
   } finally {
     loading.value = false
   }

@@ -271,7 +271,8 @@ export class CriticalCSS {
 // 自动初始化（可选）
 if (typeof window !== 'undefined') {
   // 可以通过设置全局变量控制是否自动初始化
-  if ((window as any).__ENABLE_CRITICAL_CSS__ !== false) {
+  const windowWithFlag = window as Window & { __ENABLE_CRITICAL_CSS__?: boolean }
+  if (windowWithFlag.__ENABLE_CRITICAL_CSS__ !== false) {
     // 延迟初始化，确保不影响页面加载
     if (document.readyState === 'complete') {
       CriticalCSS.init()

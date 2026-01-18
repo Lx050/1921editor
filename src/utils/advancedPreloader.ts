@@ -27,6 +27,16 @@ export interface PreloadConfig {
   cacheFirst?: boolean
 }
 
+type NetworkInformationLike = {
+  saveData?: boolean
+  effectiveType?: string
+  addEventListener?: (type: 'change', listener: () => void) => void
+}
+
+type NavigatorWithConnection = Navigator & {
+  connection?: NetworkInformationLike
+}
+
 export class AdvancedPreloader {
   private static instance: AdvancedPreloader
   private config: Required<PreloadConfig>
@@ -337,19 +347,23 @@ export class AdvancedPreloader {
   private setupInteractionListeners(): void {
     // 监听网络状态
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection
-      const updateNetworkStrategy = () => {
-        // 根据网络状况调整策略
-        if (connection.saveData || connection.effectiveType === 'slow-2g') {
-          this.queue.forEach(resource => {
-            if (resource.strategy.priority === 'low') {
-              resource.strategy.type = 'idle'
-            }
-          })
+      const connection = (navigator as NavigatorWithConnection).connection
+      if (connection) {
+        const updateNetworkStrategy = () => {
+          // 根据网络状况调整策略
+          if (connection.saveData || connection.effectiveType === 'slow-2g') {
+            this.queue.forEach(resource => {
+              if (resource.strategy.priority === 'low') {
+                resource.strategy.type = 'idle'
+              }
+            })
+          }
+        }
+
+        if (typeof connection.addEventListener === 'function') {
+          connection.addEventListener('change', updateNetworkStrategy)
         }
       }
-
-      connection.addEventListener('change', updateNetworkStrategy)
     }
 
     // 监听页面可见性

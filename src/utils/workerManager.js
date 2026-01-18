@@ -42,11 +42,8 @@ class WorkerManager {
 
     worker.onerror = (error) => {
       console.error('Worker error:', error)
-      const task = this.activeTasks.get(id)
-      if (task) {
-        this.activeTasks.delete(id)
-        task.reject(error)
-      }
+      // Note: worker.onerror doesn't provide task ID, so we can't remove specific task
+      // The task will timeout if not completed
     }
 
     this.workers.set(workerName, worker)

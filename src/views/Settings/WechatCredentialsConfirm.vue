@@ -95,7 +95,8 @@ onMounted(async () => {
     }
   } catch (error: unknown) {
     console.error('确认失败:', error)
-    errorMessage.value = error.response?.data?.message || '确认链接无效或已过期'
+    const err = error as { response?: { data?: { message?: string } } }
+    errorMessage.value = err.response?.data?.message || '确认链接无效或已过期'
   } finally {
     loading.value = false
   }

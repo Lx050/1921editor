@@ -324,7 +324,7 @@ function isLikelyTitle(text: string, _index: number, _allBlocks: string[]): bool
   }
 
   // 数字编号
-  if (/^\d+[\.、]/.test(text)) {
+  if (/^\d+[.、]/.test(text)) {
     return true
   }
 

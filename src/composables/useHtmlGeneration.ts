@@ -77,7 +77,7 @@ export function useHtmlGeneration(
     for (const [placeholderId, urls] of Object.entries(imageReplacements.value) as Array<[string, ImageReplacement]>) {
       const imageUrl = urls.previewUrl
       const imgTagRegex = new RegExp(`<img([^>]*data-placeholder="${placeholderId}"[^>]*)>`, 'g')
-      html = html.replace(imgTagRegex, (match, attributes) => {
+      html = html.replace(imgTagRegex, (_match, attributes) => {
         // void match - 未使用
         const newAttributes = attributes.replace(/src="[^"]*"/, `src="${imageUrl}"`)
         return `<img${newAttributes}>`
@@ -107,7 +107,7 @@ export function useHtmlGeneration(
     for (const [placeholderId, urls] of Object.entries(imageReplacements.value) as Array<[string, ImageReplacement]>) {
       const imageUrl = urls.wechatUrl || urls.previewUrl
       const imgTagRegex = new RegExp(`<img([^>]*data-placeholder="${placeholderId}"[^>]*)>`, 'g')
-      html = html.replace(imgTagRegex, (match, attributes) => {
+      html = html.replace(imgTagRegex, (_match, attributes) => {
         // void match - 未使用
         const newAttributes = attributes.replace(/src="[^"]*"/, `src="${imageUrl}"`)
         return `<img${newAttributes}>`

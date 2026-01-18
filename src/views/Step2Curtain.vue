@@ -54,8 +54,8 @@
       </div>
 
       <!-- 幕布工作区 - 独立滚动，底部留出工具栏空间 -->
-      <div class="flex-1 overflow-y-auto px-6 pb-28">
-        <div class="space-y-3 pb-4">
+      <div class="flex-1 overflow-y-auto px-8 pb-28 scroll-container">
+        <div class="space-y-6 pb-4 max-w-4xl mx-auto">
           <!-- 顶层起始插入器 -->
           <div class="flex justify-center py-4">
             <LayoutInserter 
@@ -85,13 +85,15 @@
               @insertContainer="onInsertContainer"
               @openMerge="onOpenMerge"
               @move="onMoveBlock"
+              @flatten="onFlattenBlock"
             />
           </TransitionGroup>
         </div>
 
-        <div v-if="contentBlocks.length === 0" class="text-center py-12">
-          <div class="text-gray-400 text-lg mb-2">没有内容块</div>
-          <div class="text-gray-500">请返回上一步重新输入文本</div>
+        <div v-if="contentBlocks.length === 0" class="text-center py-20">
+          <div class="text-6xl mb-4">📝</div>
+          <div class="text-gray-500 text-lg font-medium mb-2">暂无内容</div>
+          <div class="text-gray-400 text-sm">请返回上一步输入文本，或点击上方 "+" 添加内容块</div>
         </div>
       </div>
     
@@ -230,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, type Ref } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, type Ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
@@ -239,12 +241,17 @@ import { getBlockTypeDisplayName } from '../utils/styleAssembler'
 import { uploadManager } from '../utils/uploadManager'
 import { extractArchive, isArchiveFile } from '../utils/archiveProcessor'
 import { convertHtmlToCustomFormat } from '../utils/docxConverter'
+import { loadMammoth } from '../utils/mammothLoader'
 import { createLogger } from '../utils/logger'
 import { findBlockRecursive, findParentBlock } from '../composables/useBlockFinder'
+import toast from '../composables/useToast'
+import confirm from '../composables/useConfirm'
 import StyleSelector from '../components/StyleSelector.vue'
 import UploadProgress from '../components/UploadProgress.vue'
 import ContentBlockItem from '../components/ContentBlockItem.vue'
-import type { ContentBlock, BlockType } from '../types'
+import LayoutInserter from '../components/LayoutInserter.vue'
+import { ArticleService } from '../services/articleService'
+import type { ContentBlock, BlockType, BlockTypeOption } from '../types'
 
 defineOptions({
   name: 'Step2Curtain'
@@ -305,12 +312,6 @@ const selectBlock = (blockId: string) => {
 }
 
 // 获取块类型选项
-interface BlockTypeOption {
-  value: string
-  label: string
-  icon: string
-}
-
 const getBlockTypeOptions = (): BlockTypeOption[] => {
   return [
     { value: 'title', label: '标题', icon: '📰' },
@@ -336,25 +337,25 @@ const onUpdateBlockText = (blockId: string, text: string) => {
 }
 
 // 插入文本
-const onInsertText = ({ index, type, id }: { index: number, type: string, id?: string }) => {
+const onInsertText = (payload: { index: number, type: string, id?: string }) => {
   const defaultTexts: Record<string, string> = {
     'title': '新的标题内容',
     'body': '新的正文内容，点击这里开始编辑...',
     'intro': '新的引言内容，点击这里开始编辑...',
     'outro': '新的结尾内容，点击这里开始编辑...'
   }
-  const defaultText = defaultTexts[type] || '新内容，点击编辑...'
-  appStore.insertTextBlock(index + 1, type as BlockType, defaultText, id)
+  const defaultText = defaultTexts[payload.type] || '新内容，点击编辑...'
+  appStore.insertTextBlock(payload.index + 1, payload.type as BlockType, defaultText, payload.id)
 }
 
 // 插入图片
-const onInsertImage = ({ index, type, id }: { index: number, type: string, id?: string }) => {
-  appStore.insertImageBlock(index + 1, type as 'single' | 'single_caption' | 'double' | 'double_caption', id)
+const onInsertImage = (payload: { index: number, type: string, id?: string }) => {
+  appStore.insertImageBlock(payload.index + 1, payload.type as 'single' | 'single_caption' | 'double' | 'double_caption', payload.id)
 }
 
 // 插入容器
-const onInsertContainer = (index: number, id?: string) => {
-  appStore.insertContainerBlock(index + 1, id)
+const onInsertContainer = (payload: { index: number, id?: string }) => {
+  appStore.insertContainerBlock(payload.index + 1, payload.id)
 }
 
 // 三方文章/新文章合并逻辑
@@ -363,12 +364,8 @@ const mergeContent = ref('')
 const mergeAsGroup = ref(configStore.mode === 'winter_practice')
 const mergePosition = ref<{ index: number, id?: string }>({ index: -1 })
 
-const onOpenMerge = (params: { index: number, id?: string } | number): void => {
-  if (typeof params === 'number') {
-    mergePosition.value = { index: params }
-  } else {
-    mergePosition.value = params
-  }
+const onOpenMerge = (payload: { index: number, id?: string }): void => {
+  mergePosition.value = payload
   mergeContent.value = ''
   mergeErrorMessage.value = ''
   isMergeModalOpen.value = true
@@ -420,7 +417,7 @@ const processMergeFile = async (file: File) => {
       if (result.docxFiles.length > 0) {
         await processMergeDocx(result.docxFiles[0])
       } else if (result.imageFiles.length > 0) {
-        alert(`已成功导入 ${result.imageFiles.length} 张图片到媒体库`)
+        toast.success(`已成功导入 ${result.imageFiles.length} 张图片到媒体库`)
       } else {
         mergeErrorMessage.value = '压缩包中未找到图片或 Word 文档'
       }
@@ -440,7 +437,7 @@ const processMergeFile = async (file: File) => {
 
 const processMergeDocx = async (file: File | Blob): Promise<void> => {
   try {
-    const { default: mammoth } = await import('mammoth')
+    const mammoth = await loadMammoth()
     const arrayBuffer = await file.arrayBuffer()
 
     // 配置 mammoth 选项 (与 Step 1 保持一致)
@@ -488,15 +485,29 @@ const handleMerge = (): void => {
     // 清空并关闭
     mergeContent.value = ''
     isMergeModalOpen.value = false
-    alert(`成功合并 ${parsedBlocks.length} 个内容块`)
+    toast.success(`成功合并 ${parsedBlocks.length} 个内容块`)
   }
 }
 
 // 移动块
-const onMoveBlock = (params: { blockId: string, targetId: string, position: 'top' | 'bottom' | 'inside' }): void => {
+const onMoveBlock = async (params: { blockId: string, targetId: string, position: 'top' | 'bottom' | 'inside' }): Promise<void> => {
+  step2Logger.info('[拖拽] 移动块:', {
+    blockId: params.blockId,
+    targetId: params.targetId,
+    position: params.position,
+    blockIdType: typeof params.blockId,
+    targetIdType: typeof params.targetId
+  })
+
   // 检测嵌套容器逻辑
   const blockToMove = appStore.contentBlocks.find(b => b.id === params.blockId) ||
                       findBlockRecursive(appStore.contentBlocks, params.blockId)
+
+  step2Logger.info('[拖拽] 找到要移动的块:', {
+    found: !!blockToMove,
+    type: blockToMove?.type,
+    id: blockToMove?.id
+  })
 
   if (blockToMove?.type === 'container') {
     let isNested = false
@@ -516,27 +527,52 @@ const onMoveBlock = (params: { blockId: string, targetId: string, position: 'top
     }
 
     if (isNested) {
-      const confirmFlatten = window.confirm('检测到嵌套容器，是否拆散嵌套并将其内容放入目标容器？\n\n点击"确定"将内容移入，"取消"则直接嵌套。')
+      const confirmFlatten = await confirm({
+        title: '嵌套容器检测',
+        message: '检测到嵌套容器，是否拆散嵌套并将其内容放入目标容器？',
+        confirmText: '拆散并放入',
+        cancelText: '直接嵌套',
+        type: 'warning'
+      })
       appStore.moveBlock(params.blockId, params.targetId, params.position, { flatten: confirmFlatten })
       return
     }
   }
 
+  step2Logger.info('[拖拽] 执行 moveBlock')
   appStore.moveBlock(params.blockId, params.targetId, params.position)
+  step2Logger.info('[拖拽] 移动完成，当前块数量:', appStore.contentBlocks.length)
 }
 
 // 确认删除块 - 防止误删除
-const confirmDeleteBlock = (blockId: string): void => {
+const confirmDeleteBlock = async (blockId: string): Promise<void> => {
   const block = findBlockRecursive(contentBlocks.value, blockId)
   if (!block) return
 
   const blockType = getBlockTypeDisplayName(block.type)
 
-  if (confirm(`确定要删除这个${blockType}吗？\n\n此操作不可恢复。`)) {
+  const confirmed = await confirm({
+    title: '删除内容块',
+    message: `确定要删除这个${blockType}吗？\n\n此操作不可恢复。`,
+    confirmText: '删除',
+    cancelText: '取消',
+    type: 'danger'
+  })
+
+  if (confirmed) {
     appStore.deleteBlock(blockId)
     if (selectedBlockId.value === blockId) {
       selectedBlockId.value = null
     }
+  }
+}
+
+// 解散嵌套容器
+const onFlattenBlock = (containerId: string): void => {
+  appStore.flattenBlock(containerId)
+  // 如果选中的是被解散的容器，清除选择状态
+  if (selectedBlockId.value === containerId) {
+    selectedBlockId.value = null
   }
 }
 
@@ -546,8 +582,14 @@ const goToPreviousStep = (): void => {
   router.push('/step1')
 }
 
-const goToNextStep = (): void => {
+const goToNextStep = async (): Promise<void> => {
   if (contentBlocks.value.length > 0) {
+    // V2: 保存当前进度到后端
+    try {
+      await ArticleService.saveContentAndImages()
+    } catch (e) {
+      console.error('自动保存失败:', e)
+    }
     router.push('/step3')
   }
 }
@@ -580,6 +622,88 @@ onMounted(() => {
   if (contentBlocks.value.length === 0 && !appStore.rawText) {
     router.push('/step1')
   }
+
+  // 拖拽自动滚动功能
+  let scrollInterval: number | null = null
+  let isDragging = false
+  let scrollContainer: HTMLElement | null = null
+  let currentScrollDirection: 'up' | 'down' | null = null
+
+  const handleDragStart = () => {
+    isDragging = true
+    // 缓存滚动容器引用
+    scrollContainer = document.querySelector('.scroll-container') as HTMLElement
+  }
+
+  const handleDragEnd = () => {
+    isDragging = false
+    currentScrollDirection = null
+    if (scrollInterval !== null) {
+      clearInterval(scrollInterval)
+      scrollInterval = null
+    }
+  }
+
+  const handleDragOver = (e: DragEvent) => {
+    if (!isDragging || !scrollContainer) return
+
+    const rect = scrollContainer.getBoundingClientRect()
+    const threshold = 80 // 距离边缘多少像素开始滚动
+    const scrollSpeed = 12 // 滚动速度（稍微加快）
+
+    const distToTop = e.clientY - rect.top
+    const distToBottom = rect.bottom - e.clientY
+
+    let newDirection: 'up' | 'down' | null = null
+
+    // 距离顶部
+    if (distToTop < threshold) {
+      newDirection = 'up'
+    }
+    // 距离底部
+    else if (distToBottom < threshold) {
+      newDirection = 'down'
+    }
+
+    // 只在方向改变时更新定时器
+    if (newDirection !== currentScrollDirection) {
+      // 清除旧定时器
+      if (scrollInterval !== null) {
+        clearInterval(scrollInterval)
+        scrollInterval = null
+      }
+
+      currentScrollDirection = newDirection
+
+      // 创建新定时器
+      if (newDirection) {
+        const delta = newDirection === 'up' ? -scrollSpeed : scrollSpeed
+        scrollInterval = window.setInterval(() => {
+          if (scrollContainer) {
+            scrollContainer.scrollTop += delta
+          }
+        }, 16)
+      }
+    }
+  }
+
+  // 监听自定义事件（因为 ContentBlockItem 的 dragstart 被 stopPropagation 阻止了冒泡）
+  window.addEventListener('contentblock-drag-start', handleDragStart)
+  document.addEventListener('dragend', handleDragEnd)
+  document.addEventListener('dragover', handleDragOver)
+
+  // 清理函数
+  const cleanup = () => {
+    window.removeEventListener('contentblock-drag-start', handleDragStart)
+    document.removeEventListener('dragend', handleDragEnd)
+    document.removeEventListener('dragover', handleDragOver)
+    if (scrollInterval !== null) {
+      clearInterval(scrollInterval)
+    }
+  }
+
+  // 在组件卸载时清理
+  onUnmounted(cleanup)
 })
 
 // AI 生成图像 (调用后端 - 火山引擎豆包)
@@ -621,7 +745,7 @@ const generateAiImage = async (block: ContentBlock): Promise<void> => {
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : '未知错误'
     step2Logger.error('Volcengine Generation Failed:', e)
-    alert('火山引擎生成失败: ' + message)
+    toast.error('火山引擎生成失败: ' + message)
   } finally {
     generatingBlockId.value = null
   }

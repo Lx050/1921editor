@@ -59,7 +59,7 @@ export class AuthService {
     private tokenService: TokenService,
     private inviteCodeService: InviteCodeService,
     private tenantMembershipService: TenantMembershipService,
-  ) {}
+  ) { }
 
   private async resolveDefaultTenant(): Promise<Tenant | null> {
     const tenantById = await this.tenantRepository.findOne({
@@ -203,11 +203,18 @@ export class AuthService {
     }
 
     // 3. 检查邮箱是否已注册
-    const existingUser = await this.userRepository.findOne({
-      where: { email },
-    });
+    const existingUser = await this.userRepository.createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email })
+      .getOne();
 
     if (existingUser) {
+      // 检查已存在用户是否有密码（可能是通过第三方登录创建的旧账号）
+      if (!existingUser.password) {
+        this.logger.warn(`用户 ${email} 已存在但无密码，提示用户重置密码`);
+        throw new ConflictException('该邮箱已被注册，请使用"忘记密码"功能设置密码');
+      }
+
       const isPasswordValid = await this.passwordHashService.compare(
         password,
         existingUser.password,
@@ -418,33 +425,42 @@ export class AuthService {
 
     this.logger.log(`用户登录请求: ${email}`);
 
-    // 1. 查找用户
-    const user = await this.userRepository.findOne({
-      where: { email },
-      relations: ['tenant'],
-    });
+    // 1. 查找用户 (显式包含被默认排除的密码字段)
+    const user = await this.userRepository.createQueryBuilder('user')
+      .addSelect('user.password')
+      .leftJoinAndSelect('user.tenant', 'tenant')
+      .where('user.email = :email', { email })
+      .getOne();
 
     if (!user) {
       throw new UnauthorizedException('邮箱或密码错误');
     }
 
-    // 2. 验证密码
+    // 2. 验证密码（确保密码哈希存在）
+    if (!user.password) {
+      this.logger.warn(`用户 ${email} 没有设置密码，可能是通过第三方登录创建的账号`);
+      throw new UnauthorizedException('邮箱或密码错误');
+    }
+
     const isPasswordValid = await this.passwordHashService.compare(
       password,
       user.password,
     );
 
     if (!isPasswordValid) {
+      this.logger.warn(`用户 ${email} 密码验证失败`);
       throw new UnauthorizedException('邮箱或密码错误');
     }
 
     // 3. 检查用户状态
     if (!user.isActive) {
+      this.logger.warn(`用户 ${email} 账号已被禁用`);
       throw new UnauthorizedException('该账号已被禁用');
     }
 
     // 4. 检查邮箱验证状态（可选：是否强制验证）
     if (!user.emailVerified) {
+      this.logger.warn(`用户 ${email} 邮箱未验证`);
       throw new UnauthorizedException('请先验证邮箱');
     }
 
@@ -663,9 +679,10 @@ export class AuthService {
     this.logger.log(`用户修改密码: ${userId}`);
 
     // 1. 查找用户
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
+    const user = await this.userRepository.createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.id = :userId', { userId })
+      .getOne();
 
     if (!user) {
       throw new UnauthorizedException('用户不存在');

@@ -127,13 +127,15 @@ const handleLogin = async () => {
       email: response.user.email,
       name: response.user.name,
       displayName: response.user.displayName,
-      role: response.user.role,
+      role: response.user.role as 'ADMIN' | 'USER',
       tenantId: response.user.tenantId,
       emailVerified: response.user.emailVerified
     })
 
     // 保存租户信息 - tenant 在根对象或者 user 里（兼容处理）
-    const tenant = response.tenant || (response.user as any).tenant
+    type UserWithTenant = (typeof response)['user'] & { tenant?: (typeof response)['tenant'] }
+    const userWithTenant = response.user as UserWithTenant
+    const tenant = response.tenant || userWithTenant.tenant
     if (tenant) {
       userStore.setCurrentTenant({
         id: tenant.id,
@@ -153,7 +155,8 @@ const handleLogin = async () => {
     }
   } catch (error: unknown) {
     console.error('登录失败:', error)
-    errorMessage.value = error.response?.data?.message || '登录失败，请检查邮箱和密码'
+    const err = error as { response?: { data?: { message?: string } } }
+    errorMessage.value = err.response?.data?.message || '登录失败，请检查邮箱和密码'
   } finally {
     loading.value = false
   }

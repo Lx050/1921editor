@@ -3,6 +3,9 @@
     <!-- 全局 Toast 通知 -->
     <Toast />
 
+    <!-- 全局确认对话框 -->
+    <ConfirmDialog />
+
     <!-- 资源预加载器 -->
     <ResourcePreloader />
 
@@ -123,6 +126,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from './stores/appStore'
 import ResourcePreloader from './components/ResourcePreloader.vue'
 import Toast from './components/Toast.vue'
+import ConfirmDialog from './components/ConfirmDialog.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -83,7 +83,7 @@ export function useImageReplacement(
     for (const [placeholderId, urls] of Object.entries(imageReplacements.value) as Array<[string, ImageReplacement]>) {
       const imageUrl = useWechatUrl ? (urls.wechatUrl || urls.previewUrl) : urls.previewUrl
       const imgTagRegex = new RegExp(`<img([^>]*data-placeholder="${placeholderId}"[^>]*)>`, 'g')
-      result = result.replace(imgTagRegex, (match, attributes) => {
+      result = result.replace(imgTagRegex, (_match, attributes) => {
         // void match - 未使用
         const newAttributes = attributes.replace(/src="[^"]*"/, `src="${imageUrl}"`)
         return `<img${newAttributes}>`

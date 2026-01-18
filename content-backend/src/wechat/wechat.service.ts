@@ -26,7 +26,7 @@ export class WechatService {
     private authorizerRepository: Repository<WechatAuthorizer>,
     @InjectRepository(WechatPlatformConfig)
     private platformConfigRepository: Repository<WechatPlatformConfig>,
-  ) {}
+  ) { }
 
   private getComponentAppId(): string {
     return (

@@ -8,7 +8,7 @@ export const isLikelyHeading = (text: string): boolean => {
         trimmed.startsWith('##') || // 有标注
         trimmed.startsWith('#') || // 有标注
         /^第[一二三四五六七八九十\d]+[章节部分]/.test(trimmed) || // 章节标题
-        /^\d+[\.、]/.test(trimmed) || // 编号标题
+        /^\d+[.、]/.test(trimmed) || // 编号标题
         (trimmed.length < 30 && !trimmed.includes('，')) // 短且无逗号
     )
 }
@@ -213,7 +213,7 @@ export const convertHtmlToCustomFormat = (html: string): string => {
             case 'H2':
             case 'H3':
                 return `\n\n## ${content.trim()}\n\n`
-            case 'P':
+            case 'P': {
                 const className = el.className || ''
                 if (className.includes('caption')) {
                     if (isLikelyHeading(content)) {
@@ -224,6 +224,7 @@ export const convertHtmlToCustomFormat = (html: string): string => {
                 }
                 if (content.trim().startsWith('&')) return content
                 return `\n\n${content.trim()}\n\n`
+            }
             case 'IMG':
                 if (el.getAttribute('alt')?.startsWith('&')) {
                     return '\n\n' + el.getAttribute('alt') + '\n\n'

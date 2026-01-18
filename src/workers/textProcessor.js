@@ -74,7 +74,7 @@ async function processQueue() {
   if (isProcessing || processingQueue.length === 0) return
 
   isProcessing = true
-  const { id, data, resolve, reject } = processingQueue.shift()
+  const { data, resolve, reject } = processingQueue.shift()
 
   try {
     const result = await processText(data)
@@ -95,7 +95,7 @@ self.onmessage = function(event) {
   const { id, type, data } = event.data
 
   switch (type) {
-    case 'process-text':
+    case 'process-text': {
       // 使用 Promise 链处理
       const promise = new Promise((resolve, reject) => {
         processingQueue.push({ id, data, resolve, reject })
@@ -110,6 +110,7 @@ self.onmessage = function(event) {
           self.postMessage({ id, type: 'process-text-error', error: error.message })
         })
       break
+    }
 
     case 'clear-queue':
       processingQueue = []

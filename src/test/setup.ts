@@ -29,7 +29,7 @@ global.IntersectionObserver = class IntersectionObserver {
     return []
   }
   unobserve() {}
-} as any
+} as any // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -37,4 +37,4 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
   observe() {}
   unobserve() {}
-} as any
+} as any // eslint-disable-line @typescript-eslint/no-explicit-any

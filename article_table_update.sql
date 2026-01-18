@@ -1,1 +1,0 @@
-UPDATE tenants SET settings = jsonb_set(COALESCE(settings, '{}'), '{articleTable}', '{"appToken": "BVNSbP2B6aniprsQXuDcmOj2n4f", "tableId": "tbl8eCff6zjK5CDr", "tableUrl": "https://pcn0utfudhj3.feishu.cn/base/BVNSbP2B6aniprsQXuDcmOj2n4f?table=tbl8eCff6zjK5CDr"}') WHERE name = '西大青媒';

@@ -11,6 +11,14 @@ const MAX_CONCURRENT_UPLOADS = 2;
 const MAX_RETRY_COUNT = 3;         // 最大重试次数
 const RETRY_BASE_DELAY = 1000;     // 重试基础延迟（毫秒）
 
+type UploadError = Error & {
+    name?: string;
+    code?: string;
+    response?: {
+        status?: number;
+    };
+};
+
 /**
  * 上传任务接口
  */
@@ -149,7 +157,8 @@ export class UploadManager {
             const errorMessage = error instanceof Error ? error.message : '上传失败';
             console.error(`[Upload Manager] [ERROR] ${task.file.name} 失败: ${errorMessage}`);
 
-            const isCanceled = (error as any)?.name === 'CanceledError' || (error as any)?.code === 'ERR_CANCELED';
+            const uploadError = error as UploadError;
+            const isCanceled = uploadError.name === 'CanceledError' || uploadError.code === 'ERR_CANCELED';
 
             if (isCanceled) {
                 task.status = 'failed';
@@ -163,7 +172,7 @@ export class UploadManager {
                     file: task.file,
                 };
             } else {
-                const statusCode = (error as any)?.response?.status;
+                const statusCode = uploadError.response?.status;
                 const nonRetryable = statusCode === 401 || statusCode === 403 || statusCode === 429 ||
                     errorMessage.includes('未授权') || errorMessage.includes('Unauthorized');
 

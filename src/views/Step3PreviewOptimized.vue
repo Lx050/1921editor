@@ -173,7 +173,7 @@ const handlePlaceholderClick = (placeholder) => {
   selectedPlaceholder.value = placeholder
 }
 
-const handleImageSelect = (image, placeholder) => {
+const handleImageSelect = (image, _placeholder) => {
   // 处理图片替换逻辑
   const placeholderRegex = new RegExp(`&单图[^&]*`, 'g')
   previewHtml.value = previewHtml.value.replace(placeholderRegex, `&单图${image.name}`)

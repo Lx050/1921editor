@@ -96,6 +96,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '../stores/configStore'
 import { useAppStore } from '../stores/appStore'
 import { getArticle, type Article } from '../api/article'
+import type { ContentBlock, WechatImage, BlockType } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -147,20 +148,32 @@ const startProcessing = async () => {
       if (article.value.content) {
         try {
           const savedBlocks = JSON.parse(article.value.content)
-          if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
-            // 重新生成 block IDs 并恢复到 appStore
-            const restoredBlocks = savedBlocks.map((block: Partial<ContentBlock> & { aiImageUrl?: string }, index: number) => ({
-              id: `restored_${index}_${Date.now()}`,
-              type: block.type || 'body',
-              text: block.text || '',
-              source: 'restored' as const,
-              meta: block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}
-            }))
-            
-            appStore.setContentBlocks(restoredBlocks)
-            console.log('[ArticleConfig] Restored contentBlocks:', restoredBlocks.length)
-          }
-        } catch (parseError) {
+            if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
+              const restoreBlocksRecursively = (blocks: any[]): ContentBlock[] => {
+                return blocks.map((block: any) => ({
+                  id: block.id || `restored_${Math.random().toString(36).substr(2, 9)}`,
+                  type: (block.type || 'body') as BlockType,
+                  text: block.text || '',
+                  source: 'restored',
+                  meta: block.meta || (block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}),
+                  children: block.children ? restoreBlocksRecursively(block.children) : undefined
+                }))
+              }
+              const restoredBlocks = restoreBlocksRecursively(savedBlocks)
+              appStore.setContentBlocks(restoredBlocks)
+              
+              const collectTextRecursively = (blocks: ContentBlock[]): string => {
+                return blocks.map(b => {
+                  const currentText = b.text || ''
+                  const childrenText = b.children ? collectTextRecursively(b.children) : ''
+                  return currentText + (childrenText ? '\n' + childrenText : '')
+                }).join('\n\n')
+              }
+              const rawText = collectTextRecursively(restoredBlocks)
+              appStore.setRawText(rawText)
+              console.log('[ArticleConfig] Restored contentBlocks:', restoredBlocks.length)
+            }
+        } catch {
           // 如果不是 JSON，当作原始文本处理
           console.log('[ArticleConfig] Content is raw text, setting as rawText')
           appStore.setRawText(article.value.content)
@@ -185,7 +198,7 @@ const startProcessing = async () => {
           }
         })
         
-        appStore.addWechatImages(wechatImages)
+        appStore.setWechatImages(wechatImages)
         console.log('[ArticleConfig] Loaded images:', wechatImages.length)
       }
       
@@ -229,8 +242,8 @@ onMounted(async () => {
         configStore.wechatConfig.id || configStore.savedAccounts[0].id
     }
   } catch (err: unknown) {
-    const error = err as { response?: { data?: { message?: string } } }
-    error.value = error.response?.data?.message || '无法加载文章信息'
+    const errorData = err as { response?: { data?: { message?: string } } }
+    error.value = errorData.response?.data?.message || '无法加载文章信息'
   } finally {
     loading.value = false
   }

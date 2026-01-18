@@ -484,8 +484,8 @@ class InAppNotificationChannel extends WechatNotificationChannel {
 class SystemNotificationChannel extends WechatNotificationChannel {
   async send(options: NotificationOptions): Promise<void> {
     if ('Notification' in navigator && Notification.permission === 'granted') {
-      // 扩展的 Notification 选项类型
-      const extendedNotificationOptions: NotificationOptions & {
+      // 浏览器原生 Notification 选项
+      const nativeOptions: {
         body: string
         icon?: string
         badge?: string
@@ -500,7 +500,7 @@ class SystemNotificationChannel extends WechatNotificationChannel {
         requireInteraction: options.persistent,
         tag: 'wechat-renewal',
       }
-      const notification = new Notification(options.title, extendedNotificationOptions)
+      const notification = new Notification(options.title, nativeOptions)
 
       if (options.actions && options.actions.length > 0) {
         // 注意：某些浏览器可能不支持通知操作按钮

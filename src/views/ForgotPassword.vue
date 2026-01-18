@@ -101,7 +101,8 @@ const handleForgotPassword = async () => {
     toast.success('邮件已发送')
   } catch (error: unknown) {
     console.error('发送失败:', error)
-    errorMessage.value = error.response?.data?.message || '发送失败，请稍后重试'
+    const err = error as { response?: { data?: { message?: string } } }
+    errorMessage.value = err.response?.data?.message || '发送失败，请稍后重试'
   } finally {
     loading.value = false
   }

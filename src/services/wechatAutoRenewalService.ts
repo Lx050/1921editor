@@ -7,9 +7,18 @@ import { WechatBackgroundRenewal } from './wechatBackgroundRenewal';
 
 interface RenewalPolicy {
   earlyRenewalDays: number;    // 提前续期天数
-  reminderIntervals: number[]; // 提醒间隔 (小时)
+  readonly reminderIntervals: number[]; // 提醒间隔 (小时)
   maxRetryAttempts: number;    // 最大重试次数
   fallbackToBackup: boolean;   // 是否启用备用账号
+}
+
+interface WechatAccount {
+  id: string;
+  nickname: string;
+  autoRenewal?: boolean;
+  tokenData: {
+    expires_at: number;
+  };
 }
 
 interface AccountHealthStatus {
@@ -117,7 +126,7 @@ export class WechatAutoRenewalService {
   /**
    * 计算账号健康度 (0-100)
    */
-  private async calculateAccountHealth(account: any): Promise<AccountHealthStatus> {
+  private async calculateAccountHealth(account: WechatAccount): Promise<AccountHealthStatus> {
     const now = Date.now();
     const expiresAt = account.tokenData.expires_at;
     const daysToExpiry = (expiresAt - now) / (24 * 60 * 60 * 1000);
@@ -423,7 +432,7 @@ export class WechatAutoRenewalService {
     return null;
   }
 
-  private async switchToBackupAccount(_failedAccount: AccountHealthStatus, _backupAccount: any) {
+  private async switchToBackupAccount(_failedAccount: AccountHealthStatus, _backupAccount: WechatAccount | null) {
     // 切换到备用账号
   }
 

@@ -181,6 +181,7 @@ import { convertHtmlToCustomFormat } from '../utils/docxConverter'
 import { ArticleService } from '../services/articleService'
 import { SAMPLE_TEXT, MARKED_SAMPLE_TEXT } from '../constants/sampleTexts'
 import { step1Logger, mammothLogger } from '../utils/logger'
+import { loadMammoth } from '../utils/mammothLoader'
 
 defineOptions({
   name: 'Step1TextInput'
@@ -319,8 +320,7 @@ const processDocxFile = async (file: File): Promise<void> => {
       lastModified: file.lastModified
     })
     
-    // 动态导入 mammoth（仅在需要时加载）
-    const { default: mammoth } = await import('mammoth')
+    const mammoth = await loadMammoth()
 
     const arrayBuffer = await file.arrayBuffer()
     step1Logger.debug('ArrayBuffer 读取完成，大小:', arrayBuffer.byteLength)
@@ -557,7 +557,9 @@ const goToNextStep = async (): Promise<void> => {
   errorMessage.value = ''
 
   // 清空之前的内容块
-  appStore.setContentBlocks([])
+  if (appStore.contentBlocks.length === 0) {
+    appStore.setContentBlocks([])
+  }
 
   // V2: 如果有提取的图片，启动后台上传
   if (extractedImages.value.length > 0) {

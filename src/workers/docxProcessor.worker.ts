@@ -10,11 +10,13 @@ declare const importScripts: (url: string) => void
 // 动态加载mammoth库
 importScripts('https://cdn.jsdelivr.net/npm/mammoth@1.5.1/mammoth.browser.min.js')
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const mammoth: any
 
 // 类型定义
 interface DocxProcessOptions {
   includeDefaultStyleMap?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   styleMap?: any[]
   convertImage?: boolean
   ignoreEmptyParagraphs?: boolean

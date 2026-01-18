@@ -13,7 +13,7 @@ export interface TokenStorageOptions {
 class TokenStorage {
   private isBrowser = typeof window !== 'undefined';
   private isDevelopment =
-    (import.meta as any)?.env?.DEV ??
+    import.meta.env?.DEV ??
     process.env.NODE_ENV === 'development';
 
   /**
@@ -78,15 +78,27 @@ class TokenStorage {
     }
 
     try {
+      const parts = currentToken.split('.');
+      if (parts.length !== 3) {
+        // 非 JWT 令牌，无法在前端校验，交给后端处理
+        return true;
+      }
+
       // 解析 JWT payload（不验证签名）
-      const payload = JSON.parse(atob(currentToken.split('.')[1]));
+      const normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+      const payload = JSON.parse(atob(padded)) as { exp?: number };
       const currentTime = Math.floor(Date.now() / 1000);
 
       // 检查是否过期
+      if (typeof payload.exp !== 'number') {
+        return true;
+      }
       return payload.exp > currentTime;
     } catch (error) {
       console.error('Failed to parse token:', error);
-      return false;
+      // 避免因解析失败导致误判未登录
+      return true;
     }
   }
 

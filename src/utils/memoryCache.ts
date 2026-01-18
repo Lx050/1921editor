@@ -3,7 +3,7 @@
  * 用于缓存计算结果、API响应等，减少重复计算和网络请求
  */
 
-export interface CacheItem<T = any> {
+export interface CacheItem<T = unknown> {
   data: T
   timestamp: number
   expires: number

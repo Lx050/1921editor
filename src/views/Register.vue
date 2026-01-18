@@ -86,10 +86,10 @@
               v-model="formData.password"
               type="password"
               required
-              placeholder="至少8位，包含大小写字母和数字"
+              placeholder="至少8位，包含字母和数字"
               class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-black placeholder:text-gray-500"
             />
-            <p class="mt-1 text-xs text-gray-500">至少8位，包含大小写字母和数字</p>
+            <p class="mt-1 text-xs text-gray-500">至少8位，包含字母和数字</p>
           </div>
 
           <!-- 确认密码 -->
@@ -234,8 +234,8 @@ const handleRegister = async () => {
     return
   }
 
-  if (!/[A-Z]/.test(formData.value.password) || !/[a-z]/.test(formData.value.password) || !/[0-9]/.test(formData.value.password)) {
-    errorMessage.value = '密码必须包含大小写字母和数字'
+  if (!/[A-Za-z]/.test(formData.value.password) || !/[0-9]/.test(formData.value.password)) {
+    errorMessage.value = '密码必须包含字母和数字'
     return
   }
 
@@ -299,7 +299,8 @@ const handleRegister = async () => {
     router.push('/login?email=' + encodeURIComponent(formData.value.email))
   } catch (error: unknown) {
     console.error('注册失败:', error)
-    const errorData = error.response?.data
+    const err = error as { response?: { data?: { errors?: string[]; message?: string | string[] } } }
+    const errorData = err.response?.data
     const message = Array.isArray(errorData?.errors)
       ? errorData.errors.join('；')
       : Array.isArray(errorData?.message)

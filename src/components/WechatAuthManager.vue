@@ -240,23 +240,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { ThirdPartyWechatAuth } from '../services/ThirdPartyWechatAuth';
-
-interface WechatFuncInfo {
-  [key: string]: unknown
-}
-
-interface WechatAuthInfo {
-  authorizer_appid: string;
-  authorizer_access_token: string;
-  authorizer_refresh_token: string;
-  expires_in: number;
-  nick_name: string;
-  head_img: string;
-  func_info: WechatFuncInfo;
-  authorizedAt: number;
-  lastUsed?: number;
-}
+import { ThirdPartyWechatAuth, type WechatAuthInfo } from '../services/ThirdPartyWechatAuth';
 
 const wechatAuth = ThirdPartyWechatAuth.getInstance();
 
@@ -307,10 +291,16 @@ onMounted(async () => {
 const initializeAuth = async () => {
   try {
     wechatAuth.initialize({
-      storeAuth: (authData: WechatAuthInfo) => {
+      storeAuth: (authData: WechatAuthInfo | { appId: string; removed: true; removedAt: number }) => {
         // 存储到localStorage
         const existingAuths = JSON.parse(localStorage.getItem('wechat_auths') || '{}');
-        existingAuths[authData.authorizer_appid] = authData;
+        if ('removed' in authData) {
+          // 处理移除授权的情况
+          delete existingAuths[authData.appId];
+        } else {
+          // 存储授权信息
+          existingAuths[authData.authorizer_appid] = authData;
+        }
         localStorage.setItem('wechat_auths', JSON.stringify(existingAuths));
       },
       getAuth: (appId: string) => {

@@ -31,7 +31,7 @@ export function withErrorHandler<T extends (...args: unknown[]) => Promise<unkno
 ): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | void> {
   return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>> | void> => {
     try {
-      return await fn(...args)
+      return await fn(...args) as Awaited<ReturnType<T>>
     } catch (error) {
       const err = error as AppError
       console.error(`[ErrorHandler] ${errorMessage || '操作失败'}:`, err)

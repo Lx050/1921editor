@@ -15,7 +15,7 @@ export class ArticleService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private bitableSyncService: BitableSyncService,
-  ) {}
+  ) { }
 
   // 飞书同步功能已恢复
   private async triggerSync(id: string) {

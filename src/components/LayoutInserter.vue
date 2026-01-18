@@ -2,6 +2,7 @@
   <div class="relative">
     <!-- 添加按钮 -->
     <button
+      ref="buttonRef"
       @click="toggleMenu"
       class="w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full flex items-center justify-center transition-colors group"
       title="插入内容"
@@ -16,10 +17,13 @@
       </svg>
     </button>
 
-    <!-- 下拉菜单 -->
+    <!-- 下拉菜单 - 动态方向展开 -->
     <div
       v-if="menuVisible"
-      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white border border-gray-200 rounded-xl shadow-xl p-3 z-20 min-w-[280px]"
+      class="absolute left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded-xl shadow-xl p-3 z-20 min-w-[280px]"
+      :class="[
+        menuDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+      ]"
     >
       <div class="text-xs font-bold text-gray-400 mb-3 text-center uppercase tracking-wider">插入内容</div>
       
@@ -68,7 +72,7 @@
              </button>
              
              <button
-                @click="$emit('openMerge', index)"
+                @click="$emit('openMerge', { index, id: undefined })"
                 class="w-full mt-2 p-2 text-sm rounded-lg hover:bg-blue-50 active:bg-blue-100 text-blue-600 flex items-center justify-center gap-3 transition-all border border-blue-100"
              >
                <span class="text-xl">➕</span>
@@ -94,15 +98,15 @@ defineOptions({
   name: 'LayoutInserter'
 })
 
-defineProps<{
+const props = defineProps<{
   index: number
 }>()
 
 const emit = defineEmits<{
-  (e: 'insertImage', imageType: string): void
-  (e: 'insertText', textType: string): void
-  (e: 'insertContainer'): void
-  (e: 'openMerge', index: number): void
+  (e: 'insertImage', payload: { index: number; type: string; id?: string }): void
+  (e: 'insertText', payload: { index: number; type: string; id?: string }): void
+  (e: 'insertContainer', payload: { index: number; id?: string }): void
+  (e: 'openMerge', payload: { index: number; id?: string }): void
 }>()
 
 // 内容选项类型定义
@@ -114,6 +118,9 @@ interface ContentOption {
 }
 
 const menuVisible = ref(false)
+const menuDirection = ref<'up' | 'down'>('down')
+const buttonRef = ref<HTMLElement | null>(null)
+
 // 文本内容块选项
 const textOptions: ContentOption[] = [
   {
@@ -173,9 +180,22 @@ const optionTypeMap = new Map<string, 'text' | 'image' | 'container'>()
 textOptions.forEach(opt => optionTypeMap.set(opt.value, 'text'))
 imageOptions.forEach(opt => optionTypeMap.set(opt.value, 'image'))
 optionTypeMap.set('container', 'container')
-// 切换菜单显示
+
+// 切换菜单显示，并计算弹出方向
 const toggleMenu = (event: MouseEvent) => {
   event.stopPropagation()
+  
+  if (!menuVisible.value && buttonRef.value) {
+     const rect = buttonRef.value.getBoundingClientRect()
+     const viewportHeight = window.innerHeight
+     // 如果按钮在屏幕下半部分，则向上展开
+     if (rect.top > viewportHeight * 0.6) {
+        menuDirection.value = 'up'
+     } else {
+        menuDirection.value = 'down'
+     }
+  }
+  
   menuVisible.value = !menuVisible.value
 }
 // 关闭菜单
@@ -188,13 +208,13 @@ const insertContent = (optionValue: string) => {
 
   switch (type) {
     case 'text':
-      emit('insertText', optionValue)
+      emit('insertText', { index: props.index, type: optionValue })
       break
     case 'image':
-      emit('insertImage', optionValue)
+      emit('insertImage', { index: props.index, type: optionValue })
       break
     case 'container':
-      emit('insertContainer')
+      emit('insertContainer', { index: props.index })
       break
   }
 

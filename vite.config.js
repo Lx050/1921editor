@@ -19,9 +19,10 @@ export default defineConfig({
   ],
   root: './src',
   // 预加载关键资源
-  define: {
-    __VUE_OPTIONS_API__: false, // 禁用 Vue Options API 以减小包体积
-  },
+  // Element Plus 需要 Options API，不能禁用
+  // define: {
+  //   __VUE_OPTIONS_API__: false,
+  // },
   server: {
     port: 1921,
     strictPort: true,
@@ -71,8 +72,8 @@ export default defineConfig({
       '/wechat-image-proxy': {
         target: 'https://mmbiz.qpic.cn', // 默认目标，会被动态覆盖
         changeOrigin: true,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             // 从 URL 中提取实际的目标域名
             // 格式: /wechat-image-proxy/mmecoa.qpic.cn/path/to/image
             const match = req.url.match(/^\/wechat-image-proxy\/([^/]+\.qpic\.cn)(\/.*)?$/);
@@ -122,17 +123,14 @@ export default defineConfig({
           return `assets/[name]-[hash][extname]`
         },
         // 手动代码分割 - 解决300KB+体积警告
+        // 注意：Element Plus 必须与 Vue 核心在同一个 chunk，否则会导致循环依赖错误
+        // 错误表现为: "Cannot access 'Mc' before initialization"
         manualChunks: (id) => {
           // 将 node_modules 中的包进行分包
           if (id.includes('node_modules')) {
-            // Vue 核心
-            if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
+            // Vue 核心 + Element Plus UI 库（必须放在一起避免初始化顺序问题）
+            if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router') || id.includes('element-plus')) {
               return 'vendor-vue'
-            }
-
-            // Element Plus UI 库（大，单独分包）
-            if (id.includes('element-plus')) {
-              return 'vendor-element'
             }
 
             // 文档处理（mammoth 大库）

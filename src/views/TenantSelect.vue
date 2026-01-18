@@ -269,7 +269,7 @@ const selectTenant = async (tenant: TenantInfo | null) => {
       email: response.user.email,
       name: response.user.name,
       displayName: response.user.displayName,
-      role: response.user.role,
+      role: response.user.role as 'ADMIN' | 'USER',
       tenantId: response.user.tenantId,
       emailVerified: response.user.emailVerified
     })
@@ -306,7 +306,7 @@ const handleJoinTenant = async () => {
       email: response.user.email,
       name: response.user.name,
       displayName: response.user.displayName,
-      role: response.user.role,
+      role: response.user.role as 'ADMIN' | 'USER',
       tenantId: response.user.tenantId,
       emailVerified: response.user.emailVerified
     })
@@ -346,7 +346,7 @@ const handleLeaveTenant = async (tenant: TenantInfo) => {
       email: response.user.email,
       name: response.user.name,
       displayName: response.user.displayName,
-      role: response.user.role,
+      role: response.user.role as 'ADMIN' | 'USER',
       tenantId: response.user.tenantId,
       emailVerified: response.user.emailVerified
     })

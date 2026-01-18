@@ -392,7 +392,7 @@ export class ConcurrentUploadManager {
   }
 
   private extractFileName(url: string): string | null {
-    const matches = url.match(/\/([^\/]+\.(png|jpg|jpeg|gif|webp|avif))/i)
+    const matches = url.match(/\/([^/]+\.(png|jpg|jpeg|gif|webp|avif))/i)
     return matches ? matches[1] : null
   }
 
@@ -488,7 +488,7 @@ export class ConcurrentUploadManager {
       // 注意：上面的 onload 会覆盖前面的 onload，所以需要合并
       const originalOnload = img.onload;
       img.onload = () => {
-        if (originalOnload) originalOnload.call(img);
+        if (originalOnload) originalOnload.call(img, new Event('load'));
         URL.revokeObjectURL(objectURL);
       };
     })

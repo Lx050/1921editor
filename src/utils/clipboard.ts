@@ -4,6 +4,15 @@ type CopyResult = {
   error?: unknown;
 };
 
+type ClipboardItemLike = {
+  readonly types: string[];
+  getType: (type: string) => Promise<Blob>;
+};
+
+type ClipboardItemConstructor = new (items: Record<string, Blob>) => ClipboardItemLike;
+
+type ClipboardWrite = (items: ClipboardItemLike[]) => Promise<void>;
+
 /**
  * 复制 HTML 富文本到剪贴板
  * 用于"复制预览"功能，粘贴到微信编辑器时保留格式
@@ -35,12 +44,14 @@ export const copyHtmlToClipboard = async (
 
   // 方法1：使用现代 Clipboard API（需要 HTTPS 环境）
   try {
-    if (window.isSecureContext && navigator.clipboard?.write && (window as any).ClipboardItem) {
-      const item = new (window as any).ClipboardItem({
+    const clipboard = navigator.clipboard as Clipboard & { write?: ClipboardWrite };
+    const ClipboardItemCtor = (window as unknown as Window & { ClipboardItem?: ClipboardItemConstructor }).ClipboardItem;
+    if (window.isSecureContext && clipboard.write && ClipboardItemCtor) {
+      const item = new ClipboardItemCtor({
         'text/html': new Blob([processedHtml], { type: 'text/html' }),
         'text/plain': new Blob([fallbackText], { type: 'text/plain' }),
       });
-      await navigator.clipboard.write([item]);
+      await clipboard.write.call(clipboard, [item]);
       return { ok: true, method: 'clipboard' };
     }
   } catch (error) {
@@ -119,7 +130,7 @@ export const copyToClipboard = async (text: string): Promise<CopyResult> => {
       await navigator.clipboard.writeText(text);
       return { ok: true, method: 'clipboard' };
     }
-  } catch (error) {
+  } catch {
     // Fall back to execCommand below.
   }
 

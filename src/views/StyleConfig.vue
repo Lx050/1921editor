@@ -287,8 +287,7 @@ import { useUserStore } from '../stores/userStore'
 import {
   getAllStyles,
   updateStyle as updateLocalStyle,
-  deleteStyle as deleteLocalStyle,
-  isCustomStyle as isLocalCustomStyle
+  deleteStyle as deleteLocalStyle
 } from '../styles/styleStorage'
 
 const router = useRouter()
@@ -387,7 +386,7 @@ const editStyle = (style) => {
 }
 
 // 处理可视化粘贴
-const handleVisualPaste = (e) => {
+const handleVisualPaste = (_e) => {
   // 允许默认粘贴行为，浏览器会自动处理HTML
   // 我们只需要在粘贴后同步代码
   setTimeout(syncVisualToCode, 0)
@@ -422,51 +421,6 @@ const syncCodeToVisual = () => {
   const tempPlaceholder = '\u0000CONTENT\u0000' // 使用空字符避免 Vue 解析
   const escapedHtml = html.replace(/\{\{CONTENT\}\}/g, tempPlaceholder)
   visualEditor.value.innerHTML = escapedHtml.replace(tempPlaceholder, '<span data-placeholder="true">[内容占位符]</span>')
-}
-
-// 标准化样式
-const standardizeStyle = (html, type) => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  // 使用 data-placeholder 属性查找
-  let placeholder = doc.querySelector('span[data-placeholder="true"]')
-  
-  // 如果没找到，尝试通过文本内容查找（兼容性）
-  if (!placeholder) {
-    const spans = doc.getElementsByTagName('span')
-    for (let i = 0; i < spans.length; i++) {
-      if (spans[i].textContent === '[内容占位符]') {
-        placeholder = spans[i]
-        break
-      }
-    }
-  }
-  
-  if (placeholder) {
-    // 获取占位符的直接父元素
-    const parent = placeholder.parentElement
-    if (parent) {
-      // 强制应用标准样式
-      if (type === 'title') {
-        parent.style.fontSize = '16px'
-        parent.style.fontWeight = 'normal'
-        parent.style.color = parent.style.color || '#333'
-        parent.style.lineHeight = '1.75'
-        parent.style.textIndent = '0'
-        parent.style.fontFamily = "'微软雅黑', 'Microsoft YaHei', sans-serif"
-      } else if (type === 'body' || type === 'intro') {
-        parent.style.fontSize = '14px'
-        parent.style.fontFamily = "'微软雅黑', 'Microsoft YaHei', SimHei, STHeiti, sans-serif"
-        parent.style.lineHeight = '1.75em'
-        parent.style.textAlign = 'justify'
-        parent.style.textIndent = '2.25em'
-        parent.style.letterSpacing = '1.75px'
-        parent.style.color = '#000000'
-      }
-    }
-  }
-  
-  return doc.body.innerHTML
 }
 
 // 自动识别占位符

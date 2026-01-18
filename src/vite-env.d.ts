@@ -19,11 +19,12 @@ interface ImportMeta {
 // 扩展环境变量类型
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
-  const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, any>
+  const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>
   export default component
 }
 
 // 扩展window对象
 declare interface Window {
   // 任何全局变量声明
+  [key: string]: unknown
 }

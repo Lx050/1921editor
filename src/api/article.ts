@@ -1,4 +1,5 @@
 import api from '../utils/api'
+import type { WechatImage, StyleConfig } from '@/types'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -6,10 +7,10 @@ export interface Article {
     id: string
     title: string
     status: 'DRAFT' | 'PARSED' | 'ADJUSTED' | 'PUBLISHED'
-    config: any
+    config: StyleConfig | null
     content: string | null
-    images: any[] | null
-    wechatResult: any | null
+    images: WechatImage[] | null
+    wechatResult: { draftId?: string; mediaId?: string; createTime?: string } | null
     ownerId: string
     tenantId?: string  // 🏢 多租户支持
     createdAt: string
@@ -45,13 +46,21 @@ export const createArticle = async (title: string): Promise<Article> => {
  */
 export const getArticles = async (): Promise<Article[]> => {
     const response = await api.get('/articles')
-    return response.data
+    const payload = response.data as
+        | Article[]
+        | { data?: Article[]; items?: Article[]; articles?: Article[] }
+
+    if (Array.isArray(payload)) return payload
+    if (Array.isArray(payload.data)) return payload.data
+    if (Array.isArray(payload.items)) return payload.items
+    if (Array.isArray(payload.articles)) return payload.articles
+    return []
 }
 
 /**
  * 更新文章配置 (Step 1)
  */
-export const updateArticleConfig = async (id: string, config: any): Promise<Article> => {
+export const updateArticleConfig = async (id: string, config: StyleConfig): Promise<Article> => {
     const response = await api.put(`/articles/${id}/config`, { config })
     return response.data
 }
@@ -67,7 +76,7 @@ export const updateArticleContent = async (id: string, content: string): Promise
 /**
  * 更新文章图片 (Step 3)
  */
-export const updateArticleImages = async (id: string, images: any[]): Promise<Article> => {
+export const updateArticleImages = async (id: string, images: WechatImage[]): Promise<Article> => {
     const response = await api.put(`/articles/${id}/images`, { images })
     return response.data
 }
@@ -86,4 +95,11 @@ export const publishArticle = async (id: string): Promise<Article> => {
 export const saveArticleDraft = async (id: string): Promise<Article> => {
     const response = await api.post(`/articles/${id}/save-draft`)
     return response.data
+}
+
+/**
+ * 删除文章
+ */
+export const deleteArticle = async (id: string): Promise<void> => {
+    await api.delete(`/articles/${id}`)
 }

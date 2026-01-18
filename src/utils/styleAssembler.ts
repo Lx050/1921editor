@@ -12,23 +12,24 @@ import { useAppStore } from '../stores/appStore'
  * @param addPlaceholderMarkers - V2: 是否添加图片占位符标记（用于图片替换功能）
  * @returns 完整的HTML字符串
  */
+const countImages = (block: ContentBlock): number => {
+	let count = 0
+	if (block.type === 'image_single' || block.type === 'image_single_caption' || (block.meta && block.meta.aiImageUrl)) {
+		count = 1
+	} else if (block.type === 'image_double' || block.type === 'image_double_caption') {
+		count = 2
+	} else if (block.type === 'container' && block.children) {
+		count = block.children.reduce((acc, child) => acc + countImages(child), 0)
+	}
+	return count
+}
+
 export function buildHtml(
 	contentBlocks: ContentBlock[],
 	styleConfig: StyleConfig | null = null,
 	addPlaceholderMarkers: boolean = false,
 	urlTransformer?: (url: string) => string
 ): string {
-	const countImages = (block: ContentBlock): number => {
-		let count = 0
-		if (block.type === 'image_single' || block.type === 'image_single_caption' || (block.meta && block.meta.aiImageUrl)) {
-			count = 1
-		} else if (block.type === 'image_double' || block.type === 'image_double_caption') {
-			count = 2
-		} else if (block.type === 'container' && block.children) {
-			count = block.children.reduce((acc, child) => acc + countImages(child), 0)
-		}
-		return count
-	}
 	if (!Array.isArray(contentBlocks)) {
 		throw new Error('Invalid contentBlocks: must be an array')
 	}
@@ -112,7 +113,7 @@ function buildStyledBlock(
 	// AI 生成图片优先渲染
 	if (block.meta && block.meta.aiImageUrl) {
 		let html = IMAGE_TEMPLATES.single
-		let url = block.meta.aiImageUrl
+		let url = String(block.meta.aiImageUrl || '')
 		if (urlTransformer) url = urlTransformer(url)
 		html = html.replace(/src="[^"]*"/, `src="${url}"`)
 		if (addPlaceholderMarkers) {
@@ -133,7 +134,7 @@ function buildStyledBlock(
 			let html = IMAGE_TEMPLATES.single
 			// V2: 优先使用替换的图片 URL
 			if (block.meta && block.meta.replacementUrl) {
-				let url = block.meta.replacementUrl
+				let url = String(block.meta.replacementUrl || '')
 				if (urlTransformer) url = urlTransformer(url)
 				html = html.replace(/src="[^"]*"/, `src="${url}"`)
 			}
@@ -145,7 +146,7 @@ function buildStyledBlock(
 			html = html.replace('{{caption}}', normalizeCaptionText(content))
 			// V2: 优先使用替换的图片 URL
 			if (block.meta && block.meta.replacementUrl) {
-				let url = block.meta.replacementUrl
+				let url = String(block.meta.replacementUrl || '')
 				if (urlTransformer) url = urlTransformer(url)
 				html = html.replace(/src="[^"]*"/, `src="${url}"`)
 			}
@@ -166,9 +167,9 @@ function buildStyledBlock(
 					let finalUrl2 = url2
 					if (urlTransformer) finalUrl2 = urlTransformer(url2)
 
-					let firstIndex = html.indexOf('src="')
+					const firstIndex = html.indexOf('src="')
 					if (firstIndex !== -1) {
-						let secondIndex = html.indexOf('src="', firstIndex + 5)
+						const secondIndex = html.indexOf('src="', firstIndex + 5)
 						if (secondIndex !== -1) {
 							const before = html.substring(0, secondIndex)
 							const after = html.substring(html.indexOf('"', secondIndex + 5))
@@ -204,9 +205,9 @@ function buildStyledBlock(
 					let finalUrl2 = url2
 					if (urlTransformer) finalUrl2 = urlTransformer(url2)
 
-					let firstIndex = html.indexOf('src="')
+					const firstIndex = html.indexOf('src="')
 					if (firstIndex !== -1) {
-						let secondIndex = html.indexOf('src="', firstIndex + 5)
+						const secondIndex = html.indexOf('src="', firstIndex + 5)
 						if (secondIndex !== -1) {
 							const before = html.substring(0, secondIndex)
 							const after = html.substring(html.indexOf('"', secondIndex + 5))
@@ -223,7 +224,7 @@ function buildStyledBlock(
 			// 递归渲染子块
 			const childrenHtml = block.children?.map((child, idx) => {
 				const prevImagesCount = block.children?.slice(0, idx).reduce((acc, curr) =>
-					acc + (curr.type.startsWith('image_') || (curr.meta && curr.meta.aiImageUrl) ? 1 : 0), 0) || 0;
+					acc + countImages(curr), 0) || 0;
 				// Pass `urlTransformer` down
 				return buildStyledBlock(child, styleConfig, addPlaceholderMarkers, imageIndex + prevImagesCount, true, urlTransformer)
 			}).join('\n') || ''

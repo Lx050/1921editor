@@ -24,6 +24,15 @@ export interface ContentBlock {
 }
 
 /**
+ * 内容块类型选项接口（用于下拉选择器）
+ */
+export interface BlockTypeOption {
+  value: BlockType;
+  label: string;
+  icon: string;
+}
+
+/**
  * 样式模板接口
  */
 export interface StyleTemplate {
@@ -41,6 +50,19 @@ export interface StyleConfig {
   intro?: StyleTemplate;
   outro?: StyleTemplate;
   container?: StyleTemplate;
+  metadata?: {
+    rawText?: string;
+    editorInput?: string;
+    teamName?: string;
+    sourceAccount?: string;
+    teamProject?: string;
+    teamDepartment?: string;
+    teamLeader?: string;
+    teamContact?: string;
+    copywriterNames?: string[];
+    plannerNames?: string[];
+    editorNames?: string[];
+  };
 }
 
 /**

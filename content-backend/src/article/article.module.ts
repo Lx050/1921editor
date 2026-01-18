@@ -18,4 +18,4 @@ import { FeishuModule } from '../feishu/feishu.module';
   providers: [ArticleService, FileCleanupService],
   exports: [ArticleService],
 })
-export class ArticleModule {}
+export class ArticleModule { }

@@ -244,6 +244,25 @@ export const useAppStore = defineStore('app', () => {
     contentBlocks.value.splice(insertIdx, 0, ...blocksToInsert)
   }
 
+  /**
+   * 解散嵌套容器：将容器内的子块移出并删除容器
+   * @param containerId 要解散的容器ID
+   */
+  const flattenBlock = (containerId: string): void => {
+    const container = findBlockRecursive(contentBlocks.value, containerId)
+    if (!container || container.type !== 'container' || !container.children) return
+
+    const children = [...container.children]
+
+    // 找到容器所在的父级列表
+    const parentList = findParentList(contentBlocks.value, containerId)
+    if (parentList) {
+      const idx = parentList.findIndex(b => b.id === containerId)
+      // 移除容器，并在原位置插入子块
+      parentList.splice(idx, 1, ...children)
+    }
+  }
+
   const setStyleConfig = (config: Partial<StyleConfig>): void => {
     styleConfig.value = { ...(styleConfig.value || {}), ...config } as StyleConfig
   }
@@ -348,6 +367,7 @@ export const useAppStore = defineStore('app', () => {
     mergeBlocks,
     deleteBlock,
     moveBlock,
+    flattenBlock,
     setStyleConfig,
     addWechatImage,
     addWechatImages,

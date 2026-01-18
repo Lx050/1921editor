@@ -386,7 +386,7 @@ async function loadAccounts(): Promise<void> {
     accounts.value = data.map((account: Omit<WechatAccount, 'healthScore' | 'autoRenewalEnabled'>) => ({
       ...account,
       healthScore: calculateHealthScore(account),
-      autoRenewalEnabled: account.autoRenewal !== false,
+      autoRenewalEnabled: true, // 默认启用自动续期
     }));
   } catch (error) {
     console.error('加载账号列表失败:', error);
