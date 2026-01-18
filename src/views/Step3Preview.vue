@@ -678,8 +678,13 @@ const updateIframeImageDom = (placeholderId: string, newUrl: string): void => {
 }
 
 const goToPreviousStep = (): void => {
-  appStore.currentStep = 2
-  router.push('/step2')
+  if (configStore.mode === 'reprint') {
+    appStore.currentStep = 1
+    router.push('/step1')
+  } else {
+    appStore.currentStep = 2
+    router.push('/step2')
+  }
 }
 
 
@@ -802,9 +807,9 @@ onMounted(async () => {
     }
   }
 
-  // 改进：如果没有任何内容块，说明是空跳转，应该回到第一步而不是第二步
-  if (contentBlocks.value.length === 0) {
-    step3Logger.warn('无内容块，重定向到第一步')
+  // 改进：如果没有任何内容块 且 不是转载模式，说明是空跳转，应该回到第一步而不是第二步
+  if (contentBlocks.value.length === 0 && configStore.mode !== 'reprint') {
+    step3Logger.warn('无内容块且非转载模式，重定向到第一步')
     router.push('/step1')
     return
   }
@@ -946,13 +951,18 @@ const generateHtml = async (): Promise<void> => {
 
     // 关键修正：传入 urlTransformer，将微信 URL 转为代理 URL
     const html = buildHtml(
-      contentBlocks.value, 
+      configStore.mode === 'reprint' ? [] : contentBlocks.value, 
       appStore.styleConfig, 
-      true,
+      configStore.mode === 'reprint' ? false : true,
       (url) => getWechatProxyUrl(url) // V2: 自动代理化
     )
     
     finalHtml.value = html
+    
+    // 如果是转载模式且标题为空，尝试从 appStore.rawText 恢复标题
+    if (configStore.mode === 'reprint' && !draftForm.value.title && appStore.rawText) {
+      draftForm.value.title = appStore.rawText
+    }
     selectedPlaceholder.value = null
   } catch (error: unknown) {
     step3Logger.error('生成HTML失败:', error)

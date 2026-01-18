@@ -10,6 +10,7 @@ export const useAppStore = defineStore('app', () => {
   const currentArticleId: Ref<string | null> = ref(null)
   const rawText: Ref<string> = ref('')
   const contentBlocks: Ref<ContentBlock[]> = ref([])
+  const reprintHtml: Ref<string> = ref('')
   const styleConfig: Ref<StyleConfig | null> = ref(null)
 
   // V3 新增状态：参与者姓名（用于自动化尾部）
@@ -312,6 +313,7 @@ export const useAppStore = defineStore('app', () => {
     currentArticleId.value = null
     rawText.value = ''
     contentBlocks.value = []
+    reprintHtml.value = ''
     styleConfig.value = null
     wechatImages.value = []
     uploadProgress.value = { total: 0, completed: 0, failed: 0, uploading: 0 }
@@ -339,6 +341,7 @@ export const useAppStore = defineStore('app', () => {
     currentArticleId,
     rawText,
     contentBlocks,
+    reprintHtml,
     styleConfig,
     wechatImages,
     uploadProgress,

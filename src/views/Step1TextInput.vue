@@ -78,6 +78,45 @@
         </transition>
       </div>
 
+      <!-- 转载模式：微信链接输入 -->
+      <div v-if="configStore.mode === 'reprint'" class="py-3">
+        <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-lg">📋</span>
+            <h3 class="text-sm font-bold text-orange-900">转载模式 - 微信文章链接</h3>
+          </div>
+          
+          <div class="space-y-3">
+            <div>
+              <label for="wechatUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                粘贴微信公众号文章链接
+              </label>
+              <input
+                id="wechatUrl"
+                v-model="wechatUrl"
+                type="url"
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                placeholder="https://mp.weixin.qq.com/s/..."
+                @keyup.enter="fetchWechatArticle"
+              />
+            </div>
+            
+            <button
+              @click="fetchWechatArticle"
+              :disabled="!wechatUrl.trim() || isFetching"
+              class="w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span v-if="isFetching">🔄 正在抓取...</span>
+              <span v-else>📥 抓取文章内容</span>
+            </button>
+
+            <p class="text-xs text-gray-500">
+              💡 提示：输入微信公众号文章链接，系统将自动抓取并转换为本地格式
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- 文本输入区域 - 适中高度，适合移动端 -->
       <div class="flex flex-col flex-1 min-h-0">
         <label for="textInput" class="block text-sm font-medium text-black mb-2">
@@ -175,6 +214,7 @@
 import { ref, watch, type Ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { useConfigStore } from '../stores/configStore'
 import { extractArchive, isArchiveFile } from '../utils/archiveProcessor'
 import { uploadManager } from '../utils/uploadManager'
 import { convertHtmlToCustomFormat } from '../utils/docxConverter'
@@ -182,6 +222,7 @@ import { ArticleService } from '../services/articleService'
 import { SAMPLE_TEXT, MARKED_SAMPLE_TEXT } from '../constants/sampleTexts'
 import { step1Logger, mammothLogger } from '../utils/logger'
 import { loadMammoth } from '../utils/mammothLoader'
+import { wechatApi } from '../utils/api'
 
 defineOptions({
   name: 'Step1TextInput'
@@ -189,12 +230,18 @@ defineOptions({
 
 const router: Router = useRouter()
 const appStore = useAppStore()
+const configStore = useConfigStore()
 const localText: Ref<string> = ref('')
 const errorMessage: Ref<string> = ref('')
 const fileInput: Ref<HTMLInputElement | null> = ref(null)
 const extractedImages: Ref<File[]> = ref([])
 const showGuide: Ref<boolean> = ref(false)
 const isDragging: Ref<boolean> = ref(false)
+
+// 转载模式相关变量
+const wechatUrl: Ref<string> = ref('')
+const isFetching: Ref<boolean> = ref(false)
+
 
 // 监听store中的文本变化
 watch(() => appStore.rawText, (newText) => {
@@ -512,7 +559,75 @@ const extractMetadataFromText = (text: string): void => {
   })
 }
 
-// 导出的转换逻辑已移至 src/utils/docxConverter.ts
+// 抓取微信文章内容
+const fetchWechatArticle = async (): Promise<void> => {
+  if (!wechatUrl.value.trim()) {
+    errorMessage.value = '请输入微信文章链接'
+    return
+  }
+
+  // 简单验证是否为微信链接
+  if (!wechatUrl.value.includes('mp.weixin.qq.com')) {
+    errorMessage.value = '请输入有效的微信公众号文章链接'
+    return
+  }
+
+  isFetching.value = true
+  errorMessage.value = ''
+
+  try {
+    step1Logger.debug('开始抓取微信文章:', wechatUrl.value)
+
+    const response = await wechatApi.fetchArticle(wechatUrl.value)
+    
+    if (response.data.success && response.data.data) {
+      const { html, title, author } = response.data.data
+      
+      step1Logger.debug('抓取成功 - 标题:', title, '作者:', author)
+      
+      // 如果是转载模式，保留完整 HTML 并跳转 Step 3
+      if (configStore.mode === 'reprint') {
+        appStore.reprintHtml = html
+        // 自动设置标题到元数据
+        if (title) appStore.rawText = title // 主标题也存一份
+        if (author) appStore.sourceAccount = author
+
+        step1Logger.debug('转载模式：已保存原始 HTML，正在跳转 Step 3...')
+        router.push('/step3')
+        return
+      }
+
+      // 非转载模式：将 HTML 转换为自定义格式
+      const text = convertHtmlToCustomFormat(html)
+      
+      // 如果有标题，添加到文本开头
+      const finalText = title ? `# ${title}\n\n${text}` : text
+      
+      // 设置到文本框
+      localText.value = finalText
+      appStore.setRawText(finalText)
+      
+      // 如果抓取到作者信息，设置到来源公众号
+      if (author) {
+        appStore.sourceAccount = author
+      }
+      
+      step1Logger.debug('文章转换完成，文本长度:', finalText.length)
+      
+      // 清空链接输入框
+      wechatUrl.value = ''
+    } else {
+      throw new Error(response.data.error || '抓取失败')
+    }
+  } catch (error) {
+    step1Logger.error('抓取微信文章失败:', error)
+    errorMessage.value = error instanceof Error ? error.message : '抓取失败，请检查链接是否正确'
+  } finally {
+    isFetching.value = false
+  }
+}
+
+// 导出的转换逻辑已移至 sr/utils/docxConverter.ts
 
 // 插入智能示例文本（无标注）
 const insertSampleText = (): void => {

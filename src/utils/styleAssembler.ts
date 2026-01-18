@@ -38,24 +38,37 @@ export function buildHtml(
 
 	// 添加HTML头部
 	const configStore = useConfigStore()
+	const appStore = useAppStore()
 	htmlParts.push(configStore.currentHeader)
 
-	// 遍历内容块并应用装饰样式
-	let imageCounter = 0
-
-	contentBlocks.forEach((block: ContentBlock): void => {
-		let blockHtml: string = ''
-
-		if (styleConfig) {
-			blockHtml = buildStyledBlock(block, styleConfig, addPlaceholderMarkers, imageCounter, false, urlTransformer)
-			htmlParts.push(blockHtml)
-			imageCounter += countImages(block)
+	// --- 核心修改：如果是转载模式，直接使用 reprintHtml ---
+	if (configStore.mode === 'reprint' && appStore.reprintHtml) {
+		// 转换图片 URL (如果需要代理)
+		let processedHtml = appStore.reprintHtml
+		if (urlTransformer) {
+			processedHtml = processedHtml.replace(/src="([^"]+)"/g, (_, src) => {
+				const proxyUrl = urlTransformer(src)
+				return `src="${proxyUrl}"`
+			})
 		}
-	})
+		htmlParts.push(`<section class="reprint-content">${processedHtml}</section>`)
+	} else {
+		// 遍历内容块并应用装饰样式
+		let imageCounter = 0
+
+		contentBlocks.forEach((block: ContentBlock): void => {
+			let blockHtml: string = ''
+
+			if (styleConfig) {
+				blockHtml = buildStyledBlock(block, styleConfig, addPlaceholderMarkers, imageCounter, false, urlTransformer)
+				htmlParts.push(blockHtml)
+				imageCounter += countImages(block)
+			}
+		})
+	}
 
 	// ... footer logic unchanged ...
 	let footer = configStore.currentFooter
-	const appStore = useAppStore()
 
 	footer = footer
 		.replace(/{{PLANNERS}}/g, appStore.plannerNames.join(' ') || '王雪 宋欣翼')

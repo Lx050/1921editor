@@ -286,6 +286,9 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- 图片压缩工具 -->
           <ImageCompressorTool />
+
+          <!-- 微信封面提取工具 -->
+          <WechatCoverExtractor />
           
           <!-- 更多工具占位 (可以后续添加) -->
           <div class="hidden lg:flex items-center justify-center bg-gray-50/50 border-2 border-dashed border-gray-200 rounded-2xl p-8 text-gray-400">
@@ -377,6 +380,7 @@ import { useAppStore } from '../../stores/appStore'
 import { getArticles, getArticle, deleteArticle, type Article } from '../../api/article'
 import toast from '../../composables/useToast'
 import ImageCompressorTool from '../../components/ImageCompressorTool.vue'
+import WechatCoverExtractor from '../../components/WechatCoverExtractor.vue'
 import type { ContentBlock } from '@/types'
 
 const router = useRouter()

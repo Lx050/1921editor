@@ -416,4 +416,63 @@ export class WechatService {
     });
     return response;
   }
+
+  /**
+   * 从微信公众号文章链接抓取内容
+   */
+  async fetchArticleFromUrl(url: string): Promise<{ html: string; title: string; author: string; cover: string }> {
+    try {
+      this.logger.log(`[Fetch Article] 开始抓取微信文章: ${url}`);
+
+      const response = await this.httpService.axiosRef.get(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': 'https://mp.weixin.qq.com/',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        },
+        timeout: 30000,
+      });
+
+      const html = response.data;
+
+      // 提取文章标题
+      const titleMatch = html.match(/<h1[^>]*class="rich_media_title"[^>]*>([\s\S]*?)<\/h1>/i) ||
+        html.match(/<title>(.*?)<\/title>/i);
+      const title = titleMatch ? titleMatch[1].trim().replace(/\s+/g, ' ') : '';
+
+      // 提取作者信息
+      const authorMatch = html.match(/<span[^>]*class="rich_media_meta_text"[^>]*>(.*?)<\/span>/i) ||
+        html.match(/<a[^>]*id="js_name"[^>]*>(.*?)<\/a>/i);
+      const author = authorMatch ? authorMatch[1].trim() : '';
+
+      // 提取封面图片 URL (msg_cdn_url)
+      const coverMatch = html.match(/var\s+msg_cdn_url\s*=\s*"([^"]+)"/) ||
+        html.match(/window\.msg_cdn_url\s*=\s*"([^"]+)"/) ||
+        html.match(/"cdn_url"\s*:\s*"([^"]+)"/);
+      const cover = coverMatch ? coverMatch[1].replace(/\\x2f/g, '/').replace(/\\x26/g, '&') : '';
+
+      // 提取正文内容
+      const contentMatch = html.match(/<div[^>]*id="js_content"[^>]*>([\s\S]*?)<\/div>\s*<script/i);
+      const content = contentMatch ? contentMatch[1] : '';
+
+      if (!content && !url.includes('test')) {
+        // 如果是单纯为了拿封面图，没提取到内容也不报错
+        this.logger.warn('[Fetch Article] 未能提取到正文内容，但继续返回元数据');
+      }
+
+      this.logger.log(`[Fetch Article] 抓取成功 - 标题: ${title}, 作者: ${author}, 封面图: ${cover ? '已获取' : '未获取'}`);
+
+      return {
+        html: content || '',
+        title,
+        author,
+        cover,
+      };
+    } catch (error: any) {
+      this.logger.error(`[Fetch Article] 抓取失败: ${error.message}`);
+      throw new Error(`抓取微信文章失败: ${error.message}`);
+    }
+  }
 }

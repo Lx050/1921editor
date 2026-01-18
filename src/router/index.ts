@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { useConfigStore } from '../stores/configStore'
 
 // 使用动态导入以优化加载
 const routes: RouteRecordRaw[] = [
@@ -182,16 +183,24 @@ interface RouteGuard {
 const routeGuards: Record<string, RouteGuard> = {
   '/step2': {
     // 允许有 rawText 或 contentBlocks（从保存的文章恢复时只有 contentBlocks）
-    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length),
+    validator: (appStore) => {
+      const configStore = useConfigStore()
+      return Boolean(appStore.rawText) ||
+        Boolean(appStore.contentBlocks?.length) ||
+        (configStore.mode === 'reprint' && Boolean(appStore.reprintHtml))
+    },
     redirect: '/step1',
     description: 'step2需要文本内容或内容块'
   },
   '/step3': {
-    validator: (appStore) => Boolean(appStore.contentBlocks?.length),
+    validator: (appStore) => {
+      const configStore = useConfigStore()
+      return Boolean(appStore.contentBlocks?.length) ||
+        (configStore.mode === 'reprint' && Boolean(appStore.reprintHtml))
+    },
     redirect: '/step2',
     description: 'step3需要内容块'
   },
-
 }
 
 const router = createRouter({

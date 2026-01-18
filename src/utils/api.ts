@@ -222,6 +222,14 @@ export const tenantApi = {
   },
 }
 
+// 微信相关 API
+export const wechatApi = {
+  // 抓取微信文章
+  fetchArticle: (url: string) => {
+    return api.post('/wechat/fetch-article', { url })
+  },
+}
+
 // 导出默认实例
 export default api
 

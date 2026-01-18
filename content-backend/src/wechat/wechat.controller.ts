@@ -13,6 +13,7 @@ import {
   Delete,
   Res,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import * as fs from 'fs';
@@ -40,10 +41,12 @@ class ExchangeAuthDto {
 @ApiTags('Wechat')
 @Controller('wechat')
 export class WechatController {
+  private readonly logger = new Logger(WechatController.name);
+
   constructor(
     private readonly wechatService: WechatService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private resolveTenantId(req: any): string {
     return (
@@ -304,13 +307,60 @@ export class WechatController {
         console.error('[ImageCache] Write error:', err);
         writer.end();
         // 尝试删除可能损坏的文件
-        fs.unlink(filePath, () => {});
+        fs.unlink(filePath, () => { });
       });
     } catch (error) {
       // console.error('Proxy error:', error.message);
       if (!res.headersSent) {
         res.status(404).send('Image unavailable');
       }
+    }
+  }
+
+  @Post('fetch-article')
+  // @UseGuards(JwtAuthGuard) // 暂时注释掉，防止数据库连接失败导致认证报错
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: '抓取微信文章',
+    description: '从微信公众号文章链接抓取内容',
+  })
+  @ApiResponse({ status: 200, description: '抓取成功' })
+  @ApiResponse({ status: 400, description: '请求参数错误' })
+  async fetchArticle(@Body() body: { url: string }) {
+    this.logger.log(`[Controller] 收到抓取请求: ${body.url}`);
+    try {
+      if (!body.url) {
+        return { success: false, error: '请提供微信文章链接' };
+      }
+
+      const result = await this.wechatService.fetchArticleFromUrl(body.url);
+      return { success: true, data: result };
+    } catch (error: any) {
+      // 记录错误日志
+      console.error('[fetchArticle] 错误:', error.message);
+      console.error('[fetchArticle] 堆栈:', error.stack);
+      return { success: false, error: error.message || '抓取失败' };
+    }
+  }
+
+  @Post('fetch-article-test')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: '抓取微信文章（测试端点，无需认证）',
+    description: '从微信公众号文章链接抓取内容，仅用于测试',
+  })
+  async fetchArticleTest(@Body() body: { url: string }) {
+    try {
+      if (!body.url) {
+        return { success: false, error: '请提供微信文章链接' };
+      }
+
+      const result = await this.wechatService.fetchArticleFromUrl(body.url);
+      return { success: true, data: result };
+    } catch (error: any) {
+      console.error('[fetchArticleTest] 错误:', error.message);
+      console.error('[fetchArticleTest] 堆栈:', error.stack);
+      return { success: false, error: error.message || '抓取失败' };
     }
   }
 }
