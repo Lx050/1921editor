@@ -8,7 +8,7 @@ declare const importScripts: (url: string) => void
 
 // 动态加载mammoth库
 // 动态加载mammoth库
-importScripts('https://cdn.jsdelivr.net/npm/mammoth@1.5.1/mammoth.browser.min.js')
+importScripts('/vendor/mammoth.browser.min.js')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const mammoth: any

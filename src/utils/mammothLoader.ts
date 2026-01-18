@@ -1,4 +1,4 @@
-const MAMMOTH_CDN_URL = 'https://cdn.jsdelivr.net/npm/mammoth@1.5.1/mammoth.browser.min.js'
+const MAMMOTH_LOCAL_URL = '/vendor/mammoth.browser.min.js'
 
 type MammothInstance = typeof import('mammoth')
 
@@ -51,7 +51,7 @@ export const loadMammoth = (): Promise<MammothInstance> => {
     }
 
     const script = document.createElement('script')
-    script.src = MAMMOTH_CDN_URL
+    script.src = MAMMOTH_LOCAL_URL
     script.async = true
     script.dataset.mammothLoader = 'true'
     script.addEventListener(
