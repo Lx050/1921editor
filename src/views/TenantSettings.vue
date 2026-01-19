@@ -227,7 +227,7 @@
 import { ref, onMounted } from 'vue';
 import api from '../utils/api';
 import { ElMessage } from 'element-plus';
-import { Link } from '@element-plus/icons-vue';
+// Link 图标现在通过自动导入引入
 import { useUserStore } from '../stores/userStore';
 
 interface TableConfig {

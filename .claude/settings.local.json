@@ -104,7 +104,28 @@
       "Bash(tar:*)",
       "Bash(scp:*)",
       "Bash(curl:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(findstr:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(npm --version:*)",
+      "Bash(npm run dev --help:*)",
+      "Bash(cmd.exe /c \"cd /d C:\\\\Users\\\\Lx050\\\\Desktop\\\\排版 && npm run dev\")",
+      "Bash(powershell.exe:*)",
+      "Bash(npx lighthouse:*)",
+      "Bash(python:*)",
+      "Bash(iconv:*)",
+      "Bash(npm run preview:*)",
+      "Bash(ping:*)",
+      "Bash(find:*)",
+      "Bash(npx vite-bundle-visualizer:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell:*)",
+      "Bash(bash \"C:\\\\Users\\\\Lx050\\\\.claude\\\\plugins\\\\marketplaces\\\\claude-plugins-official\\\\plugins\\\\ralph-loop\\\\scripts\\\\setup-ralph-loop.sh\" \"优化排版网站的 Lighthouse 性能分数。要求：\n  1. 运行 Lighthouse 获取当前分数\n  2. 分析性能问题\n  3. 逐个修复问题（图片优化、代码分割、懒加载等）\n  4. 每次修复后重新运行 Lighthouse 验证\n  5. 当所有分数达到 99+ 时输出 <promise>DONE</promise>\n\n  --max-iterations 30 --completion-promise \"\"DONE\"\"\")",
+      "Bash(bash:*)",
+      "Bash(du:*)",
+      "Bash(npx vite build:*)",
+      "Bash(npm ls unplugin-vue-components unplugin-auto-import)",
+      "Bash(npm ls:*)"
     ]
   }
 }

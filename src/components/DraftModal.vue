@@ -30,7 +30,7 @@
       <div v-if="qrCodeUrl" class="mb-4">
         <label class="block text-sm font-medium text-[#a0a0b0] mb-2">扫码查看草稿</label>
         <div class="flex justify-center bg-[#0a0a0c] p-4 rounded-lg border border-white/10">
-          <img :src="qrCodeUrl" alt="草稿二维码" class="w-32 h-32" />
+          <img :src="qrCodeUrl" alt="草稿二维码" class="w-32 h-32" loading="lazy" decoding="async" />
         </div>
       </div>
 

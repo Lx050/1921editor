@@ -36,22 +36,70 @@ export function buildHtml(
 
 	const htmlParts: string[] = []
 
-	// 添加HTML头部
+	// 获取配置
 	const configStore = useConfigStore()
 	const appStore = useAppStore()
-	htmlParts.push(configStore.currentHeader)
+
+	// 添加HTML头部（寒假模式跳过首尾常量）
+	const skipHeaderFooter = configStore.mode === 'winter_practice'
+	if (!skipHeaderFooter) {
+		htmlParts.push(configStore.currentHeader)
+	}
 
 	// --- 核心修改：如果是转载模式，直接使用 reprintHtml ---
 	if (configStore.mode === 'reprint' && appStore.reprintHtml) {
-		// 转换图片 URL (如果需要代理)
 		let processedHtml = appStore.reprintHtml
-		if (urlTransformer) {
-			processedHtml = processedHtml.replace(/src="([^"]+)"/g, (_, src) => {
-				const proxyUrl = urlTransformer(src)
-				return `src="${proxyUrl}"`
-			})
-		}
-		htmlParts.push(`<section class="reprint-content">${processedHtml}</section>`)
+
+		// 1. 处理图片和视频的 data-src (微信原生的延迟加载机制)
+		// 统一将真实的 data-src 转换为预览时可用的 src (代理后的)
+		processedHtml = processedHtml.replace(/<img[^>]*>/gi, (match) => {
+			// 提取 data-src
+			const dataSrcMatch = match.match(/data-src="([^"]+)"/)
+			const srcMatch = match.match(/src="([^"]+)"/)
+
+			const realUrl = (dataSrcMatch ? dataSrcMatch[1] : (srcMatch ? srcMatch[1] : ''))
+			if (!realUrl || realUrl.startsWith('data:')) return match
+
+			const finalUrl = urlTransformer ? urlTransformer(realUrl) : realUrl
+
+			// 确保有 src 且为代理地址，同时保留原来的 data-src 供后续还原
+			let result = match
+			if (dataSrcMatch) {
+				result = result.replace(/src="[^"]*"/, `src="${finalUrl}"`)
+				if (!result.includes('src=')) {
+					result = result.replace('<img', `<img src="${finalUrl}"`)
+				}
+			} else if (srcMatch) {
+				result = result.replace(/src="[^"]*"/, `src="${finalUrl}"`)
+			}
+			return result
+		})
+
+		// 2. 处理视频 (iframe)
+		processedHtml = processedHtml.replace(/<iframe[^>]*>/gi, (match) => {
+			const dataSrcMatch = match.match(/data-src="([^"]+)"/)
+			if (dataSrcMatch) {
+				const realUrl = dataSrcMatch[1]
+				const finalUrl = urlTransformer ? urlTransformer(realUrl) : realUrl
+				return match.replace('<iframe', `<iframe src="${finalUrl}"`).replace(/visibility:\s*hidden/g, 'visibility:visible')
+			}
+			return match
+		})
+
+		// 3. 移除一些会导致排版错乱的微信原生样式/元素
+		processedHtml = processedHtml.replace(/style="[^"]*visibility:\s*hidden[^"]*"/gi, (m) => m.replace(/visibility:\s*hidden/g, 'visibility:visible'))
+
+		htmlParts.push(`
+			<style>
+				.reprint-content { width: 100% !important; box-sizing: border-box !important; }
+				.reprint-content img { max-width: 100% !important; height: auto !important; }
+				.reprint-content iframe { width: 100% !important; min-height: 250px !important; border: 0 !important; }
+				.reprint-content .video_iframe { width: 100% !important; aspect-ratio: 16/9 !important; }
+			</style>
+			<section class="reprint-content">
+				${processedHtml}
+			</section>
+		`)
 	} else {
 		// 遍历内容块并应用装饰样式
 		let imageCounter = 0
@@ -67,26 +115,28 @@ export function buildHtml(
 		})
 	}
 
-	// ... footer logic unchanged ...
-	let footer = configStore.currentFooter
+	// 添加 Footer（寒假模式跳过首尾常量）
+	if (!skipHeaderFooter) {
+		let footer = configStore.currentFooter
 
-	footer = footer
-		.replace(/{{PLANNERS}}/g, appStore.plannerNames.join(' ') || '王雪 宋欣翼')
-		.replace(/{{COPYWRITERS}}/g, appStore.copywriterNames.join(' ') || (appStore.editorInput || ' '))
-		.replace(/{{EDITORS}}/g, appStore.editorNames.join(' ') || '朱梦鹤')
-		.replace(/{{TEAM_NAME}}/g, appStore.teamName || '社会实践队')
-		.replace(/{{SOURCE_ACCOUNT}}/g, appStore.sourceAccount || '校团委青年媒体中心')
-		.replace(/{{EDITOR_INPUT}}/g, appStore.editorInput || ' ')
+		footer = footer
+			.replace(/{{PLANNERS}}/g, appStore.plannerNames.join(' ') || '王雪 宋欣翼')
+			.replace(/{{COPYWRITERS}}/g, appStore.copywriterNames.join(' ') || (appStore.editorInput || ' '))
+			.replace(/{{EDITORS}}/g, appStore.editorNames.join(' ') || '朱梦鹤')
+			.replace(/{{TEAM_NAME}}/g, appStore.teamName || '社会实践队')
+			.replace(/{{SOURCE_ACCOUNT}}/g, appStore.sourceAccount || '校团委青年媒体中心')
+			.replace(/{{EDITOR_INPUT}}/g, appStore.editorInput || ' ')
 
-	if (appStore.teamProject) {
-		footer = footer.replace(/<p v-if="{{TEAM_PROJECT}}">.*?<\/p>/g, `<p>社会实践专项：${appStore.teamProject}</p>`)
-	} else {
-		footer = footer.replace(/<p v-if="{{TEAM_PROJECT}}">.*?<\/p>/g, '')
+		if (appStore.teamProject) {
+			footer = footer.replace(/<p v-if="{{TEAM_PROJECT}}">.*?<\/p>/g, `<p>社会实践专项：${appStore.teamProject}</p>`)
+		} else {
+			footer = footer.replace(/<p v-if="{{TEAM_PROJECT}}">.*?<\/p>/g, '')
+		}
+		footer = footer.replace(/{{TEAM_PROJECT}}/g, appStore.teamProject || '')
+
+		footer = `<div id="editable-footer" contenteditable="true" style="outline: none;">${footer}</div>`
+		htmlParts.push(footer)
 	}
-	footer = footer.replace(/{{TEAM_PROJECT}}/g, appStore.teamProject || '')
-
-	footer = `<div id="editable-footer" contenteditable="true" style="outline: none;">${footer}</div>`
-	htmlParts.push(footer)
 
 	return htmlParts.join('\n')
 }

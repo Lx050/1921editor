@@ -1,10 +1,29 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import viteCompression from 'vite-plugin-compression2'
+// import Components from 'unplugin-vue-components/vite'
+// import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+// import AutoImport from 'unplugin-auto-import/vite'
 
 export default defineConfig({
   plugins: [
     vue(),
+    // Element Plus 自动导入 - 按需加载组件 (临时禁用，需要先安装 unplugin 包)
+    // Components({
+    //   resolvers: [
+    //     ElementPlusResolver(),
+    //     (componentName) => {
+    //       if (componentName.startsWith('ElIcon')) {
+    //         return { name: componentName.slice(6), from: '@element-plus/icons-vue' }
+    //       }
+    //     }
+    //   ],
+    // }),
+    // AutoImport({
+    //   imports: ['vue', 'vue-router', 'pinia'],
+    //   dts: 'src/auto-imports.d.ts',
+    //   resolvers: [ElementPlusResolver()],
+    // }),
     // 启用Gzip和Brotli压缩
     viteCompression({
       algorithm: 'gzip',
@@ -97,6 +116,10 @@ export default defineConfig({
   },
   build: {
     // 优化构建配置
+    // 启用模块预加载
+    modulePreload: {
+      enable: true,
+    },
     rollupOptions: {
       output: {
         // 添加文件哈希值用于缓存破坏
@@ -122,9 +145,8 @@ export default defineConfig({
 
           return `assets/[name]-[hash][extname]`
         },
-        // 手动代码分割 - 解决300KB+体积警告
+        // 手动代码分割 - 优化包体积
         // 注意：Element Plus 必须与 Vue 核心在同一个 chunk，否则会导致循环依赖错误
-        // 错误表现为: "Cannot access 'Mc' before initialization"
         manualChunks: (id) => {
           // 将 node_modules 中的包进行分包
           if (id.includes('node_modules')) {
@@ -133,7 +155,12 @@ export default defineConfig({
               return 'vendor-vue'
             }
 
-            // 文档处理（mammoth 大库）
+            // Element Plus 依赖的库（ lodash-es, @ctrl/tinycolor 等）
+            if (id.includes('lodash-es') || id.includes('@ctrl') || id.includes('@element-plus')) {
+              return 'vendor-element-deps'
+            }
+
+            // 文档处理（mammoth 大库）- 懒加载
             if (id.includes('mammoth')) {
               return 'vendor-docx'
             }
@@ -163,7 +190,25 @@ export default defineConfig({
               return 'vendor-qrcode'
             }
 
-            // 其他第三方库
+            // heic2any - 图片转换库
+            if (id.includes('heic2any')) {
+              return 'vendor-image'
+            }
+
+            // 其他第三方库 - 进一步拆分
+            // 按包名分组，避免单个 vendor-other 过大
+            const match = id.match(/node_modules\/(@?[^/]+)/)
+            if (match) {
+              const pkgName = match[1]
+              // 较小的工具库合并到一起
+              const smallLibs = ['he', 'clone-deep', 'clipboard']
+              if (smallLibs.includes(pkgName)) {
+                return 'vendor-misc'
+              }
+              // 其他包按包名分组
+              return `vendor-${pkgName.replace('@', '')}`
+            }
+
             return 'vendor-other'
           }
         }
@@ -171,25 +216,48 @@ export default defineConfig({
     },
     // 启用CSS代码分割
     cssCodeSplit: true,
+    // 生产环境优化 - 移除 console.log
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
+      }
+    },
     // 生成sourcemap（生产环境建议关闭以减小体积）
     sourcemap: false, // 生产环境关闭 sourcemap
     // 设置chunk大小警告限制（默认500KB）
     chunkSizeWarningLimit: 300, // 降低限制以提前关注
-    // 优化压缩
-    minify: 'esbuild',
-    // 目标浏览器
+    // 目标浏览器 - 更现代的设置以减少 polyfill 体积
     target: 'es2020',
     // 资源内联阈值
     assetsInlineLimit: 4096, // 4kb以下内联
+    // Polyfill 模块预加载以提升兼容性
+    polyfillModulePreload: true,
   },
   // 优化依赖项
   optimizeDeps: {
-    include: ['vue', 'vue-router', 'pinia'],
+    include: [
+      'vue',
+      'vue-router',
+      'pinia',
+      'element-plus/es/components/button/style',
+      'element-plus/es/components/input/style',
+      'element-plus/es/components/form/style',
+    ],
     // 排除 7z-wasm，避免预构建导致 WASM 加载问题
     exclude: ['7z-wasm']
   },
   // 配置资源缓存
   cacheDir: 'node_modules/.vite',
   // 支持 WebAssembly 文件
-  assetsInclude: ['**/*.wasm']
+  assetsInclude: ['**/*.wasm'],
+  // 实验性功能优化
+  experimental: {
+    renderBuiltUrl(filename, { hostType }) {
+      // 对于同一源的文件，返回相对路径
+      return { relative: true }
+    }
+  }
 })

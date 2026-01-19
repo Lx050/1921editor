@@ -140,7 +140,7 @@
             <h3 class="text-xl font-bold text-gray-900">导入合并文章</h3>
             <p class="text-sm text-gray-500 mt-1">将新内容合并到当前文章中</p>
           </div>
-          <button @click="isMergeModalOpen = false" class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full">
+          <button @click="isMergeModalOpen = false" aria-label="关闭对话框" class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>

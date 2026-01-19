@@ -1,4 +1,4 @@
-version: '3.8'
+name: layout-engine
 
 services:
   # Frontend Service (Vue 3 + Nginx)
@@ -12,6 +12,8 @@ services:
       - backend
     networks:
       - app-network
+    volumes:
+      - ./src/dist:/usr/share/nginx/html
     restart: always
 
   # Backend Service (NestJS)
@@ -24,6 +26,7 @@ services:
     volumes:
       - ./content-backend/uploads:/app/uploads
       - ./content-backend/logs:/app/logs
+      - ./content-backend/dist:/app/dist
     depends_on:
       - db
     networks:

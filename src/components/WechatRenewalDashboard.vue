@@ -20,7 +20,7 @@
         <!-- 账号基本信息 -->
         <div class="account-header">
           <div class="account-info">
-            <img :src="account.avatar || '/icons/default-avatar.png'" class="account-avatar" />
+            <img :src="account.avatar || '/icons/default-avatar.png'" class="account-avatar" loading="lazy" decoding="async" :alt="account.nickname + '的头像'" />
             <div class="account-details">
               <h3 class="account-nickname">{{ account.nickname }}</h3>
               <p class="account-type" :class="account.type">

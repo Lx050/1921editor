@@ -10,14 +10,31 @@ declare const importScripts: (url: string) => void
 // 动态加载mammoth库
 importScripts('/vendor/mammoth.browser.min.js')
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const mammoth: any
+// Mammoth 类型定义
+interface MammothOptions {
+  styleMap?: string[]
+  includeDefaultStyleMap?: boolean
+  ignoreEmptyParagraphs?: boolean
+  convertImage?: boolean
+}
+
+interface MammothResult {
+  value: string
+  messages: Array<{ type: string; message: string }>
+}
+
+interface Mammoth {
+  extractRawText(input: { arrayBuffer: ArrayBuffer }, options: MammothOptions): Promise<MammothResult>
+  convertToHtml(input: { arrayBuffer: ArrayBuffer }, options: MammothOptions): Promise<MammothResult>
+  extractImages(input: { arrayBuffer: ArrayBuffer }): Promise<Array<{ src: string; buffer: Blob }>>
+}
+
+declare const mammoth: Mammoth
 
 // 类型定义
 interface DocxProcessOptions {
   includeDefaultStyleMap?: boolean
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  styleMap?: any[]
+  styleMap?: string[]
   convertImage?: boolean
   ignoreEmptyParagraphs?: boolean
 }
@@ -230,7 +247,7 @@ function sendProgress(id: string, progress: number, message: string): void {
 /**
  * 提取文档元数据
  */
-function extractMetadata(file: File, htmlResult: any): DocxProcessResult['metadata'] {
+function extractMetadata(file: File, htmlResult: MammothResult): DocxProcessResult['metadata'] {
   const metadata: DocxProcessResult['metadata'] = {
     title: file.name.replace(/\.[^/.]+$/, ""),
     created: new Date(file.lastModified)
@@ -248,14 +265,15 @@ function extractMetadata(file: File, htmlResult: any): DocxProcessResult['metada
 }
 
 // 监听错误
-self.onerror = (error: any) => {
+self.onerror = (error: string | Event) => {
   console.error('[DocxWorker] Worker错误:', error)
+  const message = typeof error === 'string' ? error : error.type
   self.postMessage({
     type: 'WORKER_ERROR',
     payload: {
-      error: error.message,
-      filename: error.filename,
-      lineno: error.lineno
+      error: message,
+      filename: typeof error === 'object' && 'filename' in error ? error.filename : undefined,
+      lineno: typeof error === 'object' && 'lineno' in error ? error.lineno : undefined
     }
   })
 }

@@ -110,7 +110,7 @@
               type="text"
               class="flex-1 px-3 py-1.5 text-sm border rounded-lg outline-none"
             />
-            <button @click="removeFromArray(appStore.copywriterNames, index)" class="text-gray-400 hover:text-red-500">×</button>
+            <button @click="removeFromArray(appStore.copywriterNames, index)" aria-label="删除此项" class="text-gray-400 hover:text-red-500">×</button>
           </div>
           <button @click="appStore.copywriterNames.push('')" class="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center">+ 添加作者</button>
         </div>

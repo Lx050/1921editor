@@ -47,9 +47,17 @@ export class AddWechatEntities1766335923109 implements MigrationInterface {
         `ALTER TABLE "users" ALTER COLUMN "isactive" SET NOT NULL`,
       );
     }
-    await queryRunner.query(
-      `CREATE UNIQUE INDEX "IDX_a80f2b71c4ce62405b1686a13b" ON "users" ("tenantId", "feishuId") `,
-    );
+    // 检查 feishuId 列是否存在再创建索引
+    const hasFeishuId = await queryRunner.query(`
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_name = 'users' AND column_name = 'feishuId'
+    `);
+    if (hasFeishuId.length) {
+      await queryRunner.query(
+        `CREATE UNIQUE INDEX "IDX_a80f2b71c4ce62405b1686a13b" ON "users" ("tenantId", "feishuId") `,
+      );
+    }
     await queryRunner.query(
       `CREATE INDEX "IDX_ee1c1577f1e3cfc6629cec86f5" ON "articles" ("tenantId") `,
     );

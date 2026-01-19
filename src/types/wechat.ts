@@ -20,6 +20,7 @@ export interface WechatImage {
     status: UploadStatus;   // 上传状态
     errorMsg?: string;      // 错误信息
     file?: File;            // 原始文件对象
+    originalIndex?: number; // 🆕 用户选择文件时的原始顺序（用于自动匹配）
 }
 
 /**

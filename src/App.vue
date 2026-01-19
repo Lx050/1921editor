@@ -1,4 +1,7 @@
 <template>
+  <!-- 跳过导航链接 - 提升可访问性 -->
+  <a href="#main-content" class="skip-link">跳转到主要内容</a>
+
   <div id="app" class="min-h-screen flex flex-col bg-[#f8f9fa]">
     <!-- 全局 Toast 通知 -->
     <Toast />
@@ -32,7 +35,7 @@
               </h1>
               <div class="flex items-center space-x-2">
                 <span class="text-[8px] md:text-[10px] tracking-widest text-blue-600 font-bold uppercase">Professional Edition</span>
-                <span class="text-[8px] md:text-[10px] text-gray-400">V1.0</span>
+                <span class="text-[8px] md:text-[10px] text-gray-500">V1.0</span>
               </div>
             </div>
           </div>
@@ -47,13 +50,13 @@
                     ? 'bg-blue-500 text-white shadow-md'
                     : currentStep > 1
                     ? 'bg-blue-100 text-blue-600'
-                    : 'bg-white text-gray-400 border border-gray-200'
+                    : 'bg-white text-gray-500 border border-gray-200'
                 ]"
               >
                 <span v-if="currentStep > 1">✓</span>
                 <span v-else>1</span>
               </div>
-              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 1 ? 'text-gray-900' : 'text-gray-400'">
+              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 1 ? 'text-gray-900' : 'text-gray-500'">
                 输入文本
               </span>
             </div>
@@ -68,13 +71,13 @@
                     ? 'bg-purple-500 text-white shadow-md'
                     : currentStep > 2
                     ? 'bg-purple-100 text-purple-600'
-                    : 'bg-white text-gray-400 border border-gray-200'
+                    : 'bg-white text-gray-500 border border-gray-200'
                 ]"
               >
                 <span v-if="currentStep > 2">✓</span>
                 <span v-else>2</span>
               </div>
-              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 2 ? 'text-gray-900' : 'text-gray-400'">
+              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 2 ? 'text-gray-900' : 'text-gray-500'">
                 编辑内容
               </span>
             </div>
@@ -87,20 +90,21 @@
                   'w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold transition-all duration-300',
                   currentStep === 3
                     ? 'bg-rose-500 text-white shadow-md'
-                    : 'bg-white text-gray-400 border border-gray-200'
+                    : 'bg-white text-gray-500 border border-gray-200'
                 ]"
               >
                 3
               </div>
-              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 3 ? 'text-gray-900' : 'text-gray-400'">
+              <span class="ml-2 md:ml-3 text-xs md:text-sm font-medium hidden lg:inline" :class="currentStep === 3 ? 'text-gray-900' : 'text-gray-500'">
                 生成预览
               </span>
             </div>
           </div>
 
-          <!-- 返回首页按钮 -->
+          <!-- 返回首页按钮 - 添加可访问性属性 -->
           <button
             @click="goToHome"
+            aria-label="返回首页"
             class="flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg md:rounded-xl transition-all duration-200 shadow-md shadow-blue-500/20 group flex-shrink-0"
           >
             <svg class="w-3.5 h-3.5 md:w-4 md:h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +118,7 @@
     </header>
 
     <!-- 主要内容区域 -->
-    <main class="flex-1 flex flex-col min-h-0 relative">
+    <main id="main-content" role="main" class="flex-1 flex flex-col min-h-0 relative">
       <router-view />
     </main>
   </div>
@@ -167,6 +171,39 @@ const goToHome = () => {
 </script>
 
 <style>
+/* 跳过导航链接 - 可访问性优化 */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #000;
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 9999;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* 全局焦点样式 - 可访问性优化 */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 /* 全局样式修复 */
 #app {
   width: 100vw;

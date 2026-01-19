@@ -581,6 +581,140 @@ const handleImageSelect = (image: WechatImage): void => {
   })
 }
 
+/**
+ * 🚀 新功能：图片自动匹配填充
+ * 当新图片上传成功后，自动按顺序填充到未匹配的占位符中
+ */
+const autoMatchImages = (): void => {
+  if (!finalHtml.value) return
+  
+  // 1. 从 finalHtml 中提取所有占位符 ID
+  const placeholderRegex = /data-placeholder="([^"]+)"/g
+  const allPlaceholderIds: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = placeholderRegex.exec(finalHtml.value)) !== null) {
+    allPlaceholderIds.push(match[1])
+  }
+  
+  if (allPlaceholderIds.length === 0) {
+    step3Logger.debug('没有找到占位符，跳过自动匹配')
+    return
+  }
+  
+  // 2. 过滤出未填充的占位符
+  const unfilledPlaceholders = allPlaceholderIds.filter(
+    id => !imageReplacements.value[id]
+  )
+  
+  if (unfilledPlaceholders.length === 0) {
+    step3Logger.debug('所有占位符都已填充，跳过自动匹配')
+    return
+  }
+  
+  // 3. 获取已使用的微信 URL（避免重复使用同一张图）
+  const usedUrls = new Set(
+    Object.values(imageReplacements.value).map(r => r.wechatUrl)
+  )
+  
+  // 4. 获取未使用的、上传成功的图片
+  const unusedImages = successfulWechatImages.value.filter(
+    img => img.url && !usedUrls.has(img.url)
+  )
+  
+  if (unusedImages.length === 0) {
+    step3Logger.debug('没有未使用的图片，跳过自动匹配')
+    return
+  }
+  
+  // 🔑 关键改进：按用户选择顺序排序，确保与原文稿顺序一致
+  // 优先使用 originalIndex（用户选择文件时的原始顺序）
+  // 回退方案：按文件名中的数字序号排序
+  const sortedImages = [...unusedImages].sort((a, b) => {
+    // 优先使用 originalIndex（最可靠）
+    if (a.originalIndex !== undefined && b.originalIndex !== undefined) {
+      return a.originalIndex - b.originalIndex
+    }
+    
+    // 回退：提取文件名中的数字序号
+    const extractNumber = (name: string): number => {
+      const leadingMatch = name.match(/^(\d+)/)
+      if (leadingMatch) return parseInt(leadingMatch[1], 10)
+      const anyMatch = name.match(/(\d+)/)
+      if (anyMatch) return parseInt(anyMatch[1], 10)
+      return Number.MAX_SAFE_INTEGER
+    }
+    
+    const numA = extractNumber(a.name || '')
+    const numB = extractNumber(b.name || '')
+    
+    if (numA === numB) {
+      return (a.name || '').localeCompare(b.name || '', 'zh-CN')
+    }
+    
+    return numA - numB
+  })
+  
+  step3Logger.debug('排序后的图片顺序:', sortedImages.map(img => `${img.name}(idx:${img.originalIndex ?? 'N/A'})`).join(', '))
+  
+  // 5. 按顺序匹配
+  const matchCount = Math.min(unfilledPlaceholders.length, sortedImages.length)
+  step3Logger.debug(`开始自动匹配: ${matchCount} 张图片 -> ${matchCount} 个占位符`)
+  
+  for (let i = 0; i < matchCount; i++) {
+    const placeholderId = unfilledPlaceholders[i]
+    const image = sortedImages[i]
+    
+    const previewUrl = image.localPreviewUrl || image.proxyUrl || getWechatProxyUrl(image.url)
+    const wechatUrl = restoreWechatUrl(image.url || image.proxyUrl || previewUrl)
+    
+    // 更新 imageReplacements
+    imageReplacements.value[placeholderId] = {
+      previewUrl,
+      wechatUrl
+    }
+    
+    // 同步更新 Block meta（持久化）
+    try {
+      const parts = placeholderId.split('_')
+      if (parts.length >= 2) {
+        const globalImageIndex = parseInt(parts[1], 10)
+        const subIndex = parts.length > 2 ? parseInt(parts[2], 10) : 0
+        
+        const result = findBlockByImageIndex(contentBlocks.value, globalImageIndex)
+        
+        if (result && result.block) {
+          const block = result.block
+          const newMeta = { ...block.meta }
+          
+          if (block.type === 'image_double' || block.type === 'image_double_caption') {
+            const existingUrls = Array.isArray(newMeta.replacementUrls) ? newMeta.replacementUrls : undefined
+            const urls = existingUrls ? [...existingUrls] : ['', '']
+            if (subIndex === 1) urls[0] = wechatUrl
+            if (subIndex === 2) urls[1] = wechatUrl
+            newMeta.replacementUrls = urls
+          } else {
+            newMeta.replacementUrl = wechatUrl
+          }
+          
+          appStore.updateBlockMeta(block.id, newMeta)
+        }
+      }
+    } catch (e) {
+      step3Logger.error('自动匹配时更新 Block Meta 失败:', e)
+    }
+    
+    // 更新 iframe DOM
+    updateIframeImageDom(placeholderId, previewUrl)
+  }
+  
+  step3Logger.debug(`✅ 自动匹配完成: ${matchCount} 张图片已填充`)
+  
+  // 触发保存
+  saveDraft().catch(e => {
+    step3Logger.error('自动匹配后保存失败:', e)
+  })
+}
+
 // 监听路由变化，切换文章时通过清空 store 防止图片串台
 watch(
   () => route.params.id,
@@ -597,7 +731,8 @@ watch(
 )
 
 // 自动保存图片逻辑 (增加 loading 检查，防止初始加载时覆盖为空)
-watch(wechatImages, async (newImages) => {
+// 同时触发自动匹配功能，让新上传的图片自动填充到占位符
+watch(wechatImages, async (newImages, oldImages) => {
   if (isGenerating.value) {
     step3Logger.debug('正在加载中，跳过自动保存')
     return
@@ -644,6 +779,19 @@ watch(wechatImages, async (newImages) => {
     await articleApi.updateStep3(articleId, persistentImages as unknown as { [key: string]: unknown }[])
   } catch (e) {
     step3Logger.error('保存图片失败', e)
+  }
+  
+  // 🚀 新功能：检测到新图片上传成功时，触发自动匹配
+  // 判断依据：新数组中成功的图片比旧数组多
+  const oldSuccessCount = (oldImages || []).filter(img => img.status === 'success' && img.mediaId).length
+  const newSuccessCount = newImages.filter(img => img.status === 'success' && img.mediaId).length
+  
+  if (newSuccessCount > oldSuccessCount && finalHtml.value) {
+    step3Logger.debug(`检测到新图片上传成功 (${oldSuccessCount} -> ${newSuccessCount})，触发自动匹配...`)
+    // 使用 nextTick 确保 DOM 更新后再执行
+    setTimeout(() => {
+      autoMatchImages()
+    }, 100)
   }
 }, { deep: true })
 
@@ -992,11 +1140,16 @@ const getOutputHtml = (): string => {
   let html = finalHtml.value
   
   // 1. 全局还原微信 URL (将代理链接转回原始链接)
-  html = html.replace(/src="([^"]+)"/g, (_match, src) => {
-      // 解码 HTML 实体 (如果有)
+  // 同时处理 src 和 data-src
+  const urlRegex = /(src|data-src)="([^"]+)"/g
+  html = html.replace(urlRegex, (match, attr, src) => {
+      // 跳过 base64
+      if (src.startsWith('data:')) return match
+      
+      // 解码 HTML 实体
       const cleanSrc = src.replace(/&amp;/g, '&')
       const original = restoreWechatUrl(cleanSrc)
-      return `src="${original}"`
+      return `${attr}="${original}"`
   })
   
   // 2. 应用所有图片替换（使用微信 URL 用于最终输出）
@@ -1013,6 +1166,10 @@ const getOutputHtml = (): string => {
   
   // 3. 移除 data-placeholder 属性（最终输出不需要）
   html = html.replace(/ data-placeholder="[^"]*"/g, '')
+
+  // 4. 移除编辑器特有的辅助属性
+  html = html.replace(/ contenteditable="true"/g, '')
+  html = html.replace(/ id="editable-footer"/g, '')
   
   return html
 }

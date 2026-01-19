@@ -37,6 +37,7 @@
             v-if="isSelected"
             :value="block.type"
             @change="$emit('changeType', block.id, ($event.target as HTMLSelectElement).value as BlockType)"
+            aria-label="选择内容块类型"
             class="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-medium text-black hover:border-blue-400 focus:border-blue-500 focus:outline-none cursor-pointer"
             @click.stop
           >
@@ -46,7 +47,7 @@
           </select>
           <span 
             v-else 
-            class="px-2 py-1 rounded text-[10px] font-medium border bg-gray-50 text-gray-400 border-gray-100"
+            class="px-2 py-1 rounded text-[10px] font-medium border bg-gray-50 text-gray-500 border-gray-100"
           >
             {{ getBlockTypeDisplayName(block.type) }}
           </span>
@@ -74,7 +75,7 @@
           </button>
           <button
             @click.stop="$emit('delete', block.id)"
-            class="p-1.5 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+            class="p-1.5 rounded text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
             title="删除"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +96,7 @@
         @dragleave="onContainerAreaDragLeave"
         @drop="onContainerAreaDrop"
       >
-        <div v-if="!block.children || block.children.length === 0" class="text-center py-4 text-xs text-gray-400 italic pointer-events-none">
+        <div v-if="!block.children || block.children.length === 0" class="text-center py-4 text-xs text-gray-500 italic pointer-events-none">
           拖拽其他块到此处进行组合
         </div>
         <TransitionGroup name="block-list" tag="div" class="space-y-3">
@@ -127,6 +128,9 @@
           <img
             :src="block.meta.aiImageUrl as string"
             class="w-full rounded-lg shadow-sm border border-gray-200"
+            loading="lazy"
+            decoding="async"
+            :alt="'AI 生成的图片: ' + (block.text?.substring(0, 50) || '未命名')"
           />
         </div>
         <input

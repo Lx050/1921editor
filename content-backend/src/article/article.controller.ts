@@ -37,6 +37,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from '../entities/user.entity';
 
 @ApiTags('articles')
 @ApiBearerAuth()
@@ -60,11 +61,11 @@ export class ArticleController {
   @ApiOperation({ summary: '创建文章' })
   @ApiResponse({ status: 201, description: '文章创建成功' })
   @ApiResponse({ status: 400, description: '参数验证失败' })
-  create(@Body() dto: CreateArticleDto, @Request() req: { user: any }) {
+  create(@Body() dto: CreateArticleDto, @Request() req: { user: User }) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.create(dto.title, {
       ...dto,
-      ownerId: req.user?.id || null,
+      ownerId: req.user?.id ?? undefined,
       tenantId,
     });
   }
@@ -85,7 +86,7 @@ export class ArticleController {
     description: '每页数量（最大 100）',
   })
   findAll(
-    @Request() req: { user: any },
+    @Request() req: { user: User },
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
   ) {
@@ -104,7 +105,7 @@ export class ArticleController {
   @ApiResponse({ status: 200, description: '获取成功' })
   @ApiResponse({ status: 404, description: '文章不存在' })
   @ApiParam({ name: 'id', description: '文章 ID', type: String })
-  findOne(@Param('id') id: string, @Request() req: { user: any }) {
+  findOne(@Param('id') id: string, @Request() req: { user: User }) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.findOne(id, tenantId);
   }
@@ -117,7 +118,7 @@ export class ArticleController {
   async getFile(
     @Param('id') id: string,
     @Res() res: Response,
-    @Request() req: { user: any },
+    @Request() req: { user: User },
   ) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     await this.articleService.assertTenantAccess(id, tenantId);
@@ -164,7 +165,7 @@ export class ArticleController {
   updateConfig(
     @Param('id') id: string,
     @Body() dto: UpdateArticleConfigDto,
-    @Request() req: { user: any },
+    @Request() req: { user: User },
   ) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.updateStep1(
@@ -185,7 +186,7 @@ export class ArticleController {
   updateContent(
     @Param('id') id: string,
     @Body() dto: UpdateArticleContentDto,
-    @Request() req: { user: any },
+    @Request() req: { user: User },
   ) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.updateStep2(
@@ -204,8 +205,8 @@ export class ArticleController {
   @ApiParam({ name: 'id', description: '文章 ID', type: String })
   updateImages(
     @Param('id') id: string,
-    @Body() body: any,
-    @Request() req: { user: any },
+    @Body() body: UpdateArticleImagesDto,
+    @Request() req: { user: User },
   ) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     console.log(
@@ -230,7 +231,7 @@ export class ArticleController {
   updateStep3Content(
     @Param('id') id: string,
     @Body() dto: UpdateArticleContentDto,
-    @Request() req: { user: any },
+    @Request() req: { user: User },
   ) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.updateStep3Content(
@@ -246,7 +247,7 @@ export class ArticleController {
   @ApiResponse({ status: 200, description: '发布成功' })
   @ApiResponse({ status: 404, description: '文章不存在' })
   @ApiParam({ name: 'id', description: '文章 ID', type: String })
-  publish(@Param('id') id: string, @Request() req: { user: any }) {
+  publish(@Param('id') id: string, @Request() req: { user: User }) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.publish(id, req.user?.id, tenantId);
   }
@@ -257,7 +258,7 @@ export class ArticleController {
   @ApiResponse({ status: 200, description: '草稿保存成功' })
   @ApiResponse({ status: 404, description: '文章不存在' })
   @ApiParam({ name: 'id', description: '文章 ID', type: String })
-  async saveDraft(@Param('id') id: string, @Request() req: { user: any }) {
+  async saveDraft(@Param('id') id: string, @Request() req: { user: User }) {
     return this.articleService.saveDraft(id, req.user);
   }
 
@@ -266,7 +267,7 @@ export class ArticleController {
   @ApiResponse({ status: 200, description: '删除成功' })
   @ApiResponse({ status: 404, description: '文章不存在' })
   @ApiParam({ name: 'id', description: '文章 ID', type: String })
-  remove(@Param('id') id: string, @Request() req: { user: any }) {
+  remove(@Param('id') id: string, @Request() req: { user: User }) {
     const tenantId = req.user?.tenantId || this.getDefaultTenantId();
     return this.articleService.delete(id, tenantId);
   }

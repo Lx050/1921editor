@@ -3,7 +3,16 @@
  * 支持将 HEIC/HEIF 等浏览器不支持的格式转换为 JPEG
  */
 
-import heic2any from 'heic2any'
+// 动态导入 heic2any (1.3MB) - 仅在需要时加载
+let heic2anyLoader: Promise<typeof import('heic2any').default> | null = null
+
+async function loadHeic2any() {
+  if (heic2anyLoader) {
+    return heic2anyLoader
+  }
+  heic2anyLoader = import('heic2any').then(m => m.default || m)
+  return heic2anyLoader
+}
 
 /** 需要转换的图片格式 (浏览器或微信不原生支持) */
 const FORMATS_NEED_CONVERSION = ['.heic', '.heif']
@@ -43,6 +52,8 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
     console.log('[ImageConverter] 开始转换 HEIC:', file.name)
 
     try {
+        const heic2any = await loadHeic2any()
+
         const result = await heic2any({
             blob: file,
             toType: 'image/jpeg',

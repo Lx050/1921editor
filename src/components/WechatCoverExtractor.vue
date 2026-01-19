@@ -9,8 +9,8 @@
           🖼️
         </div>
         <div>
-          <h3 class="text-lg font-bold text-gray-900 group-hover:text-cyan-600 transition-colors">封面提取</h3>
-          <span class="text-[10px] text-cyan-600 font-bold uppercase tracking-wider">Cover Extractor</span>
+          <h3 class="text-lg font-bold text-gray-900 group-hover:text-cyan-700 transition-colors">封面提取</h3>
+          <span class="text-[10px] text-cyan-700 font-bold uppercase tracking-wider">Cover Extractor</span>
         </div>
       </div>
 
@@ -28,9 +28,10 @@
             class="w-full pl-3 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
             @keyup.enter="handleExtract"
           />
-          <button 
+          <button
             @click="handleExtract"
             :disabled="loading || !url.trim()"
+            aria-label="提取封面"
             class="absolute right-2 top-1.5 p-1.5 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             <svg v-if="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,8 +58,9 @@
               <div class="absolute inset-0 bg-black/20 group-hover/cover:bg-black/10 transition-colors"></div>
               
               <!-- 右上角关闭 -->
-              <button 
-                @click="coverUrl = ''" 
+              <button
+                @click="coverUrl = ''"
+                aria-label="关闭预览"
                 class="absolute top-2 right-2 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-sm transition-all scale-0 group-hover/cover:scale-100"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,11 +73,12 @@
             <div class="flex flex-col space-y-2">
               <div class="group/link flex items-center p-3 bg-cyan-50/50 border border-cyan-100 rounded-xl hover:border-cyan-200 transition-all">
                 <div class="flex-1 min-w-0 pr-3">
-                  <p class="text-[10px] text-cyan-600 font-bold uppercase tracking-wider mb-1">图片直链 URL</p>
+                  <p class="text-[10px] text-cyan-700 font-bold uppercase tracking-wider mb-1">图片直链 URL</p>
                   <p class="text-xs text-gray-700 font-mono truncate select-all">{{ coverUrl }}</p>
                 </div>
-                <button 
+                <button
                   @click="copyLink"
+                  aria-label="复制链接到剪贴板"
                   class="flex items-center space-x-1.5 px-3 py-1.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 active:scale-95 transition-all shadow-sm"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +91,7 @@
               <a 
                 :href="coverUrl" 
                 target="_blank"
-                class="flex items-center justify-center space-x-2 py-2 text-xs text-gray-500 hover:text-cyan-600 transition-colors"
+                class="flex items-center justify-center space-x-2 py-2 text-xs text-gray-500 hover:text-cyan-700 transition-colors"
               >
                 <span>在新窗口查看原图</span>
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

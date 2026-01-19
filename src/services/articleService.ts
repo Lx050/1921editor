@@ -24,7 +24,7 @@ export class ArticleService {
             const saveTasks = []
 
             // 递归清理 Block 数据，保留 children 和所有元数据
-            const cleanBlockRecursive = (block: ContentBlock): any => {
+            const cleanBlockRecursive = (block: ContentBlock): ContentBlock => {
                 return {
                     id: block.id,
                     type: block.type,
@@ -102,7 +102,7 @@ export class ArticleService {
         if (!articleId) return
 
         try {
-            const cleanBlockRecursive = (block: ContentBlock): any => {
+            const cleanBlockRecursive = (block: ContentBlock): ContentBlock => {
                 return {
                     id: block.id,
                     type: block.type,

@@ -3,9 +3,8 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-// 导入 Element Plus
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+// Element Plus 已通过 unplugin-vue-components 自动导入，无需手动引入完整库
+// 组件按需自动加载，大幅减少包体积
 
 // 导入样式文件
 import './styles/main.css'
@@ -17,7 +16,6 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-app.use(ElementPlus)
 
 // 性能标记
 if (typeof window !== 'undefined' && window.performance) {
@@ -45,5 +43,18 @@ if (typeof window !== 'undefined' && window.performance) {
       const duration = mountedMark.startTime - startMark.startTime
       console.log(`🚀 App load time: ${duration.toFixed(2)}ms`)
     }
+  })
+}
+
+// 注册 Service Worker (仅生产环境)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('✅ Service Worker registered:', registration.scope)
+      })
+      .catch((error) => {
+        console.error('❌ Service Worker registration failed:', error)
+      })
   })
 }

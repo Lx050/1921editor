@@ -11,7 +11,7 @@
       >
         <span class="text-lg">{{ toastIcon(toast.type) }}</span>
         <span class="flex-1 text-sm font-medium">{{ toast.message }}</span>
-        <button @click="removeToast(toast.id)" class="opacity-60 hover:opacity-100 transition-opacity">
+        <button @click="removeToast(toast.id)" aria-label="关闭通知" class="opacity-60 hover:opacity-100 transition-opacity">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>

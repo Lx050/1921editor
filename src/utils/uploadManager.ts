@@ -30,6 +30,7 @@ interface UploadTask {
     result?: WechatImage;
     batchId: number;
     abortController?: AbortController;
+    originalIndex: number; // 🆕 用户选择文件的原始顺序
 }
 
 /**
@@ -77,13 +78,18 @@ export class UploadManager {
             console.log(`[Upload Manager] [BATCH_START] 开始批量上传 ${files.length} 个文件`);
         }
 
-        for (const file of files) {
+        // 记录当前队列长度作为起始索引
+        const startIndex = this.queue.length;
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
             const task: UploadTask = {
                 id: `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 file,
                 retryCount: 0,
                 status: 'pending',
                 batchId: this.batchId,
+                originalIndex: startIndex + i, // 🆕 记录原始顺序
             };
             this.queue.push(task);
         }
@@ -144,6 +150,7 @@ export class UploadManager {
                     localPreviewUrl: localPreviewUrl,
                     name: task.file.name,
                     status: 'success',
+                    originalIndex: task.originalIndex, // 🆕 传递原始顺序
                 };
                 console.log(`[Upload Manager] [SUCCESS] ${task.file.name} 上传成功`);
                 this.onImageUploadedCallback?.(task.result);
