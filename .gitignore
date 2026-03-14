@@ -1,46 +1,76 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+out/
+temp/
+*.local
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
+!.env.example
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Build outputs
-build/
-out/
-temp/
-
 # OS generated files
 .DS_Store
-.DS_Store?
+Thumbs.db
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
-Thumbs.db
 
-# Deployment configuration (should not be committed)
+# Debug artifacts (never commit)
+*_debug.json
+*_debug.txt
+debug_*.json
+debug_*.txt
+build_error*.txt
+migration_error*.txt
+*_log.txt
+schema_audit.txt
+
+# Temporary / backup source files
+*.tmp
+*.bak
+*.orig
+
+# User uploads (store externally, not in git)
+uploads/
+content-backend/uploads/
+
+# Binary archives (use releases, not git)
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# Test fixtures (large binaries)
+test/*.docx
+test/*.zip
+
+# Lighthouse reports (keep only latest in docs/)
+lighthouse-reports/
+
+# Deployment config
 config/

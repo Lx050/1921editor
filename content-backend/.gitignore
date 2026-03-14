@@ -37,11 +37,29 @@ Thumbs.db
 *.sqlite
 *.db
 
-# Uploads and data
+# Uploads (user-uploaded files, store externally)
+uploads/
 data/*
 !data/.gitkeep
 backup/*
 !backup/.gitkeep
+
+# Debug artifacts
+*_debug.json
+*_debug.txt
+debug_*.json
+debug_*.txt
+build_error*.txt
+migration_error*.txt
+*_log.txt
+schema_audit.txt
+all_tables.txt
+tables.txt
+
+# Temporary / backup source files
+*.tmp
+*.bak
+*.orig
 
 # Test coverage
 coverage/
