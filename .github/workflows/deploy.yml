@@ -11,12 +11,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+      # 跳过 setup-node：服务器已安装 Node.js v22
+      # 直接使用系统 Node，避免国内服务器从 GitHub 下载慢的问题
+      - name: Verify Node.js
+        run: |
+          node -v
+          npm -v
 
       - name: Install dependencies
         run: npm ci
