@@ -18,7 +18,8 @@ git fetch origin "$BRANCH"
 git reset --hard "origin/$BRANCH"
 
 # 安装依赖并构建
-npm ci
+# 确保 Node >= 22 LTS
+npm ci --prefer-offline
 npx vite build
 
 # 同步到站点目录
