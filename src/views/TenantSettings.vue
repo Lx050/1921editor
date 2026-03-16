@@ -179,6 +179,64 @@
       </div>
     </div>
 
+    <!-- 组织模板配置 -->
+    <div class="config-section">
+      <div class="section-header">
+        <h2>组织模板配置</h2>
+        <el-tag type="info">全员共享</el-tag>
+      </div>
+
+      <div class="config-description">
+        <p>设置组织的首尾图模板和排版样式，保存后所有团队成员自动使用此配置。</p>
+        <p class="hint-text">支持从微信编辑器 / 135编辑器直接复制粘贴富文本到画布中。</p>
+      </div>
+
+      <!-- 模式选择 -->
+      <div style="margin-bottom: 16px;">
+        <el-radio-group v-model="orgEditMode" size="small">
+          <el-radio-button label="daily">日常模式</el-radio-button>
+          <el-radio-button label="three_rural">三下乡</el-radio-button>
+          <el-radio-button label="reprint">转载</el-radio-button>
+        </el-radio-group>
+      </div>
+
+      <!-- 首图编辑器 -->
+      <OrgTemplateEditor
+        title="首图模板"
+        type="header"
+        :mode="orgEditMode"
+        :default-html="getDefaultHeader(orgEditMode)"
+        :custom-html="orgConfigStore.getCustomHeader(orgEditMode)"
+        @save="(html) => orgConfigStore.setHeader(orgEditMode, html)"
+        @reset="orgConfigStore.clearHeader(orgEditMode)"
+      />
+
+      <!-- 尾图编辑器 -->
+      <OrgTemplateEditor
+        title="尾图模板"
+        type="footer"
+        :mode="orgEditMode"
+        :default-html="getDefaultFooter(orgEditMode)"
+        :custom-html="orgConfigStore.getCustomFooter(orgEditMode)"
+        @save="(html) => orgConfigStore.setFooter(orgEditMode, html)"
+        @reset="orgConfigStore.clearFooter(orgEditMode)"
+      />
+
+      <!-- 样式预设 -->
+      <OrgStylePresets
+        :preset="orgConfigStore.stylePreset"
+        :default-preset="orgConfigStore.DEFAULT_STYLE_PRESET"
+        @update="orgConfigStore.updateStylePreset"
+        @reset="orgConfigStore.resetStylePreset()"
+      />
+
+      <!-- 导入导出 -->
+      <div class="org-config-export" style="display: flex; gap: 8px; margin-top: 12px;">
+        <el-button size="small" @click="handleExportOrgConfig">导出配置</el-button>
+        <el-button size="small" @click="handleImportOrgConfig">导入配置</el-button>
+      </div>
+    </div>
+
     <!-- 租户信息 -->
     <div class="tenant-info">
       <h3>当前租户信息</h3>
@@ -229,13 +287,63 @@ import api from '../utils/api';
 import { ElMessage } from 'element-plus';
 import { Link } from '@element-plus/icons-vue';
 import { useUserStore } from '../stores/userStore';
+import { DEFAULT_HEADERS, DEFAULT_FOOTERS } from '../stores/configStore';
+import type { WorkMode } from '../stores/configStore';
+import { useOrgConfigStore } from '../stores/orgConfigStore';
+import OrgTemplateEditor from '../components/OrgTemplateEditor.vue';
+import OrgStylePresets from '../components/OrgStylePresets.vue';
 
 const userStore = useUserStore();
+const orgConfigStore = useOrgConfigStore();
 const userTableUrl = ref('');
 const articleTableUrl = ref('');
 const loading = ref(false);
 const inviteCodeLoading = ref(false);
 const inviteCodeInput = ref('');
+const orgEditMode = ref<'daily' | 'three_rural' | 'reprint'>('daily');
+
+// 获取默认首图 HTML（直接读取常量，不触发 setMode 副作用）
+function getDefaultHeader(mode: string): string {
+  return DEFAULT_HEADERS[mode as WorkMode] || DEFAULT_HEADERS.daily;
+}
+
+function getDefaultFooter(mode: string): string {
+  return DEFAULT_FOOTERS[mode as WorkMode] || DEFAULT_FOOTERS.daily;
+}
+
+function handleExportOrgConfig() {
+  const json = orgConfigStore.exportConfig();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `org-template-config-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  ElMessage.success('配置已导出');
+}
+
+function handleImportOrgConfig() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const success = orgConfigStore.importConfig(text);
+      if (success) {
+        ElMessage.success('配置导入成功');
+      } else {
+        ElMessage.error('配置文件格式错误');
+      }
+    } catch {
+      ElMessage.error('读取文件失败');
+    }
+  };
+  input.click();
+}
 const config = ref<any>({
   userTable: null,
   articleTable: null,

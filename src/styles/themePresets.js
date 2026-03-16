@@ -113,6 +113,162 @@ export const themePresets = [
       body: 'body_rounded_bubble',
       intro: 'intro_gradient_left'
     }
+  },
+  // ========== 校园主题 ==========
+  {
+    id: 'theme_youth_campus',
+    name: '青春校园',
+    description: '清新蓝色校园风格，适合日常校园推送',
+    colorScheme: '#4A9FF5',
+    styles: {
+      title: 'title_graduation_cap',
+      body: 'body_campus_card',
+      intro: 'intro_youth_quote'
+    }
+  },
+  {
+    id: 'theme_graduation',
+    name: '毕业季',
+    description: '温暖金色毕业风格，适合毕业季、表彰类内容',
+    colorScheme: '#F59E0B',
+    styles: {
+      title: 'title_star_youth',
+      body: 'body_notebook_lined',
+      intro: 'intro_growth_green'
+    }
+  },
+  {
+    id: 'theme_back_to_school',
+    name: '开学季',
+    description: '活力绿色开学风格，适合新学期、迎新类内容',
+    colorScheme: '#10B981',
+    styles: {
+      title: 'title_book_open',
+      body: 'body_spring_green',
+      intro: 'intro_campus_announce'
+    }
+  },
+  {
+    id: 'theme_knowledge_light',
+    name: '知识之光',
+    description: '明亮知识风格，适合学术讲座、学习分享内容',
+    colorScheme: '#F59E0B',
+    styles: {
+      title: 'title_lightbulb',
+      body: 'body_sticky_note',
+      intro: 'intro_study_tip'
+    }
+  },
+  {
+    id: 'theme_club_active',
+    name: '活力社团',
+    description: '活泼紫色风格，适合社团活动、校园文化内容',
+    colorScheme: '#7C3AED',
+    styles: {
+      title: 'title_flag_banner',
+      body: 'body_pink_ribbon',
+      intro: 'intro_reading_corner'
+    }
+  },
+  {
+    id: 'theme_campus_bulletin',
+    name: '校园公告',
+    description: '醒目通知风格，适合校园通知、考试安排内容',
+    colorScheme: '#EF4444',
+    styles: {
+      title: 'title_megaphone',
+      body: 'body_bulletin',
+      intro: 'intro_exam_notice'
+    }
+  },
+  {
+    id: 'theme_spring_campus',
+    name: '春日校园',
+    description: '温柔粉色风格，适合春游、文艺汇演内容',
+    colorScheme: '#EC4899',
+    styles: {
+      title: 'title_cherry_blossom',
+      body: 'body_sunflower',
+      intro: 'intro_spring_bloom'
+    }
+  },
+  {
+    id: 'theme_chalkboard',
+    name: '黑板风',
+    description: '经典黑板教室风格，适合课堂笔记、教学内容',
+    colorScheme: '#2D5016',
+    styles: {
+      title: 'title_campus_board',
+      body: 'body_chalkboard',
+      intro: 'intro_campus_news'
+    }
+  },
+  // ========== SOTA 灵感新增校园主题 ==========
+  {
+    id: 'theme_sports_meet',
+    name: '运动会',
+    description: '活力运动风格，适合运动会、体育赛事内容',
+    colorScheme: '#EF4444',
+    styles: {
+      title: 'title_sports_run',
+      body: 'body_event_card',
+      intro: 'intro_exam_notice'
+    }
+  },
+  {
+    id: 'theme_music_fest',
+    name: '文艺汇演',
+    description: '紫色文艺风格，适合音乐会、文艺演出、才艺展示',
+    colorScheme: '#7C3AED',
+    styles: {
+      title: 'title_music_note',
+      body: 'body_pink_ribbon',
+      intro: 'intro_reading_corner'
+    }
+  },
+  {
+    id: 'theme_award_ceremony',
+    name: '表彰大会',
+    description: '金色荣誉风格，适合评优表彰、奖学金公示',
+    colorScheme: '#F59E0B',
+    styles: {
+      title: 'title_trophy',
+      body: 'body_bulletin',
+      intro: 'intro_growth_green'
+    }
+  },
+  {
+    id: 'theme_numbered_guide',
+    name: '编号指南',
+    description: '蓝色编号风格，适合流程指引、步骤说明',
+    colorScheme: '#3B82F6',
+    styles: {
+      title: 'title_number_01',
+      body: 'body_timeline_dot',
+      intro: 'intro_campus_announce'
+    }
+  },
+  {
+    id: 'theme_science_lab',
+    name: '科学实验',
+    description: '绿色实验室风格，适合科技创新、实验报告',
+    colorScheme: '#22C55E',
+    styles: {
+      title: 'title_leaf_fresh',
+      body: 'body_science_lab',
+      intro: 'intro_study_tip'
+    }
+  },
+  {
+    id: 'theme_photo_album',
+    name: '校园相册',
+    description: '简洁相框风格，适合校园活动回顾、图片展',
+    colorScheme: '#6B7280',
+    styles: {
+      title: 'title_bracket_green',
+      body: 'body_photo_frame',
+      intro: 'intro_youth_quote'
+    }
   }
 ]
 

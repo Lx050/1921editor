@@ -3,8 +3,72 @@ import { IMAGE_TEMPLATES } from '../styles/templates'
 import type { ContentBlock, StyleConfig, BlockType, StyleTemplate } from '@/types'
 import { useConfigStore } from '../stores/configStore'
 import { useAppStore } from '../stores/appStore'
+import type { OrgStylePreset } from '../stores/orgConfigStore'
 
 
+
+/**
+ * 读取组织级样式预设（仅当显式配置过时返回，否则返回 null）
+ * @private
+ */
+function getOrgPresetIfConfigured(): OrgStylePreset | null {
+	try {
+		const stored = localStorage.getItem('org_template_config')
+		if (!stored) return null
+		const config = JSON.parse(stored)
+		if (!config.stylePreset) return null
+		// 合并默认值确保字段完整
+		return {
+			titleFontFamily: '微软雅黑, Microsoft YaHei, SimHei, STHeiti',
+			titleFontSize: 16,
+			titleBold: true,
+			bodyFontFamily: '微软雅黑, Microsoft YaHei, SimHei, STHeiti',
+			bodyFontSize: 14,
+			bodyIndent: true,
+			bodyLineHeight: 1.75,
+			bodyLetterSpacing: 1.5,
+			introFontFamily: '微软雅黑, Microsoft YaHei, SimHei, STHeiti',
+			introFontSize: 14,
+			...config.stylePreset
+		}
+	} catch {
+		return null
+	}
+}
+
+/**
+ * 用组织字体样式包裹内容文本（内联 span，优先级最高）
+ * @private
+ */
+function wrapContentWithOrgFont(content: string, blockType: string, preset: OrgStylePreset): string {
+	let style = ''
+	switch (blockType) {
+		case 'title':
+			style = `font-family:${preset.titleFontFamily};font-size:${preset.titleFontSize}px;`
+			style += preset.titleBold ? 'font-weight:bold;' : 'font-weight:normal;'
+			break
+		case 'body':
+			style = `font-family:${preset.bodyFontFamily};font-size:${preset.bodyFontSize}px;`
+			break
+		case 'intro':
+		case 'outro':
+			style = `font-family:${preset.introFontFamily};font-size:${preset.introFontSize}px;`
+			break
+	}
+	if (!style) return content
+	return `<span style="${style}">${content}</span>`
+}
+
+/**
+ * 用组织块级样式包裹整个样式化块（text-indent / line-height / letter-spacing）
+ * @private
+ */
+function wrapBlockWithOrgStyle(html: string, blockType: string, preset: OrgStylePreset): string {
+	if (blockType !== 'body') return html
+	const indent = preset.bodyIndent ? 'text-indent:2em;' : 'text-indent:0;'
+	const style = `${indent}line-height:${preset.bodyLineHeight};letter-spacing:${preset.bodyLetterSpacing}px;`
+	return `<section style="${style}">${html}</section>`
+}
 
 /**
  * 样式组装引擎
@@ -29,6 +93,9 @@ export function buildHtml(
 	const configStore = useConfigStore()
 	htmlParts.push(configStore.currentHeader)
 
+	// 读取组织级样式预设（仅在配置过时生效）
+	const orgPreset = getOrgPresetIfConfigured()
+
 	// 遍历内容块并应用装饰样式（只使用用户选择的装饰样式，不使用默认模板）
 	let imageCounter = 0  // V2: 图片计数器，用于生成占位符ID
 
@@ -37,7 +104,7 @@ export function buildHtml(
 
 		// 只有有装饰样式配置时才生成内容
 		if (styleConfig) {
-			blockHtml = buildStyledBlock(block, styleConfig, addPlaceholderMarkers, imageCounter)
+			blockHtml = buildStyledBlock(block, styleConfig, addPlaceholderMarkers, imageCounter, orgPreset)
 			htmlParts.push(blockHtml)
 
 			// V2: 更新图片计数器
@@ -77,19 +144,23 @@ export function buildHtml(
  * @param styleConfig - 样式配置
  * @param addPlaceholderMarkers - V2: 是否添加占位符标记
  * @param imageIndex - V2: 图片索引
+ * @param orgPreset - 组织级样式预设（可选，null 则不覆盖）
  * @returns 样式化后的HTML字符串
  */
 function buildStyledBlock(
 	block: ContentBlock,
 	styleConfig: StyleConfig,
 	addPlaceholderMarkers: boolean = false,
-	imageIndex: number = 0
+	imageIndex: number = 0,
+	orgPreset: OrgStylePreset | null = null
 ): string {
 	if (!block || typeof block !== 'object') {
 		throw new Error('Invalid block: must be an object')
 	}
 
 	const content: string = block.text || ''
+	// 如果有组织预设，用 span 包裹内容文本以覆盖模板字体
+	const styledContent = orgPreset ? wrapContentWithOrgFont(content, block.type, orgPreset) : content
 
 	// AI 生成图片优先渲染
 	if (block.meta && block.meta.aiImageUrl) {
@@ -103,17 +174,20 @@ function buildStyledBlock(
 		return html
 	}
 
+	let result: string
 	switch (block.type) {
 		case 'title':
-			return applyStyle(content, styleConfig.title || null)
+			result = applyStyle(styledContent, styleConfig.title || null)
+			break
 		case 'body':
-			return applyStyle(content, styleConfig.body || null)
+			result = applyStyle(styledContent, styleConfig.body || null)
+			break
 		case 'intro':
 		case 'outro':
-			return applyStyle(content, styleConfig.intro || null)
+			result = applyStyle(styledContent, styleConfig.intro || null)
+			break
 		case 'image_single': {
 			let html = IMAGE_TEMPLATES.single
-			// V2: 添加占位符标记
 			if (addPlaceholderMarkers) {
 				html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
 			}
@@ -121,10 +195,7 @@ function buildStyledBlock(
 		}
 		case 'image_single_caption': {
 			let html = IMAGE_TEMPLATES.single_caption
-			// 替换图注
 			html = html.replace('{{caption}}', content)
-
-			// V2: 添加占位符标记
 			if (addPlaceholderMarkers) {
 				html = addImagePlaceholderMarker(html, `image_${imageIndex}`)
 			}
@@ -132,7 +203,6 @@ function buildStyledBlock(
 		}
 		case 'image_double': {
 			let html = IMAGE_TEMPLATES.double
-			// V2: 添加占位符标记 - 双图分别标记为 _1 和 _2
 			if (addPlaceholderMarkers) {
 				html = addDoubleImagePlaceholderMarkers(html, `image_${imageIndex}`)
 			}
@@ -140,30 +210,20 @@ function buildStyledBlock(
 		}
 		case 'image_double_caption': {
 			let html = IMAGE_TEMPLATES.double_caption
-
-			// 替换图注 (简单的分割逻辑，或者直接把内容给两个)
-			// 支持使用 | 或 ｜ 分隔左右图片的说明
-			// V3: 支持使用空格分隔
 			let c1 = content;
 			let c2 = content;
-
 			if (content.includes('|') || content.includes('｜')) {
 				const parts = content.split(/[|｜]/)
 				c1 = parts[0] ? parts[0].trim() : ''
 				c2 = parts[1] ? parts[1].trim() : ''
 			} else if (content.trim().includes(' ')) {
-				// 找到第一个空格的位置
 				const parts = content.trim().split(/\s+/)
 				if (parts.length >= 2) {
 					c1 = parts[0]
-					// 将剩余部分作为第二部分的说明
 					c2 = parts.slice(1).join(' ')
 				}
 			}
-
 			html = html.replace('{{caption1}}', c1).replace('{{caption2}}', c2)
-
-			// V2: 添加占位符标记 - 双图分别标记为 _1 和 _2
 			if (addPlaceholderMarkers) {
 				html = addDoubleImagePlaceholderMarkers(html, `image_${imageIndex}`)
 			}
@@ -171,8 +231,14 @@ function buildStyledBlock(
 		}
 		default:
 			console.warn(`未知的内容块类型: ${block.type}，跳过该内容块`)
-			return ''
+			result = ''
 	}
+
+	// 应用组织级块样式覆盖（text-indent / line-height / letter-spacing）
+	if (orgPreset && result) {
+		result = wrapBlockWithOrgStyle(result, block.type, orgPreset)
+	}
+	return result
 }
 
 /**

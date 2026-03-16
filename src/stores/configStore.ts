@@ -318,13 +318,13 @@ const REPRINT_FOOTER = `
 `
 
 // 默认占位符 - 可以根据需要为其他模式设置不同的默认值
-const DEFAULT_HEADERS = {
+export const DEFAULT_HEADERS: Record<WorkMode, string> = {
 	daily: DAILY_HEADER,
 	three_rural: THREE_RURAL_HEADER,
 	reprint: REPRINT_HEADER
 }
 
-const DEFAULT_FOOTERS = {
+export const DEFAULT_FOOTERS: Record<WorkMode, string> = {
 	daily: DAILY_FOOTER,
 	three_rural: THREE_RURAL_FOOTER,
 	reprint: REPRINT_FOOTER
@@ -408,9 +408,23 @@ export const useConfigStore = defineStore('config', () => {
 	// Actions
 	const setMode = (newMode: WorkMode) => {
 		mode.value = newMode
-		// 切换模式时重置 Header/Footer 为该模式的默认值
-		currentHeader.value = DEFAULT_HEADERS[newMode]
-		currentFooter.value = DEFAULT_FOOTERS[newMode]
+
+		// 优先使用组织级自定义模板，无则回退到默认值
+		let orgHeader: string | null = null
+		let orgFooter: string | null = null
+		try {
+			const stored = localStorage.getItem('org_template_config')
+			if (stored) {
+				const orgConfig = JSON.parse(stored)
+				orgHeader = orgConfig.headers?.[newMode] || null
+				orgFooter = orgConfig.footers?.[newMode] || null
+			}
+		} catch (e) {
+			// ignore parse errors
+		}
+
+		currentHeader.value = orgHeader || DEFAULT_HEADERS[newMode]
+		currentFooter.value = orgFooter || DEFAULT_FOOTERS[newMode]
 
 		// 持久化模式
 		localStorage.setItem('config_mode', newMode)
