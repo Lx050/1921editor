@@ -334,6 +334,56 @@ export const DIVIDER_TEMPLATES = {
     <section class="_135editor" data-role="separator" style="margin: 25px 0; padding: 0 30px;">
       <section style="height: 2px; background: linear-gradient(90deg, #EF4444, #F59E0B, #10B981, #3B82F6, #8B5CF6); border-radius: 1px;"></section>
     </section>
+  `,
+
+  // ========== SOTA 高级分隔线（第二轮迭代） ==========
+
+  // 渐变淡入淡出线（doocs Grace 风格）
+  gradient_fade: `
+    <section class="_135editor" data-role="separator" style="margin: 30px 0; padding: 0 20px;">
+      <section style="height: 1px; background: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.12), rgba(0,0,0,0)); margin: 0 auto;"></section>
+    </section>
+  `,
+
+  // 超细线（doocs transform 技巧）
+  thin_scale_line: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; padding: 0 30px;">
+      <section style="height: 1px; background: #e0e0e0; transform: scale(1, 0.5);"></section>
+    </section>
+  `,
+
+  // 双线分隔（经典排版）
+  double_classic: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; padding: 0 40px;">
+      <section style="border-top: 3px double #ccc;"></section>
+    </section>
+  `,
+
+  // SVG 波浪线
+  svg_wave: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 20" width="80%" height="20" style="display: inline-block;">
+        <path d="M0 10 Q25 0 50 10 Q75 20 100 10 Q125 0 150 10 Q175 20 200 10 Q225 0 250 10 Q275 20 300 10 Q325 0 350 10 Q375 20 400 10" fill="none" stroke="#d0d0d0" stroke-width="1.5"/>
+      </svg>
+    </section>
+  `,
+
+  // 渐变菱形
+  gradient_diamond: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 30px;">
+        <section style="flex: 1; height: 1px; background: linear-gradient(to right, transparent, #667eea);"></section>
+        <section style="width: 8px; height: 8px; background: #667eea; transform: rotate(45deg);"></section>
+        <section style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #667eea);"></section>
+      </section>
+    </section>
+  `,
+
+  // 虚线圆点
+  dotted_spacer: `
+    <section class="_135editor" data-role="separator" style="margin: 30px 0; text-align: center;">
+      <span style="color: #bbb; font-size: 20px; letter-spacing: 12px;">&#8226; &#8226; &#8226;</span>
+    </section>
   `
 }
 

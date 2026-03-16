@@ -721,6 +721,94 @@ export const titleDecorations = [
 		</section>
 	</section>
 </section>`
+  },
+  // ========== SOTA 标题样式（第二轮迭代，来源 doocs/md + Mintimate + mdnice） ==========
+  {
+    id: 'title_center_bottom_line',
+    name: '居中底线（doocs）',
+    type: 'title',
+    preview: `<div style="text-align: center; padding: 6px 0;"><span style="font-size: 11px; font-weight: bold; border-bottom: 2px solid #0F4C81; padding-bottom: 3px;">居中底线</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; padding: 0 20px 8px; border-bottom: 2px solid #0F4C81;">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #0F4C81; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_inverted_bg',
+    name: '反色背景（doocs H2）',
+    type: 'title',
+    preview: `<div style="padding: 4px 8px; background: #0F4C81; color: white; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center;">反色标题</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="background: #0F4C81; padding: 10px 24px; border-radius: 4px;">
+		<p style="margin: 0; font-size: 16px; font-weight: bold; color: #ffffff; text-align: center; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_left_accent',
+    name: '左侧重点线（doocs H3）',
+    type: 'title',
+    preview: `<div style="border-left: 3px solid #0F4C81; padding-left: 8px; font-size: 11px; font-weight: bold;">左侧强调</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="border-left: 3px solid #0F4C81; padding-left: 14px;">
+		<p style="margin: 0; font-size: 16px; font-weight: bold; color: rgb(1,1,1); line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_shadow_elegant',
+    name: '优雅阴影（Grace）',
+    type: 'title',
+    preview: `<div style="text-align: center; padding: 6px; text-shadow: 1px 1px 3px rgba(0,0,0,0.15); font-size: 11px; font-weight: bold; color: #333;">阴影优雅</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; padding: 12px 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-radius: 6px; background: #fff;">
+		<p style="margin: 0; font-size: 17px; font-weight: bold; color: #333; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_asymmetric_card',
+    name: '不对称圆角（Simple）',
+    type: 'title',
+    preview: `<div style="background: rgba(15,76,129,0.08); border: 1px solid rgba(15,76,129,0.15); border-radius: 6px 18px 6px 18px; padding: 4px 10px; font-size: 10px; text-align: center; font-weight: bold;">不对称圆角</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="background: rgba(15,76,129,0.06); border: 1px solid rgba(15,76,129,0.12); border-radius: 8px 24px 8px 24px; padding: 12px 24px;">
+		<p style="margin: 0; font-size: 16px; font-weight: bold; color: #0F4C81; text-align: center; letter-spacing: 1.5px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_gradient_underline',
+    name: '渐变下划线',
+    type: 'title',
+    preview: `<div style="text-align: center; padding: 6px 0;"><span style="font-size: 11px; font-weight: bold;">渐变线</span><div style="height: 2px; background: linear-gradient(to right, transparent, #667eea, transparent); margin-top: 3px;"></div></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<p style="margin: 0 0 6px; font-size: 17px; font-weight: bold; color: #333; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	<section style="height: 2px; background: linear-gradient(to right, transparent, #667eea, #764ba2, transparent); margin: 0 auto; width: 80%;"></section>
+</section>`
+  },
+  {
+    id: 'title_geek_pattern',
+    name: '极客条纹（Geek）',
+    type: 'title',
+    preview: `<div style="background: repeating-linear-gradient(45deg, rgba(103,74,246,0.06), rgba(103,74,246,0.06) 3px, transparent 3px, transparent 6px); padding: 4px 8px; font-size: 10px; font-weight: bold; text-align: center; border-radius: 4px;">极客条纹</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="background: repeating-linear-gradient(45deg, rgba(103,74,246,0.06), rgba(103,74,246,0.06) 5px, transparent 5px, transparent 10px); padding: 14px 24px; border-radius: 6px; border: 1px solid rgba(103,74,246,0.15);">
+		<p style="margin: 0; font-size: 16px; font-weight: bold; color: #674AF6; text-align: center; letter-spacing: 3px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_tech_gradient',
+    name: '科技渐变（Tech）',
+    type: 'title',
+    preview: `<div style="border-left: 3px solid #0366d6; padding-left: 6px; background: linear-gradient(to right, rgba(3,102,214,0.08), transparent); font-size: 10px; font-weight: bold;">科技渐变</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="border-left: 4px solid #0366d6; padding: 12px 20px; background: linear-gradient(to right, rgba(3,102,214,0.08), transparent);">
+		<p style="margin: 0; font-size: 16px; font-weight: bold; color: #0366d6; letter-spacing: 1.5px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
   }
 ]
 
@@ -1429,6 +1517,97 @@ export const bodyDecorations = [
 		</section>
 	</section>
 </section>`
+  },
+  // ========== SOTA 正文样式（第二轮迭代，来源 mdnice/doocs/Paper/WeUI） ==========
+  {
+    id: 'body_quote_green',
+    name: '绿色引用卡片（mdnice）',
+    type: 'body',
+    preview: `<div style="border-left: 3px solid #42b983; background: rgba(66,185,131,0.08); padding: 4px 8px; font-size: 9px;">引用正文</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="border-left: 4px solid #42b983; background: rgba(66,185,131,0.08); padding: 14px 20px; border-radius: 0 6px 6px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_quote_orange',
+    name: '橙色引用卡片（mdnice）',
+    type: 'body',
+    preview: `<div style="border-left: 3px solid #e67e22; background: rgba(230,126,34,0.08); padding: 4px 8px; font-size: 9px;">橙色引用</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="border-left: 4px solid #e67e22; background: rgba(230,126,34,0.08); padding: 14px 20px; border-radius: 0 6px 6px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_quote_red',
+    name: '红色引用卡片（mdnice）',
+    type: 'body',
+    preview: `<div style="border-left: 3px solid #e74c3c; background: rgba(231,76,60,0.08); padding: 4px 8px; font-size: 9px;">红色引用</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="border-left: 4px solid #e74c3c; background: rgba(231,76,60,0.08); padding: 14px 20px; border-radius: 0 6px 6px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_inset_shadow',
+    name: '内凹阴影卡片（Grace）',
+    type: 'body',
+    preview: `<div style="background: #fafafa; box-shadow: inset 0 0 6px rgba(0,0,0,0.1); border-radius: 4px; padding: 4px 8px; font-size: 9px;">内凹阴影</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #fafafa; box-shadow: inset 0 0 10px rgba(0,0,0,0.06); border-radius: 8px; padding: 18px 22px; border: 1px solid rgba(0,0,0,0.04);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_gradient_frost',
+    name: '渐变毛玻璃（Paper）',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1)); border-radius: 4px; padding: 4px 8px; font-size: 9px;">毛玻璃</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.08) 100%); border-radius: 10px; padding: 18px 22px; border: 1px solid rgba(99,102,241,0.1);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_elevation_card',
+    name: '悬浮卡片（WeUI）',
+    type: 'body',
+    preview: `<div style="background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 6px; padding: 4px 8px; font-size: 9px;">悬浮卡片</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04); border-radius: 10px; padding: 20px 24px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
   }
 ]
 
@@ -1947,6 +2126,67 @@ export const introDecorations = [
 		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #064E3B; background-color: transparent;">
 			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
 				<span style="font-weight: 400; color: #064E3B; text-shadow: none; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  // ========== SOTA 引言样式（第二轮迭代） ==========
+  {
+    id: 'intro_dashed_elegant',
+    name: '虚线优雅（Grace H3）',
+    type: 'intro',
+    preview: `<div style="text-align: center; font-size: 9px; color: #666; font-style: italic; border-bottom: 1px dashed #ccc; padding-bottom: 4px;">优雅虚线引言</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; padding: 12px 30px 14px; border-bottom: 1px dashed #999;">
+		<section data-autoskip="1" class="135brush" style="text-align: center; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #666; background-color: transparent;">
+			<p style="font-size: 14px; line-height: 1.75em; text-align: center; font-style: italic;">
+				<span style="font-weight: 400; color: #666; letter-spacing: 2px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_shadow_quote',
+    name: '阴影引用框（Grace）',
+    type: 'intro',
+    preview: `<div style="background: #f9f9f9; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 4px 8px; font-size: 9px; font-style: italic; border-radius: 4px;">阴影引言</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="background: #f9f9f9; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-radius: 8px; padding: 20px 24px; border-left: 3px solid #ddd;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #555; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify; font-style: italic;" align="justify">
+				<span style="font-weight: 400; color: #555; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_gradient_tech',
+    name: '科技渐变引言（Tech）',
+    type: 'intro',
+    preview: `<div style="background: linear-gradient(to right, rgba(3,102,214,0.06), transparent); border-left: 3px solid #0366d6; padding: 4px 8px; font-size: 9px;">科技引言</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="background: linear-gradient(to right, rgba(3,102,214,0.06), transparent); border-left: 4px solid #0366d6; padding: 16px 22px; border-radius: 0 8px 8px 0;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #333; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #333; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_overlay_caption',
+    name: '半透明叠加（mdnice）',
+    type: 'intro',
+    preview: `<div style="background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; font-size: 9px; border-radius: 4px;">叠加引言</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 10px; padding: 22px 26px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgba(255,255,255,0.9); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgba(255,255,255,0.9); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
 			</p>
 		</section>
 	</section>

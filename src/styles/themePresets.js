@@ -269,6 +269,95 @@ export const themePresets = [
       body: 'body_photo_frame',
       intro: 'intro_youth_quote'
     }
+  },
+  // ========== SOTA Mintimate 8色主题体系（第二轮迭代） ==========
+  {
+    id: 'theme_energetic_orange',
+    name: '焕能橙（SOTA）',
+    description: 'Mintimate 橙色系，活力充沛',
+    colorScheme: '#f97316',
+    styles: {
+      title: 'title_gradient_tag',
+      body: 'body_quote_orange',
+      intro: 'intro_gradient_tech'
+    }
+  },
+  {
+    id: 'theme_code_purple',
+    name: '编程紫（SOTA）',
+    description: 'Mintimate 紫色系，极客风格',
+    colorScheme: '#674AF6',
+    styles: {
+      title: 'title_geek_pattern',
+      body: 'body_gradient_frost',
+      intro: 'intro_overlay_caption'
+    }
+  },
+  {
+    id: 'theme_wechat_green',
+    name: '微信绿（SOTA）',
+    description: 'Mintimate 绿色系，微信原生风',
+    colorScheme: '#07c160',
+    styles: {
+      title: 'title_left_accent',
+      body: 'body_quote_green',
+      intro: 'intro_green_icon'
+    }
+  },
+  {
+    id: 'theme_source_blue',
+    name: '源码蓝（SOTA）',
+    description: 'Mintimate 蓝色系，技术文档风',
+    colorScheme: '#0366d6',
+    styles: {
+      title: 'title_tech_gradient',
+      body: 'body_inset_shadow',
+      intro: 'intro_gradient_tech'
+    }
+  },
+  {
+    id: 'theme_aurora_cyan',
+    name: '极光青（SOTA）',
+    description: 'Mintimate 青色系，清新自然',
+    colorScheme: '#00bcd4',
+    styles: {
+      title: 'title_center_bottom_line',
+      body: 'body_elevation_card',
+      intro: 'intro_shadow_quote'
+    }
+  },
+  {
+    id: 'theme_sakura_pink',
+    name: '樱花粉（SOTA）',
+    description: 'Mintimate 粉色系，柔美浪漫',
+    colorScheme: '#CF6C88',
+    styles: {
+      title: 'title_asymmetric_card',
+      body: 'body_quote_red',
+      intro: 'intro_dashed_elegant'
+    }
+  },
+  {
+    id: 'theme_build_gold',
+    name: '构建金（SOTA）',
+    description: 'Mintimate 金色系，温暖稳重',
+    colorScheme: '#ff9800',
+    styles: {
+      title: 'title_shadow_elegant',
+      body: 'body_elevation_card',
+      intro: 'intro_shadow_quote'
+    }
+  },
+  {
+    id: 'theme_deep_dark',
+    name: '深邃黑（SOTA）',
+    description: 'Mintimate 暗色系，沉稳专业',
+    colorScheme: '#333333',
+    styles: {
+      title: 'title_inverted_bg',
+      body: 'body_inset_shadow',
+      intro: 'intro_overlay_caption'
+    }
   }
 ]
 
