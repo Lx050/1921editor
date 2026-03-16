@@ -14,19 +14,25 @@ jobs:
       # 使用系统已安装的 Node.js v22，无需 setup-node
       - name: Verify Node.js
         run: |
+          export PATH=$PATH:/usr/bin
           node -v
           npm -v
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          export PATH=$PATH:/usr/bin
+          npm ci
 
       - name: Build frontend
-        run: npx vite build
+        run: |
+          export PATH=$PATH:/usr/bin
+          npm run build
 
       # 前端：将构建产物部署到 Nginx 静态目录
       # 目录已 chown 给 github-runner，无需 sudo
       - name: Deploy frontend
         run: |
+          export PATH=$PATH:/usr/bin
           DEPLOY_DIR="/var/www/1921editor"
           mkdir -p "$DEPLOY_DIR"
           rsync -av --delete src/dist/ "$DEPLOY_DIR/"
