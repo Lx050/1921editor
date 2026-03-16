@@ -11,8 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 跳过 setup-node：服务器已安装 Node.js v22
-      # 直接使用系统 Node，避免国内服务器从 GitHub 下载慢的问题
+      # 使用系统已安装的 Node.js v22，无需 setup-node
       - name: Verify Node.js
         run: |
           node -v
@@ -25,9 +24,10 @@ jobs:
         run: npx vite build
 
       # 前端：将构建产物部署到 Nginx 静态目录
+      # 目录已 chown 给 github-runner，无需 sudo
       - name: Deploy frontend
         run: |
           DEPLOY_DIR="/var/www/1921editor"
-          sudo mkdir -p "$DEPLOY_DIR"
-          sudo rsync -av --delete src/dist/ "$DEPLOY_DIR/"
+          mkdir -p "$DEPLOY_DIR"
+          rsync -av --delete src/dist/ "$DEPLOY_DIR/"
           echo "✅ Frontend deployed to $DEPLOY_DIR"
