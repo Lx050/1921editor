@@ -384,6 +384,47 @@ export const DIVIDER_TEMPLATES = {
     <section class="_135editor" data-role="separator" style="margin: 30px 0; text-align: center;">
       <span style="color: #bbb; font-size: 20px; letter-spacing: 12px;">&#8226; &#8226; &#8226;</span>
     </section>
+  `,
+
+  // ========== 国潮/新拟态/SVG 分隔线（第三轮迭代） ==========
+
+  // SVG 云纹分隔线（国潮）
+  svg_cloud_pattern: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 30" width="80%" height="30" style="display: inline-block;">
+        <path d="M0 15 C20 5, 40 5, 50 15 C60 25, 80 25, 100 15 C120 5, 140 5, 150 15 C160 25, 180 25, 200 15 C220 5, 240 5, 250 15 C260 25, 280 25, 300 15 C320 5, 340 5, 350 15 C360 25, 380 25, 400 15" fill="none" stroke="#d4af37" stroke-width="1.5" opacity="0.7"/>
+        <circle cx="100" cy="15" r="2" fill="#d4af37" opacity="0.5"/>
+        <circle cx="200" cy="15" r="2" fill="#d4af37" opacity="0.5"/>
+        <circle cx="300" cy="15" r="2" fill="#d4af37" opacity="0.5"/>
+      </svg>
+    </section>
+  `,
+
+  // 水墨晕染分隔线
+  ink_wash_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 30px 0; padding: 0 20px;">
+      <section style="height: 2px; background: linear-gradient(to right, transparent, rgba(60,60,60,0.1) 15%, rgba(60,60,60,0.4) 35%, rgba(60,60,60,0.6) 50%, rgba(60,60,60,0.4) 65%, rgba(60,60,60,0.1) 85%, transparent); border-radius: 1px;"></section>
+    </section>
+  `,
+
+  // 新拟态凹槽分隔线
+  neumorphic_groove: `
+    <section class="_135editor" data-role="separator" style="margin: 30px 0; padding: 0 30px;">
+      <section style="height: 4px; background: #e0e5ec; border-radius: 2px; box-shadow: inset 1px 1px 2px rgba(166,180,200,0.7), inset -1px -1px 2px rgba(255,255,255,0.9);"></section>
+    </section>
+  `,
+
+  // 印章装饰分隔线（国潮）
+  seal_ornament_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 30px;">
+        <section style="flex: 1; height: 1px; background: linear-gradient(to right, transparent, #c8102e);"></section>
+        <section style="width: 22px; height: 22px; border: 2px solid #c8102e; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+          <section style="width: 10px; height: 10px; background: #c8102e; border-radius: 50%;"></section>
+        </section>
+        <section style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #c8102e);"></section>
+      </section>
+    </section>
   `
 }
 

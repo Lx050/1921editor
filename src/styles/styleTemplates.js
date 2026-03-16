@@ -809,6 +809,76 @@ export const titleDecorations = [
 		<p style="margin: 0; font-size: 16px; font-weight: bold; color: #0366d6; letter-spacing: 1.5px; line-height: 1.75em;">{{CONTENT}}</p>
 	</section>
 </section>`
+  },
+  // ========== 第三轮迭代：国潮/古风/水墨/新拟态标题 ==========
+  {
+    id: 'title_guochao_gold',
+    name: '国潮金标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, #2c1810, #4a2c1b); padding: 4px 8px; text-align: center; border: 1px solid #d4af37; border-radius: 4px;"><span style="color: #d4af37; font-size: 10px; font-weight: bold; letter-spacing: 2px;">国潮金</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="background: linear-gradient(135deg, #2c1810 0%, #4a2c1b 50%, #2c1810 100%); border: 2px solid #d4af37; border-radius: 8px; padding: 14px 28px; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(212,175,55,0.3);">
+		<section style="position: absolute; top: 6px; left: 6px; width: 20px; height: 20px; border-left: 2px solid #d4af37; border-top: 2px solid #d4af37;"></section>
+		<section style="position: absolute; bottom: 6px; right: 6px; width: 20px; height: 20px; border-right: 2px solid #d4af37; border-bottom: 2px solid #d4af37;"></section>
+		<p style="margin: 0; font-size: 17px; font-weight: bold; color: #d4af37; text-align: center; letter-spacing: 4px; line-height: 1.75em; font-family: 楷体, KaiTi, STKaiti, serif;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_ink_wash',
+    name: '水墨风标题',
+    type: 'title',
+    preview: `<div style="text-align: center; padding: 4px 0; border-bottom: 2px solid transparent; border-image: linear-gradient(to right, transparent 5%, rgba(0,0,0,0.6) 50%, transparent 95%) 1;"><span style="font-size: 10px; font-weight: bold; color: #333; font-family: serif;">水墨风</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<p style="margin: 0 0 8px; font-size: 18px; font-weight: bold; color: #2c2c2c; letter-spacing: 4px; line-height: 1.75em; font-family: 楷体, KaiTi, STKaiti, serif;">{{CONTENT}}</p>
+	<section style="height: 3px; background: linear-gradient(to right, transparent 5%, rgba(0,0,0,0.08) 15%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.08) 85%, transparent 95%); margin: 0 auto; width: 85%; border-radius: 2px;"></section>
+</section>`
+  },
+  {
+    id: 'title_seal_stamp',
+    name: '印章标题',
+    type: 'title',
+    preview: `<div style="display: inline-block; background: #c8102e; border: 2px solid #8b0000; border-radius: 4px; padding: 2px 8px;"><span style="color: white; font-size: 10px; font-weight: bold;">印章</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: #c8102e; border: 3px solid #8b0000; border-radius: 6px; padding: 10px 30px; box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 4px 8px rgba(200,16,46,0.3);">
+		<p style="margin: 0; font-size: 17px; font-weight: bold; color: #ffffff; letter-spacing: 4px; line-height: 1.75em; font-family: 楷体, KaiTi, STKaiti, serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_neumorphic',
+    name: '新拟态标题',
+    type: 'title',
+    preview: `<div style="background: #e0e5ec; border-radius: 8px; padding: 4px 10px; box-shadow: 3px 3px 6px rgba(163,177,198,0.5), -3px -3px 6px rgba(255,255,255,0.5); text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #4a5568;">新拟态</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: #e0e5ec; border-radius: 16px; padding: 12px 32px; box-shadow: 8px 8px 16px rgba(163,177,198,0.5), -8px -8px 16px rgba(255,255,255,0.6);">
+		<p style="margin: 0; font-size: 16px; font-weight: bold; color: #4a5568; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_gradient_border',
+    name: '渐变边框标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 2px; border-radius: 6px;"><div style="background: white; border-radius: 4px; padding: 3px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold;">渐变边框</span></div></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); padding: 3px; border-radius: 12px;">
+		<section style="background: white; border-radius: 10px; padding: 12px 30px;">
+			<p style="margin: 0; font-size: 16px; font-weight: bold; color: #333; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_organic_blob',
+    name: '有机形状标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; padding: 4px 10px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: white;">有机形状</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; padding: 14px 36px; box-shadow: 0 6px 20px rgba(102,126,234,0.3);">
+		<p style="margin: 0; font-size: 16px; font-weight: bold; color: #ffffff; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
   }
 ]
 
@@ -1608,6 +1678,99 @@ export const bodyDecorations = [
 		</section>
 	</section>
 </section>`
+  },
+  // ========== 第三轮迭代：新拟态/毛玻璃/国潮正文样式 ==========
+  {
+    id: 'body_neumorphic',
+    name: '新拟态正文',
+    type: 'body',
+    preview: `<div style="background: #e0e5ec; box-shadow: 3px 3px 6px rgba(163,177,198,0.5), -3px -3px 6px rgba(255,255,255,0.5); border-radius: 6px; padding: 4px 8px; font-size: 9px;">新拟态</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #e0e5ec; border-radius: 16px; padding: 20px 24px; box-shadow: 8px 8px 16px rgba(163,177,198,0.5), -8px -8px 16px rgba(255,255,255,0.6);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #4a5568; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #4a5568; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_neumorphic_inset',
+    name: '新拟态内凹',
+    type: 'body',
+    preview: `<div style="background: #e0e5ec; box-shadow: inset 3px 3px 6px rgba(163,177,198,0.5), inset -3px -3px 6px rgba(255,255,255,0.6); border-radius: 6px; padding: 4px 8px; font-size: 9px;">内凹拟态</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #e0e5ec; border-radius: 16px; padding: 20px 24px; box-shadow: inset 6px 6px 12px rgba(163,177,198,0.5), inset -6px -6px 12px rgba(255,255,255,0.7);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #4a5568; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #4a5568; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_glassmorphism',
+    name: '毛玻璃正文',
+    type: 'body',
+    preview: `<div style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 8px; font-size: 9px; box-shadow: 0 4px 12px rgba(31,38,135,0.15);">毛玻璃</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05)); border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; padding: 20px 24px; box-shadow: 0 8px 32px rgba(31,38,135,0.12);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_gradient_border',
+    name: '渐变边框正文',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 2px; border-radius: 6px;"><div style="background: white; border-radius: 4px; padding: 4px 8px; font-size: 9px;">渐变边框</div></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 2px; border-radius: 14px;">
+		<section style="background: white; border-radius: 12px; padding: 20px 24px;">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+					<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+				</p>
+			</section>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_guochao_classic',
+    name: '国潮古典正文',
+    type: 'body',
+    preview: `<div style="background: #faf0e6; border-left: 3px solid #8b4513; padding: 4px 8px; font-size: 9px; font-family: serif;">古典正文</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(to bottom, #faf0e6, #f5f5dc); border-left: 4px solid #8b4513; border-radius: 0 8px 8px 0; padding: 20px 24px; box-shadow: 0 2px 8px rgba(139,69,19,0.1);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #2c1810; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #2c1810; letter-spacing: 1.75px; font-size: 14px; font-family: 楷体, KaiTi, STKaiti, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_layered_shadow',
+    name: '层叠阴影正文',
+    type: 'body',
+    preview: `<div style="background: white; box-shadow: 0 1px 1px rgba(0,0,0,0.06), 0 2px 2px rgba(0,0,0,0.06), 0 4px 4px rgba(0,0,0,0.06); border-radius: 6px; padding: 4px 8px; font-size: 9px;">层叠阴影</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #ffffff; border-radius: 12px; padding: 20px 24px; box-shadow: 0 1px 1px rgba(0,0,0,0.06), 0 2px 2px rgba(0,0,0,0.06), 0 4px 4px rgba(0,0,0,0.06), 0 8px 8px rgba(0,0,0,0.06), 0 16px 16px rgba(0,0,0,0.06);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
   }
 ]
 
@@ -2187,6 +2350,102 @@ export const introDecorations = [
 		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgba(255,255,255,0.9); background-color: transparent;">
 			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
 				<span style="font-weight: 400; color: rgba(255,255,255,0.9); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  // ========== GitHub Alert 风格引言（第三轮迭代） ==========
+  {
+    id: 'intro_alert_note',
+    name: 'Alert NOTE（蓝）',
+    type: 'intro',
+    preview: `<div style="background: #ddf4ff; border-left: 3px solid #0969da; padding: 4px 8px; font-size: 9px; color: #0969da; border-radius: 0 4px 4px 0;"><strong>Note</strong> 提示</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #ddf4ff; border-left: 4px solid #0969da; border-radius: 0 8px 8px 0; padding: 16px 20px;">
+		<section style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" style="display: block;"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" fill="#0969da"/></svg>
+			<span style="font-size: 14px; color: #0969da; font-weight: bold; font-family: 微软雅黑, Microsoft YaHei;">Note</span>
+		</section>
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #1f2328; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #1f2328; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_alert_tip',
+    name: 'Alert TIP（绿）',
+    type: 'intro',
+    preview: `<div style="background: #dafbe1; border-left: 3px solid #1a7f37; padding: 4px 8px; font-size: 9px; color: #1a7f37; border-radius: 0 4px 4px 0;"><strong>Tip</strong> 建议</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #dafbe1; border-left: 4px solid #1a7f37; border-radius: 0 8px 8px 0; padding: 16px 20px;">
+		<section style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" style="display: block;"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z" fill="#1a7f37"/></svg>
+			<span style="font-size: 14px; color: #1a7f37; font-weight: bold; font-family: 微软雅黑, Microsoft YaHei;">Tip</span>
+		</section>
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #1f2328; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #1f2328; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_alert_important',
+    name: 'Alert IMPORTANT（紫）',
+    type: 'intro',
+    preview: `<div style="background: #fbefff; border-left: 3px solid #8250df; padding: 4px 8px; font-size: 9px; color: #8250df; border-radius: 0 4px 4px 0;"><strong>Important</strong> 重要</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #fbefff; border-left: 4px solid #8250df; border-radius: 0 8px 8px 0; padding: 16px 20px;">
+		<section style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" style="display: block;"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="#8250df"/></svg>
+			<span style="font-size: 14px; color: #8250df; font-weight: bold; font-family: 微软雅黑, Microsoft YaHei;">Important</span>
+		</section>
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #1f2328; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #1f2328; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_alert_warning',
+    name: 'Alert WARNING（黄）',
+    type: 'intro',
+    preview: `<div style="background: #fff8c5; border-left: 3px solid #bf8700; padding: 4px 8px; font-size: 9px; color: #bf8700; border-radius: 0 4px 4px 0;"><strong>Warning</strong> 注意</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #fff8c5; border-left: 4px solid #bf8700; border-radius: 0 8px 8px 0; padding: 16px 20px;">
+		<section style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" style="display: block;"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="#bf8700"/></svg>
+			<span style="font-size: 14px; color: #bf8700; font-weight: bold; font-family: 微软雅黑, Microsoft YaHei;">Warning</span>
+		</section>
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #1f2328; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #1f2328; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_alert_caution',
+    name: 'Alert CAUTION（红）',
+    type: 'intro',
+    preview: `<div style="background: #ffebe9; border-left: 3px solid #d1242f; padding: 4px 8px; font-size: 9px; color: #d1242f; border-radius: 0 4px 4px 0;"><strong>Caution</strong> 警告</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #ffebe9; border-left: 4px solid #d1242f; border-radius: 0 8px 8px 0; padding: 16px 20px;">
+		<section style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" style="display: block;"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" fill="#d1242f"/></svg>
+			<span style="font-size: 14px; color: #d1242f; font-weight: bold; font-family: 微软雅黑, Microsoft YaHei;">Caution</span>
+		</section>
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #1f2328; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #1f2328; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
 			</p>
 		</section>
 	</section>

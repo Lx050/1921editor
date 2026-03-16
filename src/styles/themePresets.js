@@ -358,6 +358,51 @@ export const themePresets = [
       body: 'body_inset_shadow',
       intro: 'intro_overlay_caption'
     }
+  },
+  // ========== 国潮/新拟态/Alert 主题（第三轮迭代） ==========
+  {
+    id: 'theme_guochao_classic',
+    name: '国潮古韵',
+    description: '传统中国风，金色+红色+楷体，适合文化类内容',
+    colorScheme: '#d4af37',
+    styles: {
+      title: 'title_guochao_gold',
+      body: 'body_guochao_classic',
+      intro: 'intro_alert_important'
+    }
+  },
+  {
+    id: 'theme_neumorphic',
+    name: '新拟态',
+    description: '柔和立体新拟态风格，适合科技/设计类文章',
+    colorScheme: '#a3b1c6',
+    styles: {
+      title: 'title_neumorphic',
+      body: 'body_neumorphic',
+      intro: 'intro_alert_note'
+    }
+  },
+  {
+    id: 'theme_ink_wash',
+    name: '水墨丹青',
+    description: '中国水墨画风格，淡雅写意',
+    colorScheme: '#5a5a5a',
+    styles: {
+      title: 'title_ink_wash',
+      body: 'body_glassmorphism',
+      intro: 'intro_alert_tip'
+    }
+  },
+  {
+    id: 'theme_github_alert',
+    name: 'GitHub Alert',
+    description: 'GitHub 风格 Alert 配色，适合技术文档',
+    colorScheme: '#0969da',
+    styles: {
+      title: 'title_gradient_border',
+      body: 'body_gradient_border',
+      intro: 'intro_alert_note'
+    }
   }
 ]
 
