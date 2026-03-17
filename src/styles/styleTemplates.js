@@ -1015,6 +1015,147 @@ export const titleDecorations = [
 		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #00ff00; letter-spacing: 3px; line-height: 1.75em; font-family: 'Courier New', Consolas, monospace; text-shadow: 2px 2px 0 #003300;">{{CONTENT}}</p>
 	</section>
 </section>`
+  },
+  // ========== 黑板/水彩/装饰艺术/票券/缎带/双色调标题（第六轮迭代） ==========
+  {
+    id: 'title_chalkboard',
+    name: '黑板粉笔标题',
+    type: 'title',
+    preview: `<div style="background: #2d3436; border: 3px solid #5d4e37; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #f5f6fa; font-family: Courier New, monospace; text-shadow: 1px 1px 2px rgba(255,255,255,0.3);">粉笔字</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: #2d3436; border: 5px solid #5d4e37; padding: 14px 36px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.3);">
+		<p style="margin: 0; font-size: 20px; font-weight: bold; color: #f5f6fa; letter-spacing: 3px; line-height: 1.75em; font-family: 'Courier New', Consolas, monospace; text-shadow: 1px 1px 2px rgba(255,255,255,0.3), -1px -1px 2px rgba(0,0,0,0.5);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_watercolor',
+    name: '水彩标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, rgba(249,213,229,0.7), rgba(191,227,240,0.7)); padding: 4px 8px; border-radius: 12px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #555;">水彩</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(135deg, rgba(249,213,229,0.6) 0%, rgba(191,227,240,0.6) 50%, rgba(212,181,211,0.6) 100%); padding: 14px 40px; border-radius: 30px; box-shadow: 0 4px 20px rgba(249,213,229,0.4);">
+		<p style="margin: 0; font-size: 18px; font-weight: 600; color: #555555; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_art_deco',
+    name: '装饰艺术标题',
+    type: 'title',
+    preview: `<div style="background: #1a1a1a; border: 2px double #d4af37; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #d4af37; letter-spacing: 2px;">ART DECO</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="background: #1a1a1a; border: 3px double #d4af37; padding: 16px 30px; box-shadow: inset 4px 4px 0 rgba(212,175,55,0.1), inset -4px -4px 0 rgba(212,175,55,0.1);">
+		<p style="margin: 0; font-size: 20px; font-weight: bold; color: #d4af37; letter-spacing: 4px; line-height: 1.75em; font-family: Georgia, 'Times New Roman', serif; text-transform: uppercase; background: linear-gradient(to right, rgba(212,175,55,0) 0%, rgba(212,175,55,0.15) 50%, rgba(212,175,55,0) 100%); padding: 4px 0;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_ticket',
+    name: '票券标题',
+    type: 'title',
+    preview: `<div style="background: #fef9e7; border: 2px dashed #8b7355; padding: 4px 8px; text-align: center; border-radius: 4px;"><span style="font-size: 10px; font-weight: bold; color: #4a3c27;">TICKET</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: #fef9e7; border: 2px dashed #8b7355; padding: 14px 36px; border-radius: 8px; box-shadow: 0 2px 8px rgba(139,115,85,0.2);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #4a3c27; letter-spacing: 2px; line-height: 1.75em; font-family: Georgia, '宋体', SimSun, serif;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_ribbon',
+    name: '缎带标题',
+    type: 'title',
+    preview: `<div style="background: #e74c3c; color: #fff; padding: 3px 10px; text-align: center; box-shadow: 0 2px 0 #c0392b;"><span style="font-size: 10px; font-weight: bold;">RIBBON</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%); padding: 12px 40px; color: #ffffff; box-shadow: 0 4px 0 #a93226, 0 6px 12px rgba(231,76,60,0.3);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 3px; line-height: 1.75em; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_duotone',
+    name: '双色调标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, #5c0067, #00d4ff); padding: 4px 8px; text-align: center; border-radius: 4px;"><span style="font-size: 10px; font-weight: bold; color: #fff;">Duo</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(135deg, #5c0067 0%, #00d4ff 100%); padding: 14px 36px; border-radius: 8px; box-shadow: 0 4px 15px rgba(92,0,103,0.3);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 2px; line-height: 1.75em; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_stained_glass',
+    name: '彩窗玻璃标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, #FF6B6B, #4ECDC4); border: 2px solid #8B4513; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #fff; text-shadow: 1px 1px 1px rgba(0,0,0,0.5);">彩窗</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="background: linear-gradient(135deg, #2C3E50, #34495E); padding: 6px; border: 3px solid #8B4513; box-shadow: inset 0 0 20px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);">
+		<section style="background: linear-gradient(135deg, rgba(255,107,107,0.75), rgba(78,205,196,0.75), rgba(69,183,209,0.6)); padding: 14px 30px; border: 2px solid #8B4513; box-shadow: inset 0 0 10px rgba(255,255,255,0.2);">
+			<p style="margin: 0; font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 2px; line-height: 1.75em; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); font-family: Georgia, '华文楷体', STKaiti, serif;">{{CONTENT}}</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_blueprint',
+    name: '蓝图工程标题',
+    type: 'title',
+    preview: `<div style="background: #0A2540; border: 1px solid #00D9FF; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #00D9FF; font-family: Courier New, monospace;">BLUE</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="background-color: #0A2540; background-image: linear-gradient(rgba(30,73,118,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(30,73,118,0.5) 1px, transparent 1px); background-size: 20px 20px; padding: 18px 30px; border: 2px solid #00D9FF; box-shadow: 0 0 15px rgba(0,217,255,0.2);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #00D9FF; letter-spacing: 3px; line-height: 1.75em; font-family: Courier New, Consolas, monospace; text-transform: uppercase; text-shadow: 0 0 8px rgba(0,217,255,0.4);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_classified',
+    name: '分类广告标题',
+    type: 'title',
+    preview: `<div style="background: #F5F1E8; border: 2px double #8B7355; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #C41E3A; font-family: Georgia, serif;">NEWS</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="background-color: #F5F1E8; padding: 14px 28px; border: 3px double #8B7355; box-shadow: inset 0 0 15px rgba(139,115,85,0.08);">
+		<p style="margin: 0; font-size: 20px; font-weight: bold; color: #C41E3A; letter-spacing: 2px; line-height: 1.75em; font-family: Georgia, '宋体', SimSun, serif; border-bottom: 2px solid #2C2C2C; padding-bottom: 6px;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_postage_stamp',
+    name: '邮票标题',
+    type: 'title',
+    preview: `<div style="background: #FFF8DC; border: 2px solid #DC143C; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #2C1810;">邮票</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: radial-gradient(circle at 5px 5px, transparent 3px, #DC143C 3px); background-size: 10px 10px; background-position: -5px -5px; padding: 8px;">
+		<section style="background-color: #FFF8DC; border: 3px solid #DC143C; padding: 14px 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.15);">
+			<p style="margin: 0; font-size: 18px; font-weight: bold; color: #2C1810; letter-spacing: 2px; line-height: 1.75em; font-family: Georgia, '华文楷体', STKaiti, serif;">{{CONTENT}}</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_film_strip',
+    name: '电影胶片标题',
+    type: 'title',
+    preview: `<div style="background: #1A1A1A; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #FFD700;">FILM</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="background-color: #1A1A1A; padding: 6px 0; box-shadow: 0 6px 12px rgba(0,0,0,0.4); position: relative;">
+		<section style="height: 8px; background: repeating-linear-gradient(90deg, transparent 0px, transparent 6px, #2C2C2C 6px, #2C2C2C 14px, transparent 14px, transparent 20px); margin-bottom: 4px;"></section>
+		<section style="background: linear-gradient(180deg, #2a2a2a, #1A1A1A); padding: 12px 28px; border-left: 5px solid #2C2C2C; border-right: 5px solid #2C2C2C;">
+			<p style="margin: 0; font-size: 18px; font-weight: bold; color: #FFD700; letter-spacing: 3px; line-height: 1.75em; font-family: Impact, '黑体', SimHei, sans-serif; text-transform: uppercase;">{{CONTENT}}</p>
+		</section>
+		<section style="height: 8px; background: repeating-linear-gradient(90deg, transparent 0px, transparent 6px, #2C2C2C 6px, #2C2C2C 14px, transparent 14px, transparent 20px); margin-top: 4px;"></section>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_terrazzo',
+    name: '水磨石标题',
+    type: 'title',
+    preview: `<div style="background: #F0EDE5; border-radius: 6px; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: #FF6B9D;">磨石</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="background-color: #F0EDE5; background-image: radial-gradient(circle at 15% 25%, #FF6B9D 2px, transparent 2px), radial-gradient(circle at 55% 65%, #4ECDC4 3px, transparent 3px), radial-gradient(circle at 85% 15%, #FFE66D 2px, transparent 2px), radial-gradient(circle at 35% 75%, #95E1D3 2px, transparent 2px), radial-gradient(circle at 70% 45%, #AA96DA 3px, transparent 3px); background-size: 80px 80px; padding: 18px 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #2C2C2C; letter-spacing: 1.5px; line-height: 1.75em; font-family: Arial, '微软雅黑', sans-serif;">{{CONTENT}}</p>
+	</section>
+</section>`
   }
 ]
 
@@ -2089,6 +2230,199 @@ export const bodyDecorations = [
 		</section>
 	</section>
 </section>`
+  },
+  // ========== 黑板/水彩/装饰艺术/票券/缎带/双色调正文（第六轮迭代） ==========
+  {
+    id: 'body_chalkboard',
+    name: '黑板粉笔正文',
+    type: 'body',
+    preview: `<div style="background: #2d3436; border: 3px solid #5d4e37; padding: 4px 8px; font-size: 8px; color: #f5f6fa; font-family: Courier New, monospace;">粉笔</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #2d3436; border: 4px solid #5d4e37; padding: 20px 24px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #f5f6fa; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #f5f6fa; letter-spacing: 1.5px; font-size: 14px; font-family: 'Courier New', Consolas, monospace; text-shadow: 1px 1px 2px rgba(255,255,255,0.2);">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_watercolor',
+    name: '水彩正文',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(135deg, rgba(249,213,229,0.5), rgba(191,227,240,0.5)); padding: 4px 8px; border-radius: 8px; font-size: 9px; color: #555;">水彩</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(135deg, rgba(249,213,229,0.4) 0%, rgba(191,227,240,0.4) 50%, rgba(197,225,165,0.3) 100%); border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 20px rgba(249,213,229,0.3);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #555555; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #555555; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_art_deco',
+    name: '装饰艺术正文',
+    type: 'body',
+    preview: `<div style="background: #1a1a1a; border: 1px double #d4af37; padding: 4px 8px; font-size: 9px; color: #f5e6d3;">Art Deco</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #1a1a1a; border: 2px solid #d4af37; padding: 20px 24px; box-shadow: inset 3px 3px 0 rgba(212,175,55,0.08), inset -3px -3px 0 rgba(212,175,55,0.08);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #f5e6d3; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #f5e6d3; letter-spacing: 1.75px; font-size: 14px; font-family: Georgia, 'Times New Roman', '宋体', SimSun, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_ticket',
+    name: '票券正文',
+    type: 'body',
+    preview: `<div style="background: #fef9e7; border: 2px dashed #8b7355; padding: 4px 8px; border-radius: 4px; font-size: 9px; color: #4a3c27;">票券</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #fef9e7; border: 2px dashed #c4b08a; border-radius: 8px; padding: 20px 24px; box-shadow: 0 2px 8px rgba(139,115,85,0.15);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #4a3c27; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #4a3c27; letter-spacing: 1.75px; font-size: 14px; font-family: Georgia, '宋体', SimSun, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_ribbon_accent',
+    name: '缎带强调正文',
+    type: 'body',
+    preview: `<div style="border-left: 4px solid #e74c3c; background: linear-gradient(to right, rgba(231,76,60,0.08), transparent); padding: 4px 8px; font-size: 9px; color: #333;">缎带</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="border-left: 5px solid #e74c3c; background: linear-gradient(to right, rgba(231,76,60,0.06) 0%, transparent 100%); padding: 18px 22px; box-shadow: 0 2px 8px rgba(231,76,60,0.08);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgb(1,1,1); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgb(1,1,1); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_duotone',
+    name: '双色调正文',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(135deg, rgba(92,0,103,0.1), rgba(0,212,255,0.1)); padding: 4px 8px; border-radius: 6px; font-size: 9px; color: #2d3748;">双色调</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(135deg, rgba(92,0,103,0.08) 0%, rgba(0,212,255,0.08) 100%); border: 1px solid rgba(92,0,103,0.12); border-radius: 10px; padding: 20px 24px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #2d3748; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #2d3748; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_stained_glass',
+    name: '彩窗玻璃正文',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(135deg, rgba(255,107,107,0.2), rgba(78,205,196,0.2)); border: 1px solid #8B4513; padding: 4px 8px; font-size: 9px; color: #2C3E50;">彩窗</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(135deg, #2C3E50, #34495E); border: 3px solid #8B4513; padding: 4px; box-shadow: inset 0 0 15px rgba(0,0,0,0.2);">
+		<section style="background: linear-gradient(135deg, rgba(255,107,107,0.12), rgba(78,205,196,0.12), rgba(247,220,111,0.08)); padding: 18px 22px; border: 1px solid rgba(139,69,19,0.3);">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #ecf0f1; background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+					<span style="font-weight: 400; color: #ecf0f1; letter-spacing: 1.75px; font-size: 14px; font-family: Georgia, '华文楷体', STKaiti, serif; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">{{CONTENT}}</span>
+				</p>
+			</section>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_blueprint',
+    name: '蓝图工程正文',
+    type: 'body',
+    preview: `<div style="background: #0A2540; border: 1px dashed #00D9FF; padding: 4px 8px; font-size: 9px; color: #FFFFFF; font-family: monospace;">蓝图</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background-color: #0A2540; background-image: linear-gradient(rgba(30,73,118,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(30,73,118,0.4) 1px, transparent 1px); background-size: 20px 20px; border: 2px dashed #00D9FF; padding: 20px 22px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #FFFFFF; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #FFFFFF; letter-spacing: 1.75px; font-size: 14px; font-family: Courier New, Consolas, monospace;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_classified',
+    name: '分类广告正文',
+    type: 'body',
+    preview: `<div style="background: #FFFFFF; border: 1px solid #2C2C2C; padding: 4px 8px; font-size: 9px; color: #2C2C2C; font-family: Georgia, serif;">分类</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background-color: #F5F1E8; border: 3px double #8B7355; padding: 4px;">
+		<section style="background-color: #FFFFFF; border: 1px solid #2C2C2C; padding: 18px 22px; box-shadow: 2px 2px 0 rgba(0,0,0,0.08);">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.65em; letter-spacing: 1px; font-size: 14px; color: #2C2C2C; background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.65em; text-align: justify;" align="justify">
+					<span style="font-weight: 400; color: #2C2C2C; letter-spacing: 1.25px; font-size: 14px; font-family: Georgia, '宋体', SimSun, serif;">{{CONTENT}}</span>
+				</p>
+			</section>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_postage_stamp',
+    name: '邮票正文',
+    type: 'body',
+    preview: `<div style="background: #FFF8DC; border: 1px solid #DC143C; padding: 4px 8px; font-size: 9px; color: #2C1810;">邮票</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: radial-gradient(circle at 5px 5px, transparent 3px, #DC143C 3px); background-size: 10px 10px; background-position: -5px -5px; padding: 7px;">
+		<section style="background-color: #FFF8DC; border: 2px solid #DC143C; padding: 18px 22px; box-shadow: 0 3px 8px rgba(0,0,0,0.12);">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #2C1810; background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+					<span style="font-weight: 400; color: #2C1810; letter-spacing: 1.75px; font-size: 14px; font-family: Georgia, '华文楷体', STKaiti, serif;">{{CONTENT}}</span>
+				</p>
+			</section>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_film_strip',
+    name: '电影胶片正文',
+    type: 'body',
+    preview: `<div style="background: #1A1A1A; border-left: 3px solid #2C2C2C; border-right: 3px solid #2C2C2C; padding: 4px 8px; font-size: 9px; color: #FFFFFF;">胶片</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background-color: #1A1A1A; padding: 4px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+		<section style="height: 6px; background: repeating-linear-gradient(90deg, transparent 0px, transparent 6px, #2C2C2C 6px, #2C2C2C 12px, transparent 12px, transparent 18px);"></section>
+		<section style="background-color: #FFFFFF; padding: 18px 22px; margin: 4px 6px; border-left: 4px solid #2C2C2C; border-right: 4px solid #2C2C2C;">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #2C2C2C; background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+					<span style="font-weight: 400; color: #2C2C2C; letter-spacing: 1.75px; font-size: 14px; font-family: Arial, '微软雅黑', sans-serif;">{{CONTENT}}</span>
+				</p>
+			</section>
+		</section>
+		<section style="height: 6px; background: repeating-linear-gradient(90deg, transparent 0px, transparent 6px, #2C2C2C 6px, #2C2C2C 12px, transparent 12px, transparent 18px);"></section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_terrazzo',
+    name: '水磨石正文',
+    type: 'body',
+    preview: `<div style="background: #F0EDE5; border-radius: 4px; padding: 4px 8px; font-size: 9px; color: #2C2C2C;">磨石</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background-color: #F0EDE5; background-image: radial-gradient(circle at 18% 28%, #FF6B9D 2px, transparent 2px), radial-gradient(circle at 58% 68%, #4ECDC4 3px, transparent 3px), radial-gradient(circle at 82% 18%, #FFE66D 2px, transparent 2px), radial-gradient(circle at 38% 78%, #95E1D3 2px, transparent 2px), radial-gradient(circle at 72% 48%, #AA96DA 3px, transparent 3px); background-size: 80px 80px; padding: 20px; border-radius: 10px;">
+		<section style="background-color: rgba(255,255,255,0.92); padding: 18px 22px; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.06);">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #2C2C2C; background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+					<span style="font-weight: 400; color: #2C2C2C; letter-spacing: 1.75px; font-size: 14px; font-family: Arial, '微软雅黑', sans-serif;">{{CONTENT}}</span>
+				</p>
+			</section>
+		</section>
+	</section>
+</section>`
   }
 ]
 
@@ -2887,6 +3221,133 @@ export const introDecorations = [
 			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
 				<span style="font-weight: 400; color: rgba(255,255,255,0.95); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
 			</p>
+		</section>
+	</section>
+</section>`
+  },
+  // ========== 黑板/水彩/装饰艺术/票券引言（第六轮迭代） ==========
+  {
+    id: 'intro_chalkboard',
+    name: '黑板粉笔引言',
+    type: 'intro',
+    preview: `<div style="background: #2d3436; border: 2px solid #5d4e37; padding: 4px 8px; font-size: 9px; color: #fdcb6e; font-family: Courier New, monospace;">粉笔</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #2d3436; border: 4px solid #5d4e37; border-radius: 4px; padding: 18px 22px; box-shadow: inset 0 0 15px rgba(0,0,0,0.4);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #fdcb6e; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #fdcb6e; letter-spacing: 1.5px; font-size: 14px; font-family: 'Courier New', Consolas, monospace; text-shadow: 1px 1px 2px rgba(253,203,110,0.2);">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_watercolor_wash',
+    name: '水彩晕染引言',
+    type: 'intro',
+    preview: `<div style="background: linear-gradient(135deg, rgba(249,213,229,0.6), rgba(168,218,220,0.6)); padding: 4px 8px; border-radius: 12px; font-size: 9px; color: #666;">水彩引言</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: linear-gradient(135deg, rgba(249,213,229,0.5) 0%, rgba(168,218,220,0.5) 50%, rgba(212,181,211,0.4) 100%); border-radius: 20px; padding: 20px 24px; box-shadow: 0 4px 15px rgba(249,213,229,0.3), inset 0 -2px 6px rgba(255,255,255,0.4);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #666666; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #666666; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_art_deco_gold',
+    name: '装饰艺术金色引言',
+    type: 'intro',
+    preview: `<div style="background: #001f3f; border: 1px double #d4af37; padding: 4px 8px; font-size: 9px; color: #d4af37;">Deco</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: linear-gradient(135deg, #001f3f 0%, #003459 100%); border: 2px double #d4af37; padding: 18px 22px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #f5e6d3; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #f5e6d3; letter-spacing: 1.75px; font-size: 14px; font-family: Georgia, 'Times New Roman', '宋体', SimSun, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_ticket_stub',
+    name: '票根引言',
+    type: 'intro',
+    preview: `<div style="background: #fef9e7; border: 2px dotted #c4b08a; padding: 4px 8px; border-radius: 8px; font-size: 9px; color: #4a3c27;">票根</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #fef9e7; border: 3px dotted #c4b08a; border-radius: 12px; padding: 18px 22px; box-shadow: 0 2px 8px rgba(196,176,138,0.2);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #4a3c27; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #4a3c27; letter-spacing: 1.75px; font-size: 14px; font-family: Georgia, '宋体', SimSun, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_blueprint',
+    name: '蓝图工程引言',
+    type: 'intro',
+    preview: `<div style="background: #0A2540; border: 1px dashed #00D9FF; padding: 4px 8px; font-size: 9px; color: #00D9FF; font-family: monospace;">蓝图</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background-color: #0A2540; background-image: linear-gradient(rgba(30,73,118,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(30,73,118,0.35) 1px, transparent 1px); background-size: 20px 20px; border: 2px solid #00D9FF; padding: 18px 22px; box-shadow: 0 0 12px rgba(0,217,255,0.15);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #FFFFFF; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #e0f0ff; letter-spacing: 1.75px; font-size: 14px; font-family: Courier New, Consolas, monospace;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_postage',
+    name: '邮票引言',
+    type: 'intro',
+    preview: `<div style="background: #FFF8DC; border: 2px solid #DC143C; padding: 4px 8px; font-size: 9px; color: #2C1810;">邮票</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="display: inline-block; background: radial-gradient(circle at 5px 5px, transparent 3px, #DC143C 3px); background-size: 10px 10px; background-position: -5px -5px; padding: 7px;">
+		<section style="background-color: #FFF8DC; border: 2px solid #DC143C; padding: 18px 22px; box-shadow: 0 3px 8px rgba(0,0,0,0.1);">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #2C1810; background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+					<span style="font-weight: 400; color: #2C1810; letter-spacing: 1.75px; font-size: 14px; font-family: Georgia, '华文楷体', STKaiti, serif;">{{CONTENT}}</span>
+				</p>
+			</section>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_envelope',
+    name: '信封引言',
+    type: 'intro',
+    preview: `<div style="background: #FFF8E7; border-top: 4px solid; border-image: repeating-linear-gradient(90deg, #DC143C 0px, #DC143C 8px, #fff 8px, #fff 12px, #1E3A8A 12px, #1E3A8A 20px) 4; padding: 4px 8px; font-size: 9px; color: #3C2F1F;">信封</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background-color: #E8DCC4; padding: 6px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+		<section style="border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-image: repeating-linear-gradient(90deg, #DC143C 0px, #DC143C 8px, #FFFFFF 8px, #FFFFFF 14px, #1E3A8A 14px, #1E3A8A 22px, #FFFFFF 22px, #FFFFFF 28px) 6; padding: 16px 20px; background-color: #FFF8E7;">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #3C2F1F; background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+					<span style="font-weight: 400; color: #3C2F1F; letter-spacing: 1.75px; font-size: 14px; font-family: Georgia, '华文楷体', STKaiti, cursive;">{{CONTENT}}</span>
+				</p>
+			</section>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_woodblock',
+    name: '木刻版画引言',
+    type: 'intro',
+    preview: `<div style="background: #1A1A1A; border: 2px solid #F4E8D0; padding: 4px 8px; font-size: 9px; color: #F4E8D0; font-weight: bold;">木刻</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background-color: #F4E8D0; background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139,69,19,0.03) 2px, rgba(139,69,19,0.03) 4px); padding: 6px; border: 4px solid #8B4513; box-shadow: 0 5px 10px rgba(0,0,0,0.2);">
+		<section style="background-color: #1A1A1A; border: 2px solid #FFFFFF; padding: 18px 22px;">
+			<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #F4E8D0; background-color: transparent;">
+				<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+					<span style="font-weight: bold; color: #F4E8D0; letter-spacing: 1.75px; font-size: 14px; font-family: Impact, '黑体', SimHei, sans-serif;">{{CONTENT}}</span>
+				</p>
+			</section>
 		</section>
 	</section>
 </section>`

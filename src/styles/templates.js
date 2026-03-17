@@ -525,6 +525,84 @@ export const DIVIDER_TEMPLATES = {
     <section class="_135editor" data-role="separator" style="margin: 30px 0; padding: 0 20px;">
       <section style="height: 3px; background: linear-gradient(90deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #4facfe 60%, #00f2fe 80%, #667eea 100%); border-radius: 2px;"></section>
     </section>
+  `,
+
+  // ========== 水彩/装饰艺术/票券/缎带分隔线（第六轮迭代） ==========
+
+  // 水彩晕染分隔线
+  watercolor_wash_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 30px 0; padding: 0 20px;">
+      <section style="height: 4px; background: linear-gradient(90deg, rgba(249,213,229,0) 0%, rgba(249,213,229,0.8) 20%, rgba(191,227,240,0.8) 50%, rgba(212,181,211,0.8) 80%, rgba(212,181,211,0) 100%); border-radius: 2px;"></section>
+    </section>
+  `,
+
+  // 装饰艺术金线分隔线
+  art_deco_gold_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 30px;">
+        <section style="flex: 1; height: 1px; background: linear-gradient(to right, transparent, #d4af37);"></section>
+        <section style="width: 8px; height: 8px; border: 1px solid #d4af37; transform: rotate(45deg);"></section>
+        <section style="width: 4px; height: 4px; background: #d4af37; border-radius: 50%;"></section>
+        <section style="width: 8px; height: 8px; border: 1px solid #d4af37; transform: rotate(45deg);"></section>
+        <section style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #d4af37);"></section>
+      </section>
+    </section>
+  `,
+
+  // 票券虚线分隔线
+  ticket_perforation_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; padding: 0 20px;">
+      <section style="border-top: 3px dashed #c4b08a; opacity: 0.6;"></section>
+    </section>
+  `,
+
+  // 缎带折叠分隔线
+  ribbon_fold_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 0; padding: 0 40px;">
+        <section style="flex: 1; height: 2px; background: linear-gradient(to right, transparent, #e74c3c);"></section>
+        <section style="background: #e74c3c; color: #fff; padding: 2px 16px; font-size: 11px; font-weight: bold; letter-spacing: 2px; box-shadow: 0 2px 0 #c0392b;">&#9830;</section>
+        <section style="flex: 1; height: 2px; background: linear-gradient(to left, transparent, #e74c3c);"></section>
+      </section>
+    </section>
+  `,
+
+  // 彩窗马赛克分隔线
+  stained_glass_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 0; padding: 0 20px; height: 6px;">
+        <section style="flex: 1; height: 6px; background: linear-gradient(90deg, transparent, #FF6B6B, #4ECDC4, #45B7D1, #FFA07A, #98D8C8, transparent); border-top: 1px solid #8B4513; border-bottom: 1px solid #8B4513;"></section>
+      </section>
+    </section>
+  `,
+
+  // 蓝图网格分隔线
+  blueprint_grid_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 30px;">
+        <section style="flex: 1; height: 1px; border-top: 2px dashed #00D9FF;"></section>
+        <section style="color: #00D9FF; font-size: 10px; font-family: Courier New, monospace; letter-spacing: 2px;">///</section>
+        <section style="flex: 1; height: 1px; border-top: 2px dashed #00D9FF;"></section>
+      </section>
+    </section>
+  `,
+
+  // 邮票齿孔分隔线
+  stamp_perforation_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center; padding: 0 15px;">
+      <section style="height: 4px; background: radial-gradient(circle at 5px 2px, #DC143C 2px, transparent 2px); background-size: 12px 4px;"></section>
+    </section>
+  `,
+
+  // 胶片齿孔分隔线
+  film_sprocket_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 0; padding: 0 10px;">
+        <section style="flex: 1; height: 10px; background: #1A1A1A; display: flex; align-items: center;">
+          <section style="width: 100%; height: 6px; background: repeating-linear-gradient(90deg, transparent 0px, transparent 5px, #333 5px, #333 10px, transparent 10px, transparent 14px);"></section>
+        </section>
+      </section>
+    </section>
   `
 }
 

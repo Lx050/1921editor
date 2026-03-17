@@ -493,6 +493,117 @@ export const themePresets = [
       body: 'body_holographic',
       intro: 'intro_holographic_card'
     }
+  },
+  // ========== 黑板/水彩/装饰艺术/票券主题（第六轮迭代） ==========
+  {
+    id: 'theme_chalkboard',
+    name: '黑板教学',
+    description: '黑板粉笔风格，适合教育/课程类内容',
+    colorScheme: '#2d3436',
+    styles: {
+      title: 'title_chalkboard',
+      body: 'body_chalkboard',
+      intro: 'intro_chalkboard'
+    }
+  },
+  {
+    id: 'theme_watercolor',
+    name: '水彩画卷',
+    description: '柔和水彩晕染效果，适合文艺/生活类内容',
+    colorScheme: '#f9d5e5',
+    styles: {
+      title: 'title_watercolor',
+      body: 'body_watercolor',
+      intro: 'intro_watercolor_wash'
+    }
+  },
+  {
+    id: 'theme_art_deco',
+    name: '装饰艺术',
+    description: '1920s Art Deco 风格，金色+深色的奢华感',
+    colorScheme: '#d4af37',
+    styles: {
+      title: 'title_art_deco',
+      body: 'body_art_deco',
+      intro: 'intro_art_deco_gold'
+    }
+  },
+  {
+    id: 'theme_ticket',
+    name: '复古票券',
+    description: '票券/邀请函风格，适合活动/促销类内容',
+    colorScheme: '#8b7355',
+    styles: {
+      title: 'title_ticket',
+      body: 'body_ticket',
+      intro: 'intro_ticket_stub'
+    }
+  },
+  {
+    id: 'theme_stained_glass',
+    name: '彩窗玻璃',
+    description: '教堂彩窗风格，色彩绚丽适合艺术/文化类内容',
+    colorScheme: '#8B4513',
+    styles: {
+      title: 'title_stained_glass',
+      body: 'body_stained_glass',
+      intro: 'intro_envelope'
+    }
+  },
+  {
+    id: 'theme_blueprint',
+    name: '蓝图工程',
+    description: '工程蓝图风格，适合科技/工程/技术类内容',
+    colorScheme: '#00D9FF',
+    styles: {
+      title: 'title_blueprint',
+      body: 'body_blueprint',
+      intro: 'intro_blueprint'
+    }
+  },
+  {
+    id: 'theme_classified',
+    name: '复古报纸',
+    description: '报纸分类广告风格，适合资讯/新闻/复古类内容',
+    colorScheme: '#C41E3A',
+    styles: {
+      title: 'title_classified',
+      body: 'body_classified',
+      intro: 'intro_postage'
+    }
+  },
+  {
+    id: 'theme_postage',
+    name: '邮票集邮',
+    description: '邮票齿孔风格，适合旅行/收藏/怀旧类内容',
+    colorScheme: '#DC143C',
+    styles: {
+      title: 'title_postage_stamp',
+      body: 'body_postage_stamp',
+      intro: 'intro_postage'
+    }
+  },
+  {
+    id: 'theme_film',
+    name: '电影胶片',
+    description: '胶片电影风格，适合影评/娱乐/艺术类内容',
+    colorScheme: '#FFD700',
+    styles: {
+      title: 'title_film_strip',
+      body: 'body_film_strip',
+      intro: 'intro_woodblock'
+    }
+  },
+  {
+    id: 'theme_terrazzo',
+    name: '水磨石',
+    description: '现代水磨石风格，适合时尚/设计/生活类内容',
+    colorScheme: '#FF6B9D',
+    styles: {
+      title: 'title_terrazzo',
+      body: 'body_terrazzo',
+      intro: 'intro_envelope'
+    }
   }
 ]
 
