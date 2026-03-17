@@ -78,3 +78,8 @@ config/
 # SSH/SSL private keys (NEVER commit)
 *.pem
 *.key
+
+# Exclude sensitive documentation and initialization scripts from public repo
+# Note: These are now cleaned but the user asked to exclude them
+公众号图文上传全流程接口文档.md
+content-backend/src/init-tenant-config.ts

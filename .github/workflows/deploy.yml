@@ -6,28 +6,30 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 使用系统已安装的 Node.js v22，无需 setup-node
-      - name: Verify Node.js
-        run: |
-          /usr/bin/node -v
-          /usr/bin/npm -v
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: /usr/bin/npm ci
+        run: npm ci
 
       - name: Build frontend
-        run: /usr/bin/npm run build
+        run: npm run build
 
-      # 前端：将构建产物部署到 Nginx 静态目录
-      # 目录已 chown 给 github-runner，无需 sudo
-      - name: Deploy frontend
-        run: |
-          DEPLOY_DIR="/var/www/1921editor"
-          mkdir -p "$DEPLOY_DIR"
-          rsync -av --delete src/dist/ "$DEPLOY_DIR/"
-          echo "✅ Frontend deployed to $DEPLOY_DIR"
+      - name: Deploy to Server via SSH
+        uses: easingthemes/ssh-deploy@v5.1.0
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          ARGS: "-avz --delete"
+          SOURCE: "src/dist/"
+          REMOTE_HOST: ${{ secrets.SERVER_IP }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: "/var/www/1921editor"
+          EXCLUDE: "/node_modules/"
