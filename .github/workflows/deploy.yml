@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,7 +26,8 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Deploy to Server via SSH
+      # 1. 部署前端静态文件到 Nginx 目录
+      - name: Deploy Frontend to Nginx
         uses: easingthemes/ssh-deploy@v5.1.0
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
@@ -32,4 +36,39 @@ jobs:
           REMOTE_HOST: ${{ secrets.SERVER_IP }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: "/var/www/1921editor"
-          EXCLUDE: "/node_modules/"
+
+      # 2. 部署后端代码及配置文件到 /opt 目录
+      - name: Deploy Backend & Docker Config
+        uses: easingthemes/ssh-deploy@v5.1.0
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          ARGS: "-avz"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.SERVER_IP }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: "/opt/1921editor"
+          EXCLUDE: "/node_modules/,/src/dist/,/.git/,/content-backend/node_modules/,/content-backend/dist/"
+
+      # 3. 自动化配置 Nginx 并重启后端服务
+      - name: Post-deployment Tasks
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            # 1. 重建 .env 环境变量文件
+            echo "${{ secrets.ENV_FILE }}" > /opt/1921editor/.env
+            
+            # 2. 设置 Nginx 配置
+            cp /opt/1921editor/scripts/nginx.conf /etc/nginx/conf.d/1921editor.conf
+            nginx -t && systemctl reload nginx
+            
+            # 3. 确保上传目录权限
+            mkdir -p /opt/1921editor/content-backend/uploads
+            chmod -R 777 /opt/1921editor/content-backend/uploads
+            
+            # 4. 重启 Docker 服务 (使用项目名 paiban 以关联旧数据)
+            cd /opt/1921editor
+            docker compose down backend || true
+            docker compose up -d --build backend
