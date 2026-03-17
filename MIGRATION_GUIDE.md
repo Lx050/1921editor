@@ -27,9 +27,11 @@ cat backup.sql | docker exec -i paiban-db-1 psql -U paiban_admin paiban_prod
 
 ## 4. GitHub 环境切换
 1. 进入 GitHub 仓库 `Settings -> Secrets and variables -> Actions`。
-2. 修改 `REMOTE_HOST` 为 **新服务器 IP**。
-3. 检查 `REMOTE_USER` (通常为 root) 和 `SERVER_SSH_KEY` 是否正确。
-4. **点击 Run Workflow**: 自动安装 Nginx 规则、同步前端、启动后端。
+2. **更新变量**:
+   - `REMOTE_HOST`: 修改为 **新服务器 IP**。
+   - `ENV_FILE`: 粘贴你最新的 `.env` 文件内容（CI 会自动将其分发到新服务器）。
+   - `SERVER_SSH_KEY`: 如果更换了密钥，请在此更新。
+3. **点击 Run Workflow**: 自动安装 Nginx 规则、重建环境变量、同步前端、启动后端。
 
 ---
 

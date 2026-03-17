@@ -54,15 +54,18 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            # 设置 Nginx 配置
+            # 1. 重建 .env 环境变量文件
+            echo "${{ secrets.ENV_FILE }}" > /opt/1921editor/.env
+            
+            # 2. 设置 Nginx 配置
             cp /opt/1921editor/scripts/nginx.conf /etc/nginx/conf.d/1921editor.conf
             nginx -t && systemctl reload nginx
             
-            # 确保上传目录权限
+            # 3. 确保上传目录权限
             mkdir -p /opt/1921editor/content-backend/uploads
             chmod -R 777 /opt/1921editor/content-backend/uploads
             
-            # 重启 Docker 服务 (使用项目名 paiban 以关联旧数据)
+            # 4. 重启 Docker 服务 (使用项目名 paiban 以关联旧数据)
             cd /opt/1921editor
             docker compose down backend || true
             docker compose up -d --build backend
