@@ -22,12 +22,39 @@
     <!-- 左侧样式选择面板 - 桌面端 flex 布局，移动端 fixed 遮罩 -->
     <div
       :class="[
-        'w-72 flex-shrink-0 h-full border-r transition-transform duration-300 ease-in-out md:translate-x-0 overflow-hidden',
+        'w-72 flex-shrink-0 h-full border-r transition-transform duration-300 ease-in-out md:translate-x-0 overflow-hidden flex flex-col',
         showMobileSidebar ? 'translate-x-0 fixed left-0 top-0 bottom-0 z-30' : '-translate-x-full fixed md:relative md:translate-x-0'
       ]"
       style="background: var(--color-content-bg-soft); border-color: var(--color-content-border);"
     >
-      <StyleSelector />
+      <!-- 面板切换 Tab -->
+      <div class="flex border-b flex-shrink-0" style="border-color: var(--color-content-border);">
+        <button
+          @click="sidebarPanel = 'styles'"
+          :class="[
+            'flex-1 px-3 py-2.5 text-xs font-bold transition-all relative',
+            sidebarPanel === 'styles' ? 'text-[#ff6b4a]' : 'text-gray-400 hover:text-gray-600'
+          ]"
+        >
+          样式选择
+          <div v-if="sidebarPanel === 'styles'" class="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ff6b4a] to-[#d4a574]"></div>
+        </button>
+        <button
+          @click="sidebarPanel = 'svg'"
+          :class="[
+            'flex-1 px-3 py-2.5 text-xs font-bold transition-all relative',
+            sidebarPanel === 'svg' ? 'text-purple-600' : 'text-gray-400 hover:text-gray-600'
+          ]"
+        >
+          SVG 装饰
+          <div v-if="sidebarPanel === 'svg'" class="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+        </button>
+      </div>
+      <!-- 面板内容 -->
+      <div class="flex-1 overflow-hidden">
+        <StyleSelector v-show="sidebarPanel === 'styles'" />
+        <SvgTemplatePanel v-show="sidebarPanel === 'svg'" @insert-svg="insertSvgDecoration" />
+      </div>
     </div>
 
     <!-- 右侧内容编辑区 - 高度固定，内部滚动 -->
@@ -231,6 +258,7 @@
                 <LayoutInserter
                   @insert-image="insertImageBlock(index, $event)"
                   @insert-text="insertTextBlock(index, $event)"
+                  @insert-svg="insertSvgAtIndex(index)"
                 />
               </div>
             </div>
@@ -286,6 +314,7 @@ import { smartTextParser } from '../utils/textParser'
 import { getBlockTypeDisplayName } from '../utils/styleAssembler'
 import { uploadManager } from '../utils/uploadManager'
 import StyleSelector from '../components/StyleSelector.vue'
+import SvgTemplatePanel from '../components/SvgTemplatePanel.vue'
 import LayoutInserter from '../components/LayoutInserter.vue'
 import UploadProgress from '../components/UploadProgress.vue'
 import LazyImage from '../components/LazyImage.vue'
@@ -295,6 +324,7 @@ const router = useRouter()
 const appStore = useAppStore()
 const selectedBlockId = ref<string | null>(null)
 const showMobileSidebar = ref(false)
+const sidebarPanel = ref<'styles' | 'svg'>('styles')
 const generatingBlockId = ref<string | null>(null)
 const LOCAL_DRAFT_KEY = 'local_step2_draft'
 
@@ -365,6 +395,24 @@ const insertTextBlock = (index: number, textType: string) => {
   const defaultText = defaultTexts[textType] || '新内容，点击编辑...'
 
   appStore.insertTextBlock(index + 1, textType as BlockType, defaultText)
+}
+
+// 从 LayoutInserter 点击"SVG装饰"按钮 → 切换侧边栏到 SVG 面板
+const insertSvgAtIndex = (_index: number) => {
+  sidebarPanel.value = 'svg'
+  showMobileSidebar.value = true // 移动端自动展开侧边栏
+}
+
+// 插入 SVG 装饰块（从侧边面板点击插入，追加到末尾）
+const insertSvgDecoration = (svgTpl: { id: string; name: string; svg: string }) => {
+  const newBlock: ContentBlock = {
+    id: `svg_${Date.now()}`,
+    type: 'svg_decoration',
+    text: '',
+    meta: { svgTemplateId: svgTpl.id, svgName: svgTpl.name }
+  }
+  const newBlocks = [...contentBlocks.value, newBlock]
+  appStore.setContentBlocks(newBlocks)
 }
 
 // 删除块

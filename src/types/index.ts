@@ -9,7 +9,8 @@ export type BlockType =
   | 'image_single'
   | 'image_single_caption'
   | 'image_double'
-  | 'image_double_caption';
+  | 'image_double_caption'
+  | 'svg_decoration';
 
 /**
  * 内容块数据接口
@@ -83,7 +84,14 @@ export function isImageBlock(type: BlockType): boolean {
  * 文本类型守卫
  */
 export function isTextBlock(type: BlockType): boolean {
-  return !isImageBlock(type);
+  return !isImageBlock(type) && type !== 'svg_decoration';
+}
+
+/**
+ * SVG装饰类型守卫
+ */
+export function isSvgBlock(type: BlockType): boolean {
+  return type === 'svg_decoration';
 }
 
 // 导出微信相关类型

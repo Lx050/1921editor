@@ -1,0 +1,129 @@
+<template>
+  <div class="h-full flex flex-col" style="background: var(--color-content-bg-soft);">
+    <!-- 标题栏 -->
+    <div class="p-3 border-b flex items-center justify-between" style="border-color: var(--color-content-border);">
+      <div>
+        <h3 class="text-sm font-bold" style="color: var(--color-content-text);">SVG 装饰库</h3>
+        <p class="text-[10px] mt-0.5" style="color: var(--color-content-text-secondary);">点击插入到文章中</p>
+      </div>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 font-bold">{{ totalCount }}</span>
+    </div>
+
+    <!-- 分类 Tab -->
+    <div class="flex border-b overflow-x-auto scrollbar-hide" style="border-color: var(--color-content-border);">
+      <button
+        v-for="cat in categories"
+        :key="cat.id"
+        @click="activeCategory = cat.id"
+        :class="[
+          'flex-shrink-0 px-2.5 py-2 text-[11px] font-medium transition-all duration-200 relative whitespace-nowrap',
+          activeCategory === cat.id
+            ? 'text-purple-600'
+            : 'text-gray-400 hover:text-gray-600'
+        ]"
+      >
+        <span class="mr-0.5">{{ cat.icon }}</span>
+        {{ cat.name }}
+        <div
+          v-if="activeCategory === cat.id"
+          class="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-purple-500 to-indigo-500"
+        ></div>
+      </button>
+    </div>
+
+    <!-- 搜索栏 -->
+    <div class="px-3 py-2 border-b" style="border-color: var(--color-content-border);">
+      <div class="relative">
+        <svg class="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="搜索SVG模板..."
+          class="w-full pl-7 pr-3 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-purple-300 focus:ring-1 focus:ring-purple-200"
+        />
+      </div>
+    </div>
+
+    <!-- SVG 模板网格 -->
+    <div class="flex-1 overflow-y-auto scrollbar-hide p-2.5">
+      <div v-if="filteredTemplates.length > 0" class="grid grid-cols-2 gap-2">
+        <div
+          v-for="tpl in filteredTemplates"
+          :key="tpl.id"
+          @click="insertSvg(tpl)"
+          class="relative cursor-pointer border-2 rounded-lg p-2 transition-all duration-200 border-transparent hover:border-purple-200 bg-white hover:shadow-md group"
+        >
+          <!-- SVG 预览 -->
+          <div class="h-16 overflow-hidden rounded bg-gray-50 border border-gray-100 flex items-center justify-center p-1">
+            <div class="svg-preview-wrapper" v-html="tpl.svg"></div>
+          </div>
+
+          <!-- 名称 -->
+          <div class="mt-1.5 text-[9px] text-center font-bold text-gray-500 group-hover:text-purple-600 truncate">
+            {{ tpl.name }}
+          </div>
+
+          <!-- 颜色标签 -->
+          <div class="absolute top-1.5 right-1.5 w-3 h-3 rounded-full border border-white shadow-sm" :style="{ background: tpl.colorScheme }"></div>
+
+          <!-- 插入提示 -->
+          <div class="absolute inset-0 flex items-center justify-center bg-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <span class="text-[10px] font-bold text-purple-600 bg-white/90 px-2 py-1 rounded-full shadow-sm">+&nbsp;插入</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-else class="text-center py-10">
+        <div class="text-2xl mb-2 opacity-50">&#x1F50D;</div>
+        <p class="text-xs text-gray-400">未找到匹配的SVG模板</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { SVG_TEMPLATE_CATEGORIES, getAllSvgTemplates, searchSvgTemplates } from '../styles/svgTemplates'
+
+const emit = defineEmits(['insertSvg'])
+
+const activeCategory = ref('borders')
+const searchQuery = ref('')
+
+const categories = SVG_TEMPLATE_CATEGORIES
+
+const totalCount = computed(() => getAllSvgTemplates().length)
+
+const filteredTemplates = computed(() => {
+  if (searchQuery.value.trim()) {
+    return searchSvgTemplates(searchQuery.value.trim())
+  }
+  const cat = categories.find(c => c.id === activeCategory.value)
+  return cat ? cat.data : []
+})
+
+const insertSvg = (tpl) => {
+  emit('insertSvg', tpl)
+}
+</script>
+
+<style scoped>
+.svg-preview-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.svg-preview-wrapper :deep(svg) {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+</style>

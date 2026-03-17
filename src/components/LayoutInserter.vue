@@ -23,7 +23,7 @@
     >
       <div class="text-xs font-bold text-gray-400 mb-3 text-center uppercase tracking-wider">插入内容</div>
       
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-3 gap-3">
         <!-- 文本内容区 -->
         <div class="space-y-2">
           <div class="text-[10px] font-bold text-gray-400 px-1">文本</div>
@@ -55,6 +55,20 @@
             </button>
           </div>
         </div>
+
+        <!-- SVG 装饰区 -->
+        <div class="space-y-2">
+          <div class="text-[10px] font-bold text-gray-400 px-1">装饰</div>
+          <div class="grid grid-cols-1 gap-1.5">
+            <button
+              @click="insertSvgBlock"
+              class="p-2 text-sm rounded-lg hover:bg-purple-50 active:bg-purple-100 text-gray-700 flex flex-col items-center justify-center transition-all border border-transparent hover:border-purple-100"
+            >
+              <span class="text-xl mb-1">&#x2728;</span>
+              <span class="text-[10px] font-bold">SVG装饰</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -73,6 +87,7 @@ import { ref } from 'vue'
 interface EmitEvents {
   insertImage: [imageType: string]
   insertText: [textType: string]
+  insertSvg: []
 }
 
 const emit = defineEmits<EmitEvents>()
@@ -147,6 +162,12 @@ const toggleMenu = (event: MouseEvent) => {
 // 关闭菜单
 const closeMenu = () => {
   menuVisible.value = false
+}
+
+// 插入 SVG 装饰块
+const insertSvgBlock = () => {
+  emit('insertSvg')
+  closeMenu()
 }
 
 // 插入内容

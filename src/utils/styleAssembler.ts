@@ -1,5 +1,7 @@
 // @ts-expect-error - templates.js 尚未迁移到 TypeScript，遵循最简原则忽略类型
 import { IMAGE_TEMPLATES } from '../styles/templates'
+// @ts-expect-error - svgTemplates.js 尚未迁移到 TypeScript
+import { getSvgTemplateById } from '../styles/svgTemplates'
 import type { ContentBlock, StyleConfig, BlockType, StyleTemplate } from '@/types'
 import { useConfigStore } from '../stores/configStore'
 import { useAppStore } from '../stores/appStore'
@@ -208,6 +210,21 @@ function buildStyledBlock(
 			}
 			return html
 		}
+		case 'svg_decoration': {
+			// SVG 装饰块：meta.svgTemplateId 指定模板
+			const svgId = block.meta?.svgTemplateId as string | undefined
+			if (svgId) {
+				const svgTpl = getSvgTemplateById(svgId)
+				if (svgTpl) {
+					return `<section class="_135editor" data-role="svg-decoration" style="margin: 15px 0; text-align: center;">${svgTpl.svg}</section>`
+				}
+			}
+			// 降级：如果有自定义 SVG 内容在 text 字段
+			if (content) {
+				return `<section class="_135editor" data-role="svg-decoration" style="margin: 15px 0; text-align: center;">${content}</section>`
+			}
+			return ''
+		}
 		case 'image_double_caption': {
 			let html = IMAGE_TEMPLATES.double_caption
 			let c1 = content;
@@ -346,7 +363,8 @@ export function getBlockTypeDisplayName(type: BlockType): string {
 		'image_single': '单图',
 		'image_single_caption': '单图+注',
 		'image_double': '双图',
-		'image_double_caption': '双图+注'
+		'image_double_caption': '双图+注',
+		'svg_decoration': 'SVG装饰'
 	}
 
 	return typeNames[type] || '正文'
