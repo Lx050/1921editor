@@ -879,6 +879,142 @@ export const titleDecorations = [
 		<p style="margin: 0; font-size: 16px; font-weight: bold; color: #ffffff; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
 	</section>
 </section>`
+  },
+  // ========== 杂志/复古/赛博/极光标题（第四轮迭代） ==========
+  {
+    id: 'title_editorial_serif',
+    name: '杂志衬线标题',
+    type: 'title',
+    preview: `<div style="font-family: Georgia, serif; font-size: 12px; font-weight: 700; color: #2c3e50; letter-spacing: -0.5px; border-bottom: 2px solid #e74c3c; padding-bottom: 3px;">Editorial</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; padding: 0 20px 10px;">
+		<p style="margin: 0; font-size: 22px; font-weight: 700; color: #2c3e50; letter-spacing: -0.5px; line-height: 1.3em; font-family: Georgia, 'Times New Roman', 宋体, SimSun, serif;">{{CONTENT}}</p>
+		<section style="height: 3px; background: linear-gradient(to right, transparent, #e74c3c, transparent); margin-top: 8px;"></section>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_retro_terminal',
+    name: '终端标题',
+    type: 'title',
+    preview: `<div style="background: #0a0a0a; color: #00ff41; font-family: Courier New, monospace; font-size: 10px; padding: 4px 6px; border: 1px solid #00ff41;">&gt; TITLE_</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: #0a0a0a; border: 2px solid #00ff41; padding: 12px 30px; box-shadow: 0 0 15px rgba(0,255,65,0.15), inset 0 0 30px rgba(0,255,65,0.05);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #00ff41; letter-spacing: 3px; line-height: 1.75em; font-family: 'Courier New', Consolas, monospace; text-shadow: 0 0 8px rgba(0,255,65,0.5);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_aurora_gradient',
+    name: '极光渐变标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, #6d327c, #485DA6, #00a1ba, #36C486); padding: 4px 8px; text-align: center; border-radius: 4px;"><span style="font-size: 10px; font-weight: bold; color: white;">Aurora</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(135deg, #6d327c 0%, #485DA6 30%, #00a1ba 60%, #36C486 100%); padding: 14px 36px; border-radius: 8px; box-shadow: 0 4px 20px rgba(72,93,166,0.3);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 2px; line-height: 1.75em; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_newspaper',
+    name: '复古报纸标题',
+    type: 'title',
+    preview: `<div style="background: #f4e8d0; border-top: 2px double #333; border-bottom: 2px double #333; padding: 3px; text-align: center;"><span style="font-size: 10px; font-family: Georgia, serif; color: #2b2b2b; font-weight: bold;">NEWS</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="background: #f4e8d0; border-top: 3px double #2b2b2b; border-bottom: 3px double #2b2b2b; padding: 14px 20px;">
+		<p style="margin: 0; font-size: 22px; font-weight: 700; color: #2b2b2b; letter-spacing: 4px; line-height: 1.4em; font-family: Georgia, '宋体', SimSun, serif;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_synthwave',
+    name: '赛博朋克标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); padding: 4px 8px; text-align: center; border-radius: 4px;"><span style="font-size: 10px; font-weight: bold; color: #ff006e; text-shadow: 0 0 5px #ff006e;">CYBER</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); padding: 16px 30px; border-radius: 8px; border: 1px solid rgba(255,0,110,0.3); box-shadow: 0 0 20px rgba(255,0,110,0.15);">
+		<p style="margin: 0; font-size: 20px; font-weight: bold; color: #ff006e; letter-spacing: 3px; line-height: 1.75em; text-shadow: 0 0 10px rgba(255,0,110,0.6), 0 0 20px rgba(255,0,110,0.3);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_warm_flame',
+    name: '暖焰标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(45deg, #ff9a9e, #fad0c4); padding: 4px 8px; text-align: center; border-radius: 4px;"><span style="font-size: 10px; font-weight: bold; color: white;">Warm</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%); padding: 14px 36px; border-radius: 50px; box-shadow: 0 4px 15px rgba(255,154,158,0.3);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 2px; line-height: 1.75em; text-shadow: 0 1px 2px rgba(0,0,0,0.15);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  // ========== 粘土/粗野派/侘寂/全息/折纸/像素标题（第五轮迭代） ==========
+  {
+    id: 'title_claymorphism',
+    name: '粘土标题',
+    type: 'title',
+    preview: `<div style="background: #e0e5ec; border-radius: 12px; padding: 4px 8px; box-shadow: 4px 4px 8px rgba(163,177,198,0.6), -4px -4px 8px rgba(255,255,255,0.5), inset 1px 1px 2px rgba(255,255,255,0.3);"><span style="font-size: 10px; font-weight: bold; color: #37597d;">Clay</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: #e0e5ec; border-radius: 20px; padding: 14px 36px; box-shadow: 9px 9px 16px rgba(163,177,198,0.6), -9px -9px 16px rgba(255,255,255,0.5), inset 2px 2px 4px rgba(255,255,255,0.3), inset -2px -2px 4px rgba(163,177,198,0.2);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #37597d; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_brutalist',
+    name: '粗野派标题',
+    type: 'title',
+    preview: `<div style="background: #ffff00; border: 2px solid #000; box-shadow: 4px 4px 0 #000; padding: 3px 8px;"><span style="font-size: 10px; font-weight: bold; color: #000; font-family: Courier New, monospace; text-transform: uppercase;">BRUTAL</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: #ffff00; border: 3px solid #000000; box-shadow: 8px 8px 0 #000000; padding: 12px 32px;">
+		<p style="margin: 0; font-size: 20px; font-weight: 900; color: #000000; letter-spacing: 3px; line-height: 1.75em; font-family: 'Courier New', Consolas, monospace; text-transform: uppercase;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_wabi_sabi',
+    name: '侘寂标题',
+    type: 'title',
+    preview: `<div style="padding: 4px 8px; border-bottom: 1px solid #c4b5a0;"><span style="font-size: 10px; color: #3a3a3a; letter-spacing: 2px;">侘 寂</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 30px 0; text-align: center;">
+	<section style="display: inline-block; padding: 10px 40px 12px;">
+		<p style="margin: 0; font-size: 18px; font-weight: 400; color: #3a3a3a; letter-spacing: 4px; line-height: 1.75em; font-family: '宋体', SimSun, Georgia, serif;">{{CONTENT}}</p>
+		<section style="height: 1px; background: linear-gradient(to right, transparent, #c4b5a0 30%, #c4b5a0 70%, transparent); margin-top: 10px;"></section>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_holographic',
+    name: '全息标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #4facfe); padding: 4px 8px; border-radius: 4px; text-align: center;"><span style="font-size: 10px; font-weight: bold; color: white;">Holo</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%); padding: 14px 36px; border-radius: 10px; box-shadow: 0 4px 20px rgba(102,126,234,0.35);">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #ffffff; letter-spacing: 2px; line-height: 1.75em; text-shadow: 0 1px 3px rgba(0,0,0,0.25);">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_paper_fold',
+    name: '折纸标题',
+    type: 'title',
+    preview: `<div style="background: linear-gradient(to bottom, #fff 48%, #f0f0f0 50%, #fff 52%); border: 1px solid #e0e0e0; padding: 4px 8px; text-align: center;"><span style="font-size: 10px; color: #555;">折纸</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: linear-gradient(to bottom, #ffffff 0%, #f8f8f8 48%, #eeeeee 50%, #f8f8f8 52%, #ffffff 100%); border: 1px solid #e0e0e0; padding: 14px 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);">
+		<p style="margin: 0; font-size: 18px; font-weight: 600; color: #444444; letter-spacing: 2px; line-height: 1.75em;">{{CONTENT}}</p>
+	</section>
+</section>`
+  },
+  {
+    id: 'title_pixel_art',
+    name: '像素标题',
+    type: 'title',
+    preview: `<div style="background: #5c5c5c; border: 2px solid #000; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #000; padding: 3px 8px;"><span style="font-size: 10px; font-weight: bold; color: #00ff00; font-family: Courier New, monospace;">8BIT</span></div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0; text-align: center;">
+	<section style="display: inline-block; background: #2c2c2c; border: 3px solid #000000; box-shadow: inset 3px 3px 0 #555555, inset -3px -3px 0 #000000; padding: 12px 30px;">
+		<p style="margin: 0; font-size: 18px; font-weight: bold; color: #00ff00; letter-spacing: 3px; line-height: 1.75em; font-family: 'Courier New', Consolas, monospace; text-shadow: 2px 2px 0 #003300;">{{CONTENT}}</p>
+	</section>
+</section>`
   }
 ]
 
@@ -1771,6 +1907,188 @@ export const bodyDecorations = [
 		</section>
 	</section>
 </section>`
+  },
+  // ========== 杂志/终端/渐变/Notion 正文（第四轮迭代） ==========
+  {
+    id: 'body_editorial_serif',
+    name: '杂志衬线正文',
+    type: 'body',
+    preview: `<div style="font-family: Georgia, serif; font-size: 9px; line-height: 1.7; color: #333; text-indent: 2em;">杂志衬线排版...</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="padding: 0 8px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.85em; letter-spacing: 0.5px; font-size: 15px; color: #333333; background-color: transparent;">
+			<p style="font-size: 15px; text-indent: 2em; line-height: 1.85em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #333333; letter-spacing: 0.5px; font-size: 15px; font-family: Georgia, 'Times New Roman', '宋体', SimSun, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_retro_terminal',
+    name: '终端正文',
+    type: 'body',
+    preview: `<div style="background: #0a0a0a; color: #00ff41; font-family: Courier New, monospace; font-size: 8px; padding: 4px 6px; border: 1px solid #00ff41;">&gt; text_</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #0a0a0a; border: 1px solid rgba(0,255,65,0.3); border-radius: 4px; padding: 18px 22px; box-shadow: inset 0 0 30px rgba(0,255,65,0.03);">
+		<section data-autoskip="1" class="135brush" style="text-align: left; line-height: 1.75em; letter-spacing: 1px; font-size: 14px; color: #00ff41; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 0; line-height: 1.75em; text-align: left;" align="left">
+				<span style="font-weight: 400; color: #00ff41; letter-spacing: 1px; font-size: 14px; font-family: 'Courier New', Consolas, monospace;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_warm_gradient',
+    name: '暖焰渐变卡片',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(45deg, #ff9a9e, #fad0c4); border-radius: 6px; padding: 4px 8px; font-size: 9px; color: white;">暖色渐变</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(120deg, #fff5f5 0%, #fff0ed 50%, #ffecd2 100%); border-radius: 10px; padding: 20px 24px; box-shadow: 0 2px 12px rgba(255,154,158,0.15);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #5a3e36; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #5a3e36; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_cool_gradient',
+    name: '冰蓝渐变卡片',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(120deg, #a1c4fd, #c2e9fb); border-radius: 6px; padding: 4px 8px; font-size: 9px; color: #1a365d;">冰蓝渐变</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(120deg, #e8f4fd 0%, #d6eef8 50%, #c2e9fb 100%); border-radius: 10px; padding: 20px 24px; box-shadow: 0 2px 12px rgba(161,196,253,0.2);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #1a365d; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #1a365d; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_newspaper_vintage',
+    name: '复古报纸正文',
+    type: 'body',
+    preview: `<div style="background: #f4e8d0; font-family: Georgia, serif; font-size: 9px; color: #2b2b2b; padding: 4px 8px; border-top: 1px double #333; border-bottom: 1px double #333;">旧报纸</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #f4e8d0; padding: 18px 22px; border-top: 1px solid #c4b8a0; border-bottom: 1px solid #c4b8a0;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.8em; letter-spacing: 0.5px; font-size: 14px; color: #2b2b2b; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2em; line-height: 1.8em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #2b2b2b; letter-spacing: 0.5px; font-size: 14px; font-family: Georgia, '宋体', SimSun, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_notion_block',
+    name: 'Notion风格块',
+    type: 'body',
+    preview: `<div style="background: #f7f6f3; border-left: 3px solid #37352f; padding: 4px 8px; font-size: 9px; color: #37352f;">Notion block</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #f7f6f3; border-left: 3px solid #37352f; border-radius: 3px; padding: 16px 20px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #37352f; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #37352f; letter-spacing: 1.75px; font-size: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 微软雅黑, sans-serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  // ========== 粘土/粗野派/侘寂/全息/折纸/像素正文（第五轮迭代） ==========
+  {
+    id: 'body_claymorphism',
+    name: '粘土正文',
+    type: 'body',
+    preview: `<div style="background: #e0e5ec; border-radius: 10px; padding: 4px 8px; box-shadow: 4px 4px 8px rgba(163,177,198,0.5), -3px -3px 6px rgba(255,255,255,0.4); font-size: 9px; color: #37597d;">粘土</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #e0e5ec; border-radius: 16px; padding: 20px 24px; box-shadow: 6px 6px 12px rgba(163,177,198,0.6), -6px -6px 12px rgba(255,255,255,0.5), inset 1px 1px 2px rgba(255,255,255,0.2);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #37597d; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #37597d; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_brutalist',
+    name: '粗野派正文',
+    type: 'body',
+    preview: `<div style="background: #fff; border: 2px solid #000; box-shadow: 4px 4px 0 #000; padding: 4px 8px; font-size: 9px; color: #000; font-family: Courier New, monospace;">BRUTAL</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #ffffff; border: 3px solid #000000; box-shadow: 6px 6px 0 #000000; padding: 20px 24px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1px; font-size: 14px; color: #000000; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #000000; letter-spacing: 1px; font-size: 14px; font-family: 'Courier New', Consolas, monospace;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_wabi_sabi',
+    name: '侘寂正文',
+    type: 'body',
+    preview: `<div style="background: #f5f5f0; border-left: 2px solid #8b7e74; padding: 4px 8px; font-size: 9px; color: #3a3a3a;">侘寂</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #f5f5f0; border-left: 2px solid #8b7e74; padding: 22px 24px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.85em; letter-spacing: 0.5px; font-size: 14px; color: #3a3a3a; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2em; line-height: 1.85em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #3a3a3a; letter-spacing: 0.5px; font-size: 14px; font-family: '宋体', SimSun, Georgia, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_holographic',
+    name: '全息卡片正文',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(135deg, #667eea, #f093fb, #4facfe); border-radius: 6px; padding: 4px 8px; font-size: 9px; color: #fff;">Holo</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(240,147,251,0.08) 50%, rgba(79,172,254,0.1) 100%); border: 1px solid rgba(102,126,234,0.2); border-radius: 12px; padding: 20px 24px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #2d3748; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #2d3748; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_paper_card',
+    name: '折纸卡片正文',
+    type: 'body',
+    preview: `<div style="background: linear-gradient(to bottom, #fff 48%, #f0f0f0 50%, #fff 52%); border: 1px solid #e0e0e0; padding: 4px 8px; font-size: 9px; color: #444;">折纸</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #ffffff; border: 1px solid #e8e8e8; padding: 20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.06), 0 12px 20px rgba(0,0,0,0.03);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #444444; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #444444; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'body_pixel_retro',
+    name: '像素正文',
+    type: 'body',
+    preview: `<div style="background: #2c2c2c; border: 2px solid #000; box-shadow: inset 2px 2px 0 #555, inset -2px -2px 0 #000; padding: 4px 8px; font-size: 8px; color: #00ff00; font-family: Courier New, monospace;">PIXEL</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 15px 0;">
+	<section style="background: #1a1a2e; border: 2px solid #333355; box-shadow: inset 3px 3px 0 #2a2a4e, inset -3px -3px 0 #0a0a1e; padding: 18px 22px;">
+		<section data-autoskip="1" class="135brush" style="text-align: left; line-height: 1.75em; letter-spacing: 1px; font-size: 14px; color: #e0e0e0; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 0; line-height: 1.75em; text-align: left;" align="left">
+				<span style="font-weight: 400; color: #e0e0e0; letter-spacing: 1px; font-size: 14px; font-family: 'Courier New', Consolas, monospace;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
   }
 ]
 
@@ -2446,6 +2764,128 @@ export const introDecorations = [
 		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #1f2328; background-color: transparent;">
 			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
 				<span style="font-weight: 400; color: #1f2328; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  // ========== 杂志/复古/极光/霓虹引言（第四轮迭代） ==========
+  {
+    id: 'intro_magazine_pullquote',
+    name: '杂志拉引',
+    type: 'intro',
+    preview: `<div style="border-left: 3px solid #e74c3c; padding-left: 6px; font-family: Georgia, serif; font-style: italic; font-size: 9px; color: #555;">"引言..."</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 25px 0;">
+	<section style="border-left: 4px solid #e74c3c; padding: 2px 0 2px 24px; margin: 0 20px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.6em; letter-spacing: 0.5px; font-size: 16px; color: #555555; background-color: transparent;">
+			<p style="font-size: 16px; text-indent: 0; line-height: 1.6em; text-align: justify; font-style: italic;" align="justify">
+				<span style="font-weight: 400; color: #555555; letter-spacing: 0.5px; font-size: 16px; font-style: italic; font-family: Georgia, 'Times New Roman', '宋体', SimSun, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_retro_sepia',
+    name: '复古旧纸引言',
+    type: 'intro',
+    preview: `<div style="background: #f4e8d0; border: 1px solid #c4b8a0; padding: 4px 8px; font-size: 9px; color: #5a4a3a; font-family: Georgia, serif;">旧纸张</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: linear-gradient(135deg, #f4e8d0 0%, #efe0c8 100%); border: 1px solid #c4b8a0; border-radius: 4px; padding: 18px 22px; box-shadow: 2px 2px 8px rgba(0,0,0,0.08);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 0.5px; font-size: 14px; color: #5a4a3a; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #5a4a3a; letter-spacing: 0.5px; font-size: 14px; font-family: Georgia, '宋体', SimSun, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_aurora_card',
+    name: '极光卡片引言',
+    type: 'intro',
+    preview: `<div style="background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; padding: 4px 8px; font-size: 9px; color: white;">极光引言</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: linear-gradient(135deg, #6d327c 0%, #485DA6 30%, #00a1ba 60%, #00BF98 80%, #36C486 100%); border-radius: 10px; padding: 20px 24px; box-shadow: 0 4px 15px rgba(72,93,166,0.25);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgba(255,255,255,0.95); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgba(255,255,255,0.95); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_synthwave_neon',
+    name: '赛博霓虹引言',
+    type: 'intro',
+    preview: `<div style="background: #0f0c29; border: 1px solid rgba(255,0,110,0.3); padding: 4px 8px; font-size: 9px; color: #00f5ff; border-radius: 4px;">NEON</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border: 1px solid rgba(0,245,255,0.2); border-radius: 8px; padding: 20px 24px; box-shadow: 0 0 20px rgba(0,245,255,0.08);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #00f5ff; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #00f5ff; letter-spacing: 1.75px; font-size: 14px; font-family: 'Courier New', Consolas, monospace; text-shadow: 0 0 8px rgba(0,245,255,0.4);">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  // ========== 粘土/粗野派/禅意/全息引言（第五轮迭代） ==========
+  {
+    id: 'intro_clay_callout',
+    name: '粘土引言',
+    type: 'intro',
+    preview: `<div style="background: #e0e5ec; border-radius: 8px; padding: 4px 8px; box-shadow: 3px 3px 6px rgba(163,177,198,0.5), -3px -3px 6px rgba(255,255,255,0.4); font-size: 9px; color: #37597d;">Clay</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #e0e5ec; border-radius: 16px; padding: 18px 22px; box-shadow: 6px 6px 12px rgba(163,177,198,0.6), -6px -6px 12px rgba(255,255,255,0.5), inset 1px 1px 2px rgba(255,255,255,0.2);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: #37597d; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #37597d; letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_brutalist_accent',
+    name: '粗野派引言',
+    type: 'intro',
+    preview: `<div style="background: #ff0000; color: #fff; border: none; box-shadow: 4px 4px 0 #000; padding: 4px 8px; font-size: 9px; font-family: Courier New, monospace; font-weight: bold;">ALERT</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: #ff0000; box-shadow: 8px 8px 0 #000000; padding: 18px 22px;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1px; font-size: 14px; color: #ffffff; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 700; color: #ffffff; letter-spacing: 1px; font-size: 14px; font-family: 'Courier New', Consolas, monospace;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_wabi_sabi_zen',
+    name: '禅意引言',
+    type: 'intro',
+    preview: `<div style="background: #faf8f3; padding: 4px 8px; border-bottom: 1px solid #d4cfc0; font-size: 9px; color: #8b7e74; font-style: italic;">禅</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: linear-gradient(180deg, #faf8f3 0%, #f5f5f0 100%); padding: 24px 26px; border-top: 1px solid #d4cfc0; border-bottom: 1px solid #d4cfc0;">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.85em; letter-spacing: 0.5px; font-size: 14px; color: #5a5a5a; background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2em; line-height: 1.85em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: #5a5a5a; letter-spacing: 0.5px; font-size: 14px; font-family: '宋体', SimSun, Georgia, serif;">{{CONTENT}}</span>
+			</p>
+		</section>
+	</section>
+</section>`
+  },
+  {
+    id: 'intro_holographic_card',
+    name: '全息引言',
+    type: 'intro',
+    preview: `<div style="background: linear-gradient(135deg, #667eea, #f093fb, #4facfe); border-radius: 6px; padding: 4px 8px; font-size: 9px; color: #fff;">Holo</div>`,
+    fullExample: `<section class="_135editor" data-role="paragraph" style="margin: 20px 0;">
+	<section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%); border-radius: 12px; padding: 20px 24px; box-shadow: 0 4px 15px rgba(102,126,234,0.25);">
+		<section data-autoskip="1" class="135brush" style="text-align: justify; line-height: 1.75em; letter-spacing: 1.5px; font-size: 14px; color: rgba(255,255,255,0.95); background-color: transparent;">
+			<p style="font-size: 14px; text-indent: 2.25em; line-height: 1.75em; text-align: justify;" align="justify">
+				<span style="font-weight: 400; color: rgba(255,255,255,0.95); letter-spacing: 1.75px; font-size: 14px; font-family: 微软雅黑, &quot;Microsoft YaHei&quot;, SimHei, STHeiti;">{{CONTENT}}</span>
 			</p>
 		</section>
 	</section>

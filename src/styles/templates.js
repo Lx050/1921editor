@@ -425,6 +425,106 @@ export const DIVIDER_TEMPLATES = {
         <section style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #c8102e);"></section>
       </section>
     </section>
+  `,
+
+  // ========== 祥云/中国结/三星/极光分隔线（第四轮迭代） ==========
+
+  // SVG 祥云分隔线
+  svg_auspicious_cloud: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 30" width="80%" height="30" style="display: inline-block;">
+        <path d="M0 20 Q10 10, 25 15 Q35 5, 50 15 Q60 10, 75 15 Q85 5, 100 15 T150 15 Q160 5, 175 15 Q185 10, 200 15 Q210 5, 225 15 Q235 10, 250 15 T300 15 Q310 5, 325 15 Q335 10, 350 15 Q360 5, 375 15 Q385 10, 400 20" fill="none" stroke="#c8102e" stroke-width="1.5" opacity="0.6"/>
+        <path d="M50 22 Q60 15, 75 18 Q85 12, 100 18 T150 18 Q160 12, 175 18 Q185 15, 200 18 Q210 12, 225 18 Q235 15, 250 18 T300 18 Q310 12, 325 18 Q335 15, 350 22" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.4"/>
+      </svg>
+    </section>
+  `,
+
+  // 中国结分隔线
+  chinese_knot_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 30px;">
+        <section style="flex: 1; height: 1px; background: linear-gradient(to right, transparent, #dc2626);"></section>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="24" height="24" style="display: block;">
+          <rect x="8" y="8" width="16" height="16" fill="none" stroke="#dc2626" stroke-width="2" rx="2"/>
+          <line x1="16" y1="4" x2="16" y2="12" stroke="#dc2626" stroke-width="2"/>
+          <line x1="16" y1="20" x2="16" y2="28" stroke="#dc2626" stroke-width="2"/>
+          <line x1="4" y1="16" x2="12" y2="16" stroke="#dc2626" stroke-width="2"/>
+          <line x1="20" y1="16" x2="28" y2="16" stroke="#dc2626" stroke-width="2"/>
+          <circle cx="16" cy="16" r="3" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+        </svg>
+        <section style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #dc2626);"></section>
+      </section>
+    </section>
+  `,
+
+  // 三星分隔线
+  triple_star_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 30px;">
+        <section style="flex: 1; height: 1px; background: linear-gradient(to right, transparent, #fbbf24);"></section>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 20" width="60" height="16" style="display: block;">
+          <path d="M12 2 l2 6 6 0 -5 4 2 6 -5-4 -5 4 2-6 -5-4 6 0z" fill="#fbbf24"/>
+          <path d="M40 0 l3 9 9 0 -7 5 3 9 -8-6 -8 6 3-9 -7-5 9 0z" fill="#fbbf24"/>
+          <path d="M68 2 l2 6 6 0 -5 4 2 6 -5-4 -5 4 2-6 -5-4 6 0z" fill="#fbbf24"/>
+        </svg>
+        <section style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #fbbf24);"></section>
+      </section>
+    </section>
+  `,
+
+  // 极光渐变分隔线
+  aurora_gradient_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 30px 0; padding: 0 20px;">
+      <section style="height: 3px; background: linear-gradient(90deg, #6d327c, #485DA6, #00a1ba, #00BF98, #36C486); border-radius: 2px; opacity: 0.7;"></section>
+    </section>
+  `,
+
+  // ========== 像素/粗野派/枯山水/全息分隔线（第五轮迭代） ==========
+
+  // 像素分隔线
+  pixel_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 40px;">
+        <section style="flex: 1; height: 4px; background: repeating-linear-gradient(90deg, #333 0px, #333 4px, transparent 4px, transparent 8px);"></section>
+        <section style="width: 8px; height: 8px; background: #00ff00;"></section>
+        <section style="width: 8px; height: 8px; background: #ff0000;"></section>
+        <section style="width: 8px; height: 8px; background: #0000ff;"></section>
+        <section style="flex: 1; height: 4px; background: repeating-linear-gradient(90deg, #333 0px, #333 4px, transparent 4px, transparent 8px);"></section>
+      </section>
+    </section>
+  `,
+
+  // 粗野派方块分隔线
+  brutalist_block_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 25px 0; text-align: center;">
+      <section style="display: flex; align-items: center; justify-content: center; gap: 0; padding: 0 30px;">
+        <section style="flex: 1; height: 3px; background: #000000;"></section>
+        <section style="width: 12px; height: 12px; background: #ffff00; border: 2px solid #000000;"></section>
+        <section style="width: 12px; height: 12px; background: #000000;"></section>
+        <section style="width: 12px; height: 12px; background: #ff0000; border: 2px solid #000000;"></section>
+        <section style="flex: 1; height: 3px; background: #000000;"></section>
+      </section>
+    </section>
+  `,
+
+  // 枯山水分隔线（侘寂）
+  zen_garden_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 30px 0; padding: 0 30px;">
+      <section style="display: flex; align-items: center; gap: 16px;">
+        <section style="flex: 1; height: 1px; background: linear-gradient(to right, transparent, #c4b5a0);"></section>
+        <section style="width: 6px; height: 6px; background: #8b7e74; border-radius: 50%;"></section>
+        <section style="width: 30px; height: 1px; background: #c4b5a0;"></section>
+        <section style="width: 4px; height: 4px; background: #8b7e74; border-radius: 50%;"></section>
+        <section style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #c4b5a0);"></section>
+      </section>
+    </section>
+  `,
+
+  // 全息彩虹分隔线
+  holographic_rainbow_divider: `
+    <section class="_135editor" data-role="separator" style="margin: 30px 0; padding: 0 20px;">
+      <section style="height: 3px; background: linear-gradient(90deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #4facfe 60%, #00f2fe 80%, #667eea 100%); border-radius: 2px;"></section>
+    </section>
   `
 }
 

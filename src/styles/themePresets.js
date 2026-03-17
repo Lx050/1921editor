@@ -403,6 +403,96 @@ export const themePresets = [
       body: 'body_gradient_border',
       intro: 'intro_alert_note'
     }
+  },
+  // ========== 杂志/复古/赛博/极光主题（第四轮迭代） ==========
+  {
+    id: 'theme_editorial_magazine',
+    name: '杂志排版',
+    description: '经典杂志衬线风格，优雅大气的排版',
+    colorScheme: '#2c3e50',
+    styles: {
+      title: 'title_editorial_serif',
+      body: 'body_editorial_serif',
+      intro: 'intro_magazine_pullquote'
+    }
+  },
+  {
+    id: 'theme_retro_terminal',
+    name: '终端黑客',
+    description: '复古终端/黑客风格，绿色荧光字',
+    colorScheme: '#00ff41',
+    styles: {
+      title: 'title_retro_terminal',
+      body: 'body_retro_terminal',
+      intro: 'intro_synthwave_neon'
+    }
+  },
+  {
+    id: 'theme_synthwave',
+    name: '赛博朋克',
+    description: '赛博朋克霓虹风格，暗色调+霓虹色',
+    colorScheme: '#ff006e',
+    styles: {
+      title: 'title_synthwave',
+      body: 'body_retro_terminal',
+      intro: 'intro_synthwave_neon'
+    }
+  },
+  {
+    id: 'theme_vintage_newspaper',
+    name: '复古报纸',
+    description: '1940s 复古报纸风格，做旧纸张质感',
+    colorScheme: '#8b6914',
+    styles: {
+      title: 'title_newspaper',
+      body: 'body_newspaper_vintage',
+      intro: 'intro_retro_sepia'
+    }
+  },
+  // ========== 粘土/粗野派/侘寂/全息主题（第五轮迭代） ==========
+  {
+    id: 'theme_claymorphism',
+    name: '粘土风格',
+    description: '柔软3D粘土效果，现代温和的视觉体验',
+    colorScheme: '#37597d',
+    styles: {
+      title: 'title_claymorphism',
+      body: 'body_claymorphism',
+      intro: 'intro_clay_callout'
+    }
+  },
+  {
+    id: 'theme_brutalist',
+    name: '粗野派',
+    description: '高对比粗野主义风格，大胆直接的视觉冲击',
+    colorScheme: '#000000',
+    styles: {
+      title: 'title_brutalist',
+      body: 'body_brutalist',
+      intro: 'intro_brutalist_accent'
+    }
+  },
+  {
+    id: 'theme_wabi_sabi',
+    name: '侘寂禅意',
+    description: '日式侘寂美学，素雅极简的自然之美',
+    colorScheme: '#8b7e74',
+    styles: {
+      title: 'title_wabi_sabi',
+      body: 'body_wabi_sabi',
+      intro: 'intro_wabi_sabi_zen'
+    }
+  },
+  {
+    id: 'theme_holographic',
+    name: '全息彩虹',
+    description: '彩虹全息渐变效果，未来感十足',
+    colorScheme: '#667eea',
+    styles: {
+      title: 'title_holographic',
+      body: 'body_holographic',
+      intro: 'intro_holographic_card'
+    }
   }
 ]
 
