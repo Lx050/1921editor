@@ -47,7 +47,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.SERVER_IP }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: "/opt/1921editor"
-          EXCLUDE: "/node_modules/ /src/dist/ /.git/ /content-backend/node_modules/ /content-backend/dist/"
+          EXCLUDE: "/node_modules/,/src/dist/,/.git/,/content-backend/node_modules/,/content-backend/dist/"
 
       # 3. 自动化配置 Nginx 并重启后端服务
       - name: Post-deployment Tasks
