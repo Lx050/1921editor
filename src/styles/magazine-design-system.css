@@ -1,4 +1,4 @@
-/* Minimal magazine design system tokens and helpers */
+/* 版式装配引擎 设计系统 v2.0 — 连贯呼吸感 */
 :root {
   /* 深色背景层级 */
   --color-bg-primary: #0a0a0c;
@@ -6,46 +6,56 @@
   --color-bg-tertiary: #1a1a22;
   --color-bg-elevated: #1f1f2a;
 
-  /* 🆕 内容区域背景（暖白色系，解决黑白对比过于强烈的问题） */
-  --color-content-bg: #f8f7f4;
-  /* 暖白色主背景 */
-  --color-content-bg-soft: #faf9f6;
-  /* 更浅的暖白色 */
-  --color-content-card: #fefefe;
-  /* 卡片背景 */
-  --color-content-border: #e8e6e1;
-  /* 暖灰色边框 */
-  --color-content-text: #2d2d2d;
-  /* 深灰色文字（非纯黑） */
-  --color-content-text-secondary: #5a5a5a;
-  /* 次要文字 */
+  /* 内容区域 — 统一暖灰色系，去除生硬白色 */
+  --color-content-bg: #f4f3f0;
+  --color-content-bg-soft: #f9f8f6;
+  --color-content-bg-muted: #efeee9;
+  --color-content-card: #ffffff;
+  --color-content-border: transparent;
+  --color-content-border-subtle: rgba(0, 0, 0, 0.04);
+  --color-content-text: #1a1a1a;
+  --color-content-text-secondary: #6b6b6b;
+  --color-content-text-muted: #9a9a9a;
 
   /* 文字颜色 */
   --color-text-primary: #f5f5f5;
   --color-text-secondary: #c5c5d4;
   --color-text-muted: #8b8ba3;
 
-  /* 主题色 */
-  --color-accent-primary: #ff6b4a;
-  --color-gold-primary: #d4a574;
+  /* 主题色 — 更柔和的橘棕体系 */
+  --color-accent-primary: #e8603c;
+  --color-accent-soft: rgba(232, 96, 60, 0.08);
+  --color-accent-hover: rgba(232, 96, 60, 0.12);
+  --color-gold-primary: #c4956a;
+  --color-ai-primary: #7c5cfc;
+  --color-ai-soft: rgba(124, 92, 252, 0.06);
+  --color-ai-hover: rgba(124, 92, 252, 0.12);
 
-  /* 边框和阴影 */
+  /* 边框和阴影 — 极轻、柔和 */
   --color-border-default: rgba(255, 255, 255, 0.1);
-  --shadow-accent: 0 10px 30px rgba(255, 107, 74, 0.25);
+  --shadow-accent: 0 10px 30px rgba(232, 96, 60, 0.15);
   --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --shadow-content-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-content-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-content-hover: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-content-selected: 0 0 0 2px rgba(232, 96, 60, 0.2);
+  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.08);
 
   /* 圆角和间距 */
+  --radius-lg: 16px;
   --radius-md: 12px;
   --radius-sm: 8px;
+  --radius-xs: 6px;
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --duration-fast: 150ms;
+  --duration-normal: 250ms;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* 字体 */
   --font-display: "Playfair Display", "Times New Roman", serif;
-  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-body: -apple-system, "SF Pro Text", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "SF Mono", "Menlo", monospace;
 
   /* 灰度色板 */
   --gray-50: #f9fafb;
@@ -206,19 +216,19 @@
   border-bottom: 1px solid var(--color-border-default);
 }
 
-/* 内容卡片样式 - 使用暖白色 */
+/* 内容卡片 — 无边框、轻阴影、呼吸感 */
 .content-card {
   background: var(--color-content-card);
-  border: 1px solid var(--color-content-border);
+  border: none;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-content-card);
   color: var(--color-content-text);
+  transition: box-shadow var(--duration-normal) var(--ease-smooth),
+              transform var(--duration-normal) var(--ease-smooth);
 }
 
-/* 内容卡片 hover 状态 */
 .content-card:hover {
-  border-color: #d4d2cd;
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-content-hover);
 }
 
 /* 编辑区域的文本框样式 - 统一暖色调 */
