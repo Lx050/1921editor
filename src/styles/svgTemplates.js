@@ -1,6 +1,6 @@
 /**
  * SVG 装饰模板库
- * 提供 21 大类 SVG 装饰模板，用于微信公众号文章排版
+ * 提供 27 大类 SVG 装饰与交互模板，用于微信公众号文章排版
  * 所有 SVG 均为内联格式，兼容微信 WebView
  *
  * 分类:
@@ -25,6 +25,13 @@
  * 19. tech      - 科技代码
  * 20. music     - 音乐音频
  * 21. lifestyle - 生活方式
+ * === 交互式 SMIL 动画模板 (微信公众号黑科技) ===
+ * 22. expand    - 点击展开 (智族GQ风格)
+ * 23. switch    - 点击切换
+ * 24. animate   - 自动动画
+ * 25. parallax  - 视差滚动
+ * 26. game      - 互动游戏
+ * 27. deco_anim - 动效装饰
  */
 
 // =============================================
@@ -1530,6 +1537,443 @@ export const SVG_LIFESTYLE = [
   }
 ]
 
+
+// =============================================
+// 22. 点击展开 (Click to Expand) [INTERACTIVE/SMIL]
+// =============================================
+export const SVG_INTERACTIVE_EXPAND = [
+  {
+    id: 'expand_reveal_text_01',
+    name: '点击揭秘文字',
+    category: 'expand',
+    tags: ["点击交互", "揭秘", "文字展示", "WeChat"],
+    colorScheme: '#2c3e50',
+    interactive: true,
+    interactionType: 'click-reveal',
+    svg: `<svg width="100%" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;background:#f0f0f0;"><defs><clipPath id="clip_reveal_01"><rect x="0" y="0" width="600" height="300" rx="10"/></clipPath></defs><g clip-path="url(#clip_reveal_01)"><foreignObject x="20" y="20" width="560" height="260"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:16px;color:#333;line-height:1.6;font-family:sans-serif;"><h3 style="margin:0 0 10px 0;color:#2c3e50;">隐藏的真相</h3><p>恭喜你发现了这段隐藏的内容。这里可以放置优惠券代码、答案解析或者惊喜留言。SVG交互让阅读体验更有趣。</p><p style="color:#e74c3c;font-weight:bold;">福利代码: VIP888</p></div></foreignObject><g id="cover_layer_01" style="cursor:pointer;"><rect width="600" height="300" fill="#2c3e50"><animate attributeName="width" from="600" to="0" begin="click" dur="0.8s" fill="freeze" calcMode="spline" keySplines="0.4 0 0.2 1"/></rect><text x="50%" y="50%" fill="#ffffff" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle" style="pointer-events:none;">点击揭秘</text><rect width="600" height="300" fill="transparent"><animate attributeName="width" from="600" to="0" begin="click" dur="0.8s" fill="freeze"/></rect></g></g></svg>`
+  },
+  {
+    id: 'expand_unfold_card_02',
+    name: '点击展开卡片',
+    category: 'expand',
+    tags: ["卡片展开", "详情展示", "WeChat"],
+    colorScheme: '#3498db',
+    interactive: true,
+    interactionType: 'click-expand',
+    svg: `<svg width="100%" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;overflow:hidden;"><g><rect x="20" y="20" width="560" height="160" rx="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/><foreignObject x="40" y="80" width="520" height="90" opacity="0"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:14px;color:#7f8c8d;line-height:1.5;">这里是展开后的详细内容区域。可以放置更多的文字描述、补充说明或者次级标题。点击卡片查看更多细节是常见的交互模式。</div></foreignObject><g id="card_trigger_02" style="cursor:pointer;"><rect x="20" y="20" width="560" height="160" fill="#ffffff" opacity="1"><animate attributeName="height" from="160" to="50" begin="click" dur="0.6s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1"/></rect><text x="300" y="55" font-size="18" font-weight="bold" fill="#3498db" text-anchor="middle" style="pointer-events:none;">点击查看详情</text><path d="M290,70 L300,80 L310,70" stroke="#3498db" stroke-width="2" fill="none" style="pointer-events:none;"><animateTransform attributeName="transform" type="rotate" from="0 300 75" to="180 300 75" begin="click" dur="0.6s" fill="freeze"/></path><animate attributeName="opacity" to="0" begin="click" dur="0.1s" fill="freeze" delay="0.6s"/></g><animate xlink:href="#card_trigger_02" attributeName="visibility" to="hidden" begin="click+0.6s" fill="freeze"/><set attributeName="opacity" to="1" begin="click+0.3s" fill="freeze"/></g><rect x="20" y="20" width="560" height="160" fill="transparent" style="cursor:pointer;"><animate attributeName="height" to="0" begin="click" dur="0.1s" fill="freeze"/></rect></svg>`
+  },
+  {
+    id: 'expand_envelope_03',
+    name: '信封打开',
+    category: 'expand',
+    tags: ["信封", "邀请函", "WeChat"],
+    colorScheme: '#e74c3c',
+    interactive: true,
+    interactionType: 'click-rotate',
+    svg: `<svg width="100%" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;"><g transform="translate(50, 50)"><rect x="0" y="100" width="500" height="250" fill="#c0392b"/><foreignObject x="20" y="20" width="460" height="200"><div xmlns="http://www.w3.org/1999/xhtml" style="background:#fff;padding:20px;height:100%;box-sizing:border-box;border-radius:4px;font-family:serif;color:#333;"><h4 style="margin:0;text-align:center;">致读者的信</h4><p style="font-size:14px;text-indent:2em;">见信如晤。这是一封来自SVG交互的信件。点击信封，开启一段奇妙的旅程。</p></div></foreignObject><path d="M0,100 L250,280 L500,100" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/><path d="M0,350 L250,170 L500,350" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/><g id="flap_03" style="cursor:pointer;"><path d="M0,100 L250,280 L500,100 L250,0 Z" fill="#e67e22" stroke="#d35400" stroke-width="2"><animateTransform attributeName="transform" type="scale" values="1 1; 1 -1" keyTimes="0; 1" transform-origin="250 100" begin="click" dur="0.8s" fill="freeze" calcMode="spline" keySplines="0.42 0 0.58 1"/></path><text x="250" y="80" text-anchor="middle" fill="#fff" font-size="16" style="pointer-events:none;">OPEN</text></g></g></svg>`
+  },
+  {
+    id: 'expand_accordion_04',
+    name: '手风琴展开',
+    category: 'expand',
+    tags: ["手风琴", "列表", "WeChat"],
+    colorScheme: '#27ae60',
+    interactive: true,
+    interactionType: 'click-translate',
+    svg: `<svg width="100%" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;"><defs><clipPath id="acc_clip_04"><rect x="0" y="60" width="600" height="240"/></clipPath></defs><g><rect x="0" y="0" width="600" height="60" fill="#27ae60" rx="5"/><text x="20" y="38" fill="#fff" font-size="20" font-weight="bold" style="pointer-events:none;">点击查看更多内容</text><path d="M550,25 L560,35 L570,25" stroke="#fff" stroke-width="3" fill="none" style="pointer-events:none;"><animateTransform attributeName="transform" type="rotate" from="0 560 30" to="180 560 30" begin="click" dur="0.5s" fill="freeze"/></path><g clip-path="url(#acc_clip_04)"><g transform="translate(0, -240)"><animateTransform attributeName="transform" type="translate" from="0, -240" to="0, 0" begin="click" dur="0.6s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1"/><rect x="0" y="65" width="600" height="235" fill="#ecf0f1" rx="5"/><foreignObject x="20" y="85" width="560" height="200"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:15px;color:#333;line-height:1.8;"><p>这里是隐藏的详细内容。</p><p>1. SVG手风琴效果可以在不跳转的情况下展示更多信息。</p><p>2. 使用translate变换比改变高度性能更好。</p><p>3. 适用于问答(Q&A)或目录场景。</p></div></foreignObject></g></g><rect x="0" y="0" width="600" height="60" fill="transparent" style="cursor:pointer;"><set attributeName="pointer-events" to="none" begin="click"/></rect></g></svg>`
+  },
+  {
+    id: 'expand_curtain_05',
+    name: '帷幕拉开',
+    category: 'expand',
+    tags: ["帷幕", "开场", "WeChat"],
+    colorScheme: '#8e44ad',
+    interactive: true,
+    interactionType: 'click-slide',
+    svg: `<svg width="100%" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;"><defs><linearGradient id="curtain_grad_05" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#8e44ad;stop-opacity:1"/><stop offset="50%" style="stop-color:#9b59b6;stop-opacity:1"/><stop offset="100%" style="stop-color:#8e44ad;stop-opacity:1"/></linearGradient></defs><g><rect x="0" y="0" width="600" height="400" fill="#fff"/><foreignObject x="50" y="100" width="500" height="200"><div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center;color:#333;"><h1 style="font-size:32px;color:#8e44ad;">隆重登场</h1><p style="font-size:18px;">帷幕拉开，精彩内容呈现眼前。</p><img src="https://via.placeholder.com/100x100?text=SVG" style="margin-top:20px;border-radius:50%;"/></div></foreignObject><g id="left_curtain_05"><rect x="0" y="0" width="300" height="400" fill="url(#curtain_grad_05)"/><animateTransform attributeName="transform" type="translate" from="0 0" to="-300 0" begin="click" dur="1.5s" fill="freeze" calcMode="spline" keySplines="0.42 0 0.58 1"/></g><g id="right_curtain_05"><rect x="300" y="0" width="300" height="400" fill="url(#curtain_grad_05)"/><animateTransform attributeName="transform" type="translate" from="0 0" to="300 0" begin="click" dur="1.5s" fill="freeze" calcMode="spline" keySplines="0.42 0 0.58 1"/></g><g style="cursor:pointer;"><rect x="250" y="180" width="100" height="40" rx="20" fill="rgba(0,0,0,0.5)"/><text x="300" y="205" fill="#fff" font-size="14" text-anchor="middle" style="pointer-events:none;">点击开幕</text><rect x="0" y="0" width="600" height="400" fill="transparent"><set attributeName="display" to="none" begin="click"/></rect></g></g></svg>`
+  },
+  {
+    id: 'expand_scroll_06',
+    name: '卷轴展开',
+    category: 'expand',
+    tags: ["国风", "卷轴", "WeChat"],
+    colorScheme: '#f5e6c8',
+    interactive: true,
+    interactionType: 'click-expand-width',
+    svg: `<svg width="100%" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;"><defs><pattern id="paper_pat_06" patternUnits="userSpaceOnUse" width="100" height="100"><rect width="100" height="100" fill="#f5e6c8"/><path d="M0 0L100 100" stroke="#e0d0b0" stroke-width="1"/></pattern></defs><g><rect x="50" y="20" width="500" height="260" fill="url(#paper_pat_06)" stroke="#8d6e63" stroke-width="2"/><foreignObject x="70" y="40" width="460" height="220"><div xmlns="http://www.w3.org/1999/xhtml" style="writing-mode: vertical-rl; font-family: 'KaiTi', serif; font-size: 24px; height: 100%; color:#3e2723;">千里之行，始于足下。<br/>点击卷轴，阅览详情。</div></foreignObject><g><rect x="0" y="0" width="600" height="300" fill="#fff"/><animate attributeName="width" from="600" to="0" begin="click" dur="1.5s" fill="freeze"/></g><g id="scroll_handle_06"><rect x="285" y="10" width="30" height="280" rx="5" fill="#5d4037"/><rect x="295" y="10" width="10" height="280" fill="#8d6e63"/><animateTransform attributeName="transform" type="translate" from="-250 0" to="250 0" begin="click" dur="1.5s" fill="freeze"/></g><g style="cursor:pointer;"><circle cx="300" cy="150" r="30" fill="#c0392b" opacity="0.8"><animate attributeName="opacity" to="0" begin="click" dur="0.2s" fill="freeze"/></circle><text x="300" y="155" fill="#fff" font-size="14" text-anchor="middle" style="pointer-events:none;">展开</text><rect x="200" y="0" width="200" height="300" fill="transparent"><set attributeName="display" to="none" begin="click"/></rect></g></g></svg>`
+  },
+  {
+    id: 'expand_gift_box_07',
+    name: '礼盒打开',
+    category: 'expand',
+    tags: ["礼盒", "惊喜", "WeChat"],
+    colorScheme: '#d35400',
+    interactive: true,
+    interactionType: 'click-translate-y',
+    svg: `<svg width="100%" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;"><g transform="translate(150, 100)"><rect x="20" y="100" width="260" height="150" fill="#f39c12"/><foreignObject x="30" y="110" width="240" height="130"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;height:100%;background:#fff;border-radius:4px;color:#d35400;font-weight:bold;font-size:20px;">✨ 惊喜大礼包 ✨</div></foreignObject><g id="lid_07" style="cursor:pointer;"><rect x="0" y="50" width="300" height="60" rx="5" fill="#e67e22" stroke="#d35400" stroke-width="2"/><rect x="130" y="50" width="40" height="60" fill="#f1c40f"/><path d="M150,50 C150,20 110,20 110,50 M150,50 C150,20 190,20 190,50" stroke="#f1c40f" stroke-width="10" fill="none"/><text x="150" y="90" text-anchor="middle" fill="#fff" font-weight="bold" font-size="16" style="pointer-events:none;">CLICK</text><animateTransform attributeName="transform" type="translate" values="0,0; 0,-120" begin="click" dur="0.8s" fill="freeze" calcMode="spline" keySplines="0.5 0 0.5 1"/><animate attributeName="opacity" values="1;0" begin="click+0.5s" dur="0.3s" fill="freeze"/></g><rect x="20" y="110" width="260" height="140" fill="#d35400" opacity="0"><animate attributeName="opacity" to="1" begin="0s" dur="0.1s" fill="freeze"/></rect><rect x="20" y="110" width="260" height="140" fill="transparent"><animate attributeName="height" to="0" begin="click" dur="0.1s" fill="freeze"/></rect></g></svg>`
+  },
+  {
+    id: 'expand_door_08',
+    name: '推门而入',
+    category: 'expand',
+    tags: ["开门", "迎新", "WeChat"],
+    colorScheme: '#5d4037',
+    interactive: true,
+    interactionType: 'click-scale-x',
+    svg: `<svg width="100%" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;"><g><image href="https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?ixlib=rb-1.2.1&amp;auto=format&amp;fit=crop&amp;w=600&amp;q=80" x="0" y="0" width="600" height="400" preserveAspectRatio="xMidYMid slice"/><rect x="0" y="0" width="600" height="400" fill="rgba(0,0,0,0.3)"/><foreignObject x="100" y="150" width="400" height="100"><div xmlns="http://www.w3.org/1999/xhtml" style="color:#fff;text-align:center;font-size:24px;font-weight:bold;text-shadow:0 2px 4px rgba(0,0,0,0.5);">欢迎来到新世界</div></foreignObject><g id="doors_08"><g id="left_door_08" transform-origin="0 200"><rect x="0" y="0" width="300" height="400" fill="#795548" stroke="#3e2723" stroke-width="4"/><circle cx="260" cy="200" r="8" fill="#ffd700"/><animateTransform attributeName="transform" type="scale" from="1 1" to="0 1" begin="click" dur="1.2s" fill="freeze"/></g><g id="right_door_08" transform-origin="600 200"><rect x="300" y="0" width="300" height="400" fill="#795548" stroke="#3e2723" stroke-width="4"/><circle cx="340" cy="200" r="8" fill="#ffd700"/><animateTransform attributeName="transform" type="scale" from="1 1" to="0 1" begin="click" dur="1.2s" fill="freeze"/></g><g style="cursor:pointer;"><rect x="250" y="180" width="100" height="40" fill="transparent"/><text x="300" y="190" fill="#fff" font-size="14" text-anchor="middle" opacity="0.7" style="pointer-events:none;">点击推门</text><rect x="0" y="0" width="600" height="400" fill="transparent"><set attributeName="display" to="none" begin="click"/></rect></g></g></g></svg>`
+  }
+]
+
+// =============================================
+// 23. 点击切换 (Click to Switch) [INTERACTIVE/SMIL]
+// =============================================
+export const SVG_INTERACTIVE_SWITCH = [
+  {
+    id: 'switch_ab_compare',
+    name: 'AB对比切换',
+    category: 'switch',
+    tags: ["对比", "切换", "交互"],
+    colorScheme: '#f0f0f0',
+    interactive: true,
+    interactionType: 'click_to_reveal',
+    svg: `<svg viewBox='0 0 600 400' style='width:100%;max-width:600px;display:block;margin:0 auto;' xmlns='http://www.w3.org/2000/svg'><rect width='600' height='400' fill='#eeeeee'/><g id='sw_ab_view_b'><rect width='600' height='400' fill='#3498db'/><text x='300' y='210' font-family='Arial' font-size='40' fill='white' text-anchor='middle'>AFTER / 方案 B</text></g><g id='sw_ab_view_a'><rect width='600' height='400' fill='#e74c3c'/><text x='300' y='210' font-family='Arial' font-size='40' fill='white' text-anchor='middle'>BEFORE / 方案 A</text><animate attributeName='opacity' from='1' to='0' begin='click' dur='0.5s' fill='freeze' restart='never'/></g><rect width='600' height='400' fill='transparent' style='cursor:pointer;'><set attributeName='visibility' to='hidden' begin='click' fill='freeze'/></rect></svg>`
+  },
+  {
+    id: 'switch_color_palette',
+    name: '点击调色板',
+    category: 'switch',
+    tags: ["颜色", "循环", "色块"],
+    colorScheme: '#multi',
+    interactive: true,
+    interactionType: 'click_to_cycle',
+    svg: `<svg viewBox='0 0 600 200' style='width:100%;max-width:600px;display:block;margin:0 auto;' xmlns='http://www.w3.org/2000/svg'><rect id='sw_pal_box' x='50' y='25' width='500' height='150' rx='20' fill='#34495e'><animate attributeName='fill' values='#34495e;#e74c3c;#2ecc71;#f1c40f;#9b59b6' begin='click' dur='0.5s' fill='freeze' restart='always'/></rect><text x='300' y='110' font-family='Arial' font-size='24' fill='white' text-anchor='middle' pointer-events='none'>点击切换颜色</text></svg>`
+  },
+  {
+    id: 'switch_flip_card',
+    name: '翻转卡片',
+    category: 'switch',
+    tags: ["翻转", "卡片", "3D"],
+    colorScheme: '#ffffff',
+    interactive: true,
+    interactionType: 'click_to_flip',
+    svg: `<svg viewBox='0 0 300 400' style='width:100%;max-width:600px;display:block;margin:0 auto;' xmlns='http://www.w3.org/2000/svg'><g transform='translate(150 200)'><g id='sw_flip_back' transform='scale(0 1)'><rect x='-140' y='-190' width='280' height='380' rx='15' fill='#2ecc71'/><text y='10' font-family='Arial' font-size='30' fill='white' text-anchor='middle'>背面内容</text><animateTransform attributeName='transform' type='scale' from='0 1' to='1 1' begin='sw_flip_trigger.click' dur='0.4s' fill='freeze' restart='never'/></g><g id='sw_flip_front'><rect x='-140' y='-190' width='280' height='380' rx='15' fill='#3498db'/><text y='10' font-family='Arial' font-size='30' fill='white' text-anchor='middle'>正面内容</text><animateTransform attributeName='transform' type='scale' from='1 1' to='0 1' begin='sw_flip_trigger.click' dur='0.4s' fill='freeze' restart='never'/></g></g><rect id='sw_flip_trigger' width='300' height='400' fill='transparent' style='cursor:pointer;'/></svg>`
+  },
+  {
+    id: 'switch_day_night',
+    name: '日夜切换',
+    category: 'switch',
+    tags: ["场景", "日夜", "自然"],
+    colorScheme: '#87CEEB',
+    interactive: true,
+    interactionType: 'click_to_toggle',
+    svg: `<svg viewBox='0 0 600 300' style='width:100%;max-width:600px;display:block;margin:0 auto;' xmlns='http://www.w3.org/2000/svg'><rect id='sw_dn_bg' width='600' height='300' fill='#87CEEB'><animate attributeName='fill' from='#87CEEB' to='#2C3E50' begin='click' dur='0.8s' fill='freeze' restart='never'/></rect><circle id='sw_dn_sun' cx='300' cy='100' r='40' fill='#f1c40f'><animate attributeName='cy' from='100' to='400' begin='sw_dn_bg.click' dur='0.8s' fill='freeze' restart='never'/></circle><circle id='sw_dn_moon' cx='300' cy='-100' r='35' fill='#ecf0f1'><animate attributeName='cy' from='-100' to='100' begin='sw_dn_bg.click' dur='0.8s' fill='freeze' restart='never'/></circle><text x='300' y='250' font-family='Arial' font-size='20' fill='white' text-anchor='middle' pointer-events='none'>点击切换昼夜</text></svg>`
+  },
+  {
+    id: 'switch_like_heart',
+    name: '点赞爱心',
+    category: 'switch',
+    tags: ["社交", "点赞", "动效"],
+    colorScheme: '#e74c3c',
+    interactive: true,
+    interactionType: 'click_to_activate',
+    svg: `<svg viewBox='0 0 200 200' style='width:100%;max-width:600px;display:block;margin:0 auto;' xmlns='http://www.w3.org/2000/svg'><g transform='translate(100 100)'><path id='sw_heart_path' d='M0 30 C-40 -10 -70 -50 -30 -80 C-10 -95 10 -95 30 -80 C70 -50 40 -10 0 30' fill='none' stroke='#e74c3c' stroke-width='5' transform='rotate(180)'><animate attributeName='fill' from='none' to='#e74c3c' begin='click' dur='0.3s' fill='freeze' restart='never'/></path><animateTransform attributeName='transform' type='scale' values='1;1.3;1' begin='sw_heart_path.click' dur='0.4s' restart='never'/></g></svg>`
+  },
+  {
+    id: 'switch_lightbulb',
+    name: '灯泡开关',
+    category: 'switch',
+    tags: ["创意", "开关", "灯泡"],
+    colorScheme: '#f1c40f',
+    interactive: true,
+    interactionType: 'click_to_glow',
+    svg: `<svg viewBox='0 0 200 300' style='width:100%;max-width:600px;display:block;margin:0 auto;' xmlns='http://www.w3.org/2000/svg'><defs><radialGradient id='sw_bulb_grad'><stop offset='0%' stop-color='#f1c40f' stop-opacity='0.8'/><stop offset='100%' stop-color='#f1c40f' stop-opacity='0'/></radialGradient></defs><circle cx='100' cy='100' r='80' fill='url(#sw_bulb_grad)' opacity='0'><animate attributeName='opacity' from='0' to='1' begin='sw_bulb_body.click' dur='0.3s' fill='freeze' restart='never'/></circle><path id='sw_bulb_body' d='M100 40 A60 60 0 1 0 100 160 L100 180 L80 180 L80 200 L120 200 L120 180 L100 180' fill='#bdc3c7' style='cursor:pointer;'><animate attributeName='fill' from='#bdc3c7' to='#f1c40f' begin='click' dur='0.3s' fill='freeze' restart='never'/></path><rect x='85' y='210' width='30' height='10' fill='#7f8c8d'/></svg>`
+  },
+  {
+    id: 'switch_emoji_mood',
+    name: '表情切换',
+    category: 'switch',
+    tags: ["表情", "心情", "变化"],
+    colorScheme: '#f1c40f',
+    interactive: true,
+    interactionType: 'click_to_morph',
+    svg: `<svg viewBox='0 0 200 200' style='width:100%;max-width:600px;display:block;margin:0 auto;' xmlns='http://www.w3.org/2000/svg'><circle cx='100' cy='100' r='80' fill='#f1c40f'/><circle cx='70' cy='80' r='8' fill='#2c3e50'/><circle cx='130' cy='80' r='8' fill='#2c3e50'/><path id='sw_mood_mouth' d='M60 130 Q100 130 140 130' stroke='#2c3e50' stroke-width='8' stroke-linecap='round' fill='none'><animate attributeName='d' from='M60 130 Q100 130 140 130' to='M60 130 Q100 170 140 130' begin='click' dur='0.4s' fill='freeze' restart='never'/></path><rect width='200' height='200' fill='transparent' style='cursor:pointer;'><set attributeName='visibility' to='hidden' begin='click' fill='freeze'/></rect></svg>`
+  },
+  {
+    id: 'switch_progress_fill',
+    name: '进度填充',
+    category: 'switch',
+    tags: ["进度条", "加载", "填充"],
+    colorScheme: '#2ecc71',
+    interactive: true,
+    interactionType: 'click_to_fill',
+    svg: `<svg viewBox='0 0 600 60' style='width:100%;max-width:600px;display:block;margin:0 auto;' xmlns='http://www.w3.org/2000/svg'><rect x='10' y='15' width='580' height='30' rx='15' fill='#ecf0f1'/><rect id='sw_prog_bar' x='10' y='15' width='0' height='30' rx='15' fill='#2ecc71'><animate attributeName='width' from='0' to='580' begin='sw_prog_trigger.click' dur='1.5s' fill='freeze' restart='never'/></rect><text x='300' y='35' font-family='Arial' font-size='14' fill='#7f8c8d' text-anchor='middle' pointer-events='none'>点击开始加载</text><rect id='sw_prog_trigger' width='600' height='60' fill='transparent' style='cursor:pointer;'/></svg>`
+  }
+]
+
+// =============================================
+// 24. 自动动画 (Auto Animation) [INTERACTIVE/SMIL]
+// =============================================
+export const SVG_AUTO_ANIMATE = [
+  {
+    id: 'animate_floating_clouds',
+    name: '飘动云朵',
+    category: 'animate',
+    tags: ["云朵", "天空", "自然", "背景动画"],
+    colorScheme: '#87CEEB',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#87CEEB;"><g opacity="0.8"><path d="M50,50 Q70,30 90,50 T130,50 T170,50 V80 H50 Z" fill="#FFFFFF"><animateTransform attributeName="transform" type="translate" from="600 0" to="-200 0" dur="12s" repeatCount="indefinite" begin="0s"/></path></g><g opacity="0.9"><path d="M50,100 Q80,70 110,100 T170,100 T230,100 V140 H50 Z" fill="#FFFFFF"><animateTransform attributeName="transform" type="translate" from="600 20" to="-250 20" dur="8s" repeatCount="indefinite" begin="1s"/></path></g><g opacity="0.6"><path d="M50,30 Q65,15 80,30 T110,30 V50 H50 Z" fill="#FFFFFF"><animateTransform attributeName="transform" type="translate" from="600 0" to="-200 0" dur="18s" repeatCount="indefinite" begin="0s"/></path></g></svg>`
+  },
+  {
+    id: 'animate_heartbeat',
+    name: '心跳脉搏',
+    category: 'animate',
+    tags: ["爱心", "心跳", "健康", "情感"],
+    colorScheme: '#FF6B6B',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="width:100%;max-width:600px;display:block;margin:0 auto;"><circle cx="100" cy="100" r="80" fill="#FFF0F0" /><path d="M100,160 C100,160 40,115 40,80 C40,55 60,35 85,35 C100,35 100,55 100,55 C100,55 100,35 115,35 C140,35 160,55 160,80 C160,115 100,160 100,160 Z" fill="#FF6B6B"><animateTransform attributeName="transform" type="scale" values="1;1.2;1;1.1;1" keyTimes="0;0.1;0.2;0.3;1" dur="1s" repeatCount="indefinite" begin="0s" transform-origin="100 100"/></path></svg>`
+  },
+  {
+    id: 'animate_typing_dots',
+    name: '打字等待',
+    category: 'animate',
+    tags: ["加载", "等待", "输入中", "提示"],
+    colorScheme: '#333333',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" style="width:100%;max-width:600px;display:block;margin:0 auto;"><rect width="100" height="40" rx="20" fill="#E0E0E0"/><circle cx="30" cy="20" r="5" fill="#555"><animate attributeName="cy" values="20;10;20" dur="0.6s" repeatCount="indefinite" begin="0s"/></circle><circle cx="50" cy="20" r="5" fill="#555"><animate attributeName="cy" values="20;10;20" dur="0.6s" repeatCount="indefinite" begin="0.2s"/></circle><circle cx="70" cy="20" r="5" fill="#555"><animate attributeName="cy" values="20;10;20" dur="0.6s" repeatCount="indefinite" begin="0.4s"/></circle></svg>`
+  },
+  {
+    id: 'animate_sparkle_stars',
+    name: '闪烁星光',
+    category: 'animate',
+    tags: ["星空", "闪烁", "唯美", "夜空"],
+    colorScheme: '#0B1026',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#0B1026;"><g fill="#FFFFFF"><circle cx="50" cy="20" r="2"><animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0s"/></circle><circle cx="150" cy="80" r="3"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite" begin="1s"/></circle><circle cx="300" cy="30" r="2"><animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" begin="0.5s"/></circle><circle cx="450" cy="60" r="2.5"><animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="1.2s"/></circle><circle cx="550" cy="15" r="2"><animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.3s"/></circle><path d="M200,50 L202,45 L204,50 L209,52 L204,54 L202,59 L200,54 L195,52 Z"><animate attributeName="opacity" values="0.2;1;0.2" dur="2s" repeatCount="indefinite" begin="0s"/><animateTransform attributeName="transform" type="rotate" from="0 202 52" to="360 202 52" dur="10s" repeatCount="indefinite"/></path></g></svg>`
+  },
+  {
+    id: 'animate_wave_ocean',
+    name: '海浪动画',
+    category: 'animate',
+    tags: ["海洋", "波浪", "夏天", "流动"],
+    colorScheme: '#4facfe',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#E0F7FA;overflow:hidden;"><defs><path id="wave_ao_1" d="M0,0 Q150,50 300,0 T600,0 T900,0 T1200,0 V100 H0 Z" fill="#4facfe" opacity="0.6"/></defs><g transform="translate(0, 80)"><use href="#wave_ao_1"><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="6s" repeatCount="indefinite"/></use></g><g transform="translate(-100, 100)"><path d="M0,0 Q150,40 300,0 T600,0 T900,0 T1200,0 V100 H0 Z" fill="#00f2fe" opacity="0.8"><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="4s" repeatCount="indefinite"/></path></g></svg>`
+  },
+  {
+    id: 'animate_pendulum',
+    name: '钟摆摇摆',
+    category: 'animate',
+    tags: ["催眠", "时间", "物理", "摇摆"],
+    colorScheme: '#F4A261',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" style="width:100%;max-width:600px;display:block;margin:0 auto;"><line x1="0" y1="0" x2="200" y2="0" stroke="#333" stroke-width="4"/><g><line x1="100" y1="0" x2="100" y2="200" stroke="#264653" stroke-width="4"/><circle cx="100" cy="200" r="30" fill="#E76F51"/><animateTransform attributeName="transform" type="rotate" values="25 100 0; -25 100 0; 25 100 0" dur="2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/></g></svg>`
+  }
+]
+
+// =============================================
+// 25. 视差滚动 (Parallax Motion) [INTERACTIVE/SMIL]
+// =============================================
+export const SVG_PARALLAX = [
+  {
+    id: 'parallax_city_scroll',
+    name: '城市视差',
+    category: 'parallax',
+    tags: ["城市", "风景", "剪影", "移动"],
+    colorScheme: '#2C3E50',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#FDC830;"><g opacity="0.5"><path d="M0,300 L0,150 L50,150 L50,120 L100,120 L100,160 L150,160 L150,100 L200,100 L200,150 L300,150 L300,80 L350,80 L350,150 L450,150 L450,110 L500,110 L500,160 L600,160 L600,150 L650,150 L650,120 L700,120 L700,160 L750,160 L750,100 L800,100 L800,150 L900,150 L900,80 L950,80 L950,150 L1050,150 L1050,110 L1100,110 L1100,160 L1200,160 L1200,300 Z" fill="#E67E22"><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="20s" repeatCount="indefinite"/></path></g><g><path d="M0,300 L0,200 L40,200 L40,180 L80,180 L80,220 L120,220 L120,170 L180,170 L180,210 L250,210 L250,150 L300,150 L300,220 L400,220 L400,190 L450,190 L450,230 L600,230 L600,200 L640,200 L640,180 L680,180 L680,220 L720,220 L720,170 L780,170 L780,210 L850,210 L850,150 L900,150 L900,220 L1000,220 L1000,190 L1050,190 L1050,230 L1200,230 L1200,300 Z" fill="#2C3E50"><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="10s" repeatCount="indefinite"/></path></g></svg>`
+  },
+  {
+    id: 'parallax_forest_depth',
+    name: '森林纵深',
+    category: 'parallax',
+    tags: ["森林", "树木", "自然", "绿色"],
+    colorScheme: '#2D6A4F',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#D8F3DC;"><g fill="#74C69D"><path d="M0,300 V150 L30,100 L60,150 L90,120 L120,150 L150,90 L180,150 L300,300 H0 Z M300,300 V150 L330,100 L360,150 L390,120 L420,150 L450,90 L480,150 L600,300 H300 Z M600,300 V150 L630,100 L660,150 L690,120 L720,150 L750,90 L780,150 L900,300 H600 Z"><animateTransform attributeName="transform" type="translate" from="0 0" to="-300 0" dur="15s" repeatCount="indefinite"/></path></g><g fill="#40916C"><path d="M0,300 V200 L50,130 L100,200 L150,140 L200,200 L300,300 H0 Z M300,300 V200 L350,130 L400,200 L450,140 L500,200 L600,300 H300 Z M600,300 V200 L650,130 L700,200 L750,140 L800,200 L900,300 H600 Z"><animateTransform attributeName="transform" type="translate" from="0 0" to="-300 0" dur="10s" repeatCount="indefinite"/></path></g><g fill="#1B4332"><path d="M0,300 V250 L70,180 L140,250 L200,190 L260,250 L300,300 H0 Z M300,300 V250 L370,180 L440,250 L500,190 L560,250 L600,300 H300 Z M600,300 V250 L670,180 L740,250 L800,190 L860,250 L900,300 H600 Z"><animateTransform attributeName="transform" type="translate" from="0 0" to="-300 0" dur="6s" repeatCount="indefinite"/></path></g></svg>`
+  },
+  {
+    id: 'parallax_starfield',
+    name: '星空穿梭',
+    category: 'parallax',
+    tags: ["宇宙", "科幻", "飞行", "速度"],
+    colorScheme: '#000000',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#000000;"><g fill="#555"><circle cx="50" cy="50" r="1"/><circle cx="250" cy="150" r="1"/><circle cx="450" cy="250" r="1"/><circle cx="650" cy="50" r="1"/><circle cx="850" cy="150" r="1"/><circle cx="1050" cy="250" r="1"/><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="10s" repeatCount="indefinite"/></g><g fill="#AAA"><circle cx="100" cy="200" r="1.5"/><circle cx="300" cy="50" r="1.5"/><circle cx="500" cy="150" r="1.5"/><circle cx="700" cy="200" r="1.5"/><circle cx="900" cy="50" r="1.5"/><circle cx="1100" cy="150" r="1.5"/><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="5s" repeatCount="indefinite"/></g><g fill="#FFF"><circle cx="150" cy="100" r="2"/><circle cx="350" cy="250" r="2"/><circle cx="550" cy="50" r="2"/><circle cx="750" cy="100" r="2"/><circle cx="950" cy="250" r="2"/><circle cx="1150" cy="50" r="2"/><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="2s" repeatCount="indefinite"/></g></svg>`
+  },
+  {
+    id: 'parallax_road_drive',
+    name: '公路行驶',
+    category: 'parallax',
+    tags: ["旅行", "驾驶", "公路", "视差"],
+    colorScheme: '#7F8C8D',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#87CEEB;"><rect y="150" width="600" height="150" fill="#27AE60"/><rect y="220" width="600" height="80" fill="#34495E"/><g stroke="#FFF" stroke-width="4" stroke-dasharray="40 40"><line x1="0" y1="260" x2="1200" y2="260"><animateTransform attributeName="transform" type="translate" from="0 0" to="-80 0" dur="0.5s" repeatCount="indefinite"/></line></g><g transform="translate(0, 150)"><g><rect x="100" y="-40" width="10" height="60" fill="#8B4513"/><circle cx="105" cy="-50" r="25" fill="#228B22"/><rect x="400" y="-40" width="10" height="60" fill="#8B4513"/><circle cx="405" cy="-50" r="25" fill="#228B22"/><rect x="700" y="-40" width="10" height="60" fill="#8B4513"/><circle cx="705" cy="-50" r="25" fill="#228B22"/><rect x="1000" y="-40" width="10" height="60" fill="#8B4513"/><circle cx="1005" cy="-50" r="25" fill="#228B22"/></g><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="3s" repeatCount="indefinite"/></g></svg>`
+  },
+  {
+    id: 'parallax_underwater',
+    name: '海底世界',
+    category: 'parallax',
+    tags: ["海洋", "鱼", "潜水", "蓝色"],
+    colorScheme: '#006994',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#006994;"><g fill="#004e6e"><path d="M0,280 Q30,250 60,280 T120,280 T180,280 T240,280 T300,280 T360,280 T420,280 T480,280 T540,280 T600,280 T660,280 T720,280 T780,280 T840,280 T900,280 T960,280 T1020,280 T1080,280 T1140,280 T1200,280 V300 H0 Z"><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="8s" repeatCount="indefinite"/></path></g><g><path d="M600,100 L580,90 L580,110 Z" fill="#FFD700"><animateTransform attributeName="transform" type="translate" from="0 0" to="-700 0" dur="12s" repeatCount="indefinite"/></path><path d="M600,200 L570,185 L570,215 Z" fill="#FF6347"><animateTransform attributeName="transform" type="translate" from="100 0" to="-800 0" dur="7s" repeatCount="indefinite"/></path></g><g fill="rgba(255,255,255,0.3)"><circle cx="100" cy="300" r="5"><animate attributeName="cy" from="300" to="0" dur="4s" repeatCount="indefinite" begin="0s"/></circle><circle cx="300" cy="300" r="8"><animate attributeName="cy" from="300" to="0" dur="5s" repeatCount="indefinite" begin="2s"/></circle><circle cx="500" cy="300" r="6"><animate attributeName="cy" from="300" to="0" dur="3.5s" repeatCount="indefinite" begin="1s"/></circle></g></svg>`
+  },
+  {
+    id: 'parallax_mountain_layers',
+    name: '山峦层叠',
+    category: 'parallax',
+    tags: ["山峰", "风景", "层叠", "紫色"],
+    colorScheme: '#6A0572',
+    interactive: true,
+    interactionType: 'auto',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" style="width:100%;max-width:600px;display:block;margin:0 auto;background-color:#E0BBE4;"><g fill="#957DAD"><path d="M0,200 L100,50 L200,200 L300,50 L400,200 L500,50 L600,200 L700,50 L800,200 L900,50 L1000,200 L1100,50 L1200,200 H0 Z"><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="40s" repeatCount="indefinite"/></path></g><g fill="#D291BC"><path d="M0,200 L150,80 L300,200 L450,80 L600,200 L750,80 L900,200 L1050,80 L1200,200 H0 Z"><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="25s" repeatCount="indefinite"/></path></g><g fill="#FEC8D8"><path d="M0,200 L80,120 L160,200 L240,120 L320,200 L400,120 L480,200 L560,120 L640,200 L720,120 L800,200 L880,120 L960,200 L1040,120 L1120,200 L1200,200 H0 Z"><animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="15s" repeatCount="indefinite"/></path></g></svg>`
+  }
+]
+
+// =============================================
+// 26. 互动游戏 (Interactive Game) [INTERACTIVE/SMIL]
+// =============================================
+export const SVG_GAME = [
+  {
+    id: 'game_scratch_reveal',
+    name: '刮刮乐互动',
+    category: 'game',
+    tags: ["互动", "抽奖", "刮刮乐"],
+    colorScheme: '#cccccc',
+    interactive: true,
+    interactionType: 'click_reveal',
+    svg: `<svg viewBox="0 0 400 200" style="width:100%;max-width:600px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#f0f0f0"/><text x="200" y="115" font-size="40" font-weight="bold" fill="#e74c3c" text-anchor="middle">恭喜中奖！</text><rect id="t1_cover" width="400" height="200" fill="#aaaaaa"><animate attributeName="opacity" from="1" to="0" dur="0.5s" begin="click" fill="freeze" restart="never"/></rect><text x="200" y="110" font-size="24" fill="white" text-anchor="middle" pointer-events="none">点击刮开图层</text></svg>`
+  },
+  {
+    id: 'game_slot_machine',
+    name: '幸运老虎机',
+    category: 'game',
+    tags: ["游戏", "老虎机", "抽奖"],
+    colorScheme: '#f1c40f',
+    interactive: true,
+    interactionType: 'click_animate',
+    svg: `<svg viewBox="0 0 400 200" style="width:100%;max-width:600px;display:block;margin:0 auto;background:#2c3e50;" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="t2_clip"><rect x="50" y="50" width="300" height="100"/></clipPath></defs><g clip-path="url(#t2_clip)"><g id="t2_reels"><g transform="translate(80,0)"><text y="80" font-size="40" fill="#f1c40f">🍎</text><text y="140" font-size="40" fill="#f1c40f">🍋</text><text y="200" font-size="40" fill="#f1c40f">🍒</text><text y="260" font-size="40" fill="#f1c40f">🍎</text><animateTransform attributeName="transform" type="translate" values="80,0; 80,-180; 80,-120" keyTimes="0; 0.8; 1" dur="2s" begin="t2_btn.click" fill="freeze" restart="never"/></g><g transform="translate(180,0)"><text y="80" font-size="40" fill="#f1c40f">🍒</text><text y="140" font-size="40" fill="#f1c40f">🍎</text><text y="200" font-size="40" fill="#f1c40f">🍋</text><text y="260" font-size="40" fill="#f1c40f">🍎</text><animateTransform attributeName="transform" type="translate" values="180,0; 180,-240; 180,-120" keyTimes="0; 0.8; 1" dur="2.2s" begin="t2_btn.click" fill="freeze" restart="never"/></g><g transform="translate(280,0)"><text y="80" font-size="40" fill="#f1c40f">🍋</text><text y="140" font-size="40" fill="#f1c40f">🍒</text><text y="200" font-size="40" fill="#f1c40f">🍎</text><text y="260" font-size="40" fill="#f1c40f">🍎</text><animateTransform attributeName="transform" type="translate" values="280,0; 280,-300; 280,-120" keyTimes="0; 0.8; 1" dur="2.5s" begin="t2_btn.click" fill="freeze" restart="never"/></g></g></g><rect id="t2_btn" x="150" y="160" width="100" height="30" rx="15" fill="#e74c3c"/><text x="200" y="182" font-size="14" fill="white" text-anchor="middle" pointer-events="none">点击抽奖</text></svg>`
+  },
+  {
+    id: 'game_dice_roll',
+    name: '随机掷骰子',
+    category: 'game',
+    tags: ["游戏", "骰子", "随机"],
+    colorScheme: '#ffffff',
+    interactive: true,
+    interactionType: 'click_animate',
+    svg: `<svg viewBox="0 0 200 200" style="width:100%;max-width:600px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg"><rect id="t3_bg" width="200" height="200" fill="#27ae60" rx="20"/><g id="t3_dice" transform="translate(50,50)"><rect width="100" height="100" fill="white" rx="10"/><g id="t3_faces"><circle cx="50" cy="50" r="10" fill="red" opacity="1"><animate attributeName="opacity" values="1;0;1;0;1;0;0" dur="1s" begin="t3_bg.click" fill="freeze"/></circle><g opacity="0"><circle cx="25" cy="25" r="8" fill="black"/><circle cx="75" cy="75" r="8" fill="black"/><animate attributeName="opacity" values="0;1;0;1;0;1;0" dur="1s" begin="t3_bg.click" fill="freeze"/></g><g opacity="0"><circle cx="25" cy="25" r="8" fill="black"/><circle cx="50" cy="50" r="8" fill="black"/><circle cx="75" cy="75" r="8" fill="black"/><animate attributeName="opacity" values="0;0;0;0;0;0;1" dur="1s" begin="t3_bg.click" fill="freeze"/></g></g></g><text x="100" y="180" font-size="14" fill="white" text-anchor="middle">点击绿色区域掷骰子</text></svg>`
+  },
+  {
+    id: 'game_fortune_wheel',
+    name: '幸运大转盘',
+    category: 'game',
+    tags: ["游戏", "转盘", "抽奖"],
+    colorScheme: '#e67e22',
+    interactive: true,
+    interactionType: 'click_rotate',
+    svg: `<svg viewBox="0 0 400 400" style="width:100%;max-width:600px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg"><g id="t4_wheel" transform="translate(200,200)"><circle r="180" fill="#f39c12" stroke="#d35400" stroke-width="5"/><path d="M0,0 L0,-180 A180,180 0 0,1 155.8,-90 Z" fill="#e74c3c"/><path d="M0,0 L155.8,-90 A180,180 0 0,1 155.8,90 Z" fill="#3498db"/><path d="M0,0 L155.8,90 A180,180 0 0,1 0,180 Z" fill="#2ecc71"/><path d="M0,0 L0,180 A180,180 0 0,1 -155.8,90 Z" fill="#9b59b6"/><path d="M0,0 L-155.8,90 A180,180 0 0,1 -155.8,-90 Z" fill="#f1c40f"/><path d="M0,0 L-155.8,-90 A180,180 0 0,1 0,-180 Z" fill="#1abc9c"/><animateTransform attributeName="transform" type="rotate" from="0" to="1485" dur="3s" begin="click" fill="freeze" restart="never" calcMode="spline" keySplines="0.25 0.1 0.25 1"/></g><path d="M200,10 L185,40 L215,40 Z" fill="#34495e"/><circle cx="200" cy="200" r="30" fill="#ffffff"/><text x="200" y="205" font-size="16" text-anchor="middle" font-weight="bold">GO</text></svg>`
+  },
+  {
+    id: 'game_pick_card',
+    name: '翻牌抽奖',
+    category: 'game',
+    tags: ["互动", "翻牌", "抽奖"],
+    colorScheme: '#3498db',
+    interactive: true,
+    interactionType: 'click_flip',
+    svg: `<svg viewBox="0 0 600 250" style="width:100%;max-width:600px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg"><g id="t5_card1" transform="translate(50,50)"><rect width="120" height="150" fill="#3498db" rx="10"/><text x="60" y="85" font-size="40" fill="white" text-anchor="middle">?</text><g opacity="0"><rect width="120" height="150" fill="#e74c3c" rx="10"/><text x="60" y="85" font-size="20" fill="white" text-anchor="middle">一等奖</text><animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="t5_card1.click" fill="freeze"/></g></g><g id="t5_card2" transform="translate(240,50)"><rect width="120" height="150" fill="#3498db" rx="10"/><text x="60" y="85" font-size="40" fill="white" text-anchor="middle">?</text><g opacity="0"><rect width="120" height="150" fill="#95a5a6" rx="10"/><text x="60" y="85" font-size="20" fill="white" text-anchor="middle">谢谢参与</text><animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="t5_card2.click" fill="freeze"/></g></g><g id="t5_card3" transform="translate(430,50)"><rect width="120" height="150" fill="#3498db" rx="10"/><text x="60" y="85" font-size="40" fill="white" text-anchor="middle">?</text><g opacity="0"><rect width="120" height="150" fill="#f1c40f" rx="10"/><text x="60" y="85" font-size="20" fill="white" text-anchor="middle">优惠券</text><animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="t5_card3.click" fill="freeze"/></g></g></svg>`
+  },
+  {
+    id: 'game_balloon_pop',
+    name: '气球戳戳乐',
+    category: 'game',
+    tags: ["游戏", "气球", "惊喜"],
+    colorScheme: '#ff4757',
+    interactive: true,
+    interactionType: 'click_pop',
+    svg: `<svg viewBox="0 0 200 300" style="width:100%;max-width:600px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg"><text x="100" y="150" font-size="24" fill="#2f3542" text-anchor="middle">祝你快乐！</text><g id="t6_balloon"><ellipse cx="100" cy="120" rx="50" ry="70" fill="#ff4757"/><path d="M100,190 L95,205 L105,205 Z" fill="#ff4757"/><line x1="100" y1="205" x2="100" y2="260" stroke="#747d8c" stroke-width="2"/><animateTransform attributeName="transform" type="scale" from="1" to="1.5" dur="0.1s" begin="click" fill="freeze"/><animate attributeName="opacity" from="1" to="0" dur="0.1s" begin="click" fill="freeze"/></g><text x="100" y="290" font-size="12" fill="#a4b0be" text-anchor="middle">戳破气球看惊喜</text></svg>`
+  }
+]
+
+// =============================================
+// 27. 动效装饰 (Animated Decoration) [INTERACTIVE/SMIL]
+// =============================================
+export const SVG_DECO_ANIMATE = [
+  {
+    id: 'deco_neon_text',
+    name: '霓虹闪烁文字',
+    category: 'deco_anim',
+    tags: ["装饰", "霓虹灯", "发光"],
+    colorScheme: '#00d2ff',
+    interactive: true,
+    interactionType: 'none',
+    svg: `<svg viewBox="0 0 600 80" style="width:100%;max-width:600px;display:block;margin:0 auto;background:#000;" xmlns="http://www.w3.org/2000/svg"><filter id="t7_blur"><feGaussianBlur stdDeviation="3" result="blur"/></filter><text x="300" y="55" font-size="40" fill="#00d2ff" text-anchor="middle" font-weight="bold" filter="url(#t7_blur)">NEON LIGHTS<animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/></text><text x="300" y="55" font-size="40" fill="#fff" text-anchor="middle" font-weight="bold">NEON LIGHTS</text></svg>`
+  },
+  {
+    id: 'deco_confetti',
+    name: '五彩纸屑飘落',
+    category: 'deco_anim',
+    tags: ["装饰", "氛围", "纸屑"],
+    colorScheme: '#ff6b6b',
+    interactive: true,
+    interactionType: 'none',
+    svg: `<svg viewBox="0 0 600 200" style="width:100%;max-width:600px;display:block;margin:0 auto;overflow:hidden;" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="#ff6b6b"><animateTransform attributeName="transform" type="translate" from="50,-10" to="50,210" dur="3s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" from="0 55 -5" to="360 55 -5" dur="2s" repeatCount="indefinite" additive="sum"/></rect><rect width="10" height="10" fill="#feca57"><animateTransform attributeName="transform" type="translate" from="150,-10" to="170,210" dur="4s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" from="0 155 -5" to="360 155 -5" dur="2.5s" repeatCount="indefinite" additive="sum"/></rect><rect width="10" height="10" fill="#48dbfb"><animateTransform attributeName="transform" type="translate" from="300,-10" to="280,210" dur="3.5s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" from="0 305 -5" to="360 305 -5" dur="1.8s" repeatCount="indefinite" additive="sum"/></rect><rect width="10" height="10" fill="#1dd1a1"><animateTransform attributeName="transform" type="translate" from="450,-10" to="460,210" dur="4.2s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" from="0 455 -5" to="360 455 -5" dur="3s" repeatCount="indefinite" additive="sum"/></rect><rect width="10" height="10" fill="#ff9ff3"><animateTransform attributeName="transform" type="translate" from="550,-10" to="530,210" dur="2.8s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" from="0 555 -5" to="360 555 -5" dur="2.2s" repeatCount="indefinite" additive="sum"/></rect></svg>`
+  },
+  {
+    id: 'deco_firework',
+    name: '点击烟花绽放',
+    category: 'deco_anim',
+    tags: ["装饰", "烟花", "交互"],
+    colorScheme: '#ff9f43',
+    interactive: true,
+    interactionType: 'click_animate',
+    svg: `<svg viewBox="0 0 400 400" style="width:100%;max-width:600px;display:block;margin:0 auto;background:#000;" xmlns="http://www.w3.org/2000/svg"><g transform="translate(200,200)"><circle r="0" fill="none" stroke="#ff9f43" stroke-width="2"><animate attributeName="r" from="0" to="150" dur="1s" begin="click" fill="freeze"/><animate attributeName="opacity" from="1" to="0" dur="1s" begin="click" fill="freeze"/></circle><circle r="0" fill="none" stroke="#ff4757" stroke-width="2"><animate attributeName="r" from="0" to="120" dur="0.8s" begin="click" fill="freeze"/><animate attributeName="opacity" from="1" to="0" dur="0.8s" begin="click" fill="freeze"/></circle><circle r="0" fill="none" stroke="#54a0ff" stroke-width="2"><animate attributeName="r" from="0" to="180" dur="1.2s" begin="click" fill="freeze"/><animate attributeName="opacity" from="1" to="0" dur="1.2s" begin="click" fill="freeze"/></circle></g><text x="200" y="380" fill="#fff" font-size="14" text-anchor="middle">点击中心绽放烟花</text></svg>`
+  },
+  {
+    id: 'deco_ribbon_wave',
+    name: '飘动丝带装饰',
+    category: 'deco_anim',
+    tags: ["装饰", "丝带", "动态"],
+    colorScheme: '#e84393',
+    interactive: true,
+    interactionType: 'none',
+    svg: `<svg viewBox="0 0 600 60" style="width:100%;max-width:600px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 Q75,10 150,30 T300,30 T450,30 T600,30" fill="none" stroke="#e84393" stroke-width="10" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" from="0,0" to="-150,0" dur="2s" repeatCount="indefinite"/></path><path d="M150,30 Q225,10 300,30 T450,30 T600,30 T750,30" fill="none" stroke="#fd79a8" stroke-width="6" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" from="0,0" to="-150,0" dur="1.5s" repeatCount="indefinite"/></path></svg>`
+  },
+  {
+    id: 'deco_spotlight',
+    name: '聚光灯效果',
+    category: 'deco_anim',
+    tags: ["装饰", "聚光灯", "神秘"],
+    colorScheme: '#000000',
+    interactive: true,
+    interactionType: 'none',
+    svg: `<svg viewBox="0 0 600 200" style="width:100%;max-width:600px;display:block;margin:0 auto;background:#eee;" xmlns="http://www.w3.org/2000/svg"><defs><mask id="t11_mask"><rect width="600" height="200" fill="white"/><circle cx="0" cy="100" r="60" fill="black"><animate attributeName="cx" from="0" to="600" dur="4s" repeatCount="indefinite"/></circle></mask></defs><rect width="600" height="200" fill="#222" mask="url(#t11_mask)"/><text x="300" y="110" font-size="30" fill="#333" text-anchor="middle">探索隐藏的内容...</text></svg>`
+  },
+  {
+    id: 'deco_snow_fall',
+    name: '冬日雪花飘落',
+    category: 'deco_anim',
+    tags: ["装饰", "雪花", "冬日"],
+    colorScheme: '#ffffff',
+    interactive: true,
+    interactionType: 'none',
+    svg: `<svg viewBox="0 0 600 300" style="width:100%;max-width:600px;display:block;margin:0 auto;background:#74b9ff;" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="-10" r="3" fill="white"><animate attributeName="cy" from="-10" to="310" dur="5s" repeatCount="indefinite"/><animate attributeName="cx" values="50;70;50" dur="2s" repeatCount="indefinite"/></circle><circle cx="150" cy="-10" r="5" fill="white"><animate attributeName="cy" from="-10" to="310" dur="7s" repeatCount="indefinite"/><animate attributeName="cx" values="150;130;150" dur="3s" repeatCount="indefinite"/></circle><circle cx="300" cy="-10" r="4" fill="white"><animate attributeName="cy" from="-10" to="310" dur="6s" repeatCount="indefinite"/><animate attributeName="cx" values="300;320;300" dur="2.5s" repeatCount="indefinite"/></circle><circle cx="450" cy="-10" r="2" fill="white"><animate attributeName="cy" from="-10" to="310" dur="4s" repeatCount="indefinite"/><animate attributeName="cx" values="450;430;450" dur="1.5s" repeatCount="indefinite"/></circle><circle cx="550" cy="-10" r="6" fill="white"><animate attributeName="cy" from="-10" to="310" dur="8s" repeatCount="indefinite"/><animate attributeName="cx" values="550;570;550" dur="4s" repeatCount="indefinite"/></circle></svg>`
+  }
+]
+
 // =============================================
 // 汇总导出
 // =============================================
@@ -1554,7 +1998,13 @@ export const SVG_TEMPLATE_CATEGORIES = [
   { id: 'botanical', name: '自然植物', icon: '🌿', data: SVG_BOTANICAL },
   { id: 'tech', name: '科技代码', icon: '💻', data: SVG_TECH },
   { id: 'music', name: '音乐音频', icon: '🎵', data: SVG_MUSIC },
-  { id: 'lifestyle', name: '生活方式', icon: '☕', data: SVG_LIFESTYLE }
+  { id: 'lifestyle', name: '生活方式', icon: '☕', data: SVG_LIFESTYLE },
+  { id: 'expand', name: '点击展开', icon: '📖', data: SVG_INTERACTIVE_EXPAND, interactive: true },
+  { id: 'switch', name: '点击切换', icon: '🔄', data: SVG_INTERACTIVE_SWITCH, interactive: true },
+  { id: 'animate', name: '自动动画', icon: '✨', data: SVG_AUTO_ANIMATE, interactive: true },
+  { id: 'parallax', name: '视差滚动', icon: '🌊', data: SVG_PARALLAX, interactive: true },
+  { id: 'game', name: '互动游戏', icon: '🎮', data: SVG_GAME, interactive: true },
+  { id: 'deco_anim', name: '动效装饰', icon: '🎪', data: SVG_DECO_ANIMATE, interactive: true }
 ]
 
 /**
@@ -1582,7 +2032,13 @@ export function getAllSvgTemplates() {
     ...SVG_BOTANICAL,
     ...SVG_TECH,
     ...SVG_MUSIC,
-    ...SVG_LIFESTYLE
+    ...SVG_LIFESTYLE,
+    ...SVG_INTERACTIVE_EXPAND,
+    ...SVG_INTERACTIVE_SWITCH,
+    ...SVG_AUTO_ANIMATE,
+    ...SVG_PARALLAX,
+    ...SVG_GAME,
+    ...SVG_DECO_ANIMATE
   ]
 }
 
