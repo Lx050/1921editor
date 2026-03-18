@@ -9,21 +9,34 @@
       <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 font-bold">{{ totalCount }}</span>
     </div>
 
-    <!-- 分类 Tab (网格布局适配13个分类) -->
-    <div class="border-b px-1.5 py-1.5" style="border-color: var(--color-content-border);">
-      <div class="flex flex-wrap gap-1">
+    <!-- 分类选择器 (分组下拉 + 快捷标签) -->
+    <div class="border-b px-2 py-1.5" style="border-color: var(--color-content-border);">
+      <!-- 分组下拉选择 -->
+      <select
+        v-model="activeCategory"
+        class="w-full mb-1.5 px-2 py-1.5 text-[11px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-purple-300 appearance-none cursor-pointer"
+        style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236B7280%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>'); background-repeat: no-repeat; background-position: right 8px center;"
+      >
+        <optgroup v-for="group in categoryGroups" :key="group.label" :label="group.label">
+          <option v-for="cat in group.items" :key="cat.id" :value="cat.id">
+            {{ cat.icon }} {{ cat.name }} ({{ cat.data.length }})
+          </option>
+        </optgroup>
+      </select>
+      <!-- 快捷标签行 -->
+      <div class="flex flex-wrap gap-0.5">
         <button
           v-for="cat in categories"
           :key="cat.id"
           @click="activeCategory = cat.id"
           :class="[
-            'px-2 py-1 text-[10px] font-medium rounded-md transition-all duration-200 whitespace-nowrap',
+            'px-1.5 py-0.5 text-[9px] font-medium rounded transition-all duration-200 whitespace-nowrap',
             activeCategory === cat.id
-              ? 'bg-purple-100 text-purple-700 shadow-sm ring-1 ring-purple-200'
-              : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+              ? 'bg-purple-100 text-purple-700 ring-1 ring-purple-200'
+              : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
           ]"
         >
-          <span class="mr-0.5">{{ cat.icon }}</span>{{ cat.name }}
+          {{ cat.icon }}{{ cat.name.slice(0, 2) }}
         </button>
       </div>
     </div>
@@ -94,8 +107,22 @@ const categories = SVG_TEMPLATE_CATEGORIES
 
 const totalCount = computed(() => getAllSvgTemplates().length)
 
+// 分组导航 - 21个分类按功能分成4组
+const categoryGroups = computed(() => {
+  const groups = [
+    { label: '基础装饰', ids: ['borders', 'dividers', 'badges', 'patterns', 'icons', 'seasonal', 'text_deco'] },
+    { label: '版式组件', ids: ['waves', 'progress', 'callouts', 'dataviz', 'arrows', 'gradients'] },
+    { label: '风格主题', ids: ['chinese', 'sketch', 'cards', 'editorial', 'botanical'] },
+    { label: '场景插图', ids: ['tech', 'music', 'lifestyle'] }
+  ]
+  return groups.map(g => ({
+    label: g.label,
+    items: g.ids.map(id => categories.find(c => c.id === id)).filter(Boolean)
+  }))
+})
+
 // 需要更高预览区域的分类
-const tallCategories = new Set(['gradients', 'progress', 'callouts', 'dataviz', 'waves'])
+const tallCategories = new Set(['gradients', 'progress', 'callouts', 'dataviz', 'waves', 'chinese', 'cards', 'editorial', 'botanical', 'tech', 'music', 'lifestyle'])
 const tallPreview = computed(() => tallCategories.has(activeCategory.value))
 
 const filteredTemplates = computed(() => {

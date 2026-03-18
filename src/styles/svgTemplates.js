@@ -1,6 +1,6 @@
 /**
  * SVG 装饰模板库
- * 提供 13 大类 SVG 装饰模板，用于微信公众号文章排版
+ * 提供 21 大类 SVG 装饰模板，用于微信公众号文章排版
  * 所有 SVG 均为内联格式，兼容微信 WebView
  *
  * 分类:
@@ -17,6 +17,14 @@
  * 11. dataviz   - 数据可视化装饰
  * 12. arrows    - 箭头与连接器
  * 13. gradients - 渐变背景
+ * 14. chinese   - 中国风文化
+ * 15. sketch    - 手绘涂鸦
+ * 16. cards     - 社交卡片
+ * 17. editorial - 编辑排版
+ * 18. botanical - 自然植物
+ * 19. tech      - 科技代码
+ * 20. music     - 音乐音频
+ * 21. lifestyle - 生活方式
  */
 
 // =============================================
@@ -1041,6 +1049,487 @@ export const SVG_GRADIENTS = [
   }
 ]
 
+
+// =============================================
+// 14. 中国风文化 (Chinese Cultural)
+// =============================================
+export const SVG_CHINESE = [
+  {
+    id: 'chinese_paper_cut',
+    name: '剪纸窗花',
+    category: 'chinese',
+    tags: ["传统", "窗花", "红色", "喜庆"],
+    colorScheme: '#E60012',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><radialGradient id="cutGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff4d4d"/><stop offset="100%" stop-color="#E60012"/></radialGradient></defs><g transform="translate(100,100)"><path d="M0,-90 L15,-40 L60,-70 L40,-15 L90,0 L40,15 L60,70 L15,40 L0,90 L-15,40 L-60,70 L-40,15 L-90,0 L-40,-15 L-60,-70 L-15,-40 Z" fill="url(#cutGrad)"/><path d="M0,-50 L10,-20 L40,-40 L20,-10 L50,0 L20,10 L40,40 L10,20 L0,50 L-10,20 L-40,40 L-20,10 L-50,0 L-20,-10 L-40,-40 L-10,-20 Z" fill="white" opacity="0.6"/><circle cx="0" cy="0" r="8" fill="white"/></g></svg>`
+  },
+  {
+    id: 'chinese_knot',
+    name: '中国结',
+    category: 'chinese',
+    tags: ["吉祥", "平安", "手工", "红色"],
+    colorScheme: '#D32F2F',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 200" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M75,10 L95,30 M75,10 L55,30 M40,45 Q40,30 55,30 L95,30 Q110,30 110,45 L110,85 Q110,100 95,100 L55,100 Q40,100 40,85 Z" fill="none" stroke="#D32F2F" stroke-width="8"/><path d="M75,30 L75,100 M40,65 L110,65" stroke="#D32F2F" stroke-width="8"/><path d="M30,65 Q10,65 10,85 Q10,105 30,105 M120,65 Q140,65 140,85 Q140,105 120,105" fill="none" stroke="#D32F2F" stroke-width="6"/><path d="M75,100 L75,160 M60,160 L90,160 M60,170 L90,170 M60,180 L90,180 M75,160 L75,195" stroke="#D32F2F" stroke-width="4"/></svg>`
+  },
+  {
+    id: 'chinese_seal',
+    name: '印章方框',
+    category: 'chinese',
+    tags: ["金石", "书法", "文化", "篆刻"],
+    colorScheme: '#B71C1C',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M12,15 L105,12 L108,105 L15,108 Z M25,25 L28,95 L95,92 L92,28 Z" fill="#B71C1C"/><path d="M40,40 L45,80 M60,40 L60,80 M75,40 L80,80" stroke="#B71C1C" stroke-width="5" stroke-linecap="round" opacity="0.8"/></svg>`
+  },
+  {
+    id: 'chinese_ink_bamboo',
+    name: '水墨竹叶',
+    category: 'chinese',
+    tags: ["水墨", "君子", "清雅", "黑色"],
+    colorScheme: '#212121',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 150" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M100,150 Q110,80 105,0 M220,150 Q210,70 215,20 M105,70 L140,60 M105,70 L135,90 M215,60 L260,50 M215,60 L255,85" stroke="#212121" stroke-width="5" fill="none" opacity="0.9"/><path d="M140,60 L180,55 Q160,65 140,60 Z M135,90 L175,105 Q155,95 135,90 Z M260,50 L300,45 Q280,55 260,50 Z M255,85 L295,100 Q275,90 255,85 Z" fill="#212121"/></svg>`
+  },
+  {
+    id: 'chinese_cloud_band',
+    name: '祥云纹带',
+    category: 'chinese',
+    tags: ["吉祥", "如意", "云纹", "金色"],
+    colorScheme: '#D4AF37',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 60" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M20,40 Q0,40 0,25 Q0,10 20,10 Q40,10 40,25 Q40,40 25,40 Q15,40 15,30 M100,40 Q80,40 80,25 Q80,10 100,10 Q120,10 120,25 Q120,40 105,40 Q95,40 95,30 M180,40 Q160,40 160,25 Q160,10 180,10 Q200,10 200,25 Q200,40 185,40 Q175,40 175,30 M260,40 Q240,40 240,25 Q240,10 260,10 Q280,10 280,25 Q280,40 265,40 Q255,40 255,30 M340,40 Q320,40 320,25 Q320,10 340,10 Q360,10 360,25 Q360,40 345,40 Q335,40 335,30" fill="none" stroke="#D4AF37" stroke-width="3"/><path d="M40,25 L80,25 M120,25 L160,25 M200,25 L240,25 M280,25 L320,25" stroke="#D4AF37" stroke-width="1" stroke-dasharray="4 2"/></svg>`
+  },
+  {
+    id: 'chinese_lattice',
+    name: '中式窗棂',
+    category: 'chinese',
+    tags: ["建筑", "古典", "园林", "深褐"],
+    colorScheme: '#3E2723',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="0" y="0" width="400" height="100" fill="none" stroke="#3E2723" stroke-width="4"/><path d="M0,50 L400,50 M100,0 L100,100 M200,0 L200,100 M300,0 L300,100 M0,0 L100,50 L0,100 M100,0 L200,50 L100,100 M200,0 L300,50 L200,100 M300,0 L400,50 L300,100" fill="none" stroke="#3E2723" stroke-width="2"/><path d="M50,0 L50,100 M150,0 L150,100 M250,0 L250,100 M350,0 L350,100" stroke="#3E2723" stroke-width="1" opacity="0.5"/></svg>`
+  },
+  {
+    id: 'chinese_ruyi',
+    name: '如意纹',
+    category: 'chinese',
+    tags: ["如意", "边框", "华丽", "金色"],
+    colorScheme: '#FFD700',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 50" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><linearGradient id="ruyiGold"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#B8860B"/></linearGradient></defs><path d="M20,45 Q0,45 0,25 Q0,5 20,5 Q40,5 40,25 Q40,45 20,45 M20,15 Q12,15 12,25 Q12,35 20,35 Q28,35 28,25 Q28,15 20,15" fill="url(#ruyiGold)"/><path d="M60,45 Q40,45 40,25 Q40,5 60,5 Q80,5 80,25 Q80,45 60,45 M60,15 Q52,15 52,25 Q52,35 60,35 Q68,35 68,25 Q68,15 60,15" fill="url(#ruyiGold)" transform="translate(40,0)"/><path d="M140,45 Q120,45 120,25 Q120,5 140,5 Q160,5 160,25 Q160,45 140,45 M140,15 Q132,15 132,25 Q132,35 140,35 Q148,35 148,25 Q148,15 140,15" fill="url(#ruyiGold)" transform="translate(80,0)"/><path d="M220,45 Q200,45 200,25 Q200,5 220,5 Q240,5 240,25 Q240,45 220,45 M220,15 Q212,15 212,25 Q212,35 220,35 Q228,35 228,25 Q228,15 220,15" fill="url(#ruyiGold)" transform="translate(120,0)"/></svg>`
+  },
+  {
+    id: 'chinese_dragon_frame',
+    name: '龙纹边框',
+    category: 'chinese',
+    tags: ["龙纹", "尊贵", "边框", "红金"],
+    colorScheme: '#FFAB00',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M10,60 L10,10 L60,10 M240,10 L290,10 L290,60 M290,140 L290,190 L240,190 M60,190 L10,190 L10,140" fill="none" stroke="#B71C1C" stroke-width="6"/><path d="M15,15 Q30,5 50,15 Q70,25 50,35 Q30,45 15,35 Z" fill="#FFAB00"/><path d="M285,15 Q270,5 250,15 Q230,25 250,35 Q270,45 285,35 Z" fill="#FFAB00"/><path d="M285,185 Q270,195 250,185 Q230,175 250,165 Q270,155 285,165 Z" fill="#FFAB00"/><path d="M15,185 Q30,195 50,185 Q70,175 50,165 Q30,155 15,165 Z" fill="#FFAB00"/></svg>`
+  }
+]
+
+// =============================================
+// 15. 手绘涂鸦 (Hand-drawn & Sketch)
+// =============================================
+export const SVG_SKETCH = [
+  {
+    id: 'sketch_doodle_border',
+    name: '涂鸦边框',
+    category: 'sketch',
+    tags: ["手绘", "边框", "涂鸦", "黑白"],
+    colorScheme: '#000000',
+    svg: `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M10,10 C50,8 150,12 290,10 C292,50 288,150 290,190 C250,192 50,188 10,190 C8,150 12,50 10,10 Z" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M13,13 C53,11 153,15 287,13 C289,53 285,153 287,187 C247,189 47,185 13,187 C11,147 15,47 13,13 Z" fill="none" stroke="#000000" stroke-width="1" stroke-opacity="0.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  },
+  {
+    id: 'sketch_underline_wave',
+    name: '手绘波浪线',
+    category: 'sketch',
+    tags: ["手绘", "分割线", "波浪", "强调"],
+    colorScheme: '#FF4D4F',
+    svg: `<svg viewBox="0 0 400 30" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M10,15 Q30,5 50,15 T90,15 T130,15 T170,15 T210,15 T250,15 T290,15 T330,15 T370,15 T390,15" fill="none" stroke="#FF4D4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  },
+  {
+    id: 'sketch_circle_highlight',
+    name: '手绘圆圈标注',
+    category: 'sketch',
+    tags: ["手绘", "圈注", "重点", "红色"],
+    colorScheme: '#FF4D4F',
+    svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M60,10 C90,10 110,30 110,60 C110,95 85,110 60,110 C30,110 10,90 10,60 C10,35 35,15 55,12" fill="none" stroke="#FF4D4F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  },
+  {
+    id: 'sketch_arrow_curved',
+    name: '手绘弯箭头',
+    category: 'sketch',
+    tags: ["手绘", "箭头", "指引", "黑色"],
+    colorScheme: '#000000',
+    svg: `<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M20,80 Q90,90 160,30" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round"/><path d="M140,25 L165,28 L160,55" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  },
+  {
+    id: 'sketch_star_burst',
+    name: '手绘星爆',
+    category: 'sketch',
+    tags: ["手绘", "爆炸", "促销", "背景"],
+    colorScheme: '#FFC107',
+    svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M100,20 L120,70 L170,60 L140,100 L180,140 L120,130 L100,180 L80,130 L20,140 L60,100 L30,60 L80,70 Z" fill="#FFC107" stroke="#000000" stroke-width="2" stroke-linejoin="round"/></svg>`
+  },
+  {
+    id: 'sketch_banner_ribbon',
+    name: '手绘丝带',
+    category: 'sketch',
+    tags: ["手绘", "标题", "丝带", "装饰"],
+    colorScheme: '#008080',
+    svg: `<svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M50,20 L350,20 L330,60 L70,60 Z" fill="none" stroke="#008080" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M50,20 L20,20 L10,40 L20,60 L70,60" fill="none" stroke="#008080" stroke-width="2" stroke-dasharray="4,2"/><path d="M350,20 L380,20 L390,40 L380,60 L330,60" fill="none" stroke="#008080" stroke-width="2" stroke-dasharray="4,2"/></svg>`
+  },
+  {
+    id: 'sketch_thought_bubble',
+    name: '手绘思考泡',
+    category: 'sketch',
+    tags: ["手绘", "气泡", "思考", "对话框"],
+    colorScheme: '#E1F5FE',
+    svg: `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M50,100 Q40,60 80,50 Q100,20 150,30 Q200,20 220,50 Q260,60 250,100 Q270,140 220,150 Q180,180 130,150 Q80,160 50,100 Z" fill="#E1F5FE" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="80" cy="170" r="8" fill="#E1F5FE" stroke="#000000" stroke-width="2"/><circle cx="60" cy="185" r="5" fill="#E1F5FE" stroke="#000000" stroke-width="2"/></svg>`
+  },
+  {
+    id: 'sketch_checkbox',
+    name: '手绘复选框',
+    category: 'sketch',
+    tags: ["手绘", "打钩", "清单", "完成"],
+    colorScheme: '#4CAF50',
+    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="20" y="20" width="60" height="60" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" rx="2"/><path d="M35,50 L50,70 L90,20" fill="none" stroke="#4CAF50" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  }
+]
+
+// =============================================
+// 16. 社交卡片 (Social Cards)
+// =============================================
+export const SVG_CARDS = [
+  {
+    id: 'card_profile',
+    name: '个人名片',
+    category: 'cards',
+    tags: ["卡片", "名片", "简介", "商务"],
+    colorScheme: '#2196F3',
+    svg: `<svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="2" y="2" width="396" height="116" rx="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/><circle cx="60" cy="60" r="35" fill="#E3F2FD"/><path d="M45,75 C45,65 52,60 60,60 C68,60 75,65 75,75" fill="#2196F3"/><circle cx="60" cy="50" r="8" fill="#2196F3"/><rect x="110" y="35" width="150" height="16" rx="4" fill="#212121"/><rect x="110" y="60" width="200" height="10" rx="2" fill="#9E9E9E"/><rect x="110" y="75" width="120" height="10" rx="2" fill="#BDBDBD"/></svg>`
+  },
+  {
+    id: 'card_quote',
+    name: '金句卡片',
+    category: 'cards',
+    tags: ["引用", "金句", "排版", "优雅"],
+    colorScheme: '#FF9800',
+    svg: `<svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="2" y="2" width="396" height="146" rx="0" fill="#FFF8E1" stroke="#FF9800" stroke-width="2"/><text x="20" y="50" font-family="serif" font-size="60" fill="#FFD180">“</text><rect x="50" y="50" width="300" height="8" rx="2" fill="#424242"/><rect x="50" y="70" width="280" height="8" rx="2" fill="#424242"/><rect x="50" y="90" width="200" height="8" rx="2" fill="#424242"/><text x="350" y="130" font-family="serif" font-size="60" fill="#FFD180" text-anchor="end">”</text><rect x="280" y="110" width="80" height="6" rx="2" fill="#FF9800"/></svg>`
+  },
+  {
+    id: 'card_stat_duo',
+    name: '双数据卡',
+    category: 'cards',
+    tags: ["数据", "统计", "对比", "图表"],
+    colorScheme: '#673AB7',
+    svg: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><linearGradient id="grad_card_stat" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#EDE7F6;stop-opacity:1" /><stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:1" /></linearGradient></defs><rect x="0" y="0" width="400" height="100" rx="8" fill="url(#grad_card_stat)"/><line x1="200" y1="20" x2="200" y2="80" stroke="#D1C4E9" stroke-width="1"/><text x="100" y="55" font-family="sans-serif" font-size="32" font-weight="bold" fill="#673AB7" text-anchor="middle">85%</text><text x="100" y="80" font-family="sans-serif" font-size="12" fill="#757575" text-anchor="middle">增长率</text><text x="300" y="55" font-family="sans-serif" font-size="32" font-weight="bold" fill="#673AB7" text-anchor="middle">12K</text><text x="300" y="80" font-family="sans-serif" font-size="12" fill="#757575" text-anchor="middle">新增用户</text></svg>`
+  },
+  {
+    id: 'card_feature',
+    name: '特性展示卡',
+    category: 'cards',
+    tags: ["功能", "列表", "图标", "详情"],
+    colorScheme: '#3F51B5',
+    svg: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="2" y="2" width="396" height="96" rx="8" fill="#FFFFFF" stroke="#E8EAF6" stroke-width="1"/><circle cx="50" cy="50" r="25" fill="#E8EAF6"/><path d="M40,50 L48,58 L60,42" fill="none" stroke="#3F51B5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="90" y="40" font-family="sans-serif" font-size="18" font-weight="bold" fill="#303F9F">核心优势</text><rect x="90" y="55" width="250" height="8" rx="2" fill="#9FA8DA" opacity="0.5"/><rect x="90" y="70" width="180" height="8" rx="2" fill="#9FA8DA" opacity="0.5"/></svg>`
+  },
+  {
+    id: 'card_testimonial',
+    name: '用户评价',
+    category: 'cards',
+    tags: ["评价", "评分", "信任", "口碑"],
+    colorScheme: '#FFC107',
+    svg: `<svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="0" y="0" width="400" height="120" rx="8" fill="#FAFAFA"/><g transform="translate(20, 20)"><polygon points="10,1 12,7 19,7 13,11 15,17 10,13 5,17 7,11 1,7 8,7" fill="#FFC107"/><polygon points="35,1 37,7 44,7 38,11 40,17 35,13 30,17 32,11 26,7 33,7" fill="#FFC107"/><polygon points="60,1 62,7 69,7 63,11 65,17 60,13 55,17 57,11 51,7 58,7" fill="#FFC107"/><polygon points="85,1 87,7 94,7 88,11 90,17 85,13 80,17 82,11 76,7 83,7" fill="#FFC107"/><polygon points="110,1 112,7 119,7 113,11 115,17 110,13 105,17 107,11 101,7 108,7" fill="#FFC107"/></g><rect x="20" y="50" width="360" height="8" rx="2" fill="#BDBDBD"/><rect x="20" y="65" width="300" height="8" rx="2" fill="#BDBDBD"/><text x="20" y="100" font-family="sans-serif" font-size="12" fill="#757575">- 满意用户</text></svg>`
+  },
+  {
+    id: 'card_pricing',
+    name: '价格展示',
+    category: 'cards',
+    tags: ["价格", "套餐", "购买", "营销"],
+    colorScheme: '#4CAF50',
+    svg: `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="0" y="0" width="300" height="200" rx="10" fill="#FFFFFF" stroke="#4CAF50" stroke-width="2"/><rect x="0" y="0" width="300" height="50" rx="8" fill="#E8F5E9"/><text x="150" y="32" font-family="sans-serif" font-size="18" font-weight="bold" fill="#2E7D32" text-anchor="middle">专业版</text><text x="150" y="90" font-family="sans-serif" font-size="36" font-weight="bold" fill="#4CAF50" text-anchor="middle">¥99</text><rect x="80" y="110" width="140" height="6" rx="2" fill="#BDBDBD"/><rect x="80" y="125" width="140" height="6" rx="2" fill="#BDBDBD"/><rect x="60" y="150" width="180" height="35" rx="17" fill="#4CAF50"/><text x="150" y="173" font-family="sans-serif" font-size="14" fill="#FFFFFF" text-anchor="middle">立即购买</text></svg>`
+  },
+  {
+    id: 'card_event',
+    name: '活动卡片',
+    category: 'cards',
+    tags: ["活动", "日历", "时间", "通知"],
+    colorScheme: '#F44336',
+    svg: `<svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="2" y="2" width="396" height="116" rx="8" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1"/><rect x="20" y="20" width="80" height="80" rx="8" fill="#FFEBEE"/><text x="60" y="50" font-family="sans-serif" font-size="14" fill="#D32F2F" text-anchor="middle">12月</text><text x="60" y="85" font-family="sans-serif" font-size="28" font-weight="bold" fill="#D32F2F" text-anchor="middle">25</text><rect x="120" y="30" width="200" height="16" rx="4" fill="#212121"/><rect x="120" y="60" width="150" height="10" rx="2" fill="#757575"/><rect x="120" y="80" width="240" height="10" rx="2" fill="#BDBDBD"/></svg>`
+  },
+  {
+    id: 'card_notification',
+    name: '通知卡片',
+    category: 'cards',
+    tags: ["通知", "消息", "提醒", "弹窗"],
+    colorScheme: '#03A9F4',
+    svg: `<svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="0" y="0" width="400" height="80" rx="8" fill="#E1F5FE"/><circle cx="40" cy="40" r="20" fill="#03A9F4"/><path d="M40,30 C35,30 33,35 33,40 L33,45 L30,48 L50,48 L47,45 L47,40 C47,35 45,30 40,30" fill="#FFFFFF"/><rect x="80" y="25" width="200" height="12" rx="2" fill="#0277BD"/><rect x="80" y="45" width="280" height="10" rx="2" fill="#81D4FA"/></svg>`
+  }
+]
+
+// =============================================
+// 17. 编辑排版 (Editorial & Magazine)
+// =============================================
+export const SVG_EDITORIAL = [
+  {
+    id: 'editorial_drop_cap',
+    name: '首字下沉框',
+    category: 'editorial',
+    tags: ["首字", "边框", "古典", "装饰"],
+    colorScheme: '#D4AF37',
+    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><linearGradient id="editorial_drop_cap_grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#D4AF37;stop-opacity:1" /><stop offset="100%" style="stop-color:#AA8C2C;stop-opacity:1" /></linearGradient></defs><rect x="2" y="2" width="96" height="96" fill="none" stroke="url(#editorial_drop_cap_grad)" stroke-width="4" /><rect x="12" y="12" width="76" height="76" fill="none" stroke="#D4AF37" stroke-width="1" stroke-dasharray="2,2" /><path d="M2,2 L12,12 M98,2 L88,12 M2,98 L12,88 M98,98 L88,88" stroke="#D4AF37" stroke-width="1" /></svg>`
+  },
+  {
+    id: 'editorial_pull_quote',
+    name: '拉引框',
+    category: 'editorial',
+    tags: ["引用", "排版", "简约", "重点"],
+    colorScheme: '#666666',
+    svg: `<svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="0" y="0" width="8" height="80" fill="#666666" /><path d="M30,20 Q30,45 50,45 L50,35 Q40,35 40,20 Z M60,20 Q60,45 80,45 L80,35 Q70,35 70,20 Z" fill="#999999" /></svg>`
+  },
+  {
+    id: 'editorial_sidebar',
+    name: '侧栏装饰',
+    category: 'editorial',
+    tags: ["侧边", "分割", "线条", "注释"],
+    colorScheme: '#333333',
+    svg: `<svg viewBox="0 0 30 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><line x1="15" y1="0" x2="15" y2="200" stroke="#333333" stroke-width="1" /><circle cx="15" cy="10" r="3" fill="#333333" /><circle cx="15" cy="190" r="3" fill="#333333" /><circle cx="15" cy="100" r="2" fill="#666666" /></svg>`
+  },
+  {
+    id: 'editorial_section_break',
+    name: '章节分隔',
+    category: 'editorial',
+    tags: ["分隔线", "章节", "优雅", "装饰"],
+    colorScheme: '#000000',
+    svg: `<svg viewBox="0 0 400 40" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><line x1="0" y1="20" x2="160" y2="20" stroke="#000000" stroke-width="1" /><line x1="240" y1="20" x2="400" y2="20" stroke="#000000" stroke-width="1" /><rect x="196" y="16" width="8" height="8" transform="rotate(45 200 20)" fill="#000000" /><rect x="180" y="17" width="6" height="6" transform="rotate(45 183 20)" fill="#666666" /><rect x="214" y="17" width="6" height="6" transform="rotate(45 217 20)" fill="#666666" /></svg>`
+  },
+  {
+    id: 'editorial_page_number',
+    name: '页码装饰',
+    category: 'editorial',
+    tags: ["页码", "圆形", "徽章", "数字"],
+    colorScheme: '#333333',
+    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><circle cx="50" cy="50" r="40" fill="none" stroke="#333333" stroke-width="2" /><circle cx="50" cy="50" r="34" fill="none" stroke="#333333" stroke-width="0.5" /><path d="M50,15 L50,25 M50,75 L50,85 M15,50 L25,50 M75,50 L85,50" stroke="#333333" stroke-width="1" /></svg>`
+  },
+  {
+    id: 'editorial_column_rule',
+    name: '分栏线',
+    category: 'editorial',
+    tags: ["分割线", "垂直", "花纹", "排版"],
+    colorScheme: '#D4AF37',
+    svg: `<svg viewBox="0 0 20 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><line x1="10" y1="0" x2="10" y2="90" stroke="#D4AF37" stroke-width="1" /><line x1="10" y1="110" x2="10" y2="200" stroke="#D4AF37" stroke-width="1" /><path d="M10,90 Q5,100 10,110 Q15,100 10,90" fill="#D4AF37" /></svg>`
+  }
+]
+
+// =============================================
+// 18. 自然植物 (Nature & Botanical)
+// =============================================
+export const SVG_BOTANICAL = [
+  {
+    id: 'botanical_leaf_border',
+    name: '叶片边框',
+    category: 'botanical',
+    tags: ["植物", "边框", "叶子", "清新"],
+    colorScheme: '#4CAF50',
+    svg: `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M0,60 Q5,10 50,5 L70,5" fill="none" stroke="#4CAF50" stroke-width="2" /><ellipse cx="20" cy="20" rx="15" ry="8" transform="rotate(-45 20 20)" fill="#81C784" opacity="0.8" /><ellipse cx="50" cy="10" rx="15" ry="8" transform="rotate(10 50 10)" fill="#66BB6A" opacity="0.8" /><path d="M300,140 Q295,190 250,195 L230,195" fill="none" stroke="#4CAF50" stroke-width="2" /><ellipse cx="280" cy="180" rx="15" ry="8" transform="rotate(-45 280 180)" fill="#81C784" opacity="0.8" /></svg>`
+  },
+  {
+    id: 'botanical_flower_garland',
+    name: '花环装饰',
+    category: 'botanical',
+    tags: ["花朵", "装饰", "粉色", "可爱"],
+    colorScheme: '#F48FB1',
+    svg: `<svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M0,40 Q100,60 200,40 T400,40" fill="none" stroke="#A5D6A7" stroke-width="2" /><circle cx="50" cy="45" r="10" fill="#F48FB1" /><circle cx="150" cy="35" r="8" fill="#F06292" /><circle cx="250" cy="45" r="10" fill="#F48FB1" /><circle cx="350" cy="35" r="8" fill="#F06292" /><path d="M60,45 Q70,35 80,45" fill="none" stroke="#66BB6A" stroke-width="2" /></svg>`
+  },
+  {
+    id: 'botanical_vine_divider',
+    name: '藤蔓分隔线',
+    category: 'botanical',
+    tags: ["藤蔓", "分割线", "自然", "绿色"],
+    colorScheme: '#66BB6A',
+    svg: `<svg viewBox="0 0 400 40" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M0,20 Q50,0 100,20 T200,20 T300,20 T400,20" fill="none" stroke="#558B2F" stroke-width="1.5" /><path d="M40,15 Q50,5 60,15 Z" fill="#81C784" /><path d="M140,25 Q150,35 160,25 Z" fill="#81C784" /><path d="M240,15 Q250,5 260,15 Z" fill="#81C784" /><path d="M340,25 Q350,35 360,25 Z" fill="#81C784" /></svg>`
+  },
+  {
+    id: 'botanical_wreath',
+    name: '花圈',
+    category: 'botanical',
+    tags: ["花圈", "圆形", "植物", "标题"],
+    colorScheme: '#43A047',
+    svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><linearGradient id="botanical_wreath_grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#81C784;stop-opacity:1" /><stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" /></linearGradient></defs><circle cx="100" cy="100" r="80" fill="none" stroke="#8D6E63" stroke-width="1" /><circle cx="100" cy="20" r="8" fill="url(#botanical_wreath_grad)" /><circle cx="180" cy="100" r="8" fill="url(#botanical_wreath_grad)" /><circle cx="100" cy="180" r="8" fill="url(#botanical_wreath_grad)" /><circle cx="20" cy="100" r="8" fill="url(#botanical_wreath_grad)" /><path d="M100,20 A80,80 0 0,1 180,100" fill="none" stroke="#4CAF50" stroke-width="2" stroke-dasharray="5,5" /></svg>`
+  },
+  {
+    id: 'botanical_branch',
+    name: '树枝装饰',
+    category: 'botanical',
+    tags: ["树枝", "自然", "横向", "插图"],
+    colorScheme: '#795548',
+    svg: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M20,80 Q200,20 380,50" fill="none" stroke="#795548" stroke-width="3" stroke-linecap="round" /><path d="M100,65 L110,40" fill="none" stroke="#795548" stroke-width="2" /><ellipse cx="110" cy="35" rx="10" ry="5" transform="rotate(-30 110 35)" fill="#66BB6A" /><path d="M250,45 L260,20" fill="none" stroke="#795548" stroke-width="2" /><ellipse cx="260" cy="15" rx="10" ry="5" transform="rotate(-10 260 15)" fill="#66BB6A" /></svg>`
+  },
+  {
+    id: 'botanical_succulent',
+    name: '多肉植物',
+    category: 'botanical',
+    tags: ["多肉", "盆栽", "可爱", "绿色"],
+    colorScheme: '#009688',
+    svg: `<svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><circle cx="75" cy="75" r="60" fill="#E0F2F1" /><path d="M75,75 Q45,35 75,15 Q105,35 75,75" fill="#80CBC4" stroke="#00695C" stroke-width="1" /><path d="M75,75 Q115,45 135,75 Q115,105 75,75" fill="#4DB6AC" stroke="#00695C" stroke-width="1" /><path d="M75,75 Q105,115 75,135 Q45,115 75,75" fill="#26A69A" stroke="#00695C" stroke-width="1" /><path d="M75,75 Q35,105 15,75 Q35,45 75,75" fill="#009688" stroke="#00695C" stroke-width="1" /></svg>`
+  }
+]
+
+// =============================================
+// 19. 科技代码 (Tech & Code)
+// =============================================
+export const SVG_TECH = [
+  {
+    id: 'tech_terminal',
+    name: '终端窗口',
+    category: 'tech',
+    tags: ["代码", "窗口", "极客", "科技"],
+    colorScheme: '#282C34',
+    svg: `<svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="0" y="0" width="400" height="120" rx="8" fill="#282C34" /><circle cx="20" cy="20" r="6" fill="#FF5F56" /><circle cx="40" cy="20" r="6" fill="#FFBD2E" /><circle cx="60" cy="20" r="6" fill="#27C93F" /><rect x="0" y="40" width="400" height="1" fill="#3E4451" /><rect x="20" y="60" width="150" height="10" rx="2" fill="#61AFEF" opacity="0.5" /><rect x="20" y="80" width="80" height="10" rx="2" fill="#98C379" opacity="0.5" /><rect x="110" y="80" width="10" height="14" fill="#ABB2BF" /></svg>`
+  },
+  {
+    id: 'tech_code_bracket',
+    name: '代码括号',
+    category: 'tech',
+    tags: ["代码", "符号", "编程", "开发"],
+    colorScheme: '#61AFEF',
+    svg: `<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M100,20 Q60,20 60,60 L60,70 Q60,80 40,80 Q60,80 60,90 L60,100 Q60,140 100,140" fill="none" stroke="#61AFEF" stroke-width="8" stroke-linecap="round" /><path d="M200,20 Q240,20 240,60 L240,70 Q240,80 260,80 Q240,80 240,90 L240,100 Q240,140 200,140" fill="none" stroke="#61AFEF" stroke-width="8" stroke-linecap="round" /></svg>`
+  },
+  {
+    id: 'tech_circuit',
+    name: '电路板纹',
+    category: 'tech',
+    tags: ["电路", "连接", "电子", "科技"],
+    colorScheme: '#00E676',
+    svg: `<svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><circle cx="20" cy="40" r="4" fill="#00E676" /><circle cx="380" cy="40" r="4" fill="#00E676" /><polyline points="20,40 60,40 80,20 150,20 170,60 250,60 270,30 380,30" fill="none" stroke="#00E676" stroke-width="2" /><circle cx="150" cy="20" r="2" fill="#00E676" /><circle cx="250" cy="60" r="2" fill="#00E676" /></svg>`
+  },
+  {
+    id: 'tech_binary',
+    name: '二进制流',
+    category: 'tech',
+    tags: ["数据", "二进制", "流", "黑客"],
+    colorScheme: '#00FF00',
+    svg: `<svg viewBox="0 0 400 60" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><linearGradient id="tech_binary_grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#00FF00;stop-opacity:0.1" /><stop offset="50%" style="stop-color:#00FF00;stop-opacity:1" /><stop offset="100%" style="stop-color:#00FF00;stop-opacity:0.1" /></linearGradient></defs><rect x="0" y="0" width="400" height="60" fill="#000000" /><path d="M20,30 L380,30" stroke="url(#tech_binary_grad)" stroke-width="20" stroke-dasharray="10,10" /></svg>`
+  },
+  {
+    id: 'tech_chip',
+    name: '芯片图案',
+    category: 'tech',
+    tags: ["芯片", "CPU", "核心", "处理器"],
+    colorScheme: '#333333',
+    svg: `<svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="40" y="40" width="70" height="70" fill="#333333" /><rect x="55" y="55" width="40" height="40" fill="#444444" /><path d="M40,50 L20,50 M40,60 L20,60 M40,70 L20,70 M40,80 L20,80 M40,90 L20,90 M40,100 L20,100" stroke="#666666" stroke-width="2" /><path d="M110,50 L130,50 M110,60 L130,60 M110,70 L130,70 M110,80 L130,80 M110,90 L130,90 M110,100 L130,100" stroke="#666666" stroke-width="2" /><path d="M50,40 L50,20 M60,40 L60,20 M70,40 L70,20 M80,40 L80,20 M90,40 L90,20 M100,40 L100,20" stroke="#666666" stroke-width="2" /><path d="M50,110 L50,130 M60,110 L60,130 M70,110 L70,130 M80,110 L80,130 M90,110 L90,130 M100,110 L100,130" stroke="#666666" stroke-width="2" /></svg>`
+  },
+  {
+    id: 'tech_keyboard',
+    name: '键盘装饰',
+    category: 'tech',
+    tags: ["键盘", "按键", "输入", "外设"],
+    colorScheme: '#E0E0E0',
+    svg: `<svg viewBox="0 0 400 50" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="10" y="10" width="30" height="30" rx="4" fill="none" stroke="#333333" stroke-width="2" /><rect x="50" y="10" width="30" height="30" rx="4" fill="none" stroke="#333333" stroke-width="2" /><rect x="90" y="10" width="30" height="30" rx="4" fill="none" stroke="#333333" stroke-width="2" /><rect x="130" y="10" width="30" height="30" rx="4" fill="none" stroke="#333333" stroke-width="2" /><rect x="170" y="10" width="100" height="30" rx="4" fill="none" stroke="#333333" stroke-width="2" /><rect x="280" y="10" width="30" height="30" rx="4" fill="#333333" /></svg>`
+  }
+]
+
+// =============================================
+// 20. 音乐音频 (Music & Audio)
+// =============================================
+export const SVG_MUSIC = [
+  {
+    id: 'music_equalizer',
+    name: '音频均衡器',
+    category: 'music',
+    tags: ["音频", "音乐", "均衡器", "动感"],
+    colorScheme: '#8A2BE2',
+    svg: `<svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><linearGradient id="grad_eq" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" style="stop-color:#4B0082;stop-opacity:1" /><stop offset="100%" style="stop-color:#8A2BE2;stop-opacity:1" /></linearGradient></defs><rect x="10" y="30" width="35" height="50" rx="5" style="fill:url(#grad_eq)" /><rect x="60" y="10" width="35" height="70" rx="5" style="fill:url(#grad_eq)" /><rect x="110" y="40" width="35" height="40" rx="5" style="fill:url(#grad_eq)" /><rect x="160" y="20" width="35" height="60" rx="5" style="fill:url(#grad_eq)" /><rect x="210" y="50" width="35" height="30" rx="5" style="fill:url(#grad_eq)" /><rect x="260" y="15" width="35" height="65" rx="5" style="fill:url(#grad_eq)" /><rect x="310" y="35" width="35" height="45" rx="5" style="fill:url(#grad_eq)" /><rect x="360" y="25" width="35" height="55" rx="5" style="fill:url(#grad_eq)" /></svg>`
+  },
+  {
+    id: 'music_waveform',
+    name: '音频波形',
+    category: 'music',
+    tags: ["波形", "声波", "节奏", "蓝色"],
+    colorScheme: '#00BFFF',
+    svg: `<svg viewBox="0 0 400 60" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><linearGradient id="grad_wave" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#1E90FF;stop-opacity:1" /><stop offset="100%" style="stop-color:#00BFFF;stop-opacity:1" /></linearGradient></defs><path d="M0 30 Q 10 5, 20 30 T 40 30 T 60 30 T 80 30 T 100 30 T 120 30 T 140 30 T 160 30 T 180 30 T 200 30 T 220 30 T 240 30 T 260 30 T 280 30 T 300 30 T 320 30 T 340 30 T 360 30 T 380 30 T 400 30" style="fill:none;stroke:url(#grad_wave);stroke-width:3;" /><path d="M0 30 L10 10 L20 50 L30 20 L40 40 L50 5 L60 55 L70 25 L80 35 L90 15 L100 45 L110 30 L120 10 L130 50 L140 20 L150 40 L160 5 L170 55 L180 25 L190 35 L200 15 L210 45 L220 30 L230 10 L240 50 L250 20 L260 40 L270 5 L280 55 L290 25 L300 35 L310 15 L320 45 L330 30 L340 10 L350 50 L360 20 L370 40 L380 5 L390 55 L400 30" style="fill:none;stroke:url(#grad_wave);stroke-width:2;opacity:0.5" /></svg>`
+  },
+  {
+    id: 'music_vinyl',
+    name: '黑胶唱片',
+    category: 'music',
+    tags: ["复古", "黑胶", "唱片", "经典"],
+    colorScheme: '#FF4500',
+    svg: `<svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><circle cx="75" cy="75" r="70" style="fill:#1A1A1A;" /><circle cx="75" cy="75" r="60" style="fill:none;stroke:#333;stroke-width:1;" /><circle cx="75" cy="75" r="50" style="fill:none;stroke:#333;stroke-width:1;" /><circle cx="75" cy="75" r="40" style="fill:none;stroke:#333;stroke-width:1;" /><circle cx="75" cy="75" r="25" style="fill:#FF4500;" /><circle cx="75" cy="75" r="5" style="fill:#FFF;" /></svg>`
+  },
+  {
+    id: 'music_notes_flow',
+    name: '音符飘动',
+    category: 'music',
+    tags: ["音符", "旋律", "五线谱", "流动"],
+    colorScheme: '#333333',
+    svg: `<svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M10 20 Q 100 60, 200 20 T 390 20" style="fill:none;stroke:#DDD;stroke-width:1;" /><path d="M10 30 Q 100 70, 200 30 T 390 30" style="fill:none;stroke:#DDD;stroke-width:1;" /><path d="M10 40 Q 100 80, 200 40 T 390 40" style="fill:none;stroke:#DDD;stroke-width:1;" /><g transform="translate(50, 45)"><circle cx="0" cy="0" r="5" /><path d="M5 0 L5 -25" style="stroke:#333;stroke-width:2;" /></g><g transform="translate(150, 55)"><circle cx="0" cy="0" r="5" /><path d="M5 0 L5 -25 L15 -20" style="stroke:#333;stroke-width:2;fill:none;" /></g><g transform="translate(250, 45)"><circle cx="0" cy="0" r="5" /><path d="M5 0 L5 -25" style="stroke:#333;stroke-width:2;" /></g><g transform="translate(320, 35)"><circle cx="0" cy="0" r="5" /><path d="M5 0 L5 -25 L15 -20" style="stroke:#333;stroke-width:2;fill:none;" /></g></svg>`
+  },
+  {
+    id: 'music_headphones',
+    name: '耳机图案',
+    category: 'music',
+    tags: ["耳机", "听歌", "极简", "深灰"],
+    colorScheme: '#444444',
+    svg: `<svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M30 80 A 45 45 0 0 1 120 80" style="fill:none;stroke:#444;stroke-width:8;stroke-linecap:round;" /><rect x="20" y="80" width="20" height="35" rx="5" style="fill:#444;" /><rect x="110" y="80" width="20" height="35" rx="5" style="fill:#444;" /><path d="M40 85 L40 110 M110 85 L110 110" style="stroke:#666;stroke-width:2;" /></svg>`
+  },
+  {
+    id: 'music_play_button',
+    name: '播放按钮',
+    category: 'music',
+    tags: ["播放", "开始", "圆形", "渐变"],
+    colorScheme: '#FF1493',
+    svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><defs><linearGradient id="grad_play" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FF69B4;stop-opacity:1" /><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1" /></linearGradient></defs><circle cx="60" cy="60" r="50" style="fill:url(#grad_play);" /><polygon points="50,40 85,60 50,80" style="fill:#FFF;" /></svg>`
+  }
+]
+
+// =============================================
+// 21. 生活方式 (Lifestyle & Food)
+// =============================================
+export const SVG_LIFESTYLE = [
+  {
+    id: 'lifestyle_coffee',
+    name: '咖啡杯',
+    category: 'lifestyle',
+    tags: ["咖啡", "下午茶", "温暖", "爱心"],
+    colorScheme: '#6F4E37',
+    svg: `<svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><path d="M40 60 L110 60 Q110 110 75 110 Q40 110 40 60" style="fill:#6F4E37;" /><path d="M110 70 Q125 70 125 85 Q125 100 110 100" style="fill:none;stroke:#6F4E37;stroke-width:5;" /><path d="M60 30 Q65 20 60 10 M75 30 Q80 20 75 10 M90 30 Q95 20 90 10" style="fill:none;stroke:#D2B48C;stroke-width:2;stroke-linecap:round;" /><path d="M70 80 Q75 75 80 80 Q75 90 75 90 Q75 90 70 80" style="fill:#FFF;opacity:0.8;" /></svg>`
+  },
+  {
+    id: 'lifestyle_camera',
+    name: '相机图案',
+    category: 'lifestyle',
+    tags: ["摄影", "记录", "文艺", "相机"],
+    colorScheme: '#333333',
+    svg: `<svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="25" y="50" width="100" height="65" rx="5" style="fill:#555;" /><rect x="40" y="40" width="30" height="10" style="fill:#333;" /><circle cx="75" cy="82" r="25" style="fill:#333;stroke:#777;stroke-width:3;" /><circle cx="75" cy="82" r="10" style="fill:#111;" /><rect x="105" y="58" width="12" height="8" style="fill:#999;" /></svg>`
+  },
+  {
+    id: 'lifestyle_travel',
+    name: '旅行标签',
+    category: 'lifestyle',
+    tags: ["旅行", "出发", "标签", "蓝色"],
+    colorScheme: '#4682B4',
+    svg: `<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="20" y="20" width="160" height="60" rx="10" style="fill:#4682B4;" /><circle cx="40" cy="50" r="6" style="fill:#FFF;" /><path d="M120 40 L135 50 L120 60 M135 50 L110 50" style="fill:none;stroke:#FFF;stroke-width:3;stroke-linecap:round;" /><path d="M125 43 L128 35 L133 45" style="fill:#FFF;" /><path d="M125 57 L128 65 L133 55" style="fill:#FFF;" /></svg>`
+  },
+  {
+    id: 'lifestyle_fitness',
+    name: '健身图标',
+    category: 'lifestyle',
+    tags: ["健身", "运动", "力量", "活力"],
+    colorScheme: '#FF4500',
+    svg: `<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="40" y="45" width="120" height="10" rx="5" style="fill:#333;" /><rect x="30" y="30" width="20" height="40" rx="5" style="fill:#FF4500;" /><rect x="150" y="30" width="20" height="40" rx="5" style="fill:#FF4500;" /><path d="M100 20 L105 30 L95 30 Z" style="fill:#FFD700;" /><path d="M175 40 L185 50 L175 60" style="fill:none;stroke:#FF4500;stroke-width:3;" /></svg>`
+  },
+  {
+    id: 'lifestyle_book_stack',
+    name: '书籍堆叠',
+    category: 'lifestyle',
+    tags: ["阅读", "学习", "知识", "书籍"],
+    colorScheme: '#20B2AA',
+    svg: `<svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><rect x="30" y="90" width="90" height="20" rx="2" style="fill:#20B2AA;" /><rect x="35" y="70" width="80" height="20" rx="2" style="fill:#FF6347;" /><rect x="40" y="50" width="70" height="20" rx="2" style="fill:#F0E68C;" /><line x1="110" y1="90" x2="110" y2="110" style="stroke:#FFF;stroke-width:2;opacity:0.5;" /><line x1="105" y1="70" x2="105" y2="90" style="stroke:#FFF;stroke-width:2;opacity:0.5;" /><line x1="100" y1="50" x2="100" y2="70" style="stroke:#FFF;stroke-width:2;opacity:0.5;" /></svg>`
+  },
+  {
+    id: 'lifestyle_plant_pot',
+    name: '盆栽',
+    category: 'lifestyle',
+    tags: ["植物", "清新", "生活", "自然"],
+    colorScheme: '#228B22',
+    svg: `<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;"><polygon points="35,140 85,140 95,100 25,100" style="fill:#E2725B;" /><path d="M60 100 Q40 60 60 20 Q80 60 60 100" style="fill:#228B22;" /><path d="M60 80 Q20 70 10 40 Q50 50 60 80" style="fill:#32CD32;" /><path d="M60 80 Q100 70 110 40 Q70 50 60 80" style="fill:#32CD32;" /></svg>`
+  }
+]
+
 // =============================================
 // 汇总导出
 // =============================================
@@ -1057,7 +1546,15 @@ export const SVG_TEMPLATE_CATEGORIES = [
   { id: 'callouts', name: '提示面板', icon: '📋', data: SVG_CALLOUTS },
   { id: 'dataviz', name: '数据图表', icon: '📈', data: SVG_DATAVIZ },
   { id: 'arrows', name: '箭头连接', icon: '➡', data: SVG_ARROWS },
-  { id: 'gradients', name: '渐变背景', icon: '🎆', data: SVG_GRADIENTS }
+  { id: 'gradients', name: '渐变背景', icon: '🎆', data: SVG_GRADIENTS },
+  { id: 'chinese', name: '中国风', icon: '🏮', data: SVG_CHINESE },
+  { id: 'sketch', name: '手绘涂鸦', icon: '✏', data: SVG_SKETCH },
+  { id: 'cards', name: '社交卡片', icon: '🃏', data: SVG_CARDS },
+  { id: 'editorial', name: '编辑排版', icon: '📰', data: SVG_EDITORIAL },
+  { id: 'botanical', name: '自然植物', icon: '🌿', data: SVG_BOTANICAL },
+  { id: 'tech', name: '科技代码', icon: '💻', data: SVG_TECH },
+  { id: 'music', name: '音乐音频', icon: '🎵', data: SVG_MUSIC },
+  { id: 'lifestyle', name: '生活方式', icon: '☕', data: SVG_LIFESTYLE }
 ]
 
 /**
@@ -1077,7 +1574,15 @@ export function getAllSvgTemplates() {
     ...SVG_CALLOUTS,
     ...SVG_DATAVIZ,
     ...SVG_ARROWS,
-    ...SVG_GRADIENTS
+    ...SVG_GRADIENTS,
+    ...SVG_CHINESE,
+    ...SVG_SKETCH,
+    ...SVG_CARDS,
+    ...SVG_EDITORIAL,
+    ...SVG_BOTANICAL,
+    ...SVG_TECH,
+    ...SVG_MUSIC,
+    ...SVG_LIFESTYLE
   ]
 }
 
