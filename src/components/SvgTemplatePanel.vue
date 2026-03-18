@@ -9,26 +9,23 @@
       <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 font-bold">{{ totalCount }}</span>
     </div>
 
-    <!-- 分类 Tab -->
-    <div class="flex border-b overflow-x-auto scrollbar-hide" style="border-color: var(--color-content-border);">
-      <button
-        v-for="cat in categories"
-        :key="cat.id"
-        @click="activeCategory = cat.id"
-        :class="[
-          'flex-shrink-0 px-2.5 py-2 text-[11px] font-medium transition-all duration-200 relative whitespace-nowrap',
-          activeCategory === cat.id
-            ? 'text-purple-600'
-            : 'text-gray-400 hover:text-gray-600'
-        ]"
-      >
-        <span class="mr-0.5">{{ cat.icon }}</span>
-        {{ cat.name }}
-        <div
-          v-if="activeCategory === cat.id"
-          class="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-purple-500 to-indigo-500"
-        ></div>
-      </button>
+    <!-- 分类 Tab (网格布局适配13个分类) -->
+    <div class="border-b px-1.5 py-1.5" style="border-color: var(--color-content-border);">
+      <div class="flex flex-wrap gap-1">
+        <button
+          v-for="cat in categories"
+          :key="cat.id"
+          @click="activeCategory = cat.id"
+          :class="[
+            'px-2 py-1 text-[10px] font-medium rounded-md transition-all duration-200 whitespace-nowrap',
+            activeCategory === cat.id
+              ? 'bg-purple-100 text-purple-700 shadow-sm ring-1 ring-purple-200'
+              : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+          ]"
+        >
+          <span class="mr-0.5">{{ cat.icon }}</span>{{ cat.name }}
+        </button>
+      </div>
     </div>
 
     <!-- 搜索栏 -->
@@ -56,7 +53,7 @@
           class="relative cursor-pointer border-2 rounded-lg p-2 transition-all duration-200 border-transparent hover:border-purple-200 bg-white hover:shadow-md group"
         >
           <!-- SVG 预览 -->
-          <div class="h-16 overflow-hidden rounded bg-gray-50 border border-gray-100 flex items-center justify-center p-1">
+          <div :class="['overflow-hidden rounded bg-gray-50 border border-gray-100 flex items-center justify-center p-1', tallPreview ? 'h-24' : 'h-16']">
             <div class="svg-preview-wrapper" v-html="tpl.svg"></div>
           </div>
 
@@ -96,6 +93,10 @@ const searchQuery = ref('')
 const categories = SVG_TEMPLATE_CATEGORIES
 
 const totalCount = computed(() => getAllSvgTemplates().length)
+
+// 需要更高预览区域的分类
+const tallCategories = new Set(['gradients', 'progress', 'callouts', 'dataviz', 'waves'])
+const tallPreview = computed(() => tallCategories.has(activeCategory.value))
 
 const filteredTemplates = computed(() => {
   if (searchQuery.value.trim()) {
