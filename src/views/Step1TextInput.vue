@@ -200,6 +200,31 @@ watch(localText, (newText) => {
 
 const isDragging = ref(false)
 
+// ── 图片尺寸读取（通过浏览器 Image 解码，无需手动解析二进制）──
+const getImageDimensionsFromBuffer = (buffer, contentType) => {
+  return new Promise((resolve) => {
+    try {
+      const blob = new Blob([buffer], { type: contentType })
+      const url = URL.createObjectURL(blob)
+      const img = new Image()
+      img.onload = () => { URL.revokeObjectURL(url); resolve({ width: img.naturalWidth, height: img.naturalHeight }) }
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
+      img.src = url
+    } catch (e) {
+      resolve(null)
+    }
+  })
+}
+
+// 方向判断：横版 / 竖版 / 方形
+const getImageOrientation = (dims) => {
+  if (!dims || !dims.width || !dims.height) return 'unknown'
+  const r = dims.width / dims.height
+  if (r > 1.2) return 'landscape'
+  if (r < 0.85) return 'portrait'
+  return 'square'
+}
+
 // 触发文件选择
 const triggerFileUpload = () => {
   fileInput.value.click()
@@ -307,16 +332,24 @@ const processDocxFile = async (file) => {
 
     // 配置 mammoth 选项 - 增强版：保留样式信息
     const options = {
-      // 自定义图片处理：将图片alt属性作为图注
-      convertImage: mammoth.images.imgElement((image) => {
-        // 如果图片有alt属性，将其作为图注
+      // 自定义图片处理：将图片alt属性作为图注，并嵌入尺寸信息供后续方向判断
+      convertImage: mammoth.images.imgElement(async (image) => {
         const alt = image.alt || ''
-        if (alt && alt.trim()) {
-          // 有图注，生成 &图注内容 格式
-          return Promise.resolve({ src: "", alt: `&${alt.trim()}` })
+
+        // 读取图片尺寸（格式附在 alt 末尾：|WxH）
+        let dimStr = ''
+        try {
+          const buffer = await image.read()
+          const dims = await getImageDimensionsFromBuffer(buffer, image.contentType)
+          if (dims) dimStr = `|${dims.width}x${dims.height}`
+        } catch (e) {
+          console.warn('[Step1] 图片尺寸读取失败:', e)
         }
-        // 无图注，生成纯 &
-        return Promise.resolve({ src: "", alt: "&" })
+
+        if (alt && alt.trim()) {
+          return { src: "", alt: `&${alt.trim()}${dimStr}` }
+        }
+        return { src: "", alt: `&${dimStr}` }
       }),
       // 保留段落样式信息
       styleMap: [
@@ -499,28 +532,42 @@ const convertHtmlToCustomFormat = (html) => {
       case 'H3':
         // Word 标题转为 ## (标题)，而非 # (正文)
         return `\n\n## ${content.trim()}\n\n`
-      case 'P':
-        // 检查是否有特定的class
+      case 'P': {
         const className = node.className || ''
+
+        // ── 同段落双图检测（Word 中两张图并排在同一段落）──
+        // 这种情况直接合并为双图，尊重作者的原文布局
+        const imgEls = Array.from(node.querySelectorAll('img'))
+        if (imgEls.length === 2) {
+          const a1 = imgEls[0].getAttribute('alt') || ''
+          const a2 = imgEls[1].getAttribute('alt') || ''
+          if (a1.startsWith('&') && a2.startsWith('&')) {
+            // 去掉 & 前缀，cleanCaption 会在后续处理尺寸后缀
+            const raw1 = a1.slice(1)
+            const raw2 = a2.slice(1)
+            // 保留 |WxH 供 convertConsecutiveImagesToDouble 方向判断时已略过（同段落直接双图）
+            // 这里直接清洗输出
+            const c1 = cleanCaption(raw1.replace(/\|\d+x\d+$/, ''))
+            const c2 = cleanCaption(raw2.replace(/\|\d+x\d+$/, ''))
+            if (c1 && c2) return `\n\n&&${c1} ${c2}\n\n`
+            if (c1 || c2) return `\n\n&&${c1 || c2}\n\n`
+            return '\n\n&&\n\n'
+          }
+        }
 
         // 如果是图注段落
         if (className.includes('caption')) {
-          // 在生成图注前，先检查这段文字是否可能是标题
-          // 避免将标题误判为图注
           if (isLikelyHeading(content)) {
-            // 如果是标题，按正文段落处理
             return `\n\n${content.trim()}\n\n`
           }
-
-          // 清理内容，移除多余的空格
           const cleanedContent = content.trim().replace(/\s+/g, ' ')
-          // 生成 &图注内容 标记
           return `\n\n&${cleanedContent}\n\n`
         }
 
         // 如果段落只包含图片占位符，直接返回
         if (content.trim().startsWith('&')) return content
         return `\n\n${content.trim()}\n\n`
+      }
       case 'IMG':
         // 处理图片占位符
         if (node.alt && node.alt.startsWith('&')) {
@@ -573,8 +620,10 @@ const mergeImageWithCaption = (text) => {
   while (i < lines.length) {
     const currentLine = lines[i].trim()
     
-    // 检查是否是单独的图片标记 &
-    if (currentLine === '&' || currentLine === '&&') {
+    // 检查是否是单独的图片标记（& 或 &|WxH，没有图注文字）
+    const isBareImage = /^&&?(\|\d+x\d+)?$/.test(currentLine)
+    const isDoubleBareLine = currentLine.startsWith('&&')
+    if (isBareImage) {
       // 查找后面的图注段落
       let nextNonEmpty = i + 1
       while (nextNonEmpty < lines.length && lines[nextNonEmpty].trim() === '') {
@@ -589,7 +638,10 @@ const mergeImageWithCaption = (text) => {
           // 清洗图注并合并
           const cleanedCaption = cleanCaption(nextLine)
           
-          if (currentLine === '&&') {
+          // 提取当前行的尺寸后缀（如 |750x500），合并后需要保留给后续方向判断
+          const dimsSuffix = (currentLine.match(/(\|\d+x\d+)$/) || [])[1] || ''
+
+          if (isDoubleBareLine) {
             // 双图情况：可能需要查找两个图注
             let secondCaption = ''
             let nextNext = nextNonEmpty + 1
@@ -602,7 +654,7 @@ const mergeImageWithCaption = (text) => {
             } else {
               i = nextNonEmpty + 1
             }
-            
+
             if (cleanedCaption && secondCaption) {
               result.push(`&&${cleanedCaption} ${secondCaption}`)
             } else if (cleanedCaption) {
@@ -611,11 +663,11 @@ const mergeImageWithCaption = (text) => {
               result.push('&&')
             }
           } else {
-            // 单图情况
+            // 单图情况：合并图注，保留尺寸后缀供方向判断
             if (cleanedCaption) {
-              result.push(`&${cleanedCaption}`)
+              result.push(`&${cleanedCaption}${dimsSuffix}`)
             } else {
-              result.push('&')
+              result.push(`&${dimsSuffix}` || '&')
             }
             i = nextNonEmpty + 1
           }
@@ -649,34 +701,50 @@ const isLikelyCaption = (line) => {
   return false
 }
 
-// 后处理函数：将连续的单图转换为双图
+// 后处理函数：将连续的单图按方向判断合并或保持独立
+// 规则：横+横 / 竖+竖 / 方+方 → 双图；其他组合 → 各自单图
 const convertConsecutiveImagesToDouble = (text) => {
-  // 先清洗所有图注
-  let cleanedText = cleanAllCaptions(text)
-  
-  // 匹配连续的图片标记（中间可能有空行或换行）
-  // 支持 & 或 &caption 格式
+  // 从 alt 里解析尺寸后缀 |WxH
+  const parseDims = (raw) => {
+    const m = raw.match(/\|(\d+)x(\d+)$/)
+    return m ? { width: +m[1], height: +m[2] } : null
+  }
+
+  // 匹配两个连续 & 行（中间可能有空行）
+  // raw1/raw2 包含原始内容（含 |WxH 后缀）
   const regex = /&([^\n&]*?)\n+&([^\n&]*?)(?=\n|$)/g
-  
-  return cleanedText.replace(regex, (match, caption1, caption2) => {
-    // 清理图注内容
-    const clean1 = cleanCaption(caption1)
-    const clean2 = cleanCaption(caption2)
-    
-    // 两个都有图注
-    if (clean1 && clean2) {
-      return `&&${clean1} ${clean2}\n\n`
+
+  let result = text.replace(regex, (match, raw1, raw2) => {
+    // ── 方向判断 ──
+    const dims1 = parseDims(raw1)
+    const dims2 = parseDims(raw2)
+    const orient1 = getImageOrientation(dims1)
+    const orient2 = getImageOrientation(dims2)
+
+    // 去掉尺寸后缀再清洗图注
+    const clean1 = cleanCaption(raw1.replace(/\|\d+x\d+$/, ''))
+    const clean2 = cleanCaption(raw2.replace(/\|\d+x\d+$/, ''))
+
+    // 两者都有已知方向且方向不同 → 保持各自单图
+    if (orient1 !== 'unknown' && orient2 !== 'unknown' && orient1 !== orient2) {
+      const s1 = clean1 ? `&${clean1}` : '&'
+      const s2 = clean2 ? `&${clean2}` : '&'
+      return `${s1}\n\n${s2}\n\n`
     }
-    
-    // 只有一个有图注
-    if (clean1 || clean2) {
-      const caption = clean1 || clean2
-      return `&&${caption}\n\n`
-    }
-    
-    // 都没有图注，纯双图
+
+    // 同向（含未知）→ 合并双图
+    if (clean1 && clean2) return `&&${clean1} ${clean2}\n\n`
+    if (clean1 || clean2) return `&&${clean1 || clean2}\n\n`
     return '&&\n\n'
   })
+
+  // 清除所有残余的尺寸后缀（未被合并的单图行）
+  result = result.replace(/&([^&\n]*)\|\d+x\d+/g, (_, caption) => {
+    const c = cleanCaption(caption)
+    return c ? `&${c}` : '&'
+  })
+
+  return result
 }
 
 // 清洗所有图注（遍历整个文本）
@@ -691,8 +759,11 @@ const cleanAllCaptions = (text) => {
 // 清洗单个图注内容
 const cleanCaption = (caption) => {
   if (!caption) return ''
-  
+
   let cleaned = caption.trim()
+
+  // 移除尺寸后缀（如 |750x500）——可能残留在未合并的 alt 中
+  cleaned = cleaned.replace(/\|\d+x\d+$/, '')
   
   // 移除外层括号（中文和英文）
   cleaned = cleaned.replace(/^[（(](.+)[）)]$/, '$1')
