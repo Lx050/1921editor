@@ -559,7 +559,10 @@ const onAreaDrop = (e: DragEvent) => {
 const insertSvgAtIndex = (index: number) => {
   pendingSvgInsertIndex.value = index + 1
   sidebarPanel.value = 'svg'
-  showMobileSidebar.value = true
+  // 仅移动端需要展开侧栏覆盖层，桌面端左侧面板始终可见
+  if (window.innerWidth < 768) {
+    showMobileSidebar.value = true
+  }
 }
 
 const insertSvgDecoration = (svgTpl: { id: string; name: string; svg: string }) => {
@@ -589,7 +592,10 @@ const replacingSvgBlockId = ref<string | null>(null)
 const replaceSvgBlock = (block: ContentBlock) => {
   replacingSvgBlockId.value = block.id
   sidebarPanel.value = 'svg'
-  showMobileSidebar.value = true
+  // 仅移动端需要展开侧栏覆盖层，桌面端左侧面板始终可见
+  if (window.innerWidth < 768) {
+    showMobileSidebar.value = true
+  }
 }
 
 const deleteBlock = (index: number) => {
