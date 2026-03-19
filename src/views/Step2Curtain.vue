@@ -74,6 +74,14 @@
             <div class="flex items-center gap-2">
               <span class="text-[10px] px-2.5 py-1 rounded-full font-medium" style="background: var(--color-accent-soft); color: var(--color-accent-primary);">2 / 3</span>
               <h2 class="text-base font-bold" style="color: var(--color-content-text);">编辑内容</h2>
+              <span
+                class="text-[9px] px-1.5 py-0.5 rounded-full font-medium"
+                :class="{
+                  'bg-orange-100 text-orange-600': configStore.mode === 'daily',
+                  'bg-green-100 text-green-600': configStore.mode === 'three_rural',
+                  'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+                }"
+              >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
             </div>
             <p class="text-[10px] mt-1 ml-0.5" style="color: var(--color-content-text-muted);">拖拽调整顺序 &#xB7; 左侧切换样式 &#xB7; 点击块激活编辑</p>
           </div>
@@ -384,6 +392,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { useConfigStore } from '../stores/configStore'
 import { smartTextParser } from '../utils/textParser'
 import { getBlockTypeDisplayName } from '../utils/styleAssembler'
 import { uploadManager } from '../utils/uploadManager'
@@ -396,6 +405,7 @@ import type { ContentBlock, BlockType } from '../types'
 
 const router = useRouter()
 const appStore = useAppStore()
+const configStore = useConfigStore()
 const selectedBlockId = ref<string | null>(null)
 const showMobileSidebar = ref(false)
 const sidebarPanel = ref<'styles' | 'svg'>('styles')

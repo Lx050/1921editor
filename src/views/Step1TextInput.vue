@@ -108,6 +108,58 @@
         </div>
       </div>
 
+      <!-- 模式专属字段 -->
+      <div class="mt-3 p-3 rounded-lg border" style="background: var(--color-content-card); border-color: var(--color-content-border);">
+        <div class="flex items-center gap-2 mb-2">
+          <span
+            class="text-[10px] px-2 py-0.5 rounded-full font-medium"
+            :class="{
+              'bg-orange-100 text-orange-600': configStore.mode === 'daily',
+              'bg-green-100 text-green-600': configStore.mode === 'three_rural',
+              'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+            }"
+          >
+            {{ configStore.mode === 'daily' ? '日常模式' : configStore.mode === 'three_rural' ? '三下乡模式' : '转载模式' }}
+          </span>
+          <span class="text-[10px]" style="color: var(--color-content-text-muted);">尾部信息</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <!-- 编辑人员 - 所有模式 -->
+          <div>
+            <label class="block text-[10px] font-medium mb-0.5" style="color: var(--color-content-text-secondary);">编辑</label>
+            <input
+              v-model="appStore.editorInput"
+              type="text"
+              placeholder="编辑人员姓名"
+              class="w-full px-2 py-1 text-xs rounded-md border outline-none focus:ring-1 focus:ring-blue-300"
+              style="background: var(--color-content-bg-muted); border-color: var(--color-content-border); color: var(--color-content-text);"
+            />
+          </div>
+          <!-- 团队名称 - 三下乡模式 -->
+          <div v-if="configStore.mode === 'three_rural'">
+            <label class="block text-[10px] font-medium mb-0.5" style="color: var(--color-content-text-secondary);">团队名称</label>
+            <input
+              v-model="appStore.teamName"
+              type="text"
+              :placeholder="'如：&quot;青春筑梦&quot;社会实践队'"
+              class="w-full px-2 py-1 text-xs rounded-md border outline-none focus:ring-1 focus:ring-green-300"
+              style="background: var(--color-content-bg-muted); border-color: var(--color-content-border); color: var(--color-content-text);"
+            />
+          </div>
+          <!-- 来源公众号 - 转载模式 -->
+          <div v-if="configStore.mode === 'reprint'">
+            <label class="block text-[10px] font-medium mb-0.5" style="color: var(--color-content-text-secondary);">来源公众号</label>
+            <input
+              v-model="appStore.sourceAccount"
+              type="text"
+              :placeholder="'如：&quot;人民日报&quot;公众号'"
+              class="w-full px-2 py-1 text-xs rounded-md border outline-none focus:ring-1 focus:ring-purple-300"
+              style="background: var(--color-content-bg-muted); border-color: var(--color-content-border); color: var(--color-content-text);"
+            />
+          </div>
+        </div>
+      </div>
+
       <!-- 错误提示 -->
       <transition
         enter-active-class="transition duration-300 ease-out"
@@ -172,11 +224,13 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { useConfigStore } from '../stores/configStore'
 import { extractArchive, isArchiveFile } from '../utils/archiveProcessor'
 import { uploadManager } from '../utils/uploadManager'
 
 const router = useRouter()
 const appStore = useAppStore()
+const configStore = useConfigStore()
 const localText = ref('')
 const errorMessage = ref('')
 const fileInput = ref(null)

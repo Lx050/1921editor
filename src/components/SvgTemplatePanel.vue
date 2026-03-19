@@ -114,7 +114,7 @@
           <!-- 交互角标 -->
           <div v-if="tpl.interactive" class="absolute top-1 left-1 z-10">
             <span class="text-[7px] font-bold px-1 py-0.5 rounded" style="background: var(--color-accent-primary); color: white;">
-              &#x26A1;{{ tpl.interactionType === 'click-expand' ? '展开' : tpl.interactionType === 'click-switch' ? '切换' : tpl.interactionType === 'auto-animate' ? '动画' : tpl.interactionType === 'auto-parallax' ? '视差' : tpl.interactionType === 'click-game' ? '游戏' : '动效' }}
+              &#x26A1;{{ getInteractionLabel(tpl) }}
             </span>
           </div>
 
@@ -177,7 +177,12 @@ watch(viewMode, (mode) => {
 
 const currentGroups = computed(() => {
   if (viewMode.value === 'interactive') {
-    return [{ label: '交互式 SMIL 模板', items: interactiveCategories.value }]
+    const baseIds = ['expand', 'switch', 'animate', 'parallax', 'game', 'deco_anim']
+    const advancedIds = ['image_reveal', 'tab_switch', 'story_seq', 'magazine', 'popup_effect', 'cascade']
+    return [
+      { label: 'SMIL \u57fa\u7840\u4ea4\u4e92', items: baseIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
+      { label: 'GQ Lab \u9ad8\u7ea7\u4ea4\u4e92', items: advancedIds.map(id => categories.find(c => c.id === id)).filter(Boolean) }
+    ]
   }
   const groups = [
     { label: '基础装饰', ids: ['borders', 'dividers', 'badges', 'patterns', 'icons', 'seasonal', 'text_deco'] },
@@ -194,7 +199,8 @@ const currentGroups = computed(() => {
 const tallCategories = new Set([
   'gradients', 'progress', 'callouts', 'dataviz', 'waves',
   'chinese', 'cards', 'editorial', 'botanical', 'tech', 'music', 'lifestyle',
-  'expand', 'switch', 'parallax', 'game', 'deco_anim'
+  'expand', 'switch', 'parallax', 'game', 'deco_anim',
+  'image_reveal', 'tab_switch', 'story_seq', 'magazine', 'popup_effect', 'cascade'
 ])
 const tallPreview = computed(() => tallCategories.has(activeCategory.value))
 
@@ -207,6 +213,18 @@ const filteredTemplates = computed(() => {
   const cat = categories.find(c => c.id === activeCategory.value)
   return cat ? cat.data : []
 })
+
+const getInteractionLabel = (tpl) => {
+  const cat = tpl.category
+  const labelMap = {
+    'expand': '展开', 'switch': '切换', 'animate': '动画',
+    'parallax': '视差', 'game': '游戏', 'deco_anim': '动效',
+    'image_reveal': '揭秘', 'tab_switch': '标签',
+    'story_seq': '叙事', 'magazine': '版式',
+    'popup_effect': '弹窗', 'cascade': '级联'
+  }
+  return labelMap[cat] || '交互'
+}
 
 const isDragging = ref(false)
 

@@ -44,6 +44,14 @@
               <div class="flex items-center gap-2 md:gap-3">
                 <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap">Step 3/3</span>
                 <h2 class="text-base md:text-lg font-bold truncate" style="color: var(--color-content-text);">生成预览</h2>
+                <span
+                  class="text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap"
+                  :class="{
+                    'bg-orange-100 text-orange-600': configStore.mode === 'daily',
+                    'bg-green-100 text-green-600': configStore.mode === 'three_rural',
+                    'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+                  }"
+                >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
               </div>
               <p class="text-[10px] md:text-xs mt-0.5 truncate" style="color: var(--color-content-text-secondary);">
                 {{ hasWechatImages ? (isMobile ? '选择图片替换' : '点击占位符，选择图片替换') : '预览效果并获取 HTML' }}

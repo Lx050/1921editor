@@ -1,6 +1,6 @@
 /**
  * SVG 装饰模板库
- * 提供 27 大类 SVG 装饰与交互模板，用于微信公众号文章排版
+ * 提供 33 大类 SVG 装饰与交互模板，用于微信公众号文章排版
  * 所有 SVG 均为内联格式，兼容微信 WebView
  *
  * 分类:
@@ -26,13 +26,29 @@
  * 20. music     - 音乐音频
  * 21. lifestyle - 生活方式
  * === 交互式 SMIL 动画模板 (微信公众号黑科技) ===
- * 22. expand    - 点击展开 (智族GQ风格)
- * 23. switch    - 点击切换
- * 24. animate   - 自动动画
- * 25. parallax  - 视差滚动
- * 26. game      - 互动游戏
- * 27. deco_anim - 动效装饰
+ * 22. expand       - 点击展开 (智族GQ风格)
+ * 23. switch       - 点击切换
+ * 24. animate      - 自动动画
+ * 25. parallax     - 视差滚动
+ * 26. game         - 互动游戏
+ * 27. deco_anim    - 动效装饰
+ * === GQ Lab 高级交互扩展 ===
+ * 28. image_reveal - 图片揭秘 (刮刮卡/百叶窗/聚光灯)
+ * 29. tab_switch   - 标签页切换 (多面板交互)
+ * 30. story_seq    - 故事序列 (叙事展开)
+ * 31. magazine     - 杂志版式 (非常规排版)
+ * 32. popup_effect - 弹窗效果 (浮层交互)
+ * 33. cascade      - 级联展开 (多层联动)
  */
+
+import {
+  SVG_IMAGE_REVEAL,
+  SVG_TAB_SWITCH,
+  SVG_STORY_SEQUENCE,
+  SVG_MAGAZINE_LAYOUT,
+  SVG_POPUP_EFFECT,
+  SVG_CASCADE
+} from './svgTemplatesAdvanced'
 
 // =============================================
 // 1. 装饰边框 (Borders & Frames)
@@ -2004,7 +2020,14 @@ export const SVG_TEMPLATE_CATEGORIES = [
   { id: 'animate', name: '自动动画', icon: '✨', data: SVG_AUTO_ANIMATE, interactive: true },
   { id: 'parallax', name: '视差滚动', icon: '🌊', data: SVG_PARALLAX, interactive: true },
   { id: 'game', name: '互动游戏', icon: '🎮', data: SVG_GAME, interactive: true },
-  { id: 'deco_anim', name: '动效装饰', icon: '🎪', data: SVG_DECO_ANIMATE, interactive: true }
+  { id: 'deco_anim', name: '动效装饰', icon: '🎪', data: SVG_DECO_ANIMATE, interactive: true },
+  // GQ Lab 高级交互扩展
+  { id: 'image_reveal', name: '图片揭秘', icon: '🔍', data: SVG_IMAGE_REVEAL, interactive: true },
+  { id: 'tab_switch', name: '标签页切换', icon: '📑', data: SVG_TAB_SWITCH, interactive: true },
+  { id: 'story_seq', name: '故事序列', icon: '📖', data: SVG_STORY_SEQUENCE, interactive: true },
+  { id: 'magazine', name: '杂志版式', icon: '📰', data: SVG_MAGAZINE_LAYOUT, interactive: true },
+  { id: 'popup_effect', name: '弹窗效果', icon: '💬', data: SVG_POPUP_EFFECT, interactive: true },
+  { id: 'cascade', name: '级联展开', icon: '🎯', data: SVG_CASCADE, interactive: true }
 ]
 
 /**
@@ -2038,7 +2061,14 @@ export function getAllSvgTemplates() {
     ...SVG_AUTO_ANIMATE,
     ...SVG_PARALLAX,
     ...SVG_GAME,
-    ...SVG_DECO_ANIMATE
+    ...SVG_DECO_ANIMATE,
+    // GQ Lab 高级交互扩展
+    ...SVG_IMAGE_REVEAL,
+    ...SVG_TAB_SWITCH,
+    ...SVG_STORY_SEQUENCE,
+    ...SVG_MAGAZINE_LAYOUT,
+    ...SVG_POPUP_EFFECT,
+    ...SVG_CASCADE
   ]
 }
 
