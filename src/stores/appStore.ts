@@ -151,7 +151,7 @@ export const useAppStore = defineStore('app', () => {
       id: `svg_${Date.now()}`,
       type: 'svg_decoration' as BlockType,
       text: '',
-      meta: { svgTemplateId: svgTpl.id, svgName: svgTpl.name }
+      meta: { svgTemplateId: svgTpl.id, svgName: svgTpl.name, svgContent: svgTpl.svg }
     } as ContentBlock
     if (index < 0 || index > contentBlocks.value.length) {
       contentBlocks.value.push(newBlock)

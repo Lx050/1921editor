@@ -145,8 +145,9 @@
 
                   <!-- 操作按钮区 — 统一风格 -->
                   <div class="flex items-center gap-0.5">
-                    <!-- AI 图像化按钮 -->
+                    <!-- AI 图像化按钮（SVG块不显示） -->
                     <button
+                      v-if="block.type !== 'svg_decoration'"
                       @click.stop="generateAiImage(block)"
                       :disabled="generatingBlockId === block.id"
                       :class="[
@@ -179,8 +180,45 @@
                   </div>
                 </div>
 
+                <!-- SVG 装饰块 -->
+                <div v-if="block.type === 'svg_decoration'" class="px-4 pb-4">
+                  <div class="relative rounded-lg overflow-hidden" style="background: var(--color-content-bg-muted);">
+                    <!-- SVG 预览 -->
+                    <div class="svg-block-preview flex items-center justify-center p-4 min-h-[60px]">
+                      <div
+                        v-if="block.meta?.svgContent"
+                        class="svg-render-wrapper"
+                        v-html="block.meta.svgContent"
+                      ></div>
+                      <div v-else class="text-center py-3">
+                        <p class="text-[10px]" style="color: var(--color-content-text-muted);">SVG 内容缺失</p>
+                      </div>
+                    </div>
+                    <!-- SVG 信息栏 -->
+                    <div class="flex items-center justify-between px-3 py-2" style="background: rgba(124, 92, 252, 0.04);">
+                      <div class="flex items-center gap-1.5">
+                        <svg class="w-3 h-3" style="color: var(--color-ai-primary);" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                        </svg>
+                        <span class="text-[9px] font-medium" style="color: var(--color-ai-primary);">
+                          {{ block.meta?.svgName || 'SVG' }}
+                        </span>
+                      </div>
+                      <button
+                        v-if="selectedBlockId === block.id"
+                        @click.stop="replaceSvgBlock(block)"
+                        class="text-[9px] px-2 py-0.5 rounded-md font-medium transition-colors"
+                        style="color: var(--color-ai-primary); background: var(--color-ai-soft);"
+                        title="更换SVG模板"
+                      >
+                        更换
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- 文本内容区 -->
-                <div v-if="!isImageBlock(block.type)" class="px-4 pb-4">
+                <div v-if="!isImageBlock(block.type) && block.type !== 'svg_decoration'" class="px-4 pb-4">
                   <!-- AI 生成的图片 -->
                   <div v-if="block.meta?.aiImageUrl" class="mb-3 relative rounded-lg overflow-hidden">
                     <LazyImage
@@ -506,6 +544,17 @@ const insertSvgAtIndex = (index: number) => {
 }
 
 const insertSvgDecoration = (svgTpl: { id: string; name: string; svg: string }) => {
+  // 如果是替换模式，替换指定块的SVG内容
+  if (replacingSvgBlockId.value) {
+    appStore.updateBlockMeta(replacingSvgBlockId.value, {
+      svgTemplateId: svgTpl.id,
+      svgName: svgTpl.name,
+      svgContent: svgTpl.svg
+    })
+    replacingSvgBlockId.value = null
+    return
+  }
+
   const insertAt = pendingSvgInsertIndex.value
   if (insertAt !== null && insertAt >= 0) {
     appStore.insertSvgBlock(insertAt, svgTpl)
@@ -514,6 +563,14 @@ const insertSvgDecoration = (svgTpl: { id: string; name: string; svg: string }) 
     appStore.insertSvgBlock(contentBlocks.value.length, svgTpl)
   }
   pendingSvgInsertIndex.value = null
+}
+
+// SVG块替换
+const replacingSvgBlockId = ref<string | null>(null)
+const replaceSvgBlock = (block: ContentBlock) => {
+  replacingSvgBlockId.value = block.id
+  sidebarPanel.value = 'svg'
+  showMobileSidebar.value = true
 }
 
 const deleteBlock = (index: number) => {
@@ -707,6 +764,24 @@ const generateAiImage = async (block: ContentBlock) => {
 @keyframes pulse-indicator {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+
+/* SVG 块预览 */
+.svg-block-preview {
+  max-height: 200px;
+  overflow: hidden;
+}
+.svg-render-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.svg-render-wrapper :deep(svg) {
+  max-width: 100%;
+  max-height: 180px;
+  width: auto;
+  height: auto;
 }
 
 /* 空区域拖放区 */
