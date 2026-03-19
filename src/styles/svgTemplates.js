@@ -1,6 +1,6 @@
 /**
  * SVG 装饰模板库
- * 提供 33 大类 SVG 装饰与交互模板，用于微信公众号文章排版
+ * 提供 43 大类 SVG 装饰与交互模板，用于微信公众号文章排版
  * 所有 SVG 均为内联格式，兼容微信 WebView
  *
  * 分类:
@@ -39,6 +39,17 @@
  * 31. magazine     - 杂志版式 (非常规排版)
  * 32. popup_effect - 弹窗效果 (浮层交互)
  * 33. cascade      - 级联展开 (多层联动)
+ * === 扩展交互模板 (Expanded) ===
+ * 34. slider_compare  - 前后对比滑块
+ * 35. photo_wall      - 照片墙画廊
+ * 36. infographic     - 信息图表流
+ * 37. quiz_poll       - 投票问答
+ * 38. faq_accordion   - FAQ手风琴
+ * 39. envelope_letter - 信封拆信
+ * 40. h_scroll        - 横向滚动条
+ * 41. num_counter     - 数字计数器
+ * 42. atmosphere      - 氛围特效
+ * 43. retro_vintage   - 复古装饰
  */
 
 import {
@@ -49,6 +60,19 @@ import {
   SVG_POPUP_EFFECT,
   SVG_CASCADE
 } from './svgTemplatesAdvanced'
+
+import {
+  SVG_SLIDER_COMPARE,
+  SVG_PHOTO_WALL,
+  SVG_INFOGRAPHIC,
+  SVG_QUIZ_POLL,
+  SVG_FAQ_ACCORDION,
+  SVG_ENVELOPE_LETTER,
+  SVG_H_SCROLL,
+  SVG_NUM_COUNTER,
+  SVG_ATMOSPHERE,
+  SVG_RETRO_VINTAGE
+} from './svgTemplatesExpanded'
 
 // =============================================
 // 1. 装饰边框 (Borders & Frames)
@@ -2027,7 +2051,18 @@ export const SVG_TEMPLATE_CATEGORIES = [
   { id: 'story_seq', name: '故事序列', icon: '📖', data: SVG_STORY_SEQUENCE, interactive: true },
   { id: 'magazine', name: '杂志版式', icon: '📰', data: SVG_MAGAZINE_LAYOUT, interactive: true },
   { id: 'popup_effect', name: '弹窗效果', icon: '💬', data: SVG_POPUP_EFFECT, interactive: true },
-  { id: 'cascade', name: '级联展开', icon: '🎯', data: SVG_CASCADE, interactive: true }
+  { id: 'cascade', name: '级联展开', icon: '🎯', data: SVG_CASCADE, interactive: true },
+  // 扩展交互模板
+  { id: 'slider_compare', name: '前后对比', icon: '⚖', data: SVG_SLIDER_COMPARE, interactive: true },
+  { id: 'photo_wall', name: '照片墙', icon: '🖼', data: SVG_PHOTO_WALL, interactive: true },
+  { id: 'infographic', name: '信息图表', icon: '📊', data: SVG_INFOGRAPHIC, interactive: true },
+  { id: 'quiz_poll', name: '投票问答', icon: '❓', data: SVG_QUIZ_POLL, interactive: true },
+  { id: 'faq_accordion', name: 'FAQ手风琴', icon: '📋', data: SVG_FAQ_ACCORDION, interactive: true },
+  { id: 'envelope_letter', name: '信封拆信', icon: '✉', data: SVG_ENVELOPE_LETTER, interactive: true },
+  { id: 'h_scroll', name: '横向滚动', icon: '↔', data: SVG_H_SCROLL, interactive: true },
+  { id: 'num_counter', name: '数字计数', icon: '🔢', data: SVG_NUM_COUNTER, interactive: true },
+  { id: 'atmosphere', name: '氛围特效', icon: '🌌', data: SVG_ATMOSPHERE, interactive: true },
+  { id: 'retro_vintage', name: '复古装饰', icon: '📜', data: SVG_RETRO_VINTAGE }
 ]
 
 /**
@@ -2068,7 +2103,18 @@ export function getAllSvgTemplates() {
     ...SVG_STORY_SEQUENCE,
     ...SVG_MAGAZINE_LAYOUT,
     ...SVG_POPUP_EFFECT,
-    ...SVG_CASCADE
+    ...SVG_CASCADE,
+    // 扩展交互模板
+    ...SVG_SLIDER_COMPARE,
+    ...SVG_PHOTO_WALL,
+    ...SVG_INFOGRAPHIC,
+    ...SVG_QUIZ_POLL,
+    ...SVG_FAQ_ACCORDION,
+    ...SVG_ENVELOPE_LETTER,
+    ...SVG_H_SCROLL,
+    ...SVG_NUM_COUNTER,
+    ...SVG_ATMOSPHERE,
+    ...SVG_RETRO_VINTAGE
   ]
 }
 
