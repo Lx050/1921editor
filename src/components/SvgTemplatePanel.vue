@@ -4,7 +4,7 @@
     <div class="px-4 pt-4 pb-2 flex items-center justify-between">
       <div>
         <h3 class="text-xs font-bold" style="color: var(--color-content-text);">SVG 装饰库</h3>
-        <p class="text-[10px] mt-0.5" style="color: var(--color-content-text-muted);">点击插入到文章</p>
+        <p class="text-[10px] mt-0.5" style="color: var(--color-content-text-muted);">点击或拖拽插入到文章</p>
       </div>
       <div class="flex items-center gap-1">
         <span class="text-[9px] px-1.5 py-0.5 rounded-full font-medium" style="background: var(--color-ai-soft); color: var(--color-ai-primary);">{{ staticCount }}</span>
@@ -103,7 +103,13 @@
           v-for="tpl in filteredTemplates"
           :key="tpl.id"
           @click="insertSvg(tpl)"
-          class="relative cursor-pointer rounded-xl p-1.5 transition-all duration-200 bg-white/50 hover:bg-white hover:shadow-[0_2px_10px_rgba(0,0,0,0.04)] group"
+          draggable="true"
+          @dragstart="onTplDragStart($event, tpl)"
+          @dragend="onTplDragEnd"
+          :class="[
+            'relative cursor-pointer rounded-xl p-1.5 transition-all duration-200 bg-white/50 hover:bg-white hover:shadow-[0_2px_10px_rgba(0,0,0,0.04)] group',
+            isDragging ? 'cursor-grabbing' : ''
+          ]"
         >
           <!-- 交互角标 -->
           <div v-if="tpl.interactive" class="absolute top-1 left-1 z-10">
@@ -127,7 +133,10 @@
 
           <!-- hover 插入提示 -->
           <div class="absolute inset-0 flex items-center justify-center rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style="background: rgba(124, 92, 252, 0.06);">
-            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full" style="background: white; color: var(--color-ai-primary); box-shadow: var(--shadow-content-card);">+ 插入</span>
+            <div class="flex flex-col items-center gap-0.5">
+              <span class="text-[9px] font-bold px-2 py-0.5 rounded-full" style="background: white; color: var(--color-ai-primary); box-shadow: var(--shadow-content-card);">+ 点击插入</span>
+              <span class="text-[7px] font-medium" style="color: var(--color-ai-primary); opacity: 0.6;">或拖拽到编辑区</span>
+            </div>
           </div>
         </div>
       </div>
@@ -199,8 +208,29 @@ const filteredTemplates = computed(() => {
   return cat ? cat.data : []
 })
 
+const isDragging = ref(false)
+
 const insertSvg = (tpl) => {
   emit('insertSvg', tpl)
+}
+
+const onTplDragStart = (e, tpl) => {
+  isDragging.value = true
+  e.dataTransfer.effectAllowed = 'copy'
+  e.dataTransfer.setData('application/svg-template', JSON.stringify({
+    id: tpl.id,
+    name: tpl.name,
+    svg: tpl.svg
+  }))
+  // 设置拖拽预览图像的透明度
+  if (e.dataTransfer.setDragImage) {
+    const el = e.currentTarget
+    e.dataTransfer.setDragImage(el, el.offsetWidth / 2, el.offsetHeight / 2)
+  }
+}
+
+const onTplDragEnd = () => {
+  isDragging.value = false
 }
 </script>
 

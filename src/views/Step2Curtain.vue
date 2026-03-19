@@ -94,20 +94,34 @@
               v-for="(block, index) in contentBlocks"
               :key="block.id"
               class="relative group"
+              :class="{ 'drag-over-top': dragOverIndex === index && dragOverHalf === 'top', 'drag-over-bottom': dragOverIndex === index && dragOverHalf === 'bottom' }"
+              @dragover.prevent="onDragOver($event, index)"
+              @dragleave="onDragLeave"
+              @drop.prevent="onDrop($event, index)"
             >
-              <!-- 内容块 — 无边框卡片，选中态用柔和光晕 -->
+              <!-- 内容块 — 无边框卡片，选中态用柔和光晕，可拖拽 -->
               <div
                 @click="selectBlock(block.id)"
+                draggable="true"
+                @dragstart="onDragStart($event, index)"
+                @dragend="onDragEnd"
                 :class="[
                   'rounded-xl transition-all duration-200 relative cursor-pointer',
+                  draggingIndex === index ? 'opacity-40 scale-[0.97]' : '',
                   selectedBlockId === block.id
                     ? 'bg-white shadow-[0_0_0_2px_rgba(232,96,60,0.15),0_4px_20px_rgba(0,0,0,0.06)]'
                     : 'bg-white/60 hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.04)]'
                 ]"
               >
-                <!-- 顶部栏 — 极简标签 + 内联操作 -->
+                <!-- 顶部栏 — 拖拽手柄 + 标签 + 操作 -->
                 <div class="flex items-center justify-between px-4 pt-3 pb-1">
                   <div class="flex items-center gap-2">
+                    <!-- 拖拽手柄 -->
+                    <div class="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-40 transition-opacity" title="拖拽排序">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor" style="color: var(--color-content-text-muted);">
+                        <path d="M6 2a1 1 0 110 2 1 1 0 010-2zm4 0a1 1 0 110 2 1 1 0 010-2zM6 7a1 1 0 110 2 1 1 0 010-2zm4 0a1 1 0 110 2 1 1 0 010-2zM6 12a1 1 0 110 2 1 1 0 010-2zm4 0a1 1 0 110 2 1 1 0 010-2z"/>
+                      </svg>
+                    </div>
                     <select
                       v-if="selectedBlockId === block.id"
                       :value="block.type"
@@ -260,10 +274,28 @@
             </div>
           </TransitionGroup>
 
-          <div v-if="contentBlocks.length === 0" class="text-center py-20">
+          <!-- 尾部拖放区 — 用于从SVG面板拖入到末尾 -->
+          <div
+            v-if="contentBlocks.length > 0"
+            class="drop-zone-empty mt-2"
+            :class="{ 'drag-active': draggingIndex !== null || dragOverIndex === -1 }"
+            @dragover.prevent="onEmptyDragOver"
+            @drop.prevent="onEmptyDrop"
+          >
+            <div class="text-center py-4 opacity-0 transition-opacity" :class="{ 'opacity-40': draggingIndex !== null }">
+              <p class="text-[10px]" style="color: var(--color-content-text-muted);">拖拽到此处添加到末尾</p>
+            </div>
+          </div>
+
+          <div
+            v-if="contentBlocks.length === 0"
+            class="text-center py-20"
+            @dragover.prevent="onEmptyDragOver"
+            @drop.prevent="onEmptyDrop"
+          >
             <div class="text-3xl mb-3 opacity-30">&#x1F4DD;</div>
             <div class="text-sm font-medium" style="color: var(--color-content-text-muted);">没有内容块</div>
-            <div class="text-xs mt-1" style="color: var(--color-content-text-muted);">请返回上一步输入文本</div>
+            <div class="text-xs mt-1" style="color: var(--color-content-text-muted);">请返回上一步输入文本，或从左侧拖入SVG装饰</div>
           </div>
         </div>
       </div>
@@ -322,6 +354,12 @@ const sidebarPanel = ref<'styles' | 'svg'>('styles')
 const generatingBlockId = ref<string | null>(null)
 const LOCAL_DRAFT_KEY = 'local_step2_draft'
 
+// 拖拽排序状态
+const draggingIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
+const dragOverHalf = ref<'top' | 'bottom' | null>(null)
+const pendingSvgInsertIndex = ref<number | null>(null)
+
 const contentBlocks = computed(() => appStore.contentBlocks)
 const uploadProgress = computed(() => appStore.uploadProgress)
 const isUploading = computed(() => appStore.isUploading)
@@ -373,20 +411,109 @@ const insertTextBlock = (index: number, textType: string) => {
   appStore.insertTextBlock(index + 1, textType as BlockType, defaultText)
 }
 
-const insertSvgAtIndex = (_index: number) => {
+// --- 拖拽排序 & 跨面板SVG拖入 ---
+const onDragStart = (e: DragEvent, index: number) => {
+  draggingIndex.value = index
+  e.dataTransfer!.effectAllowed = 'move'
+  e.dataTransfer!.setData('application/block-index', String(index))
+}
+
+const onDragOver = (e: DragEvent, index: number) => {
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const midY = rect.top + rect.height / 2
+  dragOverIndex.value = index
+  dragOverHalf.value = e.clientY < midY ? 'top' : 'bottom'
+
+  // 检测是SVG跨面板拖入还是块内排序
+  const hasSvg = e.dataTransfer!.types.includes('application/svg-template')
+  const hasBlock = e.dataTransfer!.types.includes('application/block-index')
+  e.dataTransfer!.dropEffect = (hasSvg || hasBlock) ? 'move' : 'none'
+}
+
+const onDragLeave = () => {
+  dragOverIndex.value = null
+  dragOverHalf.value = null
+}
+
+const onDrop = (e: DragEvent, index: number) => {
+  const insertPos = dragOverHalf.value === 'bottom' ? index + 1 : index
+
+  // 情况1: 从SVG面板拖入
+  if (e.dataTransfer?.types.includes('application/svg-template')) {
+    try {
+      const svgData = JSON.parse(e.dataTransfer.getData('application/svg-template'))
+      appStore.insertSvgBlock(insertPos, svgData)
+    } catch (err) {
+      console.warn('[Drop] Failed to parse SVG template data:', err)
+    }
+  }
+  // 情况2: 块内排序
+  else if (draggingIndex.value !== null) {
+    let toIndex = insertPos
+    // 如果从上方拖到下方，需要补偿被移除元素的偏移
+    if (draggingIndex.value < toIndex) toIndex--
+    if (draggingIndex.value !== toIndex) {
+      appStore.moveBlock(draggingIndex.value, toIndex)
+    }
+  }
+
+  // 清理状态
+  draggingIndex.value = null
+  dragOverIndex.value = null
+  dragOverHalf.value = null
+}
+
+const onDragEnd = () => {
+  draggingIndex.value = null
+  dragOverIndex.value = null
+  dragOverHalf.value = null
+}
+
+// 空区域的拖放（当没有块或拖到列表末尾时）
+const onEmptyDragOver = (e: DragEvent) => {
+  const hasSvg = e.dataTransfer!.types.includes('application/svg-template')
+  const hasBlock = e.dataTransfer!.types.includes('application/block-index')
+  if (hasSvg || hasBlock) {
+    e.preventDefault()
+    e.dataTransfer!.dropEffect = 'move'
+  }
+}
+
+const onEmptyDrop = (e: DragEvent) => {
+  e.preventDefault()
+  const insertPos = contentBlocks.value.length
+
+  if (e.dataTransfer?.types.includes('application/svg-template')) {
+    try {
+      const svgData = JSON.parse(e.dataTransfer.getData('application/svg-template'))
+      appStore.insertSvgBlock(insertPos, svgData)
+    } catch (err) {
+      console.warn('[Drop] Failed to parse SVG template data:', err)
+    }
+  } else if (draggingIndex.value !== null) {
+    appStore.moveBlock(draggingIndex.value, insertPos - 1)
+  }
+
+  draggingIndex.value = null
+  dragOverIndex.value = null
+  dragOverHalf.value = null
+}
+
+const insertSvgAtIndex = (index: number) => {
+  pendingSvgInsertIndex.value = index + 1
   sidebarPanel.value = 'svg'
   showMobileSidebar.value = true
 }
 
 const insertSvgDecoration = (svgTpl: { id: string; name: string; svg: string }) => {
-  const newBlock: ContentBlock = {
-    id: `svg_${Date.now()}`,
-    type: 'svg_decoration',
-    text: '',
-    meta: { svgTemplateId: svgTpl.id, svgName: svgTpl.name }
+  const insertAt = pendingSvgInsertIndex.value
+  if (insertAt !== null && insertAt >= 0) {
+    appStore.insertSvgBlock(insertAt, svgTpl)
+  } else {
+    // 默认追加到末尾
+    appStore.insertSvgBlock(contentBlocks.value.length, svgTpl)
   }
-  const newBlocks = [...contentBlocks.value, newBlock]
-  appStore.setContentBlocks(newBlocks)
+  pendingSvgInsertIndex.value = null
 }
 
 const deleteBlock = (index: number) => {
@@ -543,5 +670,54 @@ const generateAiImage = async (block: ContentBlock) => {
 .block-list-leave-active {
   position: absolute;
   width: 100%;
+}
+
+/* 拖拽指示器 */
+.drag-over-top {
+  position: relative;
+}
+.drag-over-top::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  background: var(--color-ai-primary);
+  border-radius: 2px;
+  z-index: 10;
+  animation: pulse-indicator 1s ease-in-out infinite;
+}
+.drag-over-bottom {
+  position: relative;
+}
+.drag-over-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  background: var(--color-ai-primary);
+  border-radius: 2px;
+  z-index: 10;
+  animation: pulse-indicator 1s ease-in-out infinite;
+}
+
+@keyframes pulse-indicator {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* 空区域拖放区 */
+.drop-zone-empty {
+  min-height: 80px;
+  border: 2px dashed transparent;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+.drop-zone-empty.drag-active {
+  border-color: var(--color-ai-primary);
+  background: rgba(124, 92, 252, 0.04);
 }
 </style>

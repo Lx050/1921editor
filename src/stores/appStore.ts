@@ -136,6 +136,30 @@ export const useAppStore = defineStore('app', () => {
     } as ContentBlock)
   }
 
+  // 移动内容块位置（拖拽排序）
+  const moveBlock = (fromIndex: number, toIndex: number): void => {
+    if (fromIndex === toIndex) return
+    if (fromIndex < 0 || fromIndex >= contentBlocks.value.length) return
+    if (toIndex < 0 || toIndex >= contentBlocks.value.length) return
+    const [moved] = contentBlocks.value.splice(fromIndex, 1)
+    contentBlocks.value.splice(toIndex, 0, moved)
+  }
+
+  // 在指定位置插入SVG装饰块
+  const insertSvgBlock = (index: number, svgTpl: { id: string; name: string; svg: string }): void => {
+    const newBlock = {
+      id: `svg_${Date.now()}`,
+      type: 'svg_decoration' as BlockType,
+      text: '',
+      meta: { svgTemplateId: svgTpl.id, svgName: svgTpl.name }
+    } as ContentBlock
+    if (index < 0 || index > contentBlocks.value.length) {
+      contentBlocks.value.push(newBlock)
+    } else {
+      contentBlocks.value.splice(index, 0, newBlock)
+    }
+  }
+
   const setStyleConfig = (config: Partial<StyleConfig>): void => {
     if (typeof config !== 'object' || config === null) {
       throw new Error('Invalid config: must be a non-null object')
@@ -252,6 +276,8 @@ export const useAppStore = defineStore('app', () => {
     updateBlockMeta,
     insertImageBlock,
     insertTextBlock,
+    moveBlock,
+    insertSvgBlock,
     setStyleConfig,
     // V2 新增操作
     addWechatImage,
