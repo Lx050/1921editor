@@ -87,7 +87,11 @@
       </div>
 
       <!-- 幕布工作区 — 宽松间距，无 border 纯卡片 -->
-      <div class="flex-1 overflow-y-auto px-5 pb-24">
+      <div
+        class="flex-1 overflow-y-auto px-5 pb-24"
+        @dragover.prevent="onAreaDragOver"
+        @drop.prevent="onAreaDrop"
+      >
         <div class="max-w-2xl mx-auto py-4">
           <TransitionGroup name="block-list" tag="div" class="space-y-2">
             <div
@@ -183,8 +187,8 @@
                 <!-- SVG 装饰块 -->
                 <div v-if="block.type === 'svg_decoration'" class="px-4 pb-4">
                   <div class="relative rounded-lg overflow-hidden" style="background: var(--color-content-bg-muted);">
-                    <!-- SVG 预览 -->
-                    <div class="svg-block-preview flex items-center justify-center p-4 min-h-[60px]">
+                    <!-- SVG 预览（pointer-events:none 确保点击穿透到父容器） -->
+                    <div class="svg-block-preview flex items-center justify-center p-4 min-h-[60px] pointer-events-none">
                       <div
                         v-if="block.meta?.svgContent"
                         class="svg-render-wrapper"
@@ -194,25 +198,36 @@
                         <p class="text-[10px]" style="color: var(--color-content-text-muted);">SVG 内容缺失</p>
                       </div>
                     </div>
-                    <!-- SVG 信息栏 -->
+                    <!-- SVG 操作栏 -->
                     <div class="flex items-center justify-between px-3 py-2" style="background: rgba(124, 92, 252, 0.04);">
                       <div class="flex items-center gap-1.5">
                         <svg class="w-3 h-3" style="color: var(--color-ai-primary);" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
                         </svg>
                         <span class="text-[9px] font-medium" style="color: var(--color-ai-primary);">
-                          {{ block.meta?.svgName || 'SVG' }}
+                          {{ block.meta?.svgName || 'SVG 装饰' }}
+                        </span>
+                        <span class="text-[8px] px-1.5 py-0.5 rounded" style="background: var(--color-ai-soft); color: var(--color-ai-primary);">
+                          {{ block.meta?.svgTemplateId || '' }}
                         </span>
                       </div>
-                      <button
-                        v-if="selectedBlockId === block.id"
-                        @click.stop="replaceSvgBlock(block)"
-                        class="text-[9px] px-2 py-0.5 rounded-md font-medium transition-colors"
-                        style="color: var(--color-ai-primary); background: var(--color-ai-soft);"
-                        title="更换SVG模板"
-                      >
-                        更换
-                      </button>
+                      <div class="flex items-center gap-1">
+                        <button
+                          @click.stop="replaceSvgBlock(block)"
+                          class="text-[9px] px-2 py-1 rounded-md font-medium transition-colors"
+                          style="color: var(--color-ai-primary); background: var(--color-ai-soft);"
+                          title="更换SVG模板"
+                        >
+                          更换
+                        </button>
+                        <button
+                          @click.stop="confirmDeleteBlock(contentBlocks.indexOf(block), block.id)"
+                          class="text-[9px] px-2 py-1 rounded-md font-medium transition-colors text-red-400 hover:text-red-600 hover:bg-red-50"
+                          title="删除"
+                        >
+                          删除
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -312,24 +327,19 @@
             </div>
           </TransitionGroup>
 
-          <!-- 尾部拖放区 — 用于从SVG面板拖入到末尾 -->
+          <!-- 尾部拖放提示 -->
           <div
             v-if="contentBlocks.length > 0"
             class="drop-zone-empty mt-2"
-            :class="{ 'drag-active': draggingIndex !== null || dragOverIndex === -1 }"
-            @dragover.prevent="onEmptyDragOver"
-            @drop.prevent="onEmptyDrop"
           >
-            <div class="text-center py-4 opacity-0 transition-opacity" :class="{ 'opacity-40': draggingIndex !== null }">
-              <p class="text-[10px]" style="color: var(--color-content-text-muted);">拖拽到此处添加到末尾</p>
+            <div class="text-center py-6 opacity-30">
+              <p class="text-[10px]" style="color: var(--color-content-text-muted);">从左侧拖入SVG或拖拽排序</p>
             </div>
           </div>
 
           <div
             v-if="contentBlocks.length === 0"
             class="text-center py-20"
-            @dragover.prevent="onEmptyDragOver"
-            @drop.prevent="onEmptyDrop"
           >
             <div class="text-3xl mb-3 opacity-30">&#x1F4DD;</div>
             <div class="text-sm font-medium" style="color: var(--color-content-text-muted);">没有内容块</div>
@@ -462,10 +472,15 @@ const onDragOver = (e: DragEvent, index: number) => {
   dragOverIndex.value = index
   dragOverHalf.value = e.clientY < midY ? 'top' : 'bottom'
 
-  // 检测是SVG跨面板拖入还是块内排序
   const hasSvg = e.dataTransfer!.types.includes('application/svg-template')
   const hasBlock = e.dataTransfer!.types.includes('application/block-index')
-  e.dataTransfer!.dropEffect = (hasSvg || hasBlock) ? 'move' : 'none'
+  if (hasSvg) {
+    e.dataTransfer!.dropEffect = 'copy'
+  } else if (hasBlock) {
+    e.dataTransfer!.dropEffect = 'move'
+  } else {
+    e.dataTransfer!.dropEffect = 'none'
+  }
 }
 
 const onDragLeave = () => {
@@ -507,20 +522,25 @@ const onDragEnd = () => {
   dragOverHalf.value = null
 }
 
-// 空区域的拖放（当没有块或拖到列表末尾时）
-const onEmptyDragOver = (e: DragEvent) => {
+// 整个编辑区的拖放 — 作为全局 fallback
+const onAreaDragOver = (e: DragEvent) => {
   const hasSvg = e.dataTransfer!.types.includes('application/svg-template')
   const hasBlock = e.dataTransfer!.types.includes('application/block-index')
-  if (hasSvg || hasBlock) {
-    e.preventDefault()
+  if (hasSvg) {
+    e.dataTransfer!.dropEffect = 'copy'
+  } else if (hasBlock) {
     e.dataTransfer!.dropEffect = 'move'
   }
 }
 
-const onEmptyDrop = (e: DragEvent) => {
-  e.preventDefault()
+const onAreaDrop = (e: DragEvent) => {
+  // 如果已经被子元素（具体block）处理过，不重复处理
+  if (dragOverIndex.value !== null) {
+    // 已经有具体目标，让 onDrop 处理
+    return
+  }
+  // 在空白区域释放 → 插入到末尾
   const insertPos = contentBlocks.value.length
-
   if (e.dataTransfer?.types.includes('application/svg-template')) {
     try {
       const svgData = JSON.parse(e.dataTransfer.getData('application/svg-template'))
@@ -529,9 +549,8 @@ const onEmptyDrop = (e: DragEvent) => {
       console.warn('[Drop] Failed to parse SVG template data:', err)
     }
   } else if (draggingIndex.value !== null) {
-    appStore.moveBlock(draggingIndex.value, insertPos - 1)
+    appStore.moveBlock(draggingIndex.value, Math.max(0, insertPos - 1))
   }
-
   draggingIndex.value = null
   dragOverIndex.value = null
   dragOverHalf.value = null

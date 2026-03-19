@@ -216,7 +216,7 @@ const insertSvg = (tpl) => {
 
 const onTplDragStart = (e, tpl) => {
   isDragging.value = true
-  e.dataTransfer.effectAllowed = 'copy'
+  e.dataTransfer.effectAllowed = 'copyMove'
   e.dataTransfer.setData('application/svg-template', JSON.stringify({
     id: tpl.id,
     name: tpl.name,
