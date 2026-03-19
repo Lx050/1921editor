@@ -180,10 +180,12 @@ const currentGroups = computed(() => {
     const baseIds = ['expand', 'switch', 'animate', 'parallax', 'game', 'deco_anim']
     const advancedIds = ['image_reveal', 'tab_switch', 'story_seq', 'magazine', 'popup_effect', 'cascade']
     const expandedIds = ['slider_compare', 'photo_wall', 'infographic', 'quiz_poll', 'faq_accordion', 'envelope_letter', 'h_scroll', 'num_counter', 'atmosphere', 'retro_vintage']
+    const proIds = ['sandwich_slide', 'shatter_effect', 'frame_sequence', 'parallax_3d', 'mutex_accordion', 'product_showcase', 'map_hotspot', 'unlock_reveal']
     return [
       { label: 'SMIL \u57fa\u7840\u4ea4\u4e92', items: baseIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
       { label: 'GQ Lab \u9ad8\u7ea7\u4ea4\u4e92', items: advancedIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
-      { label: '\u5b9e\u7528\u573a\u666f\u6a21\u677f', items: expandedIds.map(id => categories.find(c => c.id === id)).filter(Boolean) }
+      { label: '\u5b9e\u7528\u573a\u666f\u6a21\u677f', items: expandedIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
+      { label: 'E2.COOL \u4e13\u4e1a\u4ea4\u4e92', items: proIds.map(id => categories.find(c => c.id === id)).filter(Boolean) }
     ]
   }
   const groups = [
@@ -204,7 +206,9 @@ const tallCategories = new Set([
   'expand', 'switch', 'parallax', 'game', 'deco_anim',
   'image_reveal', 'tab_switch', 'story_seq', 'magazine', 'popup_effect', 'cascade',
   'slider_compare', 'photo_wall', 'infographic', 'quiz_poll', 'faq_accordion',
-  'envelope_letter', 'h_scroll', 'num_counter', 'atmosphere', 'retro_vintage'
+  'envelope_letter', 'h_scroll', 'num_counter', 'atmosphere', 'retro_vintage',
+  'sandwich_slide', 'shatter_effect', 'frame_sequence', 'parallax_3d',
+  'mutex_accordion', 'product_showcase', 'map_hotspot', 'unlock_reveal'
 ])
 const tallPreview = computed(() => tallCategories.has(activeCategory.value))
 
@@ -230,7 +234,11 @@ const getInteractionLabel = (tpl) => {
     'infographic': '图表', 'quiz_poll': '投票',
     'faq_accordion': 'FAQ', 'envelope_letter': '信封',
     'h_scroll': '滚动', 'num_counter': '计数',
-    'atmosphere': '氛围', 'retro_vintage': '复古'
+    'atmosphere': '氛围', 'retro_vintage': '复古',
+    'sandwich_slide': '夹层', 'shatter_effect': '粉碎',
+    'frame_sequence': '帧播', 'parallax_3d': '3D差',
+    'mutex_accordion': '互斥', 'product_showcase': '展台',
+    'map_hotspot': '热区', 'unlock_reveal': '解锁'
   }
   return labelMap[cat] || '交互'
 }

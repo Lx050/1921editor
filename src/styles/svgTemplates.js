@@ -1,6 +1,6 @@
 /**
  * SVG 装饰模板库
- * 提供 43 大类 SVG 装饰与交互模板，用于微信公众号文章排版
+ * 提供 51 大类 SVG 装饰与交互模板，用于微信公众号文章排版
  * 所有 SVG 均为内联格式，兼容微信 WebView
  *
  * 分类:
@@ -50,6 +50,15 @@
  * 41. num_counter     - 数字计数器
  * 42. atmosphere      - 氛围特效
  * 43. retro_vintage   - 复古装饰
+ * === E2.COOL 专业级交互 (Pro) ===
+ * 44. sandwich_slide   - 夹层滑动
+ * 45. shatter_effect   - 碎片粉碎
+ * 46. frame_sequence   - 序列帧播放
+ * 47. parallax_3d      - 3D视差进阶
+ * 48. mutex_accordion  - 互斥展开
+ * 49. product_showcase  - 产品展台
+ * 50. map_hotspot      - 地图热区
+ * 51. unlock_reveal    - 解锁揭秘
  */
 
 import {
@@ -73,6 +82,17 @@ import {
   SVG_ATMOSPHERE,
   SVG_RETRO_VINTAGE
 } from './svgTemplatesExpanded'
+
+import {
+  SVG_SANDWICH_SLIDE,
+  SVG_SHATTER_EFFECT,
+  SVG_FRAME_SEQUENCE,
+  SVG_PARALLAX_3D,
+  SVG_MUTEX_ACCORDION,
+  SVG_PRODUCT_SHOWCASE,
+  SVG_MAP_HOTSPOT,
+  SVG_UNLOCK_REVEAL
+} from './svgTemplatesPro'
 
 // =============================================
 // 1. 装饰边框 (Borders & Frames)
@@ -2062,7 +2082,16 @@ export const SVG_TEMPLATE_CATEGORIES = [
   { id: 'h_scroll', name: '横向滚动', icon: '↔', data: SVG_H_SCROLL, interactive: true },
   { id: 'num_counter', name: '数字计数', icon: '🔢', data: SVG_NUM_COUNTER, interactive: true },
   { id: 'atmosphere', name: '氛围特效', icon: '🌌', data: SVG_ATMOSPHERE, interactive: true },
-  { id: 'retro_vintage', name: '复古装饰', icon: '📜', data: SVG_RETRO_VINTAGE }
+  { id: 'retro_vintage', name: '复古装饰', icon: '📜', data: SVG_RETRO_VINTAGE },
+  // E2.COOL 专业级交互
+  { id: 'sandwich_slide', name: '夹层滑动', icon: '🥪', data: SVG_SANDWICH_SLIDE, interactive: true },
+  { id: 'shatter_effect', name: '碎片粉碎', icon: '💥', data: SVG_SHATTER_EFFECT, interactive: true },
+  { id: 'frame_sequence', name: '序列帧', icon: '🎞', data: SVG_FRAME_SEQUENCE, interactive: true },
+  { id: 'parallax_3d', name: '3D视差', icon: '🌐', data: SVG_PARALLAX_3D, interactive: true },
+  { id: 'mutex_accordion', name: '互斥展开', icon: '🔀', data: SVG_MUTEX_ACCORDION, interactive: true },
+  { id: 'product_showcase', name: '产品展台', icon: '🛍', data: SVG_PRODUCT_SHOWCASE, interactive: true },
+  { id: 'map_hotspot', name: '地图热区', icon: '📍', data: SVG_MAP_HOTSPOT, interactive: true },
+  { id: 'unlock_reveal', name: '解锁揭秘', icon: '🔓', data: SVG_UNLOCK_REVEAL, interactive: true }
 ]
 
 /**
@@ -2114,7 +2143,16 @@ export function getAllSvgTemplates() {
     ...SVG_H_SCROLL,
     ...SVG_NUM_COUNTER,
     ...SVG_ATMOSPHERE,
-    ...SVG_RETRO_VINTAGE
+    ...SVG_RETRO_VINTAGE,
+    // E2.COOL 专业级交互
+    ...SVG_SANDWICH_SLIDE,
+    ...SVG_SHATTER_EFFECT,
+    ...SVG_FRAME_SEQUENCE,
+    ...SVG_PARALLAX_3D,
+    ...SVG_MUTEX_ACCORDION,
+    ...SVG_PRODUCT_SHOWCASE,
+    ...SVG_MAP_HOTSPOT,
+    ...SVG_UNLOCK_REVEAL
   ]
 }
 
