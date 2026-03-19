@@ -1,6 +1,6 @@
 /**
  * SVG 装饰模板库
- * 提供 51 大类 SVG 装饰与交互模板，用于微信公众号文章排版
+ * 提供 61 大类 SVG 装饰与交互模板，用于微信公众号文章排版
  * 所有 SVG 均为内联格式，兼容微信 WebView
  *
  * 分类:
@@ -59,6 +59,17 @@
  * 49. product_showcase  - 产品展台
  * 50. map_hotspot      - 地图热区
  * 51. unlock_reveal    - 解锁揭秘
+ * === 2025 SOTA 交互 (Ultra) ===
+ * 52. scroll_unfurl     - 画卷展开
+ * 53. poker_deal        - 扑克出牌
+ * 54. infinite_selector - 无限选择器
+ * 55. stagger_entrance  - 排队入场
+ * 56. layer_adhesion    - 错层吸附
+ * 57. card_flip         - 卡牌翻转
+ * 58. scroll_dismiss    - 滑动撤场
+ * 59. dark_light        - 明暗切换
+ * 60. auto_cinema       - 自动影院
+ * 61. float_hotzone     - 浮层热区
  */
 
 import {
@@ -93,6 +104,19 @@ import {
   SVG_MAP_HOTSPOT,
   SVG_UNLOCK_REVEAL
 } from './svgTemplatesPro'
+
+import {
+  SVG_SCROLL_UNFURL,
+  SVG_POKER_DEAL,
+  SVG_INFINITE_SELECTOR,
+  SVG_STAGGER_ENTRANCE,
+  SVG_LAYER_ADHESION,
+  SVG_CARD_FLIP,
+  SVG_SCROLL_DISMISS,
+  SVG_DARK_LIGHT,
+  SVG_AUTO_CINEMA,
+  SVG_FLOAT_HOTZONE
+} from './svgTemplatesUltra'
 
 // =============================================
 // 1. 装饰边框 (Borders & Frames)
@@ -2091,7 +2115,18 @@ export const SVG_TEMPLATE_CATEGORIES = [
   { id: 'mutex_accordion', name: '互斥展开', icon: '🔀', data: SVG_MUTEX_ACCORDION, interactive: true },
   { id: 'product_showcase', name: '产品展台', icon: '🛍', data: SVG_PRODUCT_SHOWCASE, interactive: true },
   { id: 'map_hotspot', name: '地图热区', icon: '📍', data: SVG_MAP_HOTSPOT, interactive: true },
-  { id: 'unlock_reveal', name: '解锁揭秘', icon: '🔓', data: SVG_UNLOCK_REVEAL, interactive: true }
+  { id: 'unlock_reveal', name: '解锁揭秘', icon: '🔓', data: SVG_UNLOCK_REVEAL, interactive: true },
+  // 2025 SOTA 交互
+  { id: 'scroll_unfurl', name: '画卷展开', icon: '📜', data: SVG_SCROLL_UNFURL, interactive: true },
+  { id: 'poker_deal', name: '扑克出牌', icon: '🃏', data: SVG_POKER_DEAL, interactive: true },
+  { id: 'infinite_selector', name: '无限选择器', icon: '🔄', data: SVG_INFINITE_SELECTOR, interactive: true },
+  { id: 'stagger_entrance', name: '排队入场', icon: '🚶', data: SVG_STAGGER_ENTRANCE, interactive: true },
+  { id: 'layer_adhesion', name: '错层吸附', icon: '🧲', data: SVG_LAYER_ADHESION, interactive: true },
+  { id: 'card_flip', name: '卡牌翻转', icon: '🔁', data: SVG_CARD_FLIP, interactive: true },
+  { id: 'scroll_dismiss', name: '滑动撤场', icon: '👋', data: SVG_SCROLL_DISMISS, interactive: true },
+  { id: 'dark_light', name: '明暗切换', icon: '🌓', data: SVG_DARK_LIGHT, interactive: true },
+  { id: 'auto_cinema', name: '自动影院', icon: '🎬', data: SVG_AUTO_CINEMA, interactive: true },
+  { id: 'float_hotzone', name: '浮层热区', icon: '💬', data: SVG_FLOAT_HOTZONE, interactive: true }
 ]
 
 /**
@@ -2152,7 +2187,18 @@ export function getAllSvgTemplates() {
     ...SVG_MUTEX_ACCORDION,
     ...SVG_PRODUCT_SHOWCASE,
     ...SVG_MAP_HOTSPOT,
-    ...SVG_UNLOCK_REVEAL
+    ...SVG_UNLOCK_REVEAL,
+    // 2025 SOTA 交互
+    ...SVG_SCROLL_UNFURL,
+    ...SVG_POKER_DEAL,
+    ...SVG_INFINITE_SELECTOR,
+    ...SVG_STAGGER_ENTRANCE,
+    ...SVG_LAYER_ADHESION,
+    ...SVG_CARD_FLIP,
+    ...SVG_SCROLL_DISMISS,
+    ...SVG_DARK_LIGHT,
+    ...SVG_AUTO_CINEMA,
+    ...SVG_FLOAT_HOTZONE
   ]
 }
 

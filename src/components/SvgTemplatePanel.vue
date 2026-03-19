@@ -181,11 +181,13 @@ const currentGroups = computed(() => {
     const advancedIds = ['image_reveal', 'tab_switch', 'story_seq', 'magazine', 'popup_effect', 'cascade']
     const expandedIds = ['slider_compare', 'photo_wall', 'infographic', 'quiz_poll', 'faq_accordion', 'envelope_letter', 'h_scroll', 'num_counter', 'atmosphere', 'retro_vintage']
     const proIds = ['sandwich_slide', 'shatter_effect', 'frame_sequence', 'parallax_3d', 'mutex_accordion', 'product_showcase', 'map_hotspot', 'unlock_reveal']
+    const ultraIds = ['scroll_unfurl', 'poker_deal', 'infinite_selector', 'stagger_entrance', 'layer_adhesion', 'card_flip', 'scroll_dismiss', 'dark_light', 'auto_cinema', 'float_hotzone']
     return [
       { label: 'SMIL \u57fa\u7840\u4ea4\u4e92', items: baseIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
       { label: 'GQ Lab \u9ad8\u7ea7\u4ea4\u4e92', items: advancedIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
       { label: '\u5b9e\u7528\u573a\u666f\u6a21\u677f', items: expandedIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
-      { label: 'E2.COOL \u4e13\u4e1a\u4ea4\u4e92', items: proIds.map(id => categories.find(c => c.id === id)).filter(Boolean) }
+      { label: 'E2.COOL \u4e13\u4e1a\u4ea4\u4e92', items: proIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
+      { label: '2025 SOTA \u4ea4\u4e92', items: ultraIds.map(id => categories.find(c => c.id === id)).filter(Boolean) }
     ]
   }
   const groups = [
@@ -208,7 +210,10 @@ const tallCategories = new Set([
   'slider_compare', 'photo_wall', 'infographic', 'quiz_poll', 'faq_accordion',
   'envelope_letter', 'h_scroll', 'num_counter', 'atmosphere', 'retro_vintage',
   'sandwich_slide', 'shatter_effect', 'frame_sequence', 'parallax_3d',
-  'mutex_accordion', 'product_showcase', 'map_hotspot', 'unlock_reveal'
+  'mutex_accordion', 'product_showcase', 'map_hotspot', 'unlock_reveal',
+  'scroll_unfurl', 'poker_deal', 'infinite_selector', 'stagger_entrance',
+  'layer_adhesion', 'card_flip', 'scroll_dismiss', 'dark_light',
+  'auto_cinema', 'float_hotzone'
 ])
 const tallPreview = computed(() => tallCategories.has(activeCategory.value))
 
@@ -238,7 +243,12 @@ const getInteractionLabel = (tpl) => {
     'sandwich_slide': '夹层', 'shatter_effect': '粉碎',
     'frame_sequence': '帧播', 'parallax_3d': '3D差',
     'mutex_accordion': '互斥', 'product_showcase': '展台',
-    'map_hotspot': '热区', 'unlock_reveal': '解锁'
+    'map_hotspot': '热区', 'unlock_reveal': '解锁',
+    'scroll_unfurl': '画卷', 'poker_deal': '出牌',
+    'infinite_selector': '选择', 'stagger_entrance': '入场',
+    'layer_adhesion': '吸附', 'card_flip': '翻转',
+    'scroll_dismiss': '撤场', 'dark_light': '明暗',
+    'auto_cinema': '影院', 'float_hotzone': '浮层'
   }
   return labelMap[cat] || '交互'
 }
