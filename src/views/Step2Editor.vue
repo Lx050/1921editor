@@ -10,6 +10,7 @@ import { smartTextParser } from '../utils/textParser'
 import EditorToolbar from '../components/EditorToolbar.vue'
 import EditorSidebar from '../components/EditorSidebar.vue'
 import ImageSlotPopover from '../components/ImageSlotPopover.vue'
+import KeyboardShortcutHelp from '../components/KeyboardShortcutHelp.vue'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
 
@@ -27,6 +28,7 @@ const popoverSlotId = ref('')
 const popoverNodePos = ref<number | null>(null)
 const popoverCurrentData = ref<ImageSlotData | null>(null)
 
+const shortcutHelpVisible = ref(false)
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 
 function handleEditorUpdate(json: EditorDocument) {
@@ -117,9 +119,35 @@ function handleOpenSvgPanel() {
   sidebarRef.value?.switchToSvg()
 }
 
+/** Insert image into editor from sidebar gallery click */
+function handleInsertImage(data: { src: string; name: string; mediaId?: string }) {
+  if (!editor.value) return
+  editor.value.chain().focus().insertContent({
+    type: 'manifoldImage',
+    attrs: { src: data.src, mediaId: data.mediaId || '', caption: '', layout: 'full_width' },
+  }).run()
+}
+
 /** Handle drag-drop images onto the editor canvas */
 function handleDrop(event: DragEvent) {
-  if (!editor.value || !event.dataTransfer?.files.length) return
+  if (!editor.value) return
+
+  // Check for gallery drag (application/manifold-image)
+  const manifoldData = event.dataTransfer?.getData('application/manifold-image')
+  if (manifoldData) {
+    event.preventDefault()
+    try {
+      const parsed = JSON.parse(manifoldData)
+      editor.value.chain().focus().insertContent({
+        type: 'manifoldImage',
+        attrs: { src: parsed.src, mediaId: parsed.mediaId || '', caption: '', layout: 'full_width' },
+      }).run()
+    } catch { /* ignore parse errors */ }
+    return
+  }
+
+  // Check for file drop
+  if (!event.dataTransfer?.files.length) return
   const file = event.dataTransfer.files[0]
   if (!file.type.startsWith('image/')) return
 
@@ -132,7 +160,7 @@ function handleDrop(event: DragEvent) {
 }
 
 function handleDragOver(event: DragEvent) {
-  if (event.dataTransfer?.types.includes('Files')) {
+  if (event.dataTransfer?.types.includes('Files') || event.dataTransfer?.types.includes('application/manifold-image')) {
     event.preventDefault()
   }
 }
@@ -174,12 +202,14 @@ onMounted(() => {
   })
 
   window.addEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
+  window.addEventListener('keydown', handleGlobalKeydown)
 })
 
 onBeforeUnmount(() => {
   if (autosaveTimer) clearTimeout(autosaveTimer)
   editor.value?.destroy()
   window.removeEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
+  window.removeEventListener('keydown', handleGlobalKeydown)
 })
 
 // Live editor stats
@@ -204,6 +234,14 @@ const svgBlockCount = computed(() => {
   return count
 })
 
+function handleGlobalKeydown(event: KeyboardEvent) {
+  // "?" key when not typing in editor (Shift+/ on most keyboards)
+  if (event.key === '?' && !editor.value?.isFocused) {
+    event.preventDefault()
+    shortcutHelpVisible.value = !shortcutHelpVisible.value
+  }
+}
+
 function goBack() {
   router.push('/step1')
 }
@@ -218,7 +256,7 @@ function goToPublish() {
     <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" />
 
     <div class="flex flex-1 overflow-hidden">
-      <EditorSidebar ref="sidebarRef" @insert-svg="insertSvgTemplate" />
+      <EditorSidebar ref="sidebarRef" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
 
       <div
         class="flex-1 overflow-y-auto"
@@ -242,6 +280,11 @@ function goToPublish() {
       <div class="flex items-center gap-4">
         <span class="text-xs text-gray-400">{{ wordCount }} 字</span>
         <span v-if="svgBlockCount > 0" class="text-xs text-gray-400">{{ svgBlockCount }} 个SVG</span>
+        <button
+          class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
+          @click="shortcutHelpVisible = true"
+          title="键盘快捷键 (?)"
+        >?</button>
         <span class="text-xs text-gray-300">Manifold v2</span>
       </div>
       <button
@@ -259,6 +302,11 @@ function goToPublish() {
       :current-data="popoverCurrentData"
       @select="handleSlotImageSelect"
       @close="popoverVisible = false"
+    />
+
+    <KeyboardShortcutHelp
+      :visible="shortcutHelpVisible"
+      @close="shortcutHelpVisible = false"
     />
   </div>
 </template>

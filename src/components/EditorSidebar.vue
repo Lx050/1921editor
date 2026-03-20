@@ -6,6 +6,7 @@ import ImageManagerTab from './ImageManagerTab.vue'
 
 const emit = defineEmits<{
   (e: 'insert-svg', tpl: { id: string; name: string; svg: string }): void
+  (e: 'insert-image', data: { src: string; name: string; mediaId?: string }): void
 }>()
 
 const activeTab = ref<'styles' | 'svg' | 'images'>('styles')
@@ -53,7 +54,7 @@ defineExpose({ activeTab, collapsed, switchToSvg })
       <div class="flex-1 overflow-hidden">
         <StyleSelector v-show="activeTab === 'styles'" />
         <SvgTemplatePanel v-show="activeTab === 'svg'" @insert-svg="emit('insert-svg', $event)" />
-        <ImageManagerTab v-show="activeTab === 'images'" />
+        <ImageManagerTab v-show="activeTab === 'images'" @insert-image="emit('insert-image', $event)" />
       </div>
     </template>
   </div>
