@@ -267,7 +267,7 @@ function goToPublish() {
     <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" />
 
     <div class="flex flex-1 overflow-hidden">
-      <EditorSidebar ref="sidebarRef" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
+      <EditorSidebar ref="sidebarRef" :editor="editor" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
 
       <div
         class="flex-1 overflow-y-auto relative"
@@ -381,6 +381,13 @@ function goToPublish() {
   padding-left: 12px;
   color: #4b5563;
   font-style: italic;
+}
+/* Blockquote */
+.manifold-editor-content .ProseMirror blockquote {
+  border-left: 3px solid #d1d5db;
+  padding-left: 12px;
+  margin: 1rem 0;
+  color: #6b7280;
 }
 /* Image nodes */
 .manifold-editor-content .ProseMirror figure[data-node-type="manifold-image"] {

@@ -37,6 +37,11 @@ export const slashMenuItems: SlashMenuItem[] = [
     },
   },
   {
+    title: '引用',
+    icon: '>',
+    command: (editor) => editor.chain().focus().toggleBlockquote().run(),
+  },
+  {
     title: '分隔线',
     icon: '\u2015',
     command: (editor) => editor.chain().focus().setHorizontalRule().run(),

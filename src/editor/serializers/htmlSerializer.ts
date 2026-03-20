@@ -109,6 +109,8 @@ function serializeNode(
       return serializeSvgBlock(node)
     case 'horizontalRule':
       return '<hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />'
+    case 'blockquote':
+      return serializeBlockquote(node, styleConfig, orgPreset)
     case 'bulletList':
     case 'orderedList':
       return serializeList(node, styleConfig, orgPreset)
@@ -268,6 +270,15 @@ function serializeList(
   const tag = node.type === 'bulletList' ? 'ul' : 'ol'
   const items = (node.content || []).map((item: any) => serializeNode(item, styleConfig, orgPreset)).join('')
   return `<${tag} style="margin: 10px 0; padding-left: 2em; font-size: 14px; line-height: 1.75em; letter-spacing: 1.5px; font-family: \u5fae\u8f6f\u96c5\u9ed1, MicrosoftYaHei;">${items}</${tag}>`
+}
+
+function serializeBlockquote(
+  node: any,
+  styleConfig: StyleConfig | null,
+  orgPreset: OrgStylePreset | null
+): string {
+  const inner = (node.content || []).map((child: any) => serializeNode(child, styleConfig, orgPreset)).join('')
+  return `<blockquote style="margin: 15px 0; padding: 10px 15px; border-left: 3px solid #d1d5db; color: #6b7280; font-size: 14px; line-height: 1.75em;">${inner}</blockquote>`
 }
 
 function serializeInlineContent(node: any): string {
