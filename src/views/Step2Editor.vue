@@ -15,6 +15,7 @@ import KeyboardShortcutHelp from '../components/KeyboardShortcutHelp.vue'
 import FindReplace from '../components/FindReplace.vue'
 import TableBubbleMenu from '../components/TableBubbleMenu.vue'
 import HtmlPreviewModal from '../components/HtmlPreviewModal.vue'
+import SelectionToolbar from '../components/SelectionToolbar.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
@@ -390,6 +391,7 @@ function goToPublish() {
           :class="isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : ''"
         >
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" />
+          <SelectionToolbar :editor="editor" />
         </div>
         <!-- Drag overlay hint -->
         <div
