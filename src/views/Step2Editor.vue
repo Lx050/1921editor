@@ -107,8 +107,27 @@ function handleOpenSvgPanel() {
   sidebarRef.value?.switchToSvg()
 }
 
+/** Handle drag-drop images onto the editor canvas */
+function handleDrop(event: DragEvent) {
+  if (!editor.value || !event.dataTransfer?.files.length) return
+  const file = event.dataTransfer.files[0]
+  if (!file.type.startsWith('image/')) return
+
+  event.preventDefault()
+  const localUrl = URL.createObjectURL(file)
+  editor.value.chain().focus().insertContent({
+    type: 'manifoldImage',
+    attrs: { src: localUrl, caption: '', layout: 'full_width' },
+  }).run()
+}
+
+function handleDragOver(event: DragEvent) {
+  if (event.dataTransfer?.types.includes('Files')) {
+    event.preventDefault()
+  }
+}
+
 onMounted(() => {
-  // Build initial content from existing data
   let initialContent: EditorDocument
 
   if (appStore.editorJson) {
@@ -138,6 +157,10 @@ onBeforeUnmount(() => {
   window.removeEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
 })
 
+function goBack() {
+  router.push('/step1')
+}
+
 function goToPublish() {
   router.push('/step3')
 }
@@ -145,12 +168,17 @@ function goToPublish() {
 
 <template>
   <div class="flex flex-col h-full w-full bg-gray-50">
-    <EditorToolbar :editor="editor" />
+    <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" />
 
     <div class="flex flex-1 overflow-hidden">
       <EditorSidebar ref="sidebarRef" @insert-svg="insertSvgTemplate" />
 
-      <div class="flex-1 overflow-y-auto" @click="handleCanvasClick">
+      <div
+        class="flex-1 overflow-y-auto"
+        @click="handleCanvasClick"
+        @drop="handleDrop"
+        @dragover="handleDragOver"
+      >
         <div class="max-w-[680px] mx-auto py-8 px-6 bg-white min-h-full shadow-sm my-4 rounded">
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" />
         </div>
@@ -158,6 +186,12 @@ function goToPublish() {
     </div>
 
     <div class="flex-shrink-0 border-t bg-white px-6 py-3 flex items-center justify-between">
+      <button
+        class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        @click="goBack"
+      >
+        &larr; 返回文本输入
+      </button>
       <span class="text-xs text-gray-400">Manifold SVG Editor v2</span>
       <button
         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -201,6 +235,11 @@ function goToPublish() {
 .manifold-editor-content .ProseMirror p {
   margin-bottom: 0.75rem;
   line-height: 1.625;
+}
+.manifold-editor-content .ProseMirror hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
 }
 .manifold-editor-content .ProseMirror .is-empty::before {
   color: #d1d5db;
