@@ -23,7 +23,7 @@ Replace the current Step2 (block-based curtain editor) + Step3 (preview/image re
 | Step flow | Step1 → Step2 WYSIWYG → Step3 Confirm | 135-editor style, edit=preview |
 | Image interaction | Canvas click popover + sidebar tab | Quick ops on canvas, batch management in sidebar |
 | Image source | Local upload + WeChat material library | Upload auto-syncs to WeChat for publishing |
-| Existing templates | Keep 390 as-is | They serve as pure decorations, still useful |
+| Existing templates | Keep 390 as-is (61 categories, 5 files) | They serve as pure decorations, still useful |
 | New templates | 6 categories, 36 image-driven templates | GQ Lab-style image interactions |
 | Data model | tiptap JSON document | Replaces contentBlocks array |
 | AI-native | Slash commands + ManifoldEditorAPI | Future CLI Agent and AI operations |
@@ -448,7 +448,8 @@ New npm packages:
 
 Since this replaces core editing views, migration should be incremental:
 
-1. **Phase 1**: Build tiptap editor alongside existing Step2 (feature-flagged)
+0. **Phase 0**: Install tiptap dependencies (use `/tmp` workaround per global rules)
+1. **Phase 1**: Build tiptap editor alongside existing Step2 (feature-flagged via route query `?editor=v2`)
 2. **Phase 2**: Implement SVG image slot system + image-driven templates
 3. **Phase 3**: Build htmlSerializer (tiptap JSON → WeChat HTML)
 4. **Phase 4**: Wire up Step3Confirm
@@ -456,3 +457,78 @@ Since this replaces core editing views, migration should be incremental:
 6. **Phase 6**: Clean up old code
 
 This allows testing new editor without breaking existing functionality.
+
+### 12. State Management During Migration
+
+During Phase 1-4, both `contentBlocks` and `editorJson` will coexist:
+
+```typescript
+// Sync strategy: tiptap JSON → contentBlocks for backward compat
+watch(() => editorJson.value, (newJson) => {
+  contentBlocks.value = tiptapToContentBlocks(newJson)
+})
+
+// Route guards updated to support both:
+validator: (appStore) =>
+  Boolean(appStore.editorJson) || Boolean(appStore.contentBlocks?.length)
+```
+
+`imageSlotRegistry` is a **derived index** from tiptap node attrs — it aggregates all SVG block image slots for the ImageManagerTab to display. It is NOT a duplicate of `wechatImages` (which is the full material library).
+
+### 13. Error Handling
+
+| Scenario | Handling |
+|----------|----------|
+| Malformed SVG template | Wrap in try/catch, show placeholder error block in canvas |
+| Missing image slot data | Render gray placeholder with "+" icon, non-blocking |
+| Failed image upload | Show error toast, keep placeholder, allow retry |
+| Corrupted tiptap JSON | Attempt recovery from last valid state (tiptap history), fallback to contentBlocks |
+| WeChat SMIL unsupported | Static fallback — render first frame as image, add `<noscript>` hint |
+
+### 14. Image URL Security
+
+Only allow trusted image sources in SVG `href` attributes:
+
+```typescript
+// ManifoldSvgBlock URL validation
+const ALLOWED_URL_PATTERNS = [
+  /^https:\/\/mmbiz\.qpic\.cn\//,    // WeChat CDN
+  /^data:image\/(png|jpeg|gif|svg)/,  // Data URIs
+  /^blob:/                             // Local blob URLs (during editing)
+]
+```
+
+URLs are sanitized via DOMPurify (already in codebase) during export.
+
+### 15. Testing Strategy
+
+- **Unit tests**: tiptap custom nodes (ManifoldSvgBlock attrs, slot parsing)
+- **Integration tests**: Image slot fill → SVG update → export HTML pipeline
+- **E2E tests**: Full flow — insert SVG template → fill images → export to WeChat HTML
+- **WeChat compatibility**: Test exported HTML in WeChat WebView (manual, per release)
+
+### 16. Backward Compatibility
+
+- Existing saved articles with `contentBlocks` format: auto-converted via `jsonImporter.ts` on load
+- Conversion is on-the-fly (no batch migration needed)
+- Old format supported for 6 months after Phase 5 launch
+- `contentBlocks` only removed in Phase 6 after confirming zero usage
+
+### 17. Component Clarifications
+
+**EditorCanvas.vue** is part of Step2Editor.vue (inlined, not a separate file) — the tiptap instance is initialized directly in Step2Editor.
+
+**tiptap Node files** (`.ts` in `src/editor/nodes/`) are **tiptap Node extension definitions**, not Vue components. They define schema, attrs, and NodeView rendering.
+
+**Sidebar tab mapping:**
+| New Tab | Wraps Existing Component |
+|---------|-------------------------|
+| StyleTab.vue | Extracts style selection logic from Step2Curtain.vue |
+| SvgTemplateTab.vue | Wraps existing SvgTemplatePanel.vue |
+| ImageManagerTab.vue | New component |
+
+### 18. AI-Native Features Scope
+
+Slash commands (`/image`, `/svg`, `/title`, `/divider`) are **MVP** — implemented in Phase 1.
+
+AI commands (`/ai write`, `/ai rewrite`, `/ai image`, etc.) and ManifoldEditorAPI are **post-MVP** — deferred to Phase 7+. The architecture accommodates them but they are not part of the initial 6-phase delivery.
