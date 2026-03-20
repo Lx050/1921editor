@@ -26,8 +26,17 @@ const popoverSlotId = ref('')
 const popoverNodePos = ref<number | null>(null)
 const popoverCurrentData = ref<ImageSlotData | null>(null)
 
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null
+
 function handleEditorUpdate(json: EditorDocument) {
   appStore.editorJson = json
+  // Debounced autosave to localStorage
+  if (autosaveTimer) clearTimeout(autosaveTimer)
+  autosaveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
+    } catch { /* ignore quota errors */ }
+  }, 2000)
 }
 
 function insertSvgTemplate(tpl: { id: string; name: string; svg: string; imageSlots?: any[] }) {
@@ -135,12 +144,21 @@ onMounted(() => {
   } else if (contentBlocks.value.length > 0) {
     initialContent = contentBlocksToTiptap(contentBlocks.value)
   } else {
-    initialContent = {
-      type: 'doc',
-      content: [
-        { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '' }] },
-        { type: 'manifoldParagraph', content: [{ type: 'text', text: '' }] },
-      ]
+    // Try restoring from autosave
+    try {
+      const saved = localStorage.getItem('manifold_editor_autosave')
+      if (saved) {
+        initialContent = JSON.parse(saved) as EditorDocument
+      }
+    } catch { /* ignore */ }
+    if (!initialContent!) {
+      initialContent = {
+        type: 'doc',
+        content: [
+          { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '' }] },
+          { type: 'manifoldParagraph', content: [{ type: 'text', text: '' }] },
+        ]
+      }
     }
   }
 
@@ -153,6 +171,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  if (autosaveTimer) clearTimeout(autosaveTimer)
   editor.value?.destroy()
   window.removeEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
 })
