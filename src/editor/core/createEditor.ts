@@ -6,6 +6,7 @@ import Link from '@tiptap/extension-link'
 import TextAlign from '@tiptap/extension-text-align'
 import { Color } from '@tiptap/extension-color'
 import TextStyle from '@tiptap/extension-text-style'
+import Underline from '@tiptap/extension-underline'
 import { ManifoldHeading } from '../nodes/ManifoldHeading'
 import { ManifoldParagraph } from '../nodes/ManifoldParagraph'
 import { ManifoldImage } from '../nodes/ManifoldImage'
@@ -64,6 +65,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
         openOnClick: false,
         HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
       }),
+      Underline,
       TextStyle,
       Color,
       TextAlign.configure({

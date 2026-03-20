@@ -91,6 +91,18 @@ function toggleLink() {
       title="斜体"
     >I</button>
     <button
+      class="toolbar-btn"
+      :class="{ active: isActive('underline') }"
+      @click="run(() => editor!.chain().focus().toggleUnderline().run())"
+      title="下划线 (Ctrl+U)"
+    ><span class="underline">U</span></button>
+    <button
+      class="toolbar-btn"
+      :class="{ active: isActive('strike') }"
+      @click="run(() => editor!.chain().focus().toggleStrike().run())"
+      title="删除线 (Ctrl+Shift+S)"
+    ><span class="line-through">S</span></button>
+    <button
       class="toolbar-btn text-xs"
       :class="{ active: isActive('link') }"
       @click="toggleLink"

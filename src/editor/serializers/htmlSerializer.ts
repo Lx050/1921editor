@@ -189,7 +189,8 @@ function serializeHeading(
   // Fallback: basic heading with inline WeChat-compatible styles
   const level = node.attrs?.level || 1
   const fontSize = level === 1 ? 16 : level === 2 ? 15 : 14
-  return `<section class="_135editor" data-role="paragraph"><p style="margin: 0; font-size: ${fontSize}px; line-height: 1.75em; text-indent: 0em; text-align: center;" align="center"><span style="font-weight: bold; color: #333333; font-size: ${fontSize}px; letter-spacing: 1.5px; font-family: \u5fae\u8f6f\u96c5\u9ed1, MicrosoftYaHei;">${text}</span></p></section>`
+  const align = node.attrs?.textAlign || 'center'
+  return `<section class="_135editor" data-role="paragraph"><p style="margin: 0; font-size: ${fontSize}px; line-height: 1.75em; text-indent: 0em; text-align: ${align};" align="${align}"><span style="font-weight: bold; color: #333333; font-size: ${fontSize}px; letter-spacing: 1.5px; font-family: \u5fae\u8f6f\u96c5\u9ed1, MicrosoftYaHei;">${text}</span></p></section>`
 }
 
 function serializeParagraph(
@@ -222,7 +223,9 @@ function serializeParagraph(
   }
 
   // Fallback: basic paragraph with WeChat-compatible styles
-  return `<section class="_135editor" data-role="paragraph"><p style="margin: 0; font-size: 14px; line-height: 1.75em; text-indent: 2.21428em; text-align: justify;" align="justify"><span style="font-weight: 400; color: #333333; font-size: 14px; letter-spacing: 1.5px; font-family: \u5fae\u8f6f\u96c5\u9ed1, MicrosoftYaHei;">${text}</span></p></section>`
+  const align = node.attrs?.textAlign || 'justify'
+  const indent = align === 'center' ? '0em' : '2.21428em'
+  return `<section class="_135editor" data-role="paragraph"><p style="margin: 0; font-size: 14px; line-height: 1.75em; text-indent: ${indent}; text-align: ${align};" align="${align}"><span style="font-weight: 400; color: #333333; font-size: 14px; letter-spacing: 1.5px; font-family: \u5fae\u8f6f\u96c5\u9ed1, MicrosoftYaHei;">${text}</span></p></section>`
 }
 
 function serializeImage(node: any): string {
@@ -276,8 +279,13 @@ function serializeInlineContent(node: any): string {
         for (const mark of child.marks) {
           if (mark.type === 'bold') text = `<strong>${text}</strong>`
           if (mark.type === 'italic') text = `<em>${text}</em>`
+          if (mark.type === 'underline') text = `<span style="text-decoration: underline;">${text}</span>`
+          if (mark.type === 'strike') text = `<span style="text-decoration: line-through;">${text}</span>`
           if (mark.type === 'link' && mark.attrs?.href) {
             text = `<a href="${DOMPurify.sanitize(mark.attrs.href)}" style="color: #576b95; text-decoration: none;">${text}</a>`
+          }
+          if (mark.type === 'textStyle' && mark.attrs?.color) {
+            text = `<span style="color: ${mark.attrs.color};">${text}</span>`
           }
         }
       }
