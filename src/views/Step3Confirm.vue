@@ -39,12 +39,31 @@ function setMode(mode: 'daily' | 'three_rural' | 'reprint') {
   configStore.setMode(mode)
 }
 
+const copyMode = ref<'html' | 'rich'>('rich')
+
 function copyHtml() {
   if (!finalHtml.value) return
-  navigator.clipboard.writeText(finalHtml.value).then(() => {
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
-  })
+
+  if (copyMode.value === 'rich') {
+    // Copy as rich text (for pasting into WeChat editor)
+    const blob = new Blob([finalHtml.value], { type: 'text/html' })
+    const item = new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([finalHtml.value], { type: 'text/plain' }) })
+    navigator.clipboard.write([item]).then(() => {
+      copied.value = true
+      setTimeout(() => { copied.value = false }, 2000)
+    }).catch(() => {
+      // Fallback to plain text copy
+      navigator.clipboard.writeText(finalHtml.value).then(() => {
+        copied.value = true
+        setTimeout(() => { copied.value = false }, 2000)
+      })
+    })
+  } else {
+    navigator.clipboard.writeText(finalHtml.value).then(() => {
+      copied.value = true
+      setTimeout(() => { copied.value = false }, 2000)
+    })
+  }
 }
 
 function goBack() {
@@ -144,11 +163,25 @@ const wordCount = computed(() => {
 
         <hr class="my-4" />
 
+        <!-- Copy mode toggle -->
+        <div class="flex gap-1 mb-2">
+          <button
+            class="flex-1 py-1 text-xs rounded transition-colors"
+            :class="copyMode === 'rich' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'"
+            @click="copyMode = 'rich'"
+          >富文本</button>
+          <button
+            class="flex-1 py-1 text-xs rounded transition-colors"
+            :class="copyMode === 'html' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'"
+            @click="copyMode = 'html'"
+          >HTML源码</button>
+        </div>
+
         <button
           class="w-full py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors mb-2"
           @click="copyHtml"
         >
-          {{ copied ? '已复制!' : '复制 HTML 代码' }}
+          {{ copied ? '已复制!' : (copyMode === 'rich' ? '复制富文本' : '复制 HTML 源码') }}
         </button>
 
         <button
