@@ -234,7 +234,8 @@ function serializeParagraph(
 
   // Fallback: basic paragraph with WeChat-compatible styles
   const align = node.attrs?.textAlign || 'justify'
-  const indent = align === 'center' ? '0em' : '2.21428em'
+  const customIndent = node.attrs?.textIndent || 0
+  const indent = align === 'center' ? '0em' : customIndent > 0 ? `${customIndent * 2}em` : '2.21428em'
   return `<section class="_135editor" data-role="paragraph"><p style="margin: 0; font-size: 14px; line-height: 1.75em; text-indent: ${indent}; text-align: ${align};" align="${align}"><span style="font-weight: 400; color: #333333; font-size: 14px; letter-spacing: 1.5px; font-family: \u5fae\u8f6f\u96c5\u9ed1, MicrosoftYaHei;">${text}</span></p></section>`
 }
 

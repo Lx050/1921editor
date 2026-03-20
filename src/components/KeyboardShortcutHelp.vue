@@ -22,6 +22,10 @@ const shortcuts = [
     { keys: 'Ctrl+Shift+8', desc: '无序列表' },
     { keys: 'Ctrl+Shift+9', desc: '有序列表' },
   ]},
+  { section: '缩进', items: [
+    { keys: 'Tab', desc: '增加缩进' },
+    { keys: 'Shift+Tab', desc: '减少缩进' },
+  ]},
   { section: '其他', items: [
     { keys: '/', desc: '打开命令菜单' },
     { keys: 'Ctrl+Enter', desc: '插入分隔线' },

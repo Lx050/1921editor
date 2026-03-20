@@ -74,6 +74,28 @@ function setFontSize(size: string) {
   props.editor.chain().focus().setFontSize(`${size}px`).run()
 }
 
+function indent() {
+  if (!props.editor) return
+  const { $from } = props.editor.state.selection
+  if ($from.parent.type.name === 'manifoldParagraph') {
+    const current = $from.parent.attrs.textIndent || 0
+    if (current < 4) {
+      props.editor.commands.updateAttributes('manifoldParagraph', { textIndent: current + 1 })
+    }
+  }
+}
+
+function outdent() {
+  if (!props.editor) return
+  const { $from } = props.editor.state.selection
+  if ($from.parent.type.name === 'manifoldParagraph') {
+    const current = $from.parent.attrs.textIndent || 0
+    if (current > 0) {
+      props.editor.commands.updateAttributes('manifoldParagraph', { textIndent: current - 1 })
+    }
+  }
+}
+
 function clearFormatting() {
   if (!props.editor) return
   props.editor.chain().focus().clearNodes().unsetAllMarks().run()
@@ -249,6 +271,10 @@ function toggleLink() {
       @click="run(() => editor!.chain().focus().setTextAlign('right').run())"
       title="右对齐"
     >&#x2263;</button>
+
+    <!-- Indent/Outdent -->
+    <button class="toolbar-btn text-xs" @click="outdent" title="减少缩进 (Shift+Tab)">&#x21E4;</button>
+    <button class="toolbar-btn text-xs" @click="indent" title="增加缩进 (Tab)">&#x21E5;</button>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 

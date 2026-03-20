@@ -30,18 +30,29 @@ const popoverCurrentData = ref<ImageSlotData | null>(null)
 
 const shortcutHelpVisible = ref(false)
 const isDragOver = ref(false)
+const isFullscreen = ref(false)
+const autosaveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
+let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
 
 function handleEditorUpdate(json: EditorDocument) {
   appStore.editorJson = json
+  autosaveStatus.value = 'saving'
   // Debounced autosave to localStorage
   if (autosaveTimer) clearTimeout(autosaveTimer)
+  if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
   autosaveTimer = setTimeout(() => {
     try {
       localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
+      autosaveStatus.value = 'saved'
+      autosaveFadeTimer = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
     } catch { /* ignore quota errors */ }
   }, 2000)
+}
+
+function toggleFullscreen() {
+  isFullscreen.value = !isFullscreen.value
 }
 
 function insertSvgTemplate(tpl: { id: string; name: string; svg: string; imageSlots?: any[] }) {
@@ -218,6 +229,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (autosaveTimer) clearTimeout(autosaveTimer)
+  if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
   editor.value?.destroy()
   window.removeEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
   window.removeEventListener('keydown', handleGlobalKeydown)
@@ -246,6 +258,11 @@ const svgBlockCount = computed(() => {
 })
 
 function handleGlobalKeydown(event: KeyboardEvent) {
+  // Escape exits fullscreen
+  if (event.key === 'Escape' && isFullscreen.value) {
+    isFullscreen.value = false
+    return
+  }
   // "?" key when not typing in editor (Shift+/ on most keyboards)
   if (event.key === '?' && !editor.value?.isFocused) {
     event.preventDefault()
@@ -263,7 +280,10 @@ function goToPublish() {
 </script>
 
 <template>
-  <div class="flex flex-col h-full w-full bg-gray-50">
+  <div
+    class="flex flex-col h-full w-full bg-gray-50 transition-all"
+    :class="isFullscreen ? 'fixed inset-0 z-[100]' : ''"
+  >
     <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" />
 
     <div class="flex flex-1 overflow-hidden">
@@ -300,8 +320,15 @@ function goToPublish() {
         &larr; 返回文本输入
       </button>
       <div class="flex items-center gap-4">
+        <span v-if="autosaveStatus === 'saving'" class="text-xs text-amber-500">保存中...</span>
+        <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存</span>
         <span class="text-xs text-gray-400">{{ wordCount }} 字</span>
         <span v-if="svgBlockCount > 0" class="text-xs text-gray-400">{{ svgBlockCount }} 个SVG</span>
+        <button
+          class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
+          @click="toggleFullscreen"
+          :title="isFullscreen ? '退出全屏 (Esc)' : '全屏编辑'"
+        >{{ isFullscreen ? '&#x2716;' : '&#x26F6;' }}</button>
         <button
           class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
           @click="shortcutHelpVisible = true"

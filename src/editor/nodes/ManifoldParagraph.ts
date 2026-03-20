@@ -10,6 +10,7 @@ export const ManifoldParagraph = Node.create({
     return {
       styleId: { default: null },
       blockRole: { default: 'body' },
+      textIndent: { default: 0 },
     }
   },
 
@@ -18,10 +19,41 @@ export const ManifoldParagraph = Node.create({
   },
 
   renderHTML({ node, HTMLAttributes }) {
+    const indent = node.attrs.textIndent || 0
+    const style = indent > 0 ? `text-indent: ${indent * 2}em` : ''
     return ['p', mergeAttributes(HTMLAttributes, {
       'data-node-type': 'manifold-paragraph',
       'data-style-id': node.attrs.styleId || '',
       'data-role': node.attrs.blockRole || 'body',
+      'data-indent': indent > 0 ? String(indent) : undefined,
+      ...(style ? { style } : {}),
     }), 0]
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      'Tab': () => {
+        const { $from } = this.editor.state.selection
+        if ($from.parent.type.name === this.name) {
+          const current = $from.parent.attrs.textIndent || 0
+          if (current < 4) {
+            this.editor.commands.updateAttributes(this.name, { textIndent: current + 1 })
+            return true
+          }
+        }
+        return false
+      },
+      'Shift-Tab': () => {
+        const { $from } = this.editor.state.selection
+        if ($from.parent.type.name === this.name) {
+          const current = $from.parent.attrs.textIndent || 0
+          if (current > 0) {
+            this.editor.commands.updateAttributes(this.name, { textIndent: current - 1 })
+            return true
+          }
+        }
+        return false
+      },
+    }
   },
 })
