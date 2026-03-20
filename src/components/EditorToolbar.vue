@@ -121,7 +121,7 @@ function toggleLink() {
 </script>
 
 <template>
-  <div v-if="editor" class="flex items-center gap-1 px-4 py-2 border-b bg-white flex-wrap">
+  <div v-if="editor" class="flex items-center gap-1 px-4 py-2 border-b bg-white flex-wrap overflow-x-auto scrollbar-thin">
     <!-- Text formatting -->
     <button
       class="toolbar-btn"
@@ -326,9 +326,16 @@ function toggleLink() {
 <style scoped>
 .toolbar-btn {
   @apply w-8 h-8 rounded flex items-center justify-center text-sm text-gray-600
-         hover:bg-gray-100 transition-colors cursor-pointer select-none;
+         hover:bg-gray-100 transition-colors cursor-pointer select-none flex-shrink-0;
 }
 .toolbar-btn.active {
   @apply bg-blue-100 text-blue-700;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 2px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 1px;
 }
 </style>

@@ -10,9 +10,19 @@ export interface SlashMenuItem {
 
 export const slashMenuItems: SlashMenuItem[] = [
   {
-    title: '标题',
-    icon: 'H',
+    title: '一级标题',
+    icon: 'H1',
     command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 1 }).run(),
+  },
+  {
+    title: '二级标题',
+    icon: 'H2',
+    command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 2 }).run(),
+  },
+  {
+    title: '三级标题',
+    icon: 'H3',
+    command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 3 }).run(),
   },
   {
     title: '正文',
@@ -25,21 +35,36 @@ export const slashMenuItems: SlashMenuItem[] = [
     command: (editor) => editor.chain().focus().setNode('manifoldParagraph', { blockRole: 'intro' }).run(),
   },
   {
-    title: '图片',
-    icon: 'I',
-    command: (editor) => editor.chain().focus().insertContent({ type: 'manifoldImage', attrs: { src: '', layout: 'full_width' } }).run(),
+    title: '结尾',
+    icon: 'E',
+    command: (editor) => editor.chain().focus().setNode('manifoldParagraph', { blockRole: 'outro' }).run(),
   },
   {
-    title: 'SVG交互模板',
-    icon: 'S',
-    command: () => {
-      window.dispatchEvent(new CustomEvent('manifold:open-svg-panel'))
-    },
+    title: '无序列表',
+    icon: '\u2022',
+    command: (editor) => editor.chain().focus().toggleBulletList().run(),
+  },
+  {
+    title: '有序列表',
+    icon: '1.',
+    command: (editor) => editor.chain().focus().toggleOrderedList().run(),
   },
   {
     title: '引用',
     icon: '>',
     command: (editor) => editor.chain().focus().toggleBlockquote().run(),
+  },
+  {
+    title: '图片',
+    icon: 'I',
+    command: (editor) => editor.chain().focus().insertContent({ type: 'manifoldImage', attrs: { src: '', layout: 'full_width' } }).run(),
+  },
+  {
+    title: 'SVG模板',
+    icon: 'S',
+    command: () => {
+      window.dispatchEvent(new CustomEvent('manifold:open-svg-panel'))
+    },
   },
   {
     title: '表格',
