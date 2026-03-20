@@ -312,6 +312,9 @@ function serializeInlineContent(node: any): string {
           if (mark.type === 'link' && mark.attrs?.href) {
             text = `<a href="${DOMPurify.sanitize(mark.attrs.href)}" style="color: #576b95; text-decoration: none;">${text}</a>`
           }
+          if (mark.type === 'highlight' && mark.attrs?.color) {
+            text = `<span style="background-color: ${mark.attrs.color};">${text}</span>`
+          }
           if (mark.type === 'textStyle') {
             const styles: string[] = []
             if (mark.attrs?.color) styles.push(`color: ${mark.attrs.color}`)

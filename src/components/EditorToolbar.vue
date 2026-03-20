@@ -11,6 +11,7 @@ const imageInput = ref<HTMLInputElement | null>(null)
 const colorInput = ref<HTMLInputElement | null>(null)
 
 const presetColors = ['#000000', '#374151', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
+const highlightColors = ['#fef08a', '#fed7aa', '#bbf7d0', '#bae6fd', '#e9d5ff', '#fecdd3']
 const fontSizes = ['12', '13', '14', '15', '16', '18', '20', '24']
 
 function isActive(name: string, attrs?: Record<string, unknown>): boolean {
@@ -61,6 +62,11 @@ function setColor(color: string) {
 function handleColorInput(event: Event) {
   const value = (event.target as HTMLInputElement).value
   setColor(value)
+}
+
+function setHighlight(color: string) {
+  if (!props.editor) return
+  props.editor.chain().focus().toggleHighlight({ color }).run()
 }
 
 function setFontSize(size: string) {
@@ -143,6 +149,31 @@ function toggleLink() {
           title="自定义颜色"
         >...</button>
         <input ref="colorInput" type="color" class="sr-only" @input="handleColorInput" />
+      </div>
+    </div>
+
+    <!-- Highlight -->
+    <div class="relative group">
+      <button
+        class="toolbar-btn text-xs"
+        :class="{ active: isActive('highlight') }"
+        title="背景高亮"
+      >
+        <span class="font-bold px-1 rounded" style="background: #fef08a;">H</span>
+      </button>
+      <div class="hidden group-hover:flex absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg p-2 gap-1 flex-wrap w-[120px] z-50">
+        <button
+          v-for="c in highlightColors"
+          :key="c"
+          class="w-5 h-5 rounded border border-gray-200 hover:scale-110 transition-transform"
+          :style="{ background: c }"
+          @mousedown.prevent="setHighlight(c)"
+        />
+        <button
+          class="w-5 h-5 rounded border border-gray-200 text-[10px] hover:bg-gray-100"
+          @mousedown.prevent="run(() => editor!.chain().focus().unsetHighlight().run())"
+          title="清除高亮"
+        >x</button>
       </div>
     </div>
 
