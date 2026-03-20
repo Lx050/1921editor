@@ -14,6 +14,7 @@ import ImageSlotPopover from '../components/ImageSlotPopover.vue'
 import KeyboardShortcutHelp from '../components/KeyboardShortcutHelp.vue'
 import FindReplace from '../components/FindReplace.vue'
 import TableBubbleMenu from '../components/TableBubbleMenu.vue'
+import HtmlPreviewModal from '../components/HtmlPreviewModal.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
@@ -40,6 +41,8 @@ const autosaveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
 const copyStatus = ref<'idle' | 'copied'>('idle')
 const statsVisible = ref(false)
 const findReplaceVisible = ref(false)
+const previewVisible = ref(false)
+const previewHtml = ref('')
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
@@ -79,6 +82,13 @@ async function copyAsWechatHtml() {
   }
   copyStatus.value = 'copied'
   setTimeout(() => { copyStatus.value = 'idle' }, 2000)
+}
+
+function openPreview() {
+  if (!editor.value) return
+  const doc = editor.value.getJSON() as EditorDocument
+  previewHtml.value = serializeToWechatHtml(doc)
+  previewVisible.value = true
 }
 
 function insertSvgTemplate(tpl: { id: string; name: string; svg: string; imageSlots?: any[] }) {
@@ -283,6 +293,13 @@ const svgBlockCount = computed(() => {
   return count
 })
 
+/** Estimated reading time (Chinese: ~400 chars/min) */
+const readingTime = computed(() => {
+  if (wordCount.value === 0) return '0'
+  const mins = Math.ceil(wordCount.value / 400)
+  return mins < 1 ? '<1' : String(mins)
+})
+
 const detailedStats = computed(() => {
   if (!editor.value) return { paragraphs: 0, headings: 0, images: 0, svgs: 0, tables: 0 }
   let paragraphs = 0, headings = 0, images = 0, svgs = 0, tables = 0
@@ -295,6 +312,9 @@ const detailedStats = computed(() => {
   })
   return { paragraphs, headings, images, svgs, tables }
 })
+
+const canUndo = computed(() => editor.value?.can().undo() ?? false)
+const canRedo = computed(() => editor.value?.can().redo() ?? false)
 
 function handleGlobalKeydown(event: KeyboardEvent) {
   const mod = event.ctrlKey || event.metaKey
@@ -396,19 +416,21 @@ function goToPublish() {
             class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
             @click="statsVisible = !statsVisible"
             title="文档统计"
-          >{{ wordCount }} 字</button>
+          >{{ wordCount }} 字 / ~{{ readingTime }}min</button>
           <div
             v-if="statsVisible"
-            class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border rounded-lg shadow-lg p-3 z-50 w-44"
+            class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border rounded-lg shadow-lg p-3 z-50 w-48"
           >
             <div class="text-xs font-medium text-gray-700 mb-2">文档统计</div>
             <div class="space-y-1 text-xs text-gray-500">
               <div class="flex justify-between"><span>字数</span><span class="text-gray-700 font-medium">{{ wordCount }}</span></div>
+              <div class="flex justify-between"><span>阅读时间</span><span class="text-gray-700">~{{ readingTime }} 分钟</span></div>
               <div class="flex justify-between"><span>标题</span><span class="text-gray-700">{{ detailedStats.headings }}</span></div>
               <div class="flex justify-between"><span>段落</span><span class="text-gray-700">{{ detailedStats.paragraphs }}</span></div>
               <div class="flex justify-between"><span>图片</span><span class="text-gray-700">{{ detailedStats.images }}</span></div>
               <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
               <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
+              <div class="border-t pt-1 mt-1 flex justify-between"><span>撤销/重做</span><span class="text-gray-700 font-mono text-[10px]">{{ canUndo ? '&#x21A9;' : '' }} {{ canRedo ? '&#x21AA;' : '' }}</span></div>
             </div>
           </div>
         </div>
@@ -433,6 +455,11 @@ function goToPublish() {
         <span class="text-xs text-gray-300">Manifold v2</span>
       </div>
       <div class="flex items-center gap-2">
+        <button
+          class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+          @click="openPreview"
+          title="Preview HTML output"
+        >Preview</button>
         <button
           class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
           @click="copyAsWechatHtml"
@@ -460,6 +487,12 @@ function goToPublish() {
     <KeyboardShortcutHelp
       :visible="shortcutHelpVisible"
       @close="shortcutHelpVisible = false"
+    />
+
+    <HtmlPreviewModal
+      :visible="previewVisible"
+      :html="previewHtml"
+      @close="previewVisible = false"
     />
   </div>
 </template>
