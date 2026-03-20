@@ -575,4 +575,40 @@ function goToPublish() {
 .manifold-editor-content .ProseMirror.resize-cursor {
   cursor: col-resize;
 }
+/* Code block */
+.manifold-editor-content .ProseMirror pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.manifold-editor-content .ProseMirror pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+/* Lists nested */
+.manifold-editor-content .ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.5em;
+  margin: 0.5rem 0;
+}
+.manifold-editor-content .ProseMirror ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+  margin: 0.5rem 0;
+}
+.manifold-editor-content .ProseMirror li {
+  margin: 0.25rem 0;
+}
+.manifold-editor-content .ProseMirror li > p {
+  margin-bottom: 0.25rem;
+}
 </style>
