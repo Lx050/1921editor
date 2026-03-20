@@ -1,4 +1,5 @@
-import { Node, mergeAttributes } from '@tiptap/vue-3'
+import { Node, mergeAttributes, VueNodeViewRenderer } from '@tiptap/vue-3'
+import ImageBlockView from './ImageBlockView.vue'
 
 export const ManifoldImage = Node.create({
   name: 'manifoldImage',
@@ -28,5 +29,9 @@ export const ManifoldImage = Node.create({
       ['img', { src, draggable: 'false', style: 'max-width:100%;height:auto;' }],
       ...(caption ? [['figcaption', { style: 'font-size:12px;color:#999;text-align:center;margin-top:4px;' }, caption]] : []),
     ]
+  },
+
+  addNodeView() {
+    return VueNodeViewRenderer(ImageBlockView)
   },
 })

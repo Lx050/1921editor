@@ -13,6 +13,7 @@ import EditorSidebar from '../components/EditorSidebar.vue'
 import ImageSlotPopover from '../components/ImageSlotPopover.vue'
 import KeyboardShortcutHelp from '../components/KeyboardShortcutHelp.vue'
 import FindReplace from '../components/FindReplace.vue'
+import TableBubbleMenu from '../components/TableBubbleMenu.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
@@ -330,6 +331,7 @@ function goToPublish() {
     :class="isFullscreen ? 'fixed inset-0 z-[100]' : ''"
   >
     <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" />
+    <TableBubbleMenu :editor="editor" />
 
     <div class="flex flex-1 overflow-hidden">
       <EditorSidebar ref="sidebarRef" :editor="editor" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
@@ -497,19 +499,17 @@ function goToPublish() {
   margin: 1rem 0;
   color: #6b7280;
 }
-/* Image nodes */
-.manifold-editor-content .ProseMirror figure[data-node-type="manifold-image"] {
+/* Image nodes (NodeView) */
+.manifold-editor-content .ProseMirror .manifold-image-block {
+  margin: 0.75rem 0;
+}
+.manifold-editor-content .ProseMirror [data-node-type="manifold-image"] {
   margin: 1rem 0;
   text-align: center;
 }
-.manifold-editor-content .ProseMirror figure[data-node-type="manifold-image"] img {
+.manifold-editor-content .ProseMirror [data-node-type="manifold-image"] img {
   max-width: 100%;
   height: auto;
-  border-radius: 4px;
-}
-.manifold-editor-content .ProseMirror figure[data-node-type="manifold-image"]:hover {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
   border-radius: 4px;
 }
 /* Table */
