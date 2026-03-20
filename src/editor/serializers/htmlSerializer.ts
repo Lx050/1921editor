@@ -117,15 +117,15 @@ function serializeNode(
     case 'orderedList':
       return serializeList(node, styleConfig, orgPreset)
     case 'listItem':
-      return `<li>${serializeInlineContent(node)}</li>`
+      return serializeListItem(node, styleConfig, orgPreset)
     case 'table':
       return serializeTable(node, styleConfig, orgPreset)
     case 'tableRow':
       return `<tr>${(node.content || []).map((c: any) => serializeNode(c, styleConfig, orgPreset)).join('')}</tr>`
     case 'tableHeader':
-      return `<th style="border: 1px solid #d1d5db; padding: 8px 12px; background: #f3f4f6; font-weight: 600; font-size: 14px;">${serializeInlineContent(node)}</th>`
+      return `<th style="border: 1px solid #d1d5db; padding: 8px 12px; background: #f3f4f6; font-weight: 600; font-size: 14px;">${serializeCellContent(node, styleConfig, orgPreset)}</th>`
     case 'tableCell':
-      return `<td style="border: 1px solid #d1d5db; padding: 8px 12px; font-size: 14px;">${serializeInlineContent(node)}</td>`
+      return `<td style="border: 1px solid #d1d5db; padding: 8px 12px; font-size: 14px;">${serializeCellContent(node, styleConfig, orgPreset)}</td>`
     default:
       return serializeInlineContent(node)
   }
@@ -280,6 +280,39 @@ function serializeCodeBlock(node: any): string {
     (node.content || []).map((c: any) => c.text || '').join('')
   )
   return `<pre style="background: #f3f4f6; padding: 12px 16px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 15px 0; white-space: pre-wrap; word-wrap: break-word;"><code>${code}</code></pre>`
+}
+
+/** Serialize a list item -- handles nested paragraphs and sub-lists */
+function serializeListItem(
+  node: any,
+  styleConfig: StyleConfig | null,
+  orgPreset: OrgStylePreset | null
+): string {
+  if (!node.content) return '<li></li>'
+  const inner = node.content.map((child: any) => {
+    // If child is a paragraph, just inline its content (don't wrap in <p>)
+    if (child.type === 'manifoldParagraph' || child.type === 'paragraph') {
+      return serializeInlineContent(child)
+    }
+    // For nested lists, blockquotes, etc. -- serialize normally
+    return serializeNode(child, styleConfig, orgPreset)
+  }).join('')
+  return `<li style="margin: 2px 0;">${inner}</li>`
+}
+
+/** Serialize cell content (table header/cell) -- may contain paragraphs */
+function serializeCellContent(
+  node: any,
+  styleConfig: StyleConfig | null,
+  orgPreset: OrgStylePreset | null
+): string {
+  if (!node.content) return ''
+  return node.content.map((child: any) => {
+    if (child.type === 'manifoldParagraph' || child.type === 'paragraph') {
+      return serializeInlineContent(child)
+    }
+    return serializeNode(child, styleConfig, orgPreset)
+  }).join('<br/>')
 }
 
 function serializeList(
