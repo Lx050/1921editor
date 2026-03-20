@@ -17,6 +17,17 @@ function run(fn: () => boolean | void) {
   if (props.editor) fn()
 }
 
+function getCurrentRole(): string {
+  if (!props.editor) return 'body'
+  const { $from } = props.editor.state.selection
+  return $from.parent.attrs?.blockRole || 'body'
+}
+
+function setBlockRole(role: string) {
+  if (!props.editor) return
+  props.editor.chain().focus().updateAttributes('manifoldParagraph', { blockRole: role }).run()
+}
+
 function insertHR() {
   if (!props.editor) return
   props.editor.chain().focus().setHorizontalRule().run()
@@ -65,6 +76,21 @@ function handleImageUpload(event: Event) {
       :class="{ active: isActive('manifoldHeading', { level }) }"
       @click="run(() => editor!.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level }).run())"
     >H{{ level }}</button>
+
+    <span class="w-px h-5 bg-gray-300 mx-1" />
+
+    <!-- Block role (for paragraphs) -->
+    <select
+      v-if="isActive('manifoldParagraph')"
+      class="text-xs border rounded px-1 h-7 text-gray-600 bg-white"
+      :value="getCurrentRole()"
+      @change="setBlockRole(($event.target as HTMLSelectElement).value)"
+      title="段落角色"
+    >
+      <option value="body">正文</option>
+      <option value="intro">引言</option>
+      <option value="outro">结尾</option>
+    </select>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 

@@ -267,4 +267,32 @@ function goToPublish() {
   height: 0;
   pointer-events: none;
 }
+/* BlockRole visual indicators */
+.manifold-editor-content .ProseMirror p[data-role="intro"] {
+  border-left: 3px solid #60a5fa;
+  padding-left: 12px;
+  color: #4b5563;
+  font-style: italic;
+}
+.manifold-editor-content .ProseMirror p[data-role="outro"] {
+  border-left: 3px solid #a78bfa;
+  padding-left: 12px;
+  color: #4b5563;
+  font-style: italic;
+}
+/* Image nodes */
+.manifold-editor-content .ProseMirror figure[data-node-type="manifold-image"] {
+  margin: 1rem 0;
+  text-align: center;
+}
+.manifold-editor-content .ProseMirror figure[data-node-type="manifold-image"] img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+.manifold-editor-content .ProseMirror figure[data-node-type="manifold-image"]:hover {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 </style>
