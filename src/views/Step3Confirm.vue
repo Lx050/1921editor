@@ -44,7 +44,7 @@ function copyHtml() {
 }
 
 function goBack() {
-  router.push('/step2v2')
+  router.push('/step2')
 }
 </script>
 

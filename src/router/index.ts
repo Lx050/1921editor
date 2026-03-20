@@ -37,24 +37,6 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/step2',
     name: 'Step2',
-    component: () => import('../views/Step2Curtain.vue'),
-    meta: {
-      step: 2,
-      title: '步骤 2/3: 编辑内容'
-    }
-  },
-  {
-    path: '/step3',
-    name: 'Step3',
-    component: () => import('../views/Step3Preview.vue'),
-    meta: {
-      step: 3,
-      title: '步骤 3/3: 生成预览'
-    }
-  },
-  {
-    path: '/step2v2',
-    name: 'Step2v2',
     component: () => import('../views/Step2Editor.vue'),
     meta: {
       step: 2,
@@ -62,12 +44,30 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/step3confirm',
-    name: 'Step3Confirm',
+    path: '/step3',
+    name: 'Step3',
     component: () => import('../views/Step3Confirm.vue'),
     meta: {
       step: 3,
       title: 'Manifold 发布确认'
+    }
+  },
+  {
+    path: '/step2old',
+    name: 'Step2Old',
+    component: () => import('../views/Step2Curtain.vue'),
+    meta: {
+      step: 2,
+      title: '步骤 2/3: 编辑内容 (旧版)'
+    }
+  },
+  {
+    path: '/step3old',
+    name: 'Step3Old',
+    component: () => import('../views/Step3Preview.vue'),
+    meta: {
+      step: 3,
+      title: '步骤 3/3: 生成预览 (旧版)'
     }
   },
   {
@@ -199,27 +199,26 @@ interface RouteGuard {
 
 const routeGuards: Record<string, RouteGuard> = {
   '/step2': {
-    // 允许有 rawText 或 contentBlocks（从保存的文章恢复时只有 contentBlocks）
-    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length),
-    redirect: '/step1',
-    description: 'step2需要文本内容或内容块'
-  },
-  '/step3': {
-    validator: (appStore) => Boolean(appStore.contentBlocks?.length),
-    redirect: '/step2',
-    description: 'step3需要内容块'
-  },
-  '/step2v2': {
+    // Manifold editor: 接受 rawText、contentBlocks 或 editorJson
     validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length) || Boolean(appStore.editorJson),
     redirect: '/step1',
-    description: 'step2v2需要文本内容或内容块'
+    description: 'step2需要文本内容、内容块或编辑器JSON'
   },
-  '/step3confirm': {
-    validator: (appStore) => Boolean(appStore.editorJson),
-    redirect: '/step2v2',
-    description: 'step3confirm需要编辑器内容'
+  '/step3': {
+    validator: (appStore) => Boolean(appStore.editorJson) || Boolean(appStore.contentBlocks?.length),
+    redirect: '/step2',
+    description: 'step3需要编辑器内容或内容块'
   },
-
+  '/step2old': {
+    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length),
+    redirect: '/step1',
+    description: 'step2old需要文本内容或内容块'
+  },
+  '/step3old': {
+    validator: (appStore) => Boolean(appStore.contentBlocks?.length),
+    redirect: '/step2old',
+    description: 'step3old需要内容块'
+  },
 }
 
 const router = createRouter({

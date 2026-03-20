@@ -139,7 +139,7 @@ onBeforeUnmount(() => {
 })
 
 function goToPublish() {
-  router.push('/step3confirm')
+  router.push('/step3')
 }
 </script>
 
