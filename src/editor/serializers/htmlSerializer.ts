@@ -312,6 +312,9 @@ function serializeInlineContent(node: any): string {
           if (mark.type === 'italic') text = `<em>${text}</em>`
           if (mark.type === 'underline') text = `<span style="text-decoration: underline;">${text}</span>`
           if (mark.type === 'strike') text = `<span style="text-decoration: line-through;">${text}</span>`
+          if (mark.type === 'superscript') text = `<sup>${text}</sup>`
+          if (mark.type === 'subscript') text = `<sub>${text}</sub>`
+          if (mark.type === 'code') text = `<code style="background: #f3f4f6; padding: 2px 4px; border-radius: 3px; font-size: 0.9em; font-family: monospace;">${text}</code>`
           if (mark.type === 'link' && mark.attrs?.href) {
             text = `<a href="${DOMPurify.sanitize(mark.attrs.href)}" style="color: #576b95; text-decoration: none;">${text}</a>`
           }

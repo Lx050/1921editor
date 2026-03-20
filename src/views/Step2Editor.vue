@@ -297,10 +297,31 @@ const detailedStats = computed(() => {
 })
 
 function handleGlobalKeydown(event: KeyboardEvent) {
+  const mod = event.ctrlKey || event.metaKey
   // Ctrl+F opens find & replace
-  if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+  if (mod && event.key === 'f') {
     event.preventDefault()
     findReplaceVisible.value = !findReplaceVisible.value
+    return
+  }
+  // Ctrl+S manual save
+  if (mod && event.key === 's') {
+    event.preventDefault()
+    if (editor.value) {
+      const json = editor.value.getJSON() as EditorDocument
+      try {
+        localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
+        autosaveStatus.value = 'saved'
+        if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
+        autosaveFadeTimer = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
+      } catch { /* ignore */ }
+    }
+    return
+  }
+  // Ctrl+Shift+C copy as WeChat HTML
+  if (mod && event.shiftKey && event.key === 'C') {
+    event.preventDefault()
+    copyAsWechatHtml()
     return
   }
   // Escape exits fullscreen or closes find
@@ -531,5 +552,27 @@ function goToPublish() {
 }
 .manifold-editor-content .ProseMirror .selectedCell {
   background: #dbeafe;
+}
+/* Inline code */
+.manifold-editor-content .ProseMirror code {
+  background: #f3f4f6;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: #ef4444;
+}
+/* Column resize handle */
+.manifold-editor-content .ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #3b82f6;
+  cursor: col-resize;
+}
+.manifold-editor-content .ProseMirror.resize-cursor {
+  cursor: col-resize;
 }
 </style>

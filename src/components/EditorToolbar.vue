@@ -148,6 +148,24 @@ function toggleLink() {
       title="删除线 (Ctrl+Shift+S)"
     ><span class="line-through">S</span></button>
     <button
+      class="toolbar-btn text-[10px]"
+      :class="{ active: isActive('superscript') }"
+      @click="run(() => editor!.chain().focus().toggleSuperscript().run())"
+      title="上标 (Ctrl+.)"
+    >X<sup>2</sup></button>
+    <button
+      class="toolbar-btn text-[10px]"
+      :class="{ active: isActive('subscript') }"
+      @click="run(() => editor!.chain().focus().toggleSubscript().run())"
+      title="下标 (Ctrl+,)"
+    >X<sub>2</sub></button>
+    <button
+      class="toolbar-btn text-xs"
+      :class="{ active: isActive('code') }"
+      @click="run(() => editor!.chain().focus().toggleCode().run())"
+      title="行内代码 (Ctrl+E)"
+    ><span class="font-mono text-[10px] bg-gray-100 px-0.5 rounded">&lt;/&gt;</span></button>
+    <button
       class="toolbar-btn text-xs"
       :class="{ active: isActive('link') }"
       @click="toggleLink"

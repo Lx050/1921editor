@@ -8,6 +8,8 @@ import { Color } from '@tiptap/extension-color'
 import TextStyle from '@tiptap/extension-text-style'
 import Underline from '@tiptap/extension-underline'
 import Highlight from '@tiptap/extension-highlight'
+import Superscript from '@tiptap/extension-superscript'
+import Subscript from '@tiptap/extension-subscript'
 import Table from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
@@ -72,6 +74,8 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
         HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
       }),
       Underline,
+      Superscript,
+      Subscript,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,

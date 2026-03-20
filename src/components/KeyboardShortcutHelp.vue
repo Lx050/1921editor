@@ -7,6 +7,10 @@ const shortcuts = [
     { keys: 'Ctrl+B', desc: '加粗' },
     { keys: 'Ctrl+I', desc: '斜体' },
     { keys: 'Ctrl+U', desc: '下划线' },
+    { keys: 'Ctrl+E', desc: '行内代码' },
+    { keys: 'Ctrl+.', desc: '上标' },
+    { keys: 'Ctrl+,', desc: '下标' },
+    { keys: 'Ctrl+K', desc: '链接' },
   ]},
   { section: '标题', items: [
     { keys: 'Ctrl+Alt+1', desc: '一级标题' },
@@ -27,6 +31,8 @@ const shortcuts = [
     { keys: 'Shift+Tab', desc: '减少缩进' },
   ]},
   { section: '其他', items: [
+    { keys: 'Ctrl+S', desc: '手动保存' },
+    { keys: 'Ctrl+Shift+C', desc: '复制微信HTML' },
     { keys: 'Ctrl+F', desc: '查找与替换' },
     { keys: '/', desc: '打开命令菜单' },
     { keys: 'Ctrl+Enter', desc: '插入分隔线' },
