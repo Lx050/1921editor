@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
 import { storeToRefs } from 'pinia'
@@ -182,6 +182,28 @@ onBeforeUnmount(() => {
   window.removeEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
 })
 
+// Live editor stats
+const wordCount = computed(() => {
+  if (!editor.value) return 0
+  return editor.value.getText().length
+})
+
+const nodeCount = computed(() => {
+  if (!editor.value) return 0
+  let count = 0
+  editor.value.state.doc.descendants(() => { count++ })
+  return count
+})
+
+const svgBlockCount = computed(() => {
+  if (!editor.value) return 0
+  let count = 0
+  editor.value.state.doc.descendants((node) => {
+    if (node.type.name === 'manifoldSvgBlock') count++
+  })
+  return count
+})
+
 function goBack() {
   router.push('/step1')
 }
@@ -217,7 +239,11 @@ function goToPublish() {
       >
         &larr; 返回文本输入
       </button>
-      <span class="text-xs text-gray-400">Manifold SVG Editor v2</span>
+      <div class="flex items-center gap-4">
+        <span class="text-xs text-gray-400">{{ wordCount }} 字</span>
+        <span v-if="svgBlockCount > 0" class="text-xs text-gray-400">{{ svgBlockCount }} 个SVG</span>
+        <span class="text-xs text-gray-300">Manifold v2</span>
+      </div>
       <button
         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
         @click="goToPublish"

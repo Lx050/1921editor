@@ -41,7 +41,18 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       ManifoldSvgBlock,
       Placeholder.configure({
         placeholder: ({ node }) => {
-          if (node.type.name === 'manifoldHeading') return '输入标题...'
+          if (node.type.name === 'manifoldHeading') {
+            const level = node.attrs?.level || 1
+            return level === 1 ? '输入标题...' : `输入 H${level} 标题...`
+          }
+          if (node.type.name === 'manifoldParagraph') {
+            const role = node.attrs?.blockRole || 'body'
+            switch (role) {
+              case 'intro': return '输入引言... (/ 打开命令菜单)'
+              case 'outro': return '输入结尾...'
+              default: return '输入正文... (/ 打开命令菜单)'
+            }
+          }
           return '输入内容...'
         }
       }),
