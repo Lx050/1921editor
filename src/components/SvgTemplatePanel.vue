@@ -182,12 +182,14 @@ const currentGroups = computed(() => {
     const expandedIds = ['slider_compare', 'photo_wall', 'infographic', 'quiz_poll', 'faq_accordion', 'envelope_letter', 'h_scroll', 'num_counter', 'atmosphere', 'retro_vintage']
     const proIds = ['sandwich_slide', 'shatter_effect', 'frame_sequence', 'parallax_3d', 'mutex_accordion', 'product_showcase', 'map_hotspot', 'unlock_reveal']
     const ultraIds = ['scroll_unfurl', 'poker_deal', 'infinite_selector', 'stagger_entrance', 'layer_adhesion', 'card_flip', 'scroll_dismiss', 'dark_light', 'auto_cinema', 'float_hotzone']
+    const imageDrivenIds = ['click_expand_image', 'tab_switch_image', 'before_after_image', 'image_sequence', 'grid_zoom_image', 'card_flip_image']
     return [
       { label: 'SMIL \u57fa\u7840\u4ea4\u4e92', items: baseIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
       { label: 'GQ Lab \u9ad8\u7ea7\u4ea4\u4e92', items: advancedIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
       { label: '\u5b9e\u7528\u573a\u666f\u6a21\u677f', items: expandedIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
       { label: 'E2.COOL \u4e13\u4e1a\u4ea4\u4e92', items: proIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
-      { label: '2025 SOTA \u4ea4\u4e92', items: ultraIds.map(id => categories.find(c => c.id === id)).filter(Boolean) }
+      { label: '2025 SOTA \u4ea4\u4e92', items: ultraIds.map(id => categories.find(c => c.id === id)).filter(Boolean) },
+      { label: 'Manifold \u56fe\u7247\u4ea4\u4e92', items: imageDrivenIds.map(id => categories.find(c => c.id === id)).filter(Boolean) }
     ]
   }
   const groups = [
@@ -213,7 +215,9 @@ const tallCategories = new Set([
   'mutex_accordion', 'product_showcase', 'map_hotspot', 'unlock_reveal',
   'scroll_unfurl', 'poker_deal', 'infinite_selector', 'stagger_entrance',
   'layer_adhesion', 'card_flip', 'scroll_dismiss', 'dark_light',
-  'auto_cinema', 'float_hotzone'
+  'auto_cinema', 'float_hotzone',
+  'click_expand_image', 'tab_switch_image', 'before_after_image',
+  'image_sequence', 'grid_zoom_image', 'card_flip_image'
 ])
 const tallPreview = computed(() => tallCategories.has(activeCategory.value))
 
@@ -248,7 +252,10 @@ const getInteractionLabel = (tpl) => {
     'infinite_selector': '选择', 'stagger_entrance': '入场',
     'layer_adhesion': '吸附', 'card_flip': '翻转',
     'scroll_dismiss': '撤场', 'dark_light': '明暗',
-    'auto_cinema': '影院', 'float_hotzone': '浮层'
+    'auto_cinema': '影院', 'float_hotzone': '浮层',
+    'click_expand_image': '展开', 'tab_switch_image': '切换',
+    'before_after_image': '对比', 'image_sequence': '翻页',
+    'grid_zoom_image': '放大', 'card_flip_image': '翻转'
   }
   return labelMap[cat] || '交互'
 }

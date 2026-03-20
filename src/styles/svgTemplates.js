@@ -1,6 +1,6 @@
 /**
  * SVG 装饰模板库
- * 提供 61 大类 SVG 装饰与交互模板，用于微信公众号文章排版
+ * 提供 67 大类 SVG 装饰与交互模板，用于微信公众号文章排版
  * 所有 SVG 均为内联格式，兼容微信 WebView
  *
  * 分类:
@@ -70,6 +70,13 @@
  * 59. dark_light        - 明暗切换
  * 60. auto_cinema       - 自动影院
  * 61. float_hotzone     - 浮层热区
+ * === Manifold 图片交互模板 (Image-Driven) ===
+ * 62. click_expand_image  - 点击展开大图
+ * 63. tab_switch_image    - 标签页切换图片
+ * 64. before_after_image  - 前后对比滑块
+ * 65. image_sequence      - 多图序列翻页
+ * 66. grid_zoom_image     - 网格点击放大
+ * 67. card_flip_image     - 卡牌翻转揭秘
  */
 
 import {
@@ -117,6 +124,15 @@ import {
   SVG_AUTO_CINEMA,
   SVG_FLOAT_HOTZONE
 } from './svgTemplatesUltra'
+
+import {
+  SVG_CLICK_EXPAND_IMAGE,
+  SVG_TAB_SWITCH_IMAGE,
+  SVG_BEFORE_AFTER_IMAGE,
+  SVG_IMAGE_SEQUENCE,
+  SVG_GRID_ZOOM_IMAGE,
+  SVG_CARD_FLIP_IMAGE
+} from './svgTemplatesImageDriven'
 
 // =============================================
 // 1. 装饰边框 (Borders & Frames)
@@ -2126,7 +2142,14 @@ export const SVG_TEMPLATE_CATEGORIES = [
   { id: 'scroll_dismiss', name: '滑动撤场', icon: '👋', data: SVG_SCROLL_DISMISS, interactive: true },
   { id: 'dark_light', name: '明暗切换', icon: '🌓', data: SVG_DARK_LIGHT, interactive: true },
   { id: 'auto_cinema', name: '自动影院', icon: '🎬', data: SVG_AUTO_CINEMA, interactive: true },
-  { id: 'float_hotzone', name: '浮层热区', icon: '💬', data: SVG_FLOAT_HOTZONE, interactive: true }
+  { id: 'float_hotzone', name: '浮层热区', icon: '💬', data: SVG_FLOAT_HOTZONE, interactive: true },
+  // Manifold 图片交互模板
+  { id: 'click_expand_image', name: '点击展开大图', icon: '🖼', data: SVG_CLICK_EXPAND_IMAGE, interactive: true },
+  { id: 'tab_switch_image', name: '标签切换图片', icon: '🏷', data: SVG_TAB_SWITCH_IMAGE, interactive: true },
+  { id: 'before_after_image', name: '前后对比', icon: '🔀', data: SVG_BEFORE_AFTER_IMAGE, interactive: true },
+  { id: 'image_sequence', name: '序列翻页', icon: '📖', data: SVG_IMAGE_SEQUENCE, interactive: true },
+  { id: 'grid_zoom_image', name: '网格放大', icon: '🔍', data: SVG_GRID_ZOOM_IMAGE, interactive: true },
+  { id: 'card_flip_image', name: '卡牌翻转', icon: '🃏', data: SVG_CARD_FLIP_IMAGE, interactive: true }
 ]
 
 /**
@@ -2198,7 +2221,14 @@ export function getAllSvgTemplates() {
     ...SVG_SCROLL_DISMISS,
     ...SVG_DARK_LIGHT,
     ...SVG_AUTO_CINEMA,
-    ...SVG_FLOAT_HOTZONE
+    ...SVG_FLOAT_HOTZONE,
+    // Manifold 图片交互模板
+    ...SVG_CLICK_EXPAND_IMAGE,
+    ...SVG_TAB_SWITCH_IMAGE,
+    ...SVG_BEFORE_AFTER_IMAGE,
+    ...SVG_IMAGE_SEQUENCE,
+    ...SVG_GRID_ZOOM_IMAGE,
+    ...SVG_CARD_FLIP_IMAGE
   ]
 }
 
