@@ -27,6 +27,7 @@ const shortcuts = [
     { keys: 'Shift+Tab', desc: '减少缩进' },
   ]},
   { section: '其他', items: [
+    { keys: 'Ctrl+F', desc: '查找与替换' },
     { keys: '/', desc: '打开命令菜单' },
     { keys: 'Ctrl+Enter', desc: '插入分隔线' },
     { keys: '?', desc: '显示此面板' },

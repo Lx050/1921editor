@@ -11,6 +11,8 @@ import EditorToolbar from '../components/EditorToolbar.vue'
 import EditorSidebar from '../components/EditorSidebar.vue'
 import ImageSlotPopover from '../components/ImageSlotPopover.vue'
 import KeyboardShortcutHelp from '../components/KeyboardShortcutHelp.vue'
+import FindReplace from '../components/FindReplace.vue'
+import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
 
@@ -32,6 +34,9 @@ const shortcutHelpVisible = ref(false)
 const isDragOver = ref(false)
 const isFullscreen = ref(false)
 const autosaveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
+const copyStatus = ref<'idle' | 'copied'>('idle')
+const statsVisible = ref(false)
+const findReplaceVisible = ref(false)
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
@@ -53,6 +58,24 @@ function handleEditorUpdate(json: EditorDocument) {
 
 function toggleFullscreen() {
   isFullscreen.value = !isFullscreen.value
+}
+
+async function copyAsWechatHtml() {
+  if (!editor.value) return
+  const doc = editor.value.getJSON() as EditorDocument
+  const html = serializeToWechatHtml(doc)
+  try {
+    const blob = new Blob([html], { type: 'text/html' })
+    const plainBlob = new Blob([html], { type: 'text/plain' })
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'text/html': blob, 'text/plain': plainBlob })
+    ])
+  } catch {
+    // Fallback to plain text copy
+    await navigator.clipboard.writeText(html).catch(() => {})
+  }
+  copyStatus.value = 'copied'
+  setTimeout(() => { copyStatus.value = 'idle' }, 2000)
 }
 
 function insertSvgTemplate(tpl: { id: string; name: string; svg: string; imageSlots?: any[] }) {
@@ -257,11 +280,31 @@ const svgBlockCount = computed(() => {
   return count
 })
 
+const detailedStats = computed(() => {
+  if (!editor.value) return { paragraphs: 0, headings: 0, images: 0, svgs: 0, tables: 0 }
+  let paragraphs = 0, headings = 0, images = 0, svgs = 0, tables = 0
+  editor.value.state.doc.descendants((node) => {
+    if (node.type.name === 'manifoldParagraph') paragraphs++
+    else if (node.type.name === 'manifoldHeading') headings++
+    else if (node.type.name === 'manifoldImage') images++
+    else if (node.type.name === 'manifoldSvgBlock') svgs++
+    else if (node.type.name === 'table') tables++
+  })
+  return { paragraphs, headings, images, svgs, tables }
+})
+
 function handleGlobalKeydown(event: KeyboardEvent) {
-  // Escape exits fullscreen
-  if (event.key === 'Escape' && isFullscreen.value) {
-    isFullscreen.value = false
+  // Ctrl+F opens find & replace
+  if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+    event.preventDefault()
+    findReplaceVisible.value = !findReplaceVisible.value
     return
+  }
+  // Escape exits fullscreen or closes find
+  if (event.key === 'Escape') {
+    if (findReplaceVisible.value) { findReplaceVisible.value = false; return }
+    if (statsVisible.value) { statsVisible.value = false; return }
+    if (isFullscreen.value) { isFullscreen.value = false; return }
   }
   // "?" key when not typing in editor (Shift+/ on most keyboards)
   if (event.key === '?' && !editor.value?.isFocused) {
@@ -296,6 +339,7 @@ function goToPublish() {
         @dragover="handleDragOver"
         @dragleave="handleDragLeave"
       >
+        <FindReplace :editor="editor" :visible="findReplaceVisible" @close="findReplaceVisible = false" />
         <div
           class="max-w-[680px] mx-auto py-8 px-6 bg-white min-h-full shadow-sm my-4 rounded transition-all"
           :class="isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : ''"
@@ -322,8 +366,27 @@ function goToPublish() {
       <div class="flex items-center gap-4">
         <span v-if="autosaveStatus === 'saving'" class="text-xs text-amber-500">保存中...</span>
         <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存</span>
-        <span class="text-xs text-gray-400">{{ wordCount }} 字</span>
-        <span v-if="svgBlockCount > 0" class="text-xs text-gray-400">{{ svgBlockCount }} 个SVG</span>
+        <div class="relative">
+          <button
+            class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            @click="statsVisible = !statsVisible"
+            title="文档统计"
+          >{{ wordCount }} 字</button>
+          <div
+            v-if="statsVisible"
+            class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border rounded-lg shadow-lg p-3 z-50 w-44"
+          >
+            <div class="text-xs font-medium text-gray-700 mb-2">文档统计</div>
+            <div class="space-y-1 text-xs text-gray-500">
+              <div class="flex justify-between"><span>字数</span><span class="text-gray-700 font-medium">{{ wordCount }}</span></div>
+              <div class="flex justify-between"><span>标题</span><span class="text-gray-700">{{ detailedStats.headings }}</span></div>
+              <div class="flex justify-between"><span>段落</span><span class="text-gray-700">{{ detailedStats.paragraphs }}</span></div>
+              <div class="flex justify-between"><span>图片</span><span class="text-gray-700">{{ detailedStats.images }}</span></div>
+              <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
+              <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
+            </div>
+          </div>
+        </div>
         <button
           class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
           @click="toggleFullscreen"
@@ -336,12 +399,20 @@ function goToPublish() {
         >?</button>
         <span class="text-xs text-gray-300">Manifold v2</span>
       </div>
-      <button
-        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-        @click="goToPublish"
-      >
-        下一步: 发布确认
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+          @click="copyAsWechatHtml"
+        >
+          {{ copyStatus === 'copied' ? '已复制!' : '复制微信HTML' }}
+        </button>
+        <button
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          @click="goToPublish"
+        >
+          下一步: 发布确认
+        </button>
+      </div>
     </div>
 
     <ImageSlotPopover
