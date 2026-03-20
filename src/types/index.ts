@@ -10,7 +10,8 @@ export type BlockType =
   | 'image_single_caption'
   | 'image_double'
   | 'image_double_caption'
-  | 'svg_decoration';
+  | 'svg_decoration'
+  | 'svg_image_interactive';
 
 /**
  * 内容块数据接口

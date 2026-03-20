@@ -53,6 +53,24 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/step2v2',
+    name: 'Step2v2',
+    component: () => import('../views/Step2Editor.vue'),
+    meta: {
+      step: 2,
+      title: 'Manifold Editor'
+    }
+  },
+  {
+    path: '/step3confirm',
+    name: 'Step3Confirm',
+    component: () => import('../views/Step3Confirm.vue'),
+    meta: {
+      step: 3,
+      title: 'Manifold 发布确认'
+    }
+  },
+  {
     path: '/step3/:id',
     name: 'Step3WithArticle',
     component: () => import('../views/Step3Preview.vue'),
@@ -190,6 +208,16 @@ const routeGuards: Record<string, RouteGuard> = {
     validator: (appStore) => Boolean(appStore.contentBlocks?.length),
     redirect: '/step2',
     description: 'step3需要内容块'
+  },
+  '/step2v2': {
+    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length) || Boolean(appStore.editorJson),
+    redirect: '/step1',
+    description: 'step2v2需要文本内容或内容块'
+  },
+  '/step3confirm': {
+    validator: (appStore) => Boolean(appStore.editorJson),
+    redirect: '/step2v2',
+    description: 'step3confirm需要编辑器内容'
   },
 
 }

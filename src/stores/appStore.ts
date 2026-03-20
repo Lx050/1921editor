@@ -34,6 +34,10 @@ export const useAppStore = defineStore('app', () => {
   })
   const isUploading: Ref<boolean> = ref(false)
 
+  // Manifold Editor 状态
+  const editorJson: Ref<any> = ref(null)
+  const imageSlotRegistry: Ref<Record<string, any>> = ref({})
+
   // 操作（严格类型注解）
   const setStep = (step: number): void => {
     if (typeof step !== 'number' || step < 1 || step > 3) {
@@ -287,7 +291,10 @@ export const useAppStore = defineStore('app', () => {
     setIsUploading,
     clearWechatImages,
     resetApp,
-    initializeUserMetadata
+    initializeUserMetadata,
+    // Manifold Editor
+    editorJson,
+    imageSlotRegistry
   }
 })
 

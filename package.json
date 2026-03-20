@@ -13,6 +13,12 @@
     "lighthouse:quick": "npx lighthouse http://localhost:5173 --output=html --output-path=./lighthouse-reports/quick-report.html --quiet --preset=desktop"
   },
   "dependencies": {
+    "@tiptap/extension-dropcursor": "^2.27.2",
+    "@tiptap/extension-image": "^2.27.2",
+    "@tiptap/extension-placeholder": "^2.27.2",
+    "@tiptap/pm": "^2.27.2",
+    "@tiptap/starter-kit": "^2.27.2",
+    "@tiptap/vue-3": "^2.27.2",
     "@types/dompurify": "^3.0.5",
     "7z-wasm": "^1.2.0",
     "axios": "^1.13.2",
