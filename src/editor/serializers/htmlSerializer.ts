@@ -116,6 +116,14 @@ function serializeNode(
       return serializeList(node, styleConfig, orgPreset)
     case 'listItem':
       return `<li>${serializeInlineContent(node)}</li>`
+    case 'table':
+      return serializeTable(node, styleConfig, orgPreset)
+    case 'tableRow':
+      return `<tr>${(node.content || []).map((c: any) => serializeNode(c, styleConfig, orgPreset)).join('')}</tr>`
+    case 'tableHeader':
+      return `<th style="border: 1px solid #d1d5db; padding: 8px 12px; background: #f3f4f6; font-weight: 600; font-size: 14px;">${serializeInlineContent(node)}</th>`
+    case 'tableCell':
+      return `<td style="border: 1px solid #d1d5db; padding: 8px 12px; font-size: 14px;">${serializeInlineContent(node)}</td>`
     default:
       return serializeInlineContent(node)
   }
@@ -281,6 +289,15 @@ function serializeBlockquote(
   return `<blockquote style="margin: 15px 0; padding: 10px 15px; border-left: 3px solid #d1d5db; color: #6b7280; font-size: 14px; line-height: 1.75em;">${inner}</blockquote>`
 }
 
+function serializeTable(
+  node: any,
+  styleConfig: StyleConfig | null,
+  orgPreset: OrgStylePreset | null
+): string {
+  const rows = (node.content || []).map((child: any) => serializeNode(child, styleConfig, orgPreset)).join('')
+  return `<table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: \u5fae\u8f6f\u96c5\u9ed1, MicrosoftYaHei;">${rows}</table>`
+}
+
 function serializeInlineContent(node: any): string {
   if (!node.content) return ''
   return node.content.map((child: any) => {
@@ -295,8 +312,11 @@ function serializeInlineContent(node: any): string {
           if (mark.type === 'link' && mark.attrs?.href) {
             text = `<a href="${DOMPurify.sanitize(mark.attrs.href)}" style="color: #576b95; text-decoration: none;">${text}</a>`
           }
-          if (mark.type === 'textStyle' && mark.attrs?.color) {
-            text = `<span style="color: ${mark.attrs.color};">${text}</span>`
+          if (mark.type === 'textStyle') {
+            const styles: string[] = []
+            if (mark.attrs?.color) styles.push(`color: ${mark.attrs.color}`)
+            if (mark.attrs?.fontSize) styles.push(`font-size: ${mark.attrs.fontSize}`)
+            if (styles.length) text = `<span style="${styles.join('; ')};">${text}</span>`
           }
         }
       }

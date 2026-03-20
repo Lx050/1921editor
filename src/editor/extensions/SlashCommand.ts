@@ -42,6 +42,11 @@ export const slashMenuItems: SlashMenuItem[] = [
     command: (editor) => editor.chain().focus().toggleBlockquote().run(),
   },
   {
+    title: '表格',
+    icon: 'T',
+    command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+  },
+  {
     title: '分隔线',
     icon: '\u2015',
     command: (editor) => editor.chain().focus().setHorizontalRule().run(),

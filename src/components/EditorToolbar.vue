@@ -11,6 +11,7 @@ const imageInput = ref<HTMLInputElement | null>(null)
 const colorInput = ref<HTMLInputElement | null>(null)
 
 const presetColors = ['#000000', '#374151', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
+const fontSizes = ['12', '13', '14', '15', '16', '18', '20', '24']
 
 function isActive(name: string, attrs?: Record<string, unknown>): boolean {
   return props.editor?.isActive(name, attrs) ?? false
@@ -60,6 +61,16 @@ function setColor(color: string) {
 function handleColorInput(event: Event) {
   const value = (event.target as HTMLInputElement).value
   setColor(value)
+}
+
+function setFontSize(size: string) {
+  if (!props.editor) return
+  props.editor.chain().focus().setFontSize(`${size}px`).run()
+}
+
+function clearFormatting() {
+  if (!props.editor) return
+  props.editor.chain().focus().clearNodes().unsetAllMarks().run()
 }
 
 function toggleLink() {
@@ -134,6 +145,15 @@ function toggleLink() {
         <input ref="colorInput" type="color" class="sr-only" @input="handleColorInput" />
       </div>
     </div>
+
+    <!-- Font size -->
+    <select
+      class="text-xs border rounded px-1 h-7 text-gray-600 bg-white w-14"
+      @change="setFontSize(($event.target as HTMLSelectElement).value)"
+      title="字号"
+    >
+      <option v-for="s in fontSizes" :key="s" :value="s">{{ s }}px</option>
+    </select>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
@@ -212,6 +232,7 @@ function toggleLink() {
     <!-- Undo/Redo -->
     <button class="toolbar-btn" @click="run(() => editor!.chain().focus().undo().run())" title="撤销">&#x21A9;</button>
     <button class="toolbar-btn" @click="run(() => editor!.chain().focus().redo().run())" title="重做">&#x21AA;</button>
+    <button class="toolbar-btn text-xs text-gray-400" @click="clearFormatting" title="清除格式">Tx</button>
 
     <div class="flex-1" />
     <span class="text-xs text-gray-400 select-none">Manifold Editor</span>

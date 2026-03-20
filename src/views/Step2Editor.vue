@@ -404,4 +404,24 @@ function goToPublish() {
   outline-offset: 2px;
   border-radius: 4px;
 }
+/* Table */
+.manifold-editor-content .ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+.manifold-editor-content .ProseMirror th,
+.manifold-editor-content .ProseMirror td {
+  border: 1px solid #d1d5db;
+  padding: 6px 10px;
+  min-width: 80px;
+  vertical-align: top;
+}
+.manifold-editor-content .ProseMirror th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+.manifold-editor-content .ProseMirror .selectedCell {
+  background: #dbeafe;
+}
 </style>
