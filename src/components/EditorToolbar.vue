@@ -311,6 +311,12 @@ function toggleLink() {
       @click="run(() => editor!.chain().focus().setTextAlign('right').run())"
       title="右对齐"
     >&#x2263;</button>
+    <button
+      class="toolbar-btn text-xs"
+      :class="{ active: isActive({ textAlign: 'justify' }) }"
+      @click="run(() => editor!.chain().focus().setTextAlign('justify').run())"
+      title="两端对齐"
+    >&#x2630;</button>
 
     <!-- Indent/Outdent -->
     <button class="toolbar-btn text-xs" @click="outdent" title="减少缩进 (Shift+Tab)">&#x21E4;</button>

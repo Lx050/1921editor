@@ -109,6 +109,8 @@ function serializeNode(
       return serializeSvgBlock(node)
     case 'horizontalRule':
       return '<hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />'
+    case 'codeBlock':
+      return serializeCodeBlock(node)
     case 'blockquote':
       return serializeBlockquote(node, styleConfig, orgPreset)
     case 'bulletList':
@@ -271,6 +273,13 @@ function serializeSvgBlock(node: any): string {
   }
 
   return `<section class="_135editor" data-role="svg-decoration" style="margin: 15px 0; text-align: center;"><!-- Manifold SVG Engine -->${svgContent}</section>`
+}
+
+function serializeCodeBlock(node: any): string {
+  const code = DOMPurify.sanitize(
+    (node.content || []).map((c: any) => c.text || '').join('')
+  )
+  return `<pre style="background: #f3f4f6; padding: 12px 16px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 15px 0; white-space: pre-wrap; word-wrap: break-word;"><code>${code}</code></pre>`
 }
 
 function serializeList(

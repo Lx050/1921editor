@@ -21,6 +21,7 @@ import { ManifoldSvgBlock } from '../nodes/ManifoldSvgBlock'
 import { SlashCommand } from '../extensions/SlashCommand'
 import { FontSize } from '../extensions/FontSize'
 import { DragHandle } from '../extensions/DragHandle'
+import { SmartPaste } from '../extensions/SmartPaste'
 import type { EditorDocument } from '@/types/editor'
 
 export interface CreateEditorOptions {
@@ -90,6 +91,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       TableHeader,
       Dropcursor.configure({ color: '#3b82f6', width: 2 }),
       DragHandle,
+      SmartPaste,
       SlashCommand,
     ],
     onUpdate: ({ editor }) => {
