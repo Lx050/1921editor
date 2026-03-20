@@ -2,6 +2,7 @@ import { Editor } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Dropcursor from '@tiptap/extension-dropcursor'
+import Link from '@tiptap/extension-link'
 import { ManifoldHeading } from '../nodes/ManifoldHeading'
 import { ManifoldParagraph } from '../nodes/ManifoldParagraph'
 import { ManifoldImage } from '../nodes/ManifoldImage'
@@ -55,6 +56,10 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
           }
           return '输入内容...'
         }
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
       }),
       Dropcursor.configure({ color: '#3b82f6', width: 2 }),
       SlashCommand,

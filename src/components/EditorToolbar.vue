@@ -48,6 +48,18 @@ function handleImageUpload(event: Event) {
   }).run()
   input.value = ''
 }
+
+function toggleLink() {
+  if (!props.editor) return
+  if (props.editor.isActive('link')) {
+    props.editor.chain().focus().unsetLink().run()
+    return
+  }
+  const url = window.prompt('输入链接地址', 'https://')
+  if (url) {
+    props.editor.chain().focus().setLink({ href: url }).run()
+  }
+}
 </script>
 
 <template>
@@ -65,6 +77,12 @@ function handleImageUpload(event: Event) {
       @click="run(() => editor!.chain().focus().toggleItalic().run())"
       title="斜体"
     >I</button>
+    <button
+      class="toolbar-btn text-xs"
+      :class="{ active: isActive('link') }"
+      @click="toggleLink"
+      title="链接 (Ctrl+K)"
+    >&#x1F517;</button>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 

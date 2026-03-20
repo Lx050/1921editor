@@ -29,6 +29,8 @@ const popoverNodePos = ref<number | null>(null)
 const popoverCurrentData = ref<ImageSlotData | null>(null)
 
 const shortcutHelpVisible = ref(false)
+const isDragOver = ref(false)
+let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 
 function handleEditorUpdate(json: EditorDocument) {
@@ -130,6 +132,7 @@ function handleInsertImage(data: { src: string; name: string; mediaId?: string }
 
 /** Handle drag-drop images onto the editor canvas */
 function handleDrop(event: DragEvent) {
+  isDragOver.value = false
   if (!editor.value) return
 
   // Check for gallery drag (application/manifold-image)
@@ -162,7 +165,15 @@ function handleDrop(event: DragEvent) {
 function handleDragOver(event: DragEvent) {
   if (event.dataTransfer?.types.includes('Files') || event.dataTransfer?.types.includes('application/manifold-image')) {
     event.preventDefault()
+    isDragOver.value = true
+    if (dragLeaveTimer) { clearTimeout(dragLeaveTimer); dragLeaveTimer = null }
   }
+}
+
+function handleDragLeave() {
+  // Debounce to avoid flickering when moving between child elements
+  if (dragLeaveTimer) clearTimeout(dragLeaveTimer)
+  dragLeaveTimer = setTimeout(() => { isDragOver.value = false }, 100)
 }
 
 onMounted(() => {
@@ -259,13 +270,24 @@ function goToPublish() {
       <EditorSidebar ref="sidebarRef" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
 
       <div
-        class="flex-1 overflow-y-auto"
+        class="flex-1 overflow-y-auto relative"
         @click="handleCanvasClick"
         @drop="handleDrop"
         @dragover="handleDragOver"
+        @dragleave="handleDragLeave"
       >
-        <div class="max-w-[680px] mx-auto py-8 px-6 bg-white min-h-full shadow-sm my-4 rounded">
+        <div
+          class="max-w-[680px] mx-auto py-8 px-6 bg-white min-h-full shadow-sm my-4 rounded transition-all"
+          :class="isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : ''"
+        >
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" />
+        </div>
+        <!-- Drag overlay hint -->
+        <div
+          v-if="isDragOver"
+          class="absolute inset-0 flex items-center justify-center bg-blue-50/60 pointer-events-none z-10"
+        >
+          <span class="text-blue-600 text-sm font-medium bg-white px-4 py-2 rounded-lg shadow">松开以插入图片</span>
         </div>
       </div>
     </div>
