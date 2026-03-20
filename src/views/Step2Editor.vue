@@ -273,10 +273,14 @@ onBeforeUnmount(() => {
 })
 
 // Live editor stats
+const WECHAT_CHAR_LIMIT = 20000
+
 const wordCount = computed(() => {
   if (!editor.value) return 0
   return editor.value.getText().length
 })
+
+const isOverLimit = computed(() => wordCount.value > WECHAT_CHAR_LIMIT)
 
 const nodeCount = computed(() => {
   if (!editor.value) return 0
@@ -415,9 +419,10 @@ function goToPublish() {
         <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存</span>
         <div class="relative">
           <button
-            class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            class="text-xs transition-colors"
+            :class="isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400 hover:text-gray-600'"
             @click="statsVisible = !statsVisible"
-            title="文档统计"
+            :title="isOverLimit ? `超出微信字数限制 (${WECHAT_CHAR_LIMIT} 字)` : '文档统计'"
           >{{ wordCount }} 字 / ~{{ readingTime }}min</button>
           <div
             v-if="statsVisible"

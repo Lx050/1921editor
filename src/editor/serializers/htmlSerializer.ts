@@ -211,7 +211,10 @@ function serializeParagraph(
   orgPreset: OrgStylePreset | null
 ): string {
   const text = serializeInlineContent(node)
-  if (!text.trim()) return ''
+  // Empty paragraphs become spacing (common in WeChat articles)
+  if (!text.trim()) {
+    return '<p style="margin: 0; min-height: 1em;">&nbsp;</p>'
+  }
 
   const blockRole = node.attrs?.blockRole || 'body'
 
