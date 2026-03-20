@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/appStore'
 import { createManifoldEditor } from '../editor/core/createEditor'
 import { contentBlocksToTiptap } from '../editor/serializers/jsonImporter'
+import { smartTextParser } from '../utils/textParser'
 import EditorToolbar from '../components/EditorToolbar.vue'
 import EditorSidebar from '../components/EditorSidebar.vue'
 import ImageSlotPopover from '../components/ImageSlotPopover.vue'
@@ -143,6 +144,11 @@ onMounted(() => {
     initialContent = appStore.editorJson as EditorDocument
   } else if (contentBlocks.value.length > 0) {
     initialContent = contentBlocksToTiptap(contentBlocks.value)
+  } else if (appStore.rawText) {
+    // Parse rawText from Step1 into contentBlocks, then convert to tiptap
+    const blocks = smartTextParser(appStore.rawText)
+    appStore.setContentBlocks(blocks)
+    initialContent = contentBlocksToTiptap(blocks)
   } else {
     // Try restoring from autosave
     try {
