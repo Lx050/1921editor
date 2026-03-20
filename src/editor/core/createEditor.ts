@@ -3,6 +3,9 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Dropcursor from '@tiptap/extension-dropcursor'
 import Link from '@tiptap/extension-link'
+import TextAlign from '@tiptap/extension-text-align'
+import { Color } from '@tiptap/extension-color'
+import TextStyle from '@tiptap/extension-text-style'
 import { ManifoldHeading } from '../nodes/ManifoldHeading'
 import { ManifoldParagraph } from '../nodes/ManifoldParagraph'
 import { ManifoldImage } from '../nodes/ManifoldImage'
@@ -60,6 +63,11 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       Link.configure({
         openOnClick: false,
         HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
+      }),
+      TextStyle,
+      Color,
+      TextAlign.configure({
+        types: ['manifoldHeading', 'manifoldParagraph'],
       }),
       Dropcursor.configure({ color: '#3b82f6', width: 2 }),
       SlashCommand,

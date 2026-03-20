@@ -8,6 +8,9 @@ const emit = defineEmits<{
 }>()
 
 const imageInput = ref<HTMLInputElement | null>(null)
+const colorInput = ref<HTMLInputElement | null>(null)
+
+const presetColors = ['#000000', '#374151', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
 
 function isActive(name: string, attrs?: Record<string, unknown>): boolean {
   return props.editor?.isActive(name, attrs) ?? false
@@ -49,6 +52,16 @@ function handleImageUpload(event: Event) {
   input.value = ''
 }
 
+function setColor(color: string) {
+  if (!props.editor) return
+  props.editor.chain().focus().setColor(color).run()
+}
+
+function handleColorInput(event: Event) {
+  const value = (event.target as HTMLInputElement).value
+  setColor(value)
+}
+
 function toggleLink() {
   if (!props.editor) return
   if (props.editor.isActive('link')) {
@@ -83,6 +96,32 @@ function toggleLink() {
       @click="toggleLink"
       title="链接 (Ctrl+K)"
     >&#x1F517;</button>
+
+    <!-- Color picker -->
+    <div class="relative group">
+      <button
+        class="toolbar-btn text-xs"
+        title="文字颜色"
+      >
+        <span class="font-bold" :style="{ color: editor?.getAttributes('textStyle').color || '#000' }">A</span>
+        <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded" :style="{ background: editor?.getAttributes('textStyle').color || '#000' }" />
+      </button>
+      <div class="hidden group-hover:flex absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg p-2 gap-1 flex-wrap w-[140px] z-50">
+        <button
+          v-for="c in presetColors"
+          :key="c"
+          class="w-5 h-5 rounded border border-gray-200 hover:scale-110 transition-transform"
+          :style="{ background: c }"
+          @mousedown.prevent="setColor(c)"
+        />
+        <button
+          class="w-5 h-5 rounded border border-gray-200 text-[10px] hover:bg-gray-100"
+          @mousedown.prevent="colorInput?.click()"
+          title="自定义颜色"
+        >...</button>
+        <input ref="colorInput" type="color" class="sr-only" @input="handleColorInput" />
+      </div>
+    </div>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
@@ -125,6 +164,28 @@ function toggleLink() {
       @click="run(() => editor!.chain().focus().toggleOrderedList().run())"
       title="有序列表"
     >OL</button>
+
+    <span class="w-px h-5 bg-gray-300 mx-1" />
+
+    <!-- Alignment -->
+    <button
+      class="toolbar-btn text-xs"
+      :class="{ active: isActive({ textAlign: 'left' }) }"
+      @click="run(() => editor!.chain().focus().setTextAlign('left').run())"
+      title="左对齐"
+    >&#x2261;</button>
+    <button
+      class="toolbar-btn text-xs"
+      :class="{ active: isActive({ textAlign: 'center' }) }"
+      @click="run(() => editor!.chain().focus().setTextAlign('center').run())"
+      title="居中"
+    >&#x2550;</button>
+    <button
+      class="toolbar-btn text-xs"
+      :class="{ active: isActive({ textAlign: 'right' }) }"
+      @click="run(() => editor!.chain().focus().setTextAlign('right').run())"
+      title="右对齐"
+    >&#x2263;</button>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
