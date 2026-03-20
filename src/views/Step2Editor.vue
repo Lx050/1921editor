@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/appStore'
+import { useConfigStore } from '../stores/configStore'
 import { createManifoldEditor } from '../editor/core/createEditor'
 import { contentBlocksToTiptap } from '../editor/serializers/jsonImporter'
 import { smartTextParser } from '../utils/textParser'
@@ -18,6 +19,7 @@ import type { EditorDocument, ImageSlotData } from '@/types/editor'
 
 const router = useRouter()
 const appStore = useAppStore()
+const configStore = useConfigStore()
 const { contentBlocks } = storeToRefs(appStore)
 
 const editor = ref<Editor | null>(null)
@@ -397,6 +399,14 @@ function goToPublish() {
           @click="shortcutHelpVisible = true"
           title="键盘快捷键 (?)"
         >?</button>
+        <span
+          class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+          :class="{
+            'bg-orange-100 text-orange-600': configStore.mode === 'daily',
+            'bg-green-100 text-green-600': configStore.mode === 'three_rural',
+            'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+          }"
+        >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
         <span class="text-xs text-gray-300">Manifold v2</span>
       </div>
       <div class="flex items-center gap-2">
