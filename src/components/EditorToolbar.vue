@@ -13,6 +13,7 @@ const colorInput = ref<HTMLInputElement | null>(null)
 const presetColors = ['#000000', '#374151', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
 const highlightColors = ['#fef08a', '#fed7aa', '#bbf7d0', '#bae6fd', '#e9d5ff', '#fecdd3']
 const fontSizes = ['12', '13', '14', '15', '16', '18', '20', '24']
+const lineHeights = ['1', '1.25', '1.5', '1.75', '2']
 
 function isActive(name: string, attrs?: Record<string, unknown>): boolean {
   return props.editor?.isActive(name, attrs) ?? false
@@ -94,6 +95,11 @@ function outdent() {
       props.editor.commands.updateAttributes('manifoldParagraph', { textIndent: current - 1 })
     }
   }
+}
+
+function setLineHeight(value: string) {
+  if (!props.editor) return
+  props.editor.commands.updateAttributes('manifoldParagraph', { lineHeight: value })
 }
 
 function clearFormatting() {
@@ -208,6 +214,16 @@ function toggleLink() {
       <option v-for="s in fontSizes" :key="s" :value="s">{{ s }}px</option>
     </select>
 
+    <!-- Line height -->
+    <select
+      v-if="isActive('manifoldParagraph')"
+      class="text-xs border rounded px-1 h-7 text-gray-600 bg-white w-12"
+      @change="setLineHeight(($event.target as HTMLSelectElement).value)"
+      title="行高"
+    >
+      <option v-for="lh in lineHeights" :key="lh" :value="lh">{{ lh }}x</option>
+    </select>
+
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
     <!-- Headings -->
@@ -236,7 +252,7 @@ function toggleLink() {
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
-    <!-- Lists -->
+    <!-- Lists & Blockquote -->
     <button
       class="toolbar-btn"
       :class="{ active: isActive('bulletList') }"
@@ -249,6 +265,12 @@ function toggleLink() {
       @click="run(() => editor!.chain().focus().toggleOrderedList().run())"
       title="有序列表"
     >OL</button>
+    <button
+      class="toolbar-btn text-xs"
+      :class="{ active: isActive('blockquote') }"
+      @click="run(() => editor!.chain().focus().toggleBlockquote().run())"
+      title="引用"
+    >&#x201C;</button>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
@@ -282,6 +304,11 @@ function toggleLink() {
     <button class="toolbar-btn" @click="insertHR" title="分隔线">&#x2015;</button>
     <button class="toolbar-btn" @click="triggerImageUpload" title="插入图片">IMG</button>
     <button class="toolbar-btn" @click="emit('open-svg-panel')" title="插入SVG模板">SVG</button>
+    <button
+      class="toolbar-btn text-xs"
+      @click="run(() => editor!.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())"
+      title="插入表格"
+    >TBL</button>
     <input ref="imageInput" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
 
     <span class="w-px h-5 bg-gray-300 mx-1" />

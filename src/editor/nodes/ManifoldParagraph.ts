@@ -11,6 +11,7 @@ export const ManifoldParagraph = Node.create({
       styleId: { default: null },
       blockRole: { default: 'body' },
       textIndent: { default: 0 },
+      lineHeight: { default: null },
     }
   },
 
@@ -20,7 +21,11 @@ export const ManifoldParagraph = Node.create({
 
   renderHTML({ node, HTMLAttributes }) {
     const indent = node.attrs.textIndent || 0
-    const style = indent > 0 ? `text-indent: ${indent * 2}em` : ''
+    const lh = node.attrs.lineHeight
+    const styles: string[] = []
+    if (indent > 0) styles.push(`text-indent: ${indent * 2}em`)
+    if (lh) styles.push(`line-height: ${lh}`)
+    const style = styles.join('; ')
     return ['p', mergeAttributes(HTMLAttributes, {
       'data-node-type': 'manifold-paragraph',
       'data-style-id': node.attrs.styleId || '',
