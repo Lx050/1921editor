@@ -101,6 +101,24 @@ export const slashMenuItems: SlashMenuItem[] = [
     command: (editor) => editor.chain().focus().setHorizontalRule().run(),
   },
   {
+    title: '插入日期',
+    icon: 'D',
+    command: (editor) => {
+      const now = new Date()
+      const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`
+      editor.chain().focus().insertContent(dateStr).run()
+    },
+  },
+  {
+    title: '当前时间',
+    icon: 'T',
+    command: (editor) => {
+      const now = new Date()
+      const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+      editor.chain().focus().insertContent(timeStr).run()
+    },
+  },
+  {
     title: '目录 (TOC)',
     icon: '#',
     command: (editor) => {

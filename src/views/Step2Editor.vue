@@ -773,6 +773,19 @@ function goToPublish() {
       </div>
     </div>
 
+    <!-- Character limit bar -->
+    <div v-if="wordCount > WECHAT_CHAR_LIMIT * 0.7" class="flex-shrink-0 h-1 bg-gray-100 relative">
+      <div
+        class="h-full transition-all duration-300"
+        :class="isOverLimit ? 'bg-red-500' : wordCount > WECHAT_CHAR_LIMIT * 0.9 ? 'bg-amber-400' : 'bg-green-400'"
+        :style="{ width: Math.min(100, (wordCount / WECHAT_CHAR_LIMIT) * 100) + '%' }"
+      />
+      <span
+        v-if="isOverLimit"
+        class="absolute right-1 -top-4 text-[10px] text-red-500 font-medium"
+      >超出 {{ wordCount - WECHAT_CHAR_LIMIT }} 字</span>
+    </div>
+
     <div class="flex-shrink-0 border-t bg-white px-6 py-3 flex items-center justify-between">
       <button
         class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
@@ -1303,5 +1316,38 @@ function goToPublish() {
 }
 .editor-sepia .manifold-codeblock-content {
   color: #5c4b37;
+}
+/* Print stylesheet */
+@media print {
+  .manifold-editor-content .ProseMirror {
+    color: #000 !important;
+    background: #fff !important;
+  }
+  .manifold-editor-content .ProseMirror h1,
+  .manifold-editor-content .ProseMirror h2,
+  .manifold-editor-content .ProseMirror h3 {
+    color: #000 !important;
+    page-break-after: avoid;
+  }
+  .manifold-editor-content .ProseMirror img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+  .manifold-editor-content .ProseMirror pre {
+    background: #f5f5f5 !important;
+    color: #333 !important;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+  }
+  .manifold-editor-content .ProseMirror table {
+    page-break-inside: avoid;
+  }
+  .manifold-editor-content .ProseMirror blockquote {
+    color: #555 !important;
+    border-left-color: #999 !important;
+    background: none !important;
+  }
+  .paragraph-number { display: none !important; }
+  .focus-mode .ProseMirror > * { opacity: 1 !important; }
 }
 </style>
