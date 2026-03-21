@@ -1021,6 +1021,24 @@ function goToPublish() {
 .editor-dark .paragraph-number {
   color: #585b70 !important;
 }
+/* Dark code block */
+.editor-dark .manifold-codeblock .rounded-lg {
+  border-color: #45475a;
+  background: #1e1e2e;
+}
+.editor-dark .manifold-codeblock .bg-gray-100 {
+  background: #181825;
+}
+.editor-dark .manifold-codeblock .border-gray-200 {
+  border-color: #45475a;
+}
+.editor-dark .manifold-codeblock .text-gray-500,
+.editor-dark .manifold-codeblock .text-gray-400 {
+  color: #6c7086;
+}
+.editor-dark .manifold-codeblock-content {
+  color: #cdd6f4;
+}
 /* Sepia theme */
 .editor-sepia .manifold-editor-content .ProseMirror {
   color: #5c4b37;
@@ -1039,5 +1057,16 @@ function goToPublish() {
 }
 .editor-sepia .manifold-editor-content .ProseMirror hr {
   border-top-color: #d4c4a8;
+}
+/* Sepia code block */
+.editor-sepia .manifold-codeblock .rounded-lg {
+  border-color: #d4c4a8;
+  background: #f5ebe0;
+}
+.editor-sepia .manifold-codeblock .bg-gray-100 {
+  background: #ede0d0;
+}
+.editor-sepia .manifold-codeblock-content {
+  color: #5c4b37;
 }
 </style>

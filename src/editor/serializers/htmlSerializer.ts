@@ -282,7 +282,9 @@ function serializeCodeBlock(node: any): string {
   const code = DOMPurify.sanitize(
     (node.content || []).map((c: any) => c.text || '').join('')
   )
-  return `<pre style="background: #f3f4f6; padding: 12px 16px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 15px 0; white-space: pre-wrap; word-wrap: break-word;"><code>${code}</code></pre>`
+  const lang = node.attrs?.language || ''
+  const langLabel = lang ? `<div style="font-size: 11px; color: #9ca3af; padding: 4px 16px 0; font-family: Consolas, monospace;">${DOMPurify.sanitize(lang)}</div>` : ''
+  return `<pre style="background: #f3f4f6; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 15px 0; white-space: pre-wrap; word-wrap: break-word;">${langLabel}<code style="display: block; padding: 12px 16px;">${code}</code></pre>`
 }
 
 /** Serialize a list item -- handles nested paragraphs and sub-lists */

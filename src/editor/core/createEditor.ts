@@ -19,6 +19,7 @@ import { ManifoldParagraph } from '../nodes/ManifoldParagraph'
 import { ManifoldImage } from '../nodes/ManifoldImage'
 import { ManifoldSvgBlock } from '../nodes/ManifoldSvgBlock'
 import { ManifoldBlockquote } from '../nodes/ManifoldBlockquote'
+import { ManifoldCodeBlock } from '../nodes/ManifoldCodeBlock'
 import { SlashCommand } from '../extensions/SlashCommand'
 import { FontSize } from '../extensions/FontSize'
 import { DragHandle } from '../extensions/DragHandle'
@@ -58,8 +59,10 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
         heading: false,
         paragraph: false,
         blockquote: false,
+        codeBlock: false,
       }),
       ManifoldBlockquote,
+      ManifoldCodeBlock,
       ManifoldHeading,
       ManifoldParagraph,
       ManifoldImage,
