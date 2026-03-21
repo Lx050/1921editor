@@ -1,219 +1,177 @@
 <template>
-  <!-- 全屏布局（与 Step2/Step3 一致） -->
-  <div class="h-full flex flex-col step-content-area overflow-hidden">
-    <!-- 精简头部 - 与 Step2/Step3 统一样式 -->
-    <div class="flex-shrink-0 w-full border-b p-3 md:p-4" style="background: var(--color-content-card); border-color: var(--color-content-border);">
-      <div class="flex items-center justify-between gap-3">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 md:gap-3">
-            <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap">Step 1/3</span>
-            <h2 class="text-base md:text-lg font-bold truncate" style="color: var(--color-content-text);">输入文本</h2>
-          </div>
-          <p class="text-[10px] md:text-xs mt-0.5 truncate" style="color: var(--color-content-text-secondary)">
-            粘贴文本或导入 Word/ZIP 文件
-          </p>
+  <div class="h-full flex flex-col bg-white">
+    <!-- Top bar -->
+    <div class="flex-shrink-0 border-b border-gray-100 px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Step indicator dots -->
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+          <span class="w-2 h-2 rounded-full bg-gray-200"></span>
+          <span class="w-2 h-2 rounded-full bg-gray-200"></span>
         </div>
-        
-        <!-- 辅助按钮组 -->
-        <div class="flex items-center gap-2">
-          <button
-            @click="insertSampleText"
-            class="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors hidden md:block"
-          >
-            智能示例
-          </button>
-          <button
-            @click="insertMarkedSampleText"
-            class="px-3 py-1.5 text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors hidden md:block"
-          >
-            标注示例
-          </button>
-          <button
-            @click="clearText"
-            class="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-lg transition-colors"
-            :disabled="!localText"
-          >
-            清空
-          </button>
-        </div>
+        <span class="text-xs text-gray-400">步骤 1 / 3</span>
+        <span class="text-gray-200 select-none">|</span>
+        <h2 class="text-sm font-semibold text-gray-700">输入文章文本</h2>
+      </div>
+      <div class="flex items-center gap-1">
+        <button
+          @click="insertSampleText"
+          class="px-2.5 py-1 text-xs text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+        >示例文本</button>
+        <button
+          @click="clearText"
+          :disabled="!localText"
+          class="px-2.5 py-1 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        >清空</button>
       </div>
     </div>
 
-    <!-- 内容区域 - 独立滚动，底部留出操作栏空间 -->
-    <div class="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-24 flex flex-col">
-      <!-- 格式指导区域 - 默认收起 -->
-      <div class="py-3">
-        <button 
-          @click="showGuide = !showGuide"
-          class="flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors focus:outline-none"
+    <!-- Main content -->
+    <div class="flex-1 min-h-0 overflow-y-auto">
+      <div class="max-w-2xl mx-auto px-6 py-5 flex flex-col gap-4" style="min-height: 100%;">
+
+        <!-- Textarea card -->
+        <div
+          class="flex-1 flex flex-col rounded-xl border transition-all duration-200"
+          :class="isDragging
+            ? 'border-blue-400 bg-blue-50/40 shadow-[0_0_0_3px_rgba(59,130,246,0.12)]'
+            : 'border-gray-200 bg-gray-50/50 hover:border-gray-300'"
         >
-          <span class="mr-2">{{ showGuide ? '▼' : '▶' }}</span>
-          <span>📝 格式指导语法</span>
-        </button>
-        
-        <transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="transform scale-y-95 opacity-0"
-          enter-to-class="transform scale-y-100 opacity-100"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="transform scale-y-100 opacity-100"
-          leave-to-class="transform scale-y-95 opacity-0"
-        >
-          <div v-if="showGuide" class="mt-2 bg-blue-50 p-4 rounded-lg border border-blue-200 origin-top">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800">
-              <div>
-                <p class="font-medium mb-1">图片标注：</p>
-                <p>• <code class="bg-blue-100 px-1">&</code>（纯单图）或 <code class="bg-blue-100 px-1">&图注内容</code></p>
-                <p>• <code class="bg-blue-100 px-1">&&双图</code> 或 <code class="bg-blue-100 px-1">&&左图说明 右图说明</code></p>
-                <p class="text-xs text-blue-600 mt-1">注：双图说明请用空格分隔</p>
-              </div>
-              <div>
-                <p class="font-medium mb-1">文字标注：</p>
-                <p>• <code class="bg-blue-100 px-1"># 标题</code> (一级标题)</p>
-                <p>• <code class="bg-blue-100 px-1">## 小标题</code> (二级标题)</p>
-                <p>• <code class="bg-blue-100 px-1">> 引言内容</code></p>
-              </div>
-            </div>
-          </div>
-        </transition>
-      </div>
-
-      <!-- 文本输入区域 - 适中高度，适合移动端 -->
-      <div class="flex flex-col flex-1 min-h-0">
-        <label for="textInput" class="block text-sm font-medium text-black mb-2">
-          粘贴您的文本内容
-        </label>
-        <textarea
-          id="textInput"
-          v-model="localText"
-          @drop.prevent="handleDrop"
-          @dragover.prevent="handleDragOver"
-          @dragleave.prevent="handleDragLeave"
-          :class="[
-            'w-full flex-1 min-h-0 px-4 py-3 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 resize-none font-mono text-sm transition-colors content-textarea',
-            isDragging ? 'border-orange-400 ring-2 ring-orange-400' : ''
-          ]"
-          placeholder="请在此粘贴您的文本内容，或点击下方按钮导入 Word/ZIP 文件..."
-        ></textarea>
-        <div class="mt-2 flex items-center justify-between text-sm" style="color: var(--color-content-text-secondary);">
-          <span v-if="localText">{{ localText.length }} 个字符</span>
-          <span v-else>请输入文本内容</span>
-          <!-- 已提取图片数量 -->
-          <div v-if="extractedImages.length > 0" class="flex items-center text-green-600 bg-green-50 px-2 py-1 rounded text-xs">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            已提取 {{ extractedImages.length }} 张图片
-          </div>
-        </div>
-      </div>
-
-      <!-- 模式专属字段 -->
-      <div class="mt-3 p-3 rounded-lg border" style="background: var(--color-content-card); border-color: var(--color-content-border);">
-        <div class="flex items-center gap-2 mb-2">
-          <span
-            class="text-[10px] px-2 py-0.5 rounded-full font-medium"
-            :class="{
-              'bg-orange-100 text-orange-600': configStore.mode === 'daily',
-              'bg-green-100 text-green-600': configStore.mode === 'three_rural',
-              'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
-            }"
-          >
-            {{ configStore.mode === 'daily' ? '日常模式' : configStore.mode === 'three_rural' ? '三下乡模式' : '转载模式' }}
-          </span>
-          <span class="text-[10px]" style="color: var(--color-content-text-muted);">尾部信息</span>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <!-- 编辑人员 - 所有模式 -->
-          <div>
-            <label class="block text-[10px] font-medium mb-0.5" style="color: var(--color-content-text-secondary);">编辑</label>
-            <input
-              v-model="appStore.editorInput"
-              type="text"
-              placeholder="编辑人员姓名"
-              class="w-full px-2 py-1 text-xs rounded-md border outline-none focus:ring-1 focus:ring-blue-300"
-              style="background: var(--color-content-bg-muted); border-color: var(--color-content-border); color: var(--color-content-text);"
-            />
-          </div>
-          <!-- 团队名称 - 三下乡模式 -->
-          <div v-if="configStore.mode === 'three_rural'">
-            <label class="block text-[10px] font-medium mb-0.5" style="color: var(--color-content-text-secondary);">团队名称</label>
-            <input
-              v-model="appStore.teamName"
-              type="text"
-              :placeholder="'如：&quot;青春筑梦&quot;社会实践队'"
-              class="w-full px-2 py-1 text-xs rounded-md border outline-none focus:ring-1 focus:ring-green-300"
-              style="background: var(--color-content-bg-muted); border-color: var(--color-content-border); color: var(--color-content-text);"
-            />
-          </div>
-          <!-- 来源公众号 - 转载模式 -->
-          <div v-if="configStore.mode === 'reprint'">
-            <label class="block text-[10px] font-medium mb-0.5" style="color: var(--color-content-text-secondary);">来源公众号</label>
-            <input
-              v-model="appStore.sourceAccount"
-              type="text"
-              :placeholder="'如：&quot;人民日报&quot;公众号'"
-              class="w-full px-2 py-1 text-xs rounded-md border outline-none focus:ring-1 focus:ring-purple-300"
-              style="background: var(--color-content-bg-muted); border-color: var(--color-content-border); color: var(--color-content-text);"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- 错误提示 -->
-      <transition
-        enter-active-class="transition duration-300 ease-out"
-        enter-from-class="transform -translate-y-2 opacity-0"
-        enter-to-class="transform translate-y-0 opacity-100"
-        leave-active-class="transition duration-200 ease-in"
-        leave-from-class="transform translate-y-0 opacity-100"
-        leave-to-class="transform -translate-y-2 opacity-0"
-      >
-        <div v-if="errorMessage" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <span class="text-red-400">⚠</span>
-            </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">输入错误</h3>
-              <div class="mt-2 text-sm text-red-700">
-                {{ errorMessage }}
-              </div>
+          <textarea
+            id="textInput"
+            v-model="localText"
+            @drop.prevent="handleDrop"
+            @dragover.prevent="handleDragOver"
+            @dragleave.prevent="handleDragLeave"
+            class="flex-1 w-full min-h-[280px] px-5 py-4 bg-transparent resize-none text-sm text-gray-800 leading-relaxed outline-none placeholder:text-gray-400"
+            placeholder="在此粘贴文章正文…&#10;&#10;支持直接粘贴 Word 内容，也可将 .docx 或 .zip 文件拖拽到此处自动提取。"
+          ></textarea>
+          <!-- Textarea footer row -->
+          <div class="flex items-center justify-between px-5 py-2.5 border-t border-gray-100">
+            <span class="text-xs text-gray-400">
+              <template v-if="localText">{{ localText.length }} 字</template>
+              <template v-else>拖入 .docx / .zip 文件可自动提取文本和图片</template>
+            </span>
+            <div v-if="extractedImages.length > 0" class="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              已提取 {{ extractedImages.length }} 张图片
             </div>
           </div>
         </div>
-      </transition>
+
+        <!-- Metadata row -->
+        <div class="rounded-xl border border-gray-200 bg-white">
+          <div class="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-gray-100">
+            <span
+              class="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+              :class="{
+                'bg-orange-100 text-orange-600': configStore.mode === 'daily',
+                'bg-emerald-100 text-emerald-600': configStore.mode === 'three_rural',
+                'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+              }"
+            >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
+            <span class="text-xs text-gray-400">尾部信息</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 px-4 py-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1.5">编辑人员</label>
+              <input
+                v-model="appStore.editorInput"
+                type="text"
+                placeholder="姓名"
+                class="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-300/60 focus:border-blue-400 transition-all"
+              />
+            </div>
+            <div v-if="configStore.mode === 'three_rural'">
+              <label class="block text-xs font-medium text-gray-500 mb-1.5">团队名称</label>
+              <input
+                v-model="appStore.teamName"
+                type="text"
+                placeholder="如：青春筑梦社会实践队"
+                class="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-300/60 focus:border-emerald-400 transition-all"
+              />
+            </div>
+            <div v-if="configStore.mode === 'reprint'">
+              <label class="block text-xs font-medium text-gray-500 mb-1.5">来源公众号</label>
+              <input
+                v-model="appStore.sourceAccount"
+                type="text"
+                placeholder="如：人民日报"
+                class="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-purple-300/60 focus:border-purple-400 transition-all"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Format syntax reference (collapsible) -->
+        <details class="group rounded-xl border border-gray-200 bg-white">
+          <summary class="flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-gray-400 cursor-pointer hover:text-gray-600 select-none list-none transition-colors">
+            <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            格式标注语法参考
+          </summary>
+          <div class="px-4 pb-4 pt-1 grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <p class="text-xs font-semibold text-gray-600 mb-2">图片</p>
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">&</code>
+                <span>单图占位</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">&图注</code>
+                <span>单图 + 图注</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">&&</code>
+                <span>双图占位</span>
+              </div>
+            </div>
+            <div class="space-y-1.5">
+              <p class="text-xs font-semibold text-gray-600 mb-2">文字结构</p>
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">## 标题</code>
+                <span>小标题</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]"># 正文</code>
+                <span>强制正文</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">&gt; 引言</code>
+                <span>引言段落</span>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Error -->
+        <div v-if="errorMessage" class="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+          <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Bottom spacer so content doesn't hide behind footer -->
+        <div class="h-4"></div>
+      </div>
     </div>
-    
-    <!-- 底部操作栏 - 固定在底部，与 Step2/Step3 风格一致 -->
-    <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-      <!-- 隐藏的文件输入 -->
-      <input 
-        type="file" 
-        ref="fileInput" 
-        accept=".docx,.zip,.rar,.7z" 
-        class="hidden" 
-        @change="handleFileUpload"
-      >
-      
-      <div class="flex items-center justify-between gap-4">
-        <!-- 导入按钮 -->
+
+    <!-- Footer -->
+    <div class="flex-shrink-0 bg-white border-t border-gray-100 px-6 py-3">
+      <input type="file" ref="fileInput" accept=".docx,.zip,.rar,.7z" class="hidden" @change="handleFileUpload">
+      <div class="max-w-2xl mx-auto flex items-center gap-3">
         <button
           @click="triggerFileUpload"
-          class="flex-1 h-11 bg-white border border-gray-200 hover:bg-green-50 hover:border-green-400 text-black hover:text-green-700 text-sm font-medium rounded-xl transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2"
+          class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all text-sm font-medium"
         >
-          <span>📄</span>
-          <span>导入 Word/ZIP</span>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+          导入文件
         </button>
-        
-        <!-- 下一步按钮 -->
         <button
           @click="goToNextStep"
-          class="flex-[2] h-11 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="!localText.trim()"
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-[0.99] transition-all text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-200"
         >
-          <span>下一步：编辑内容</span>
-          <span>→</span>
+          <span>开始编辑排版</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </button>
       </div>
     </div>
@@ -235,7 +193,6 @@ const localText = ref('')
 const errorMessage = ref('')
 const fileInput = ref(null)
 const extractedImages = ref([])  // V2: 存储从ZIP中提取的图片
-const showGuide = ref(false)
 
 // 监听store中的文本变化
 watch(() => appStore.rawText, (newText) => {
@@ -1037,8 +994,15 @@ const goToNextStep = () => {
   // 重置错误信息
   errorMessage.value = ''
 
-  // 清空之前的内容块
-  appStore.setContentBlocks([])
+  // 确保 rawText 已同步到 store（不依赖 watch 时序）
+  appStore.setRawText(localText.value)
+  // 持久化到 localStorage 作为备份
+  try {
+    localStorage.setItem('manifold_step1_rawText', localText.value)
+  } catch { /* ignore quota errors */ }
+
+  // 清空之前的内容块和 editorJson，确保 Step2 从 rawText 重新解析
+  appStore.clearEditorState()
 
   // V2: 如果有提取的图片，启动后台上传
   if (extractedImages.value.length > 0) {

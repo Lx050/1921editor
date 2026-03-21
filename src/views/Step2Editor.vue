@@ -53,6 +53,7 @@ const linkPopoverInitialUrl = ref('')
 const isFocusMode = ref(false)
 const wordCountGoal = ref(0) // 0 = no goal set
 const editorTheme = ref<'light' | 'sepia' | 'dark'>('light')
+const isTypewriter = ref(false)
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
@@ -281,37 +282,63 @@ function handleDragLeave() {
 onMounted(() => {
   let initialContent: EditorDocument
 
-  if (appStore.editorJson) {
-    initialContent = appStore.editorJson as EditorDocument
-  } else if (contentBlocks.value.length > 0) {
-    initialContent = contentBlocksToTiptap(contentBlocks.value)
-  } else if (appStore.rawText) {
-    // Parse rawText from Step1 into contentBlocks, then convert to tiptap
-    const blocks = smartTextParser(appStore.rawText)
-    appStore.setContentBlocks(blocks)
-    initialContent = contentBlocksToTiptap(blocks)
-  } else {
-    // Try restoring from autosave
-    try {
-      const saved = localStorage.getItem('manifold_editor_autosave')
-      if (saved) {
-        initialContent = JSON.parse(saved) as EditorDocument
+  console.log('[Step2] onMounted — editorJson:', !!appStore.editorJson, 'contentBlocks:', contentBlocks.value.length, 'rawText:', appStore.rawText?.length || 0)
+
+  try {
+    if (appStore.editorJson) {
+      initialContent = appStore.editorJson as EditorDocument
+    } else if (contentBlocks.value.length > 0) {
+      initialContent = contentBlocksToTiptap(contentBlocks.value)
+    } else {
+      // Try rawText from store, then localStorage backup
+      let rawText = appStore.rawText
+      if (!rawText) {
+        try {
+          rawText = localStorage.getItem('manifold_step1_rawText') || ''
+          if (rawText) {
+            console.log('[Step2] Recovered rawText from localStorage, length:', rawText.length)
+            appStore.setRawText(rawText)
+          }
+        } catch { /* ignore */ }
       }
-    } catch { /* ignore */ }
-    if (!initialContent!) {
-      initialContent = {
-        type: 'doc',
-        content: [
-          { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '' }] },
-          { type: 'manifoldParagraph', content: [{ type: 'text', text: '' }] },
-        ]
+
+      if (rawText) {
+        console.log('[Step2] Parsing rawText, length:', rawText.length)
+        const blocks = smartTextParser(rawText)
+        console.log('[Step2] Parsed', blocks.length, 'content blocks')
+        appStore.setContentBlocks(blocks)
+        initialContent = contentBlocksToTiptap(blocks)
+        console.log('[Step2] Converted to tiptap, nodes:', initialContent.content?.length || 0)
+      } else {
+        // Try restoring from autosave
+        try {
+          const saved = localStorage.getItem('manifold_editor_autosave')
+          if (saved) {
+            initialContent = JSON.parse(saved) as EditorDocument
+            console.log('[Step2] Restored from autosave')
+          }
+        } catch { /* ignore */ }
       }
+    }
+  } catch (e) {
+    console.error('[Step2] Error initializing content, falling back to empty doc:', e)
+    initialContent = undefined as any
+  }
+
+  if (!initialContent) {
+    initialContent = {
+      type: 'doc',
+      content: [
+        { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '' }] },
+        { type: 'manifoldParagraph', content: [{ type: 'text', text: '' }] },
+      ]
     }
   }
 
   editor.value = createManifoldEditor({
     content: initialContent,
     onUpdate: handleEditorUpdate,
+    isTypewriterEnabled: () => isTypewriter.value,
   })
 
   window.addEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
@@ -577,6 +604,12 @@ function goToPublish() {
           @click="isFocusMode = !isFocusMode"
           title="专注模式 (Ctrl+Shift+F)"
         >F</button>
+        <button
+          class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
+          :class="isTypewriter ? 'bg-green-100 text-green-600 border-green-300' : 'text-gray-400 hover:text-gray-600 border-gray-200'"
+          @click="isTypewriter = !isTypewriter"
+          title="打字机滚动模式"
+        >W</button>
         <button
           class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
           :class="{

@@ -200,6 +200,11 @@ export const useAppStore = defineStore('app', () => {
     isUploading.value = false
   }
 
+  const clearEditorState = (): void => {
+    editorJson.value = null
+    contentBlocks.value = []
+  }
+
   const resetApp = (): void => {
     currentStep.value = 1
     currentArticleId.value = null
@@ -290,6 +295,7 @@ export const useAppStore = defineStore('app', () => {
     updateUploadProgress,
     setIsUploading,
     clearWechatImages,
+    clearEditorState,
     resetApp,
     initializeUserMetadata,
     // Manifold Editor
