@@ -51,6 +51,9 @@ const previewVisible = ref(false)
 const commandPaletteVisible = ref(false)
 const showScrollTop = ref(false)
 const editorScrollContainer = ref<HTMLElement | null>(null)
+const scrollProgress = ref(0)
+const showRecoveryDialog = ref(false)
+const recoveryData = ref<EditorDocument | null>(null)
 const previewHtml = ref('')
 const linkPopoverVisible = ref(false)
 const linkPopoverPosition = ref({ x: 0, y: 0 })
@@ -119,6 +122,13 @@ function toggleFullscreen() {
 
 function scrollToTop() {
   editorScrollContainer.value?.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function onEditorScroll(e: Event) {
+  const el = e.target as HTMLElement
+  showScrollTop.value = el.scrollTop > 300
+  const scrollable = el.scrollHeight - el.clientHeight
+  scrollProgress.value = scrollable > 0 ? Math.round((el.scrollTop / scrollable) * 100) : 0
 }
 
 async function copyAsWechatHtml() {
@@ -441,6 +451,19 @@ onMounted(() => {
 
 const selectionLength = ref(0)
 
+/** Breadcrumb: find the nearest heading above cursor */
+const currentHeading = computed(() => {
+  if (!editor.value) return ''
+  const cursorPos = editor.value.state.selection.from
+  let lastHeading = ''
+  editor.value.state.doc.descendants((node, pos) => {
+    if (node.type.name === 'manifoldHeading' && pos < cursorPos) {
+      lastHeading = node.textContent || ''
+    }
+  })
+  return lastHeading
+})
+
 onBeforeUnmount(() => {
   if (autosaveTimer) clearTimeout(autosaveTimer)
   if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
@@ -639,6 +662,10 @@ function goToPublish() {
     :class="isFullscreen ? 'fixed inset-0 z-[100]' : ''"
   >
     <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" @edit-link="openLinkEditor" />
+    <!-- Reading progress bar -->
+    <div v-if="scrollProgress > 0" class="h-0.5 bg-gray-100 relative">
+      <div class="h-full bg-blue-400 transition-all duration-150" :style="{ width: scrollProgress + '%' }" />
+    </div>
     <TableBubbleMenu :editor="editor" />
     <BlockquoteBubbleMenu :editor="editor" />
 
@@ -649,7 +676,7 @@ function goToPublish() {
         ref="editorScrollContainer"
         class="flex-1 overflow-y-auto relative transition-colors"
         :class="editorTheme === 'dark' ? 'bg-[#11111b]' : editorTheme === 'sepia' ? 'bg-[#f0e6d3]' : ''"
-        @scroll="showScrollTop = ($event.target as HTMLElement).scrollTop > 300"
+        @scroll="onEditorScroll($event)"
         @click="handleCanvasClick"
         @drop="handleDrop"
         @dragover="handleDragOver"
@@ -694,6 +721,7 @@ function goToPublish() {
       >
         &larr; 返回文本输入
       </button>
+      <span v-if="currentHeading" class="hidden md:block text-xs text-gray-300 truncate max-w-[200px]" :title="currentHeading">{{ currentHeading }}</span>
       <div class="flex items-center gap-4">
         <span v-if="autosaveStatus === 'saving'" class="text-xs text-amber-500">保存中...</span>
         <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存{{ lastSavedAt ? ` ${lastSavedAt}` : '' }}</span>
