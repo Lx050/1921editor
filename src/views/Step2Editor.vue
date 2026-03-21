@@ -23,6 +23,7 @@ import CommandPalette from '../components/CommandPalette.vue'
 import RecoveryDialog from '../components/RecoveryDialog.vue'
 import EmojiPicker from '../components/EmojiPicker.vue'
 import VersionSnapshots from '../components/VersionSnapshots.vue'
+import EditorToast from '../components/EditorToast.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import { serializeToMarkdown } from '../editor/serializers/markdownSerializer'
 import type { Editor } from '@tiptap/vue-3'
@@ -35,6 +36,11 @@ const { contentBlocks } = storeToRefs(appStore)
 
 const editor = ref<Editor | null>(null)
 const sidebarRef = ref<InstanceType<typeof EditorSidebar> | null>(null)
+const toastRef = ref<InstanceType<typeof EditorToast> | null>(null)
+
+function showToast(message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
+  toastRef.value?.addToast(message, type)
+}
 
 // Image slot popover state
 const popoverVisible = ref(false)
@@ -152,6 +158,7 @@ async function copyAsWechatHtml() {
     await navigator.clipboard.writeText(html).catch(() => {})
   }
   copyStatus.value = 'copied'
+  showToast('微信 HTML 已复制到剪贴板', 'success')
   setTimeout(() => { copyStatus.value = 'idle' }, 2000)
 }
 
@@ -169,6 +176,7 @@ async function exportMarkdown() {
   try {
     await navigator.clipboard.writeText(md)
     copyStatus.value = 'copied'
+    showToast('Markdown 已复制到剪贴板', 'success')
     setTimeout(() => { copyStatus.value = 'idle' }, 2000)
   } catch {
     // Fallback: download as file
@@ -179,6 +187,7 @@ async function exportMarkdown() {
     a.download = 'article.md'
     a.click()
     URL.revokeObjectURL(url)
+    showToast('Markdown 已下载为文件', 'info')
   }
 }
 
@@ -621,6 +630,7 @@ function handleGlobalKeydown(event: KeyboardEvent) {
         lastSavedAt.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
         if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
         autosaveFadeTimer = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
+        showToast('已保存', 'success')
       } catch { /* ignore */ }
     }
     return
@@ -696,6 +706,7 @@ function handleRestore() {
   appStore.editorJson = recoveryData.value
   showRecoveryDialog.value = false
   recoveryData.value = null
+  showToast('已恢复上次编辑内容', 'success')
 }
 
 function handleDiscardRecovery() {
@@ -1025,6 +1036,8 @@ function goToPublish() {
       :visible="snapshotsVisible"
       @close="snapshotsVisible = false"
     />
+
+    <EditorToast ref="toastRef" />
   </div>
 </template>
 
