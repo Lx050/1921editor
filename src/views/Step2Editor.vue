@@ -19,6 +19,7 @@ import SelectionToolbar from '../components/SelectionToolbar.vue'
 import LinkEditPopover from '../components/LinkEditPopover.vue'
 import LinkHoverTooltip from '../components/LinkHoverTooltip.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
+import { serializeToMarkdown } from '../editor/serializers/markdownSerializer'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
 
@@ -97,6 +98,26 @@ function openPreview() {
   const doc = editor.value.getJSON() as EditorDocument
   previewHtml.value = serializeToWechatHtml(doc)
   previewVisible.value = true
+}
+
+async function exportMarkdown() {
+  if (!editor.value) return
+  const doc = editor.value.getJSON() as EditorDocument
+  const md = serializeToMarkdown(doc)
+  try {
+    await navigator.clipboard.writeText(md)
+    copyStatus.value = 'copied'
+    setTimeout(() => { copyStatus.value = 'idle' }, 2000)
+  } catch {
+    // Fallback: download as file
+    const blob = new Blob([md], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'article.md'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 }
 
 function openLinkEditor() {
@@ -556,6 +577,11 @@ function goToPublish() {
       <div class="flex items-center gap-2">
         <button
           class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+          @click="exportMarkdown"
+          title="Export as Markdown"
+        >MD</button>
+        <button
+          class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
           @click="openPreview"
           title="Preview HTML output"
         >Preview</button>
@@ -609,6 +635,10 @@ function goToPublish() {
 .manifold-editor-content .ProseMirror {
   outline: none;
   min-height: 400px;
+}
+/* Paragraph numbers - each top-level block needs relative positioning */
+.manifold-editor-content .ProseMirror > * {
+  position: relative;
 }
 .manifold-editor-content .ProseMirror h1 {
   font-size: 1.5rem;

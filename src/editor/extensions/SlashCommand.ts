@@ -5,6 +5,7 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view'
 export interface SlashMenuItem {
   title: string
   icon: string
+  shortcut?: string
   command: (editor: any) => void
 }
 
@@ -12,16 +13,19 @@ export const slashMenuItems: SlashMenuItem[] = [
   {
     title: '一级标题',
     icon: 'H1',
+    shortcut: 'Ctrl+Alt+1',
     command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 1 }).run(),
   },
   {
     title: '二级标题',
     icon: 'H2',
+    shortcut: 'Ctrl+Alt+2',
     command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 2 }).run(),
   },
   {
     title: '三级标题',
     icon: 'H3',
+    shortcut: 'Ctrl+Alt+3',
     command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 3 }).run(),
   },
   {
@@ -170,7 +174,8 @@ export const SlashCommand = Extension.create({
       menuEl.innerHTML = filteredItems.map((item, i) =>
         `<div class="slash-item" data-index="${i}" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:13px;${i === activeIndex ? 'background:#eff6ff;color:#1d4ed8;' : 'color:#374151;'}">` +
         `<span style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:${i === activeIndex ? '#dbeafe' : '#f3f4f6'};font-size:12px;font-weight:600;">${item.icon}</span>` +
-        `<span>${item.title}</span>` +
+        `<span style="flex:1;">${item.title}</span>` +
+        (item.shortcut ? `<span style="font-size:10px;color:#9ca3af;font-family:monospace;">${item.shortcut}</span>` : '') +
         `</div>`
       ).join('')
 

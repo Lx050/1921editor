@@ -23,6 +23,7 @@ import { FontSize } from '../extensions/FontSize'
 import { DragHandle } from '../extensions/DragHandle'
 import { SmartPaste } from '../extensions/SmartPaste'
 import { FocusMode } from '../extensions/FocusMode'
+import { ParagraphNumbers } from '../extensions/ParagraphNumbers'
 import type { EditorDocument } from '@/types/editor'
 
 export interface CreateEditorOptions {
@@ -94,6 +95,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       DragHandle,
       SmartPaste,
       FocusMode,
+      ParagraphNumbers,
       SlashCommand,
     ],
     onUpdate: ({ editor }) => {
