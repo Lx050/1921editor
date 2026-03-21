@@ -205,6 +205,11 @@ export const useAppStore = defineStore('app', () => {
     contentBlocks.value = []
   }
 
+  // 只清空 editorJson，保留 contentBlocks（供 Step2 直接使用）
+  const clearEditorJson = (): void => {
+    editorJson.value = null
+  }
+
   const resetApp = (): void => {
     currentStep.value = 1
     currentArticleId.value = null
@@ -296,6 +301,7 @@ export const useAppStore = defineStore('app', () => {
     setIsUploading,
     clearWechatImages,
     clearEditorState,
+    clearEditorJson,
     resetApp,
     initializeUserMetadata,
     // Manifold Editor

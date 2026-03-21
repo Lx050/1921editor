@@ -185,6 +185,7 @@ import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
 import { extractArchive, isArchiveFile } from '../utils/archiveProcessor'
 import { uploadManager } from '../utils/uploadManager'
+import { smartTextParser } from '../utils/textParser'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -994,15 +995,27 @@ const goToNextStep = () => {
   // 重置错误信息
   errorMessage.value = ''
 
-  // 确保 rawText 已同步到 store（不依赖 watch 时序）
-  appStore.setRawText(localText.value)
-  // 持久化到 localStorage 作为备份
-  try {
-    localStorage.setItem('manifold_step1_rawText', localText.value)
-  } catch { /* ignore quota errors */ }
+  const text = localText.value
 
-  // 清空之前的内容块和 editorJson，确保 Step2 从 rawText 重新解析
-  appStore.clearEditorState()
+  // 1. 同步 rawText 到 store 和 localStorage
+  appStore.setRawText(text)
+  try { localStorage.setItem('manifold_step1_rawText', text) } catch { /* ignore */ }
+
+  // 2. 在 Step1 中直接解析成内容块，交给 Step2 使用
+  //    这比在 Step2.onMounted 中重新读取 rawText 更可靠（绕过异步竞态）
+  const blocks = smartTextParser(text)
+  console.log('[Step1→Step2] pre-parsed blocks:', blocks.length, 'rawText length:', text.length)
+  appStore.setContentBlocks(blocks)
+
+  // 3. 把解析结果也写入 sessionStorage 作为最终兜底
+  try {
+    sessionStorage.setItem('manifold_step1_blocks', JSON.stringify(blocks))
+    sessionStorage.setItem('manifold_step1_rawText_len', String(text.length))
+  } catch { /* ignore */ }
+
+  // 4. 只清除旧的 editorJson（不清 contentBlocks，它刚被设置好）
+  appStore.clearEditorJson()
+  console.log('[Step1→Step2] after clearEditorJson, contentBlocks:', appStore.contentBlocks.length, 'rawText len:', appStore.rawText.length)
 
   // V2: 如果有提取的图片，启动后台上传
   if (extractedImages.value.length > 0) {

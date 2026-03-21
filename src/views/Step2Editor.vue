@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
 import { storeToRefs } from 'pinia'
@@ -54,6 +54,29 @@ const isFocusMode = ref(false)
 const wordCountGoal = ref(0) // 0 = no goal set
 const editorTheme = ref<'light' | 'sepia' | 'dark'>('light')
 const isTypewriter = ref(false)
+
+// Restore editor preferences from localStorage
+try {
+  const prefs = JSON.parse(localStorage.getItem('manifold_editor_prefs') || '{}')
+  if (prefs.theme) editorTheme.value = prefs.theme
+  if (prefs.focusMode) isFocusMode.value = prefs.focusMode
+  if (prefs.typewriter) isTypewriter.value = prefs.typewriter
+  if (prefs.wordCountGoal) wordCountGoal.value = prefs.wordCountGoal
+} catch { /* ignore */ }
+
+// Persist preferences on change
+function savePrefs() {
+  try {
+    localStorage.setItem('manifold_editor_prefs', JSON.stringify({
+      theme: editorTheme.value,
+      focusMode: isFocusMode.value,
+      typewriter: isTypewriter.value,
+      wordCountGoal: wordCountGoal.value,
+    }))
+  } catch { /* ignore */ }
+}
+watch([editorTheme, isFocusMode, isTypewriter, wordCountGoal], savePrefs)
+
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
@@ -282,46 +305,72 @@ function handleDragLeave() {
 onMounted(() => {
   let initialContent: EditorDocument
 
-  console.log('[Step2] onMounted — editorJson:', !!appStore.editorJson, 'contentBlocks:', contentBlocks.value.length, 'rawText:', appStore.rawText?.length || 0)
+  console.log('[Step2] onMounted — editorJson:', !!appStore.editorJson, 'contentBlocks:', contentBlocks.value.length, 'rawText len:', appStore.rawText?.length || 0)
 
   try {
     if (appStore.editorJson) {
+      // Case 1: returning to editor (has saved JSON state)
+      console.log('[Step2] using editorJson')
       initialContent = appStore.editorJson as EditorDocument
+
     } else if (contentBlocks.value.length > 0) {
+      // Case 2: freshly navigated from Step1 (blocks pre-parsed there)
+      console.log('[Step2] using pre-parsed contentBlocks:', contentBlocks.value.length)
       initialContent = contentBlocksToTiptap(contentBlocks.value)
+
     } else {
-      // Try rawText from store, then localStorage backup
-      let rawText = appStore.rawText
-      if (!rawText) {
-        try {
-          rawText = localStorage.getItem('manifold_step1_rawText') || ''
-          if (rawText) {
-            console.log('[Step2] Recovered rawText from localStorage, length:', rawText.length)
-            appStore.setRawText(rawText)
+      // Case 3: fallback chain — try store rawText → localStorage rawText → sessionStorage blocks → autosave
+      console.log('[Step2] fallback chain triggered')
+
+      // 3a. Try sessionStorage pre-parsed blocks (written by Step1.goToNextStep)
+      let recovered = false
+      try {
+        const savedBlocks = sessionStorage.getItem('manifold_step1_blocks')
+        if (savedBlocks) {
+          const blocks = JSON.parse(savedBlocks)
+          if (Array.isArray(blocks) && blocks.length > 0) {
+            console.log('[Step2] recovered', blocks.length, 'blocks from sessionStorage')
+            appStore.setContentBlocks(blocks)
+            initialContent = contentBlocksToTiptap(blocks)
+            recovered = true
           }
-        } catch { /* ignore */ }
+        }
+      } catch { /* ignore */ }
+
+      // 3b. Try rawText from store
+      if (!recovered) {
+        let rawText = appStore.rawText
+        if (!rawText) {
+          try {
+            rawText = localStorage.getItem('manifold_step1_rawText') || ''
+            if (rawText) {
+              console.log('[Step2] recovered rawText from localStorage, len:', rawText.length)
+              appStore.setRawText(rawText)
+            }
+          } catch { /* ignore */ }
+        }
+        if (rawText) {
+          console.log('[Step2] parsing rawText, len:', rawText.length)
+          const blocks = smartTextParser(rawText)
+          appStore.setContentBlocks(blocks)
+          initialContent = contentBlocksToTiptap(blocks)
+          recovered = true
+        }
       }
 
-      if (rawText) {
-        console.log('[Step2] Parsing rawText, length:', rawText.length)
-        const blocks = smartTextParser(rawText)
-        console.log('[Step2] Parsed', blocks.length, 'content blocks')
-        appStore.setContentBlocks(blocks)
-        initialContent = contentBlocksToTiptap(blocks)
-        console.log('[Step2] Converted to tiptap, nodes:', initialContent.content?.length || 0)
-      } else {
-        // Try restoring from autosave
+      // 3c. Last resort: autosave from previous editor session
+      if (!recovered) {
         try {
           const saved = localStorage.getItem('manifold_editor_autosave')
           if (saved) {
             initialContent = JSON.parse(saved) as EditorDocument
-            console.log('[Step2] Restored from autosave')
+            console.log('[Step2] restored from autosave')
           }
         } catch { /* ignore */ }
       }
     }
   } catch (e) {
-    console.error('[Step2] Error initializing content, falling back to empty doc:', e)
+    console.error('[Step2] Error initializing content:', e)
     initialContent = undefined as any
   }
 
@@ -418,6 +467,22 @@ const canRedo = computed(() => editor.value?.can().redo() ?? false)
 const goalProgress = computed(() => {
   if (wordCountGoal.value <= 0) return 0
   return Math.min(100, Math.round((wordCount.value / wordCountGoal.value) * 100))
+})
+
+/** Chinese text readability score (0-100, higher = easier) */
+const readabilityScore = computed(() => {
+  if (!editor.value || wordCount.value < 20) return { score: 0, label: '--', color: 'text-gray-400' }
+  const text = editor.value.getText()
+  const sentences = text.split(/[。！？!?.]+/).filter(s => s.trim().length > 0)
+  if (sentences.length === 0) return { score: 0, label: '--', color: 'text-gray-400' }
+  const avgLen = wordCount.value / sentences.length
+  const longSentences = sentences.filter(s => s.trim().length > 40).length
+  const longRatio = longSentences / sentences.length
+  // Score formula: penalize long avg sentences and high long-sentence ratio
+  const score = Math.max(0, Math.min(100, Math.round(100 - avgLen * 1.5 - longRatio * 30)))
+  if (score >= 70) return { score, label: '易读', color: 'text-green-600' }
+  if (score >= 40) return { score, label: '适中', color: 'text-amber-600' }
+  return { score, label: '偏难', color: 'text-red-500' }
 })
 
 function handleGlobalKeydown(event: KeyboardEvent) {
@@ -555,6 +620,7 @@ function goToPublish() {
               <div class="flex justify-between"><span>段落</span><span class="text-gray-700">{{ detailedStats.paragraphs }}</span></div>
               <div class="flex justify-between"><span>句子</span><span class="text-gray-700">{{ sentenceCount }}</span></div>
               <div class="flex justify-between"><span>句均字数</span><span class="text-gray-700">{{ avgSentenceLength }}</span></div>
+              <div class="flex justify-between"><span>可读性</span><span :class="readabilityScore.color" class="font-medium">{{ readabilityScore.label }} ({{ readabilityScore.score }})</span></div>
               <div class="flex justify-between"><span>图片</span><span class="text-gray-700">{{ detailedStats.images }}</span></div>
               <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
               <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
