@@ -5,6 +5,7 @@ import type { Editor } from '@tiptap/vue-3'
 const props = defineProps<{ editor: Editor | null }>()
 const emit = defineEmits<{
   (e: 'open-svg-panel'): void
+  (e: 'edit-link'): void
 }>()
 
 const imageInput = ref<HTMLInputElement | null>(null)
@@ -109,14 +110,7 @@ function clearFormatting() {
 
 function toggleLink() {
   if (!props.editor) return
-  if (props.editor.isActive('link')) {
-    props.editor.chain().focus().unsetLink().run()
-    return
-  }
-  const url = window.prompt('输入链接地址', 'https://')
-  if (url) {
-    props.editor.chain().focus().setLink({ href: url }).run()
-  }
+  emit('edit-link')
 }
 </script>
 

@@ -376,6 +376,9 @@ function serializeInlineContent(node: any): string {
       }
       return text
     }
+    if (child.type === 'hardBreak') {
+      return '<br/>'
+    }
     return ''
   }).join('')
 }

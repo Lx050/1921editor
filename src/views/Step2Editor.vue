@@ -16,6 +16,7 @@ import FindReplace from '../components/FindReplace.vue'
 import TableBubbleMenu from '../components/TableBubbleMenu.vue'
 import HtmlPreviewModal from '../components/HtmlPreviewModal.vue'
 import SelectionToolbar from '../components/SelectionToolbar.vue'
+import LinkEditPopover from '../components/LinkEditPopover.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
@@ -44,6 +45,9 @@ const statsVisible = ref(false)
 const findReplaceVisible = ref(false)
 const previewVisible = ref(false)
 const previewHtml = ref('')
+const linkPopoverVisible = ref(false)
+const linkPopoverPosition = ref({ x: 0, y: 0 })
+const linkPopoverInitialUrl = ref('')
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
@@ -90,6 +94,31 @@ function openPreview() {
   const doc = editor.value.getJSON() as EditorDocument
   previewHtml.value = serializeToWechatHtml(doc)
   previewVisible.value = true
+}
+
+function openLinkEditor() {
+  if (!editor.value) return
+  const { from, to } = editor.value.state.selection
+  const view = editor.value.view
+  const start = view.coordsAtPos(from)
+  const end = view.coordsAtPos(to)
+  const centerX = (start.left + end.right) / 2
+  const bottomY = Math.max(start.bottom, end.bottom)
+  linkPopoverPosition.value = { x: centerX, y: bottomY }
+  linkPopoverInitialUrl.value = editor.value.getAttributes('link').href || ''
+  linkPopoverVisible.value = true
+}
+
+function handleLinkConfirm(url: string) {
+  if (!editor.value) return
+  editor.value.chain().focus().setLink({ href: url }).run()
+  linkPopoverVisible.value = false
+}
+
+function handleLinkRemove() {
+  if (!editor.value) return
+  editor.value.chain().focus().unsetLink().run()
+  linkPopoverVisible.value = false
 }
 
 function insertSvgTemplate(tpl: { id: string; name: string; svg: string; imageSlots?: any[] }) {
@@ -343,6 +372,12 @@ function handleGlobalKeydown(event: KeyboardEvent) {
     }
     return
   }
+  // Ctrl+K open link editor
+  if (mod && event.key === 'k') {
+    event.preventDefault()
+    openLinkEditor()
+    return
+  }
   // Ctrl+Shift+C copy as WeChat HTML
   if (mod && event.shiftKey && event.key === 'C') {
     event.preventDefault()
@@ -376,7 +411,7 @@ function goToPublish() {
     class="flex flex-col h-full w-full bg-gray-50 transition-all"
     :class="isFullscreen ? 'fixed inset-0 z-[100]' : ''"
   >
-    <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" />
+    <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" @edit-link="openLinkEditor" />
     <TableBubbleMenu :editor="editor" />
 
     <div class="flex flex-1 overflow-hidden">
@@ -395,7 +430,7 @@ function goToPublish() {
           :class="isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : ''"
         >
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" />
-          <SelectionToolbar :editor="editor" />
+          <SelectionToolbar :editor="editor" @edit-link="openLinkEditor" />
         </div>
         <!-- Drag overlay hint -->
         <div
@@ -500,6 +535,15 @@ function goToPublish() {
       :visible="previewVisible"
       :html="previewHtml"
       @close="previewVisible = false"
+    />
+
+    <LinkEditPopover
+      :visible="linkPopoverVisible"
+      :initial-url="linkPopoverInitialUrl"
+      :position="linkPopoverPosition"
+      @confirm="handleLinkConfirm"
+      @remove="handleLinkRemove"
+      @close="linkPopoverVisible = false"
     />
   </div>
 </template>

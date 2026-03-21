@@ -3,6 +3,7 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 
 const props = defineProps<{ editor: Editor | null }>()
+const emit = defineEmits<{ (e: 'edit-link'): void }>()
 
 const visible = ref(false)
 const position = ref({ x: 0, y: 0 })
@@ -17,14 +18,7 @@ function run(fn: () => void) {
 
 function toggleLink() {
   if (!props.editor) return
-  if (props.editor.isActive('link')) {
-    props.editor.chain().focus().unsetLink().run()
-    return
-  }
-  const url = window.prompt('Enter URL', 'https://')
-  if (url) {
-    props.editor.chain().focus().setLink({ href: url }).run()
-  }
+  emit('edit-link')
 }
 
 function updatePosition() {
@@ -133,6 +127,15 @@ onBeforeUnmount(() => {
         @mousedown.prevent="run(() => editor!.chain().focus().toggleHighlight({ color: '#fef08a' }).run())"
         title="Highlight"
       ><span class="px-0.5 rounded" style="background:#fef08a;color:#333;">H</span></button>
+      <span class="w-px h-4 bg-gray-600 mx-0.5" />
+      <button
+        v-for="c in ['#ef4444', '#3b82f6', '#22c55e', '#000000']"
+        :key="c"
+        class="w-4 h-4 rounded-full border border-gray-600 hover:scale-125 transition-transform flex-shrink-0"
+        :style="{ background: c }"
+        @mousedown.prevent="run(() => editor!.chain().focus().setColor(c).run())"
+        :title="`Color: ${c}`"
+      />
     </div>
     <!-- Arrow -->
     <div class="flex justify-center">
