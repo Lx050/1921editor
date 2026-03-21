@@ -21,6 +21,8 @@ import LinkEditPopover from '../components/LinkEditPopover.vue'
 import LinkHoverTooltip from '../components/LinkHoverTooltip.vue'
 import CommandPalette from '../components/CommandPalette.vue'
 import RecoveryDialog from '../components/RecoveryDialog.vue'
+import EmojiPicker from '../components/EmojiPicker.vue'
+import VersionSnapshots from '../components/VersionSnapshots.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import { serializeToMarkdown } from '../editor/serializers/markdownSerializer'
 import type { Editor } from '@tiptap/vue-3'
@@ -50,6 +52,8 @@ const statsVisible = ref(false)
 const findReplaceVisible = ref(false)
 const previewVisible = ref(false)
 const commandPaletteVisible = ref(false)
+const emojiPickerVisible = ref(false)
+const snapshotsVisible = ref(false)
 const showScrollTop = ref(false)
 const editorScrollContainer = ref<HTMLElement | null>(null)
 const scrollProgress = ref(0)
@@ -680,6 +684,12 @@ function handleGlobalKeydown(event: KeyboardEvent) {
   }
 }
 
+function insertEmoji(emoji: string) {
+  if (!editor.value) return
+  editor.value.chain().focus().insertContent(emoji).run()
+  emojiPickerVisible.value = false
+}
+
 function handleRestore() {
   if (!editor.value || !recoveryData.value) return
   editor.value.commands.setContent(recoveryData.value)
@@ -916,6 +926,16 @@ function goToPublish() {
       <div class="flex items-center gap-2">
         <button
           class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+          @click="emojiPickerVisible = true"
+          title="插入表情"
+        >Emoji</button>
+        <button
+          class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+          @click="snapshotsVisible = true"
+          title="版本快照"
+        >Snap</button>
+        <button
+          class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
           @click="exportMarkdown"
           title="Export as Markdown"
         >MD</button>
@@ -979,6 +999,18 @@ function goToPublish() {
       :recovery-data="recoveryData"
       @restore="handleRestore"
       @discard="handleDiscardRecovery"
+    />
+
+    <EmojiPicker
+      :visible="emojiPickerVisible"
+      @select="insertEmoji"
+      @close="emojiPickerVisible = false"
+    />
+
+    <VersionSnapshots
+      :editor="editor"
+      :visible="snapshotsVisible"
+      @close="snapshotsVisible = false"
     />
   </div>
 </template>
