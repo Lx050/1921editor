@@ -15,6 +15,12 @@
       </div>
       <div class="flex items-center gap-1">
         <button
+          @click="isMarkdownMode = !isMarkdownMode"
+          class="px-2.5 py-1 text-xs rounded-md transition-colors font-mono"
+          :class="isMarkdownMode ? 'text-blue-600 bg-blue-50 font-medium' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'"
+          :title="isMarkdownMode ? 'Markdown 模式 (点击切换回普通模式)' : '切换到 Markdown 模式'"
+        >{{ isMarkdownMode ? 'MD ON' : 'MD' }}</button>
+        <button
           @click="insertSampleText"
           class="px-2.5 py-1 text-xs text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
         >示例文本</button>
@@ -44,7 +50,9 @@
             @dragover.prevent="handleDragOver"
             @dragleave.prevent="handleDragLeave"
             class="flex-1 w-full min-h-[280px] px-5 py-4 bg-transparent resize-none text-sm text-gray-800 leading-relaxed outline-none placeholder:text-gray-400"
-            placeholder="在此粘贴文章正文…&#10;&#10;支持直接粘贴 Word 内容，也可将 .docx 或 .zip 文件拖拽到此处自动提取。"
+            :placeholder="isMarkdownMode
+              ? '在此粘贴 Markdown 格式文本...\n\n# 一级标题\n## 二级标题\n正文内容\n**加粗** *斜体* `代码`'
+              : '在此粘贴文章正文…\n\n支持直接粘贴 Word 内容，也可将 .docx 或 .zip 文件拖拽到此处自动提取。'"
           ></textarea>
           <!-- Textarea footer row -->
           <div class="flex items-center justify-between px-5 py-2.5 border-t border-gray-100">
@@ -186,6 +194,7 @@ import { useConfigStore } from '../stores/configStore'
 import { extractArchive, isArchiveFile } from '../utils/archiveProcessor'
 import { uploadManager } from '../utils/uploadManager'
 import { smartTextParser } from '../utils/textParser'
+import { markdownToTiptap } from '../utils/markdownImporter'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -194,6 +203,7 @@ const localText = ref('')
 const errorMessage = ref('')
 const fileInput = ref(null)
 const extractedImages = ref([])  // V2: 存储从ZIP中提取的图片
+const isMarkdownMode = ref(false) // Toggle for Markdown input mode
 
 // 监听store中的文本变化
 watch(() => appStore.rawText, (newText) => {
@@ -1001,20 +1011,25 @@ const goToNextStep = () => {
   appStore.setRawText(text)
   try { localStorage.setItem('manifold_step1_rawText', text) } catch { /* ignore */ }
 
-  // 2. 在 Step1 中直接解析成内容块，交给 Step2 使用
-  //    这比在 Step2.onMounted 中重新读取 rawText 更可靠（绕过异步竞态）
-  const blocks = smartTextParser(text)
-  console.log('[Step1→Step2] pre-parsed blocks:', blocks.length, 'rawText length:', text.length)
-  appStore.setContentBlocks(blocks)
-
-  // 3. 把解析结果也写入 sessionStorage 作为最终兜底
-  try {
-    sessionStorage.setItem('manifold_step1_blocks', JSON.stringify(blocks))
-    sessionStorage.setItem('manifold_step1_rawText_len', String(text.length))
-  } catch { /* ignore */ }
-
-  // 4. 只清除旧的 editorJson（不清 contentBlocks，它刚被设置好）
-  appStore.clearEditorJson()
+  // 2. Parse content based on mode
+  if (isMarkdownMode.value) {
+    // Markdown mode: parse directly to tiptap document JSON
+    const doc = markdownToTiptap(text)
+    console.log('[Step1→Step2] markdown parsed to tiptap doc, nodes:', doc.content?.length)
+    appStore.editorJson = doc
+    appStore.setContentBlocks([]) // Not using blocks in MD mode
+    try { sessionStorage.setItem('manifold_step1_blocks', '[]') } catch { /* ignore */ }
+  } else {
+    // Normal mode: parse to content blocks
+    const blocks = smartTextParser(text)
+    console.log('[Step1→Step2] pre-parsed blocks:', blocks.length, 'rawText length:', text.length)
+    appStore.setContentBlocks(blocks)
+    try {
+      sessionStorage.setItem('manifold_step1_blocks', JSON.stringify(blocks))
+      sessionStorage.setItem('manifold_step1_rawText_len', String(text.length))
+    } catch { /* ignore */ }
+    appStore.clearEditorJson()
+  }
   console.log('[Step1→Step2] after clearEditorJson, contentBlocks:', appStore.contentBlocks.length, 'rawText len:', appStore.rawText.length)
 
   // V2: 如果有提取的图片，启动后台上传

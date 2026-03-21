@@ -56,6 +56,21 @@ const commands = computed<PaletteCommand[]>(() => {
     { id: 'redo', label: '重做', shortcut: 'Ctrl+Shift+Z', category: '操作', action: () => e.chain().focus().redo().run() },
     { id: 'clear-format', label: '清除格式', category: '操作', action: () => e.chain().focus().clearNodes().unsetAllMarks().run() },
     { id: 'select-all', label: '全选', shortcut: 'Ctrl+A', category: '操作', action: () => e.chain().focus().selectAll().run() },
+    // Bookmarks
+    { id: 'bookmark-add', label: '添加书签', category: '书签', action: () => (e.commands as any).addBookmark() },
+    // Insert
+    { id: 'insert-date', label: '插入当前日期', category: '插入', action: () => {
+      const now = new Date()
+      e.chain().focus().insertContent(`${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`).run()
+    }},
+    { id: 'insert-time', label: '插入当前时间', category: '插入', action: () => {
+      const now = new Date()
+      e.chain().focus().insertContent(now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })).run()
+    }},
+    // Block roles
+    { id: 'role-body', label: '设为正文', category: '角色', action: () => e.chain().focus().updateAttributes('manifoldParagraph', { blockRole: 'body' }).run() },
+    { id: 'role-intro', label: '设为引言', category: '角色', action: () => e.chain().focus().updateAttributes('manifoldParagraph', { blockRole: 'intro' }).run() },
+    { id: 'role-outro', label: '设为结尾', category: '角色', action: () => e.chain().focus().updateAttributes('manifoldParagraph', { blockRole: 'outro' }).run() },
   ]
 })
 
