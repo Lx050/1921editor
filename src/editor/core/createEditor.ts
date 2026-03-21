@@ -27,16 +27,18 @@ import { FocusMode } from '../extensions/FocusMode'
 import { ParagraphNumbers } from '../extensions/ParagraphNumbers'
 import { DuplicateBlock } from '../extensions/DuplicateBlock'
 import { PastePlainText } from '../extensions/PastePlainText'
+import { createTypewriterScroll } from '../extensions/TypewriterScroll'
 import type { EditorDocument } from '@/types/editor'
 
 export interface CreateEditorOptions {
   content?: EditorDocument
   onUpdate?: (json: EditorDocument) => void
   editable?: boolean
+  isTypewriterEnabled?: () => boolean
 }
 
 export function createManifoldEditor(options: CreateEditorOptions = {}): Editor {
-  const { content, onUpdate, editable = true } = options
+  const { content, onUpdate, editable = true, isTypewriterEnabled = () => false } = options
 
   return new Editor({
     editable,
@@ -103,6 +105,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       ParagraphNumbers,
       DuplicateBlock,
       PastePlainText,
+      createTypewriterScroll(isTypewriterEnabled),
       SlashCommand,
     ],
     onUpdate: ({ editor }) => {

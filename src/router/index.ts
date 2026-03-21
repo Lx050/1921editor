@@ -199,8 +199,14 @@ interface RouteGuard {
 
 const routeGuards: Record<string, RouteGuard> = {
   '/step2': {
-    // Manifold editor: 接受 rawText、contentBlocks 或 editorJson
-    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length) || Boolean(appStore.editorJson),
+    // Manifold editor: 接受 rawText、contentBlocks、editorJson 或 localStorage 备份
+    validator: (appStore) => {
+      if (Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length) || Boolean(appStore.editorJson)) return true
+      try {
+        if (localStorage.getItem('manifold_step1_rawText') || localStorage.getItem('manifold_editor_autosave')) return true
+      } catch { /* ignore */ }
+      return false
+    },
     redirect: '/step1',
     description: 'step2需要文本内容、内容块或编辑器JSON'
   },
