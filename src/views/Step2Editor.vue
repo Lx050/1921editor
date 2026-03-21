@@ -358,6 +358,19 @@ const readingTime = computed(() => {
   return mins < 1 ? '<1' : String(mins)
 })
 
+const sentenceCount = computed(() => {
+  if (!editor.value) return 0
+  const text = editor.value.getText()
+  // Chinese sentence endings + English sentence endings
+  const sentences = text.split(/[。！？!?.]+/).filter(s => s.trim().length > 0)
+  return sentences.length
+})
+
+const avgSentenceLength = computed(() => {
+  if (sentenceCount.value === 0) return 0
+  return Math.round(wordCount.value / sentenceCount.value)
+})
+
 const detailedStats = computed(() => {
   if (!editor.value) return { paragraphs: 0, headings: 0, images: 0, svgs: 0, tables: 0 }
   let paragraphs = 0, headings = 0, images = 0, svgs = 0, tables = 0
@@ -505,6 +518,8 @@ function goToPublish() {
               <div class="flex justify-between"><span>阅读时间</span><span class="text-gray-700">~{{ readingTime }} 分钟</span></div>
               <div class="flex justify-between"><span>标题</span><span class="text-gray-700">{{ detailedStats.headings }}</span></div>
               <div class="flex justify-between"><span>段落</span><span class="text-gray-700">{{ detailedStats.paragraphs }}</span></div>
+              <div class="flex justify-between"><span>句子</span><span class="text-gray-700">{{ sentenceCount }}</span></div>
+              <div class="flex justify-between"><span>句均字数</span><span class="text-gray-700">{{ avgSentenceLength }}</span></div>
               <div class="flex justify-between"><span>图片</span><span class="text-gray-700">{{ detailedStats.images }}</span></div>
               <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
               <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>

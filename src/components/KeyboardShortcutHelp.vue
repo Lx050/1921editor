@@ -21,6 +21,7 @@ const shortcuts = [
     { keys: 'Ctrl+Z', desc: '撤销' },
     { keys: 'Ctrl+Shift+Z', desc: '重做' },
     { keys: 'Ctrl+A', desc: '全选' },
+    { keys: 'Ctrl+D', desc: '复制当前段落' },
   ]},
   { section: '列表', items: [
     { keys: 'Ctrl+Shift+8', desc: '无序列表' },
