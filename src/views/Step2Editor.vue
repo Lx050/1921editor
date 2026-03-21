@@ -17,6 +17,7 @@ import TableBubbleMenu from '../components/TableBubbleMenu.vue'
 import HtmlPreviewModal from '../components/HtmlPreviewModal.vue'
 import SelectionToolbar from '../components/SelectionToolbar.vue'
 import LinkEditPopover from '../components/LinkEditPopover.vue'
+import LinkHoverTooltip from '../components/LinkHoverTooltip.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
@@ -431,6 +432,7 @@ function goToPublish() {
         >
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" />
           <SelectionToolbar :editor="editor" @edit-link="openLinkEditor" />
+          <LinkHoverTooltip :editor="editor" @edit-link="openLinkEditor" />
         </div>
         <!-- Drag overlay hint -->
         <div

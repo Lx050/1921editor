@@ -60,7 +60,14 @@ const activeHeadingPos = computed(() => {
 
 function scrollToHeading(pos: number) {
   if (!props.editor) return
-  props.editor.chain().setTextSelection(pos + 1).scrollIntoView().run()
+  // Set cursor position
+  props.editor.chain().setTextSelection(pos + 1).run()
+  // Smooth scroll the DOM element into view
+  const dom = props.editor.view.domAtPos(pos + 1)
+  const el = dom.node instanceof HTMLElement ? dom.node : dom.node.parentElement
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
 }
 </script>
 

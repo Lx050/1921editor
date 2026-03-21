@@ -128,25 +128,27 @@ export default defineConfig({
           return `assets/[name]-[hash][extname]`
         },
         // 手动代码分割 - 解决300KB+体积警告
-        manualChunks: {
-          // Vue核心和常用库打包在一起（基础框架）
-          'vendor-vue': ['vue', 'vue-router', 'pinia'],
-
-          // 文档处理相关库（Docx解析）- 大库单独打包，懒加载
-          'vendor-docx': ['mammoth'],
-
-          // 压缩包处理库
-          'vendor-zip': ['jszip'],
-
-          // 7z-wasm 单独打包（大库，懒加载）
-          'vendor-7z': ['7z-wasm'],
-
-          // QRCode生成器
-          'vendor-qrcode': ['qrcode'],
-
-          // 工具库
-          'vendor-utils': ['dompurify'],
-
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            // Vue核心框架
+            if (id.includes('/vue/') || id.includes('/vue-router/') || id.includes('/pinia/') || id.includes('/@vue/')) {
+              return 'vendor-vue'
+            }
+            // tiptap + ProseMirror (editor engine)
+            if (id.includes('/@tiptap/') || id.includes('/prosemirror-') || id.includes('/tippy.js/') || id.includes('/orderedmap/') || id.includes('/crelt/') || id.includes('/rope-sequence/') || id.includes('/w3c-keyname/')) {
+              return 'vendor-tiptap'
+            }
+            // 文档处理
+            if (id.includes('/mammoth/')) return 'vendor-docx'
+            // 压缩包
+            if (id.includes('/jszip/')) return 'vendor-zip'
+            // 7z
+            if (id.includes('/7z-wasm/')) return 'vendor-7z'
+            // QRCode
+            if (id.includes('/qrcode/')) return 'vendor-qrcode'
+            // DOMPurify
+            if (id.includes('/dompurify/')) return 'vendor-utils'
+          }
         }
       }
     },

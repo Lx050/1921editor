@@ -81,6 +81,36 @@ export const slashMenuItems: SlashMenuItem[] = [
     icon: '\u2015',
     command: (editor) => editor.chain().focus().setHorizontalRule().run(),
   },
+  {
+    title: '目录 (TOC)',
+    icon: '#',
+    command: (editor) => {
+      // Scan document for headings and generate a linked TOC
+      const doc = editor.state.doc
+      const headings: { level: number; text: string }[] = []
+      doc.descendants((node: any) => {
+        if (node.type.name === 'manifoldHeading' && node.textContent.trim()) {
+          headings.push({ level: node.attrs?.level || 1, text: node.textContent })
+        }
+      })
+      if (headings.length === 0) return
+      const tocLines = headings.map(h => {
+        const indent = h.level > 1 ? '\u00A0\u00A0\u00A0\u00A0'.repeat(h.level - 1) : ''
+        return `${indent}${h.text}`
+      })
+      const content: any[] = [
+        { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '目录' }] },
+      ]
+      for (const line of tocLines) {
+        content.push({
+          type: 'manifoldParagraph',
+          attrs: { blockRole: 'body' },
+          content: [{ type: 'text', text: line }],
+        })
+      }
+      editor.chain().focus().insertContent(content).run()
+    },
+  },
 ]
 
 const slashPluginKey = new PluginKey('slashCommand')
