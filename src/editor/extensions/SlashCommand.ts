@@ -148,6 +148,38 @@ export const slashMenuItems: SlashMenuItem[] = [
       editor.chain().focus().insertContent(content).run()
     },
   },
+  {
+    title: '新闻稿模板',
+    icon: 'N',
+    command: (editor) => {
+      editor.chain().focus().insertContent([
+        { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '新闻标题' }] },
+        { type: 'manifoldParagraph', attrs: { blockRole: 'intro' }, content: [{ type: 'text', text: '导语：概括新闻核心内容，回答谁、什么、何时、何地。' }] },
+        { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '事件详情' }] },
+        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '详细描述事件的来龙去脉...' }] },
+        { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '背景信息' }] },
+        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '提供相关背景和上下文...' }] },
+        { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '后续展望' }] },
+        { type: 'manifoldParagraph', attrs: { blockRole: 'outro' }, content: [{ type: 'text', text: '总结和展望...' }] },
+      ]).run()
+    },
+  },
+  {
+    title: '活动通知模板',
+    icon: 'A',
+    command: (editor) => {
+      editor.chain().focus().insertContent([
+        { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '活动名称' }] },
+        { type: 'manifoldParagraph', attrs: { blockRole: 'intro' }, content: [{ type: 'text', text: '一句话介绍活动亮点和意义。' }] },
+        { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '活动详情' }] },
+        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '时间：\n地点：\n主办方：\n参与对象：' }] },
+        { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '活动流程' }] },
+        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '1. ...\n2. ...\n3. ...' }] },
+        { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '报名方式' }] },
+        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '请通过以下方式报名...' }] },
+      ]).run()
+    },
+  },
 ]
 
 const slashPluginKey = new PluginKey('slashCommand')

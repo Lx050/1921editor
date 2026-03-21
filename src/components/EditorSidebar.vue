@@ -5,6 +5,7 @@ import StyleSelector from './StyleSelector.vue'
 import SvgTemplatePanel from './SvgTemplatePanel.vue'
 import ImageManagerTab from './ImageManagerTab.vue'
 import DocumentOutline from './DocumentOutline.vue'
+import BookmarkPanel from './BookmarkPanel.vue'
 
 defineProps<{ editor?: Editor | null }>()
 
@@ -13,7 +14,7 @@ const emit = defineEmits<{
   (e: 'insert-image', data: { src: string; name: string; mediaId?: string }): void
 }>()
 
-const activeTab = ref<'styles' | 'svg' | 'images' | 'outline'>('styles')
+const activeTab = ref<'styles' | 'svg' | 'images' | 'outline' | 'bookmarks'>('styles')
 const collapsed = ref(false)
 
 function switchToSvg() {
@@ -43,7 +44,8 @@ defineExpose({ activeTab, collapsed, switchToSvg })
             { key: 'styles', label: '样式' },
             { key: 'svg', label: 'SVG' },
             { key: 'images', label: '图片' },
-            { key: 'outline', label: '大纲' }
+            { key: 'outline', label: '大纲' },
+            { key: 'bookmarks', label: '书签' }
           ]"
           :key="tab.key"
           class="flex-1 py-2 text-xs text-center transition-colors"
@@ -61,6 +63,7 @@ defineExpose({ activeTab, collapsed, switchToSvg })
         <SvgTemplatePanel v-show="activeTab === 'svg'" @insert-svg="emit('insert-svg', $event)" />
         <ImageManagerTab v-show="activeTab === 'images'" @insert-image="emit('insert-image', $event)" />
         <DocumentOutline v-show="activeTab === 'outline'" :editor="editor" />
+        <BookmarkPanel v-show="activeTab === 'bookmarks'" :editor="editor" />
       </div>
     </template>
   </div>

@@ -132,19 +132,21 @@ function toggleLink() {
 </script>
 
 <template>
-  <div v-if="editor" class="flex items-center gap-1 px-4 py-2 border-b bg-white flex-wrap overflow-x-auto scrollbar-thin">
+  <div v-if="editor" role="toolbar" aria-label="编辑器工具栏" class="flex items-center gap-1 px-4 py-2 border-b bg-white flex-wrap overflow-x-auto scrollbar-thin">
     <!-- Text formatting -->
     <button
       class="toolbar-btn"
       :class="{ active: isActive('bold') }"
       @click="run(() => editor!.chain().focus().toggleBold().run())"
-      title="加粗"
+      title="加粗 (Ctrl+B)"
+      aria-label="加粗"
     >B</button>
     <button
       class="toolbar-btn"
       :class="{ active: isActive('italic') }"
       @click="run(() => editor!.chain().focus().toggleItalic().run())"
-      title="斜体"
+      title="斜体 (Ctrl+I)"
+      aria-label="斜体"
     >I</button>
     <button
       class="toolbar-btn"

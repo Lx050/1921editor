@@ -30,6 +30,7 @@ import { DuplicateBlock } from '../extensions/DuplicateBlock'
 import { PastePlainText } from '../extensions/PastePlainText'
 import { createTypewriterScroll } from '../extensions/TypewriterScroll'
 import { TextTransform } from '../extensions/TextTransform'
+import { Bookmarks } from '../extensions/Bookmarks'
 import type { EditorDocument } from '@/types/editor'
 
 export interface CreateEditorOptions {
@@ -111,6 +112,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       PastePlainText,
       createTypewriterScroll(isTypewriterEnabled),
       TextTransform,
+      Bookmarks,
       SlashCommand,
     ],
     onUpdate: ({ editor }) => {
