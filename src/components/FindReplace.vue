@@ -11,6 +11,12 @@ const matchCount = ref(0)
 const currentMatch = ref(0)
 const findInputRef = ref<HTMLInputElement | null>(null)
 
+// Search options
+const caseSensitive = ref(false)
+const wholeWord = ref(false)
+const useRegex = ref(false)
+const regexError = ref('')
+
 // Decorations stored as positions
 let matchPositions: { from: number; to: number }[] = []
 
@@ -24,9 +30,27 @@ watch(() => props.visible, (val) => {
   }
 })
 
-watch(findText, () => {
+watch([findText, caseSensitive, wholeWord, useRegex], () => {
   doFind()
 })
+
+function buildSearchPattern(): { regex: RegExp | null; plain: string | null } {
+  regexError.value = ''
+  if (!findText.value) return { regex: null, plain: null }
+
+  if (useRegex.value) {
+    try {
+      const flags = caseSensitive.value ? 'g' : 'gi'
+      const regex = new RegExp(findText.value, flags)
+      return { regex, plain: null }
+    } catch (e: any) {
+      regexError.value = e.message || 'Invalid regex'
+      return { regex: null, plain: null }
+    }
+  }
+
+  return { regex: null, plain: findText.value }
+}
 
 function doFind() {
   clearHighlights()
@@ -36,17 +60,45 @@ function doFind() {
     return
   }
 
+  const { regex, plain } = buildSearchPattern()
+  if (!regex && !plain) {
+    matchCount.value = 0
+    currentMatch.value = 0
+    return
+  }
+
   const doc = props.editor.state.doc
-  const search = findText.value.toLowerCase()
   matchPositions = []
 
   doc.descendants((node, pos) => {
     if (node.isText && node.text) {
-      const text = node.text.toLowerCase()
-      let idx = text.indexOf(search)
-      while (idx !== -1) {
-        matchPositions.push({ from: pos + idx, to: pos + idx + findText.value.length })
-        idx = text.indexOf(search, idx + 1)
+      const text = node.text
+
+      if (regex) {
+        // Reset regex lastIndex for each node
+        regex.lastIndex = 0
+        let m: RegExpExecArray | null
+        while ((m = regex.exec(text)) !== null) {
+          if (m[0].length === 0) { regex.lastIndex++; continue } // prevent infinite loop
+          matchPositions.push({ from: pos + m.index, to: pos + m.index + m[0].length })
+        }
+      } else if (plain) {
+        const searchText = caseSensitive.value ? text : text.toLowerCase()
+        const searchTerm = caseSensitive.value ? plain : plain.toLowerCase()
+        let idx = searchText.indexOf(searchTerm)
+        while (idx !== -1) {
+          if (wholeWord.value) {
+            const before = idx > 0 ? searchText[idx - 1] : ' '
+            const after = idx + searchTerm.length < searchText.length ? searchText[idx + searchTerm.length] : ' '
+            const isBoundary = (c: string) => /[\s\p{P}]/u.test(c)
+            if (isBoundary(before) && isBoundary(after)) {
+              matchPositions.push({ from: pos + idx, to: pos + idx + plain.length })
+            }
+          } else {
+            matchPositions.push({ from: pos + idx, to: pos + idx + plain.length })
+          }
+          idx = searchText.indexOf(searchTerm, idx + 1)
+        }
       }
     }
   })
@@ -120,7 +172,7 @@ function handleKeydown(e: KeyboardEvent) {
 <template>
   <div
     v-if="visible"
-    class="absolute top-0 right-4 z-30 bg-white border rounded-lg shadow-lg p-3 w-72"
+    class="absolute top-0 right-4 z-30 bg-white border rounded-lg shadow-lg p-3 w-80"
     @keydown="handleKeydown"
   >
     <div class="flex items-center justify-between mb-2">
@@ -134,11 +186,36 @@ function handleKeydown(e: KeyboardEvent) {
           ref="findInputRef"
           v-model="findText"
           class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+          :class="regexError ? 'border-red-400' : ''"
           placeholder="查找..."
         />
         <span class="text-xs text-gray-400 w-12 text-center whitespace-nowrap">
           {{ matchCount > 0 ? `${currentMatch}/${matchCount}` : '0' }}
         </span>
+      </div>
+
+      <!-- Search options -->
+      <div class="flex items-center gap-1">
+        <button
+          class="text-[10px] px-1.5 py-0.5 rounded border transition-colors font-mono"
+          :class="caseSensitive ? 'bg-blue-100 text-blue-700 border-blue-300' : 'text-gray-400 border-gray-200 hover:text-gray-600'"
+          @click="caseSensitive = !caseSensitive"
+          title="区分大小写"
+        >Aa</button>
+        <button
+          class="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
+          :class="wholeWord ? 'bg-blue-100 text-blue-700 border-blue-300' : 'text-gray-400 border-gray-200 hover:text-gray-600'"
+          @click="wholeWord = !wholeWord"
+          :disabled="useRegex"
+          title="全字匹配"
+        >W</button>
+        <button
+          class="text-[10px] px-1.5 py-0.5 rounded border transition-colors font-mono"
+          :class="useRegex ? 'bg-blue-100 text-blue-700 border-blue-300' : 'text-gray-400 border-gray-200 hover:text-gray-600'"
+          @click="useRegex = !useRegex"
+          title="正则表达式"
+        >.*</button>
+        <span v-if="regexError" class="text-[10px] text-red-500 truncate flex-1" :title="regexError">{{ regexError }}</span>
       </div>
 
       <div class="flex items-center gap-1">
