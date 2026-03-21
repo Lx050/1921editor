@@ -18,6 +18,7 @@ import HtmlPreviewModal from '../components/HtmlPreviewModal.vue'
 import SelectionToolbar from '../components/SelectionToolbar.vue'
 import LinkEditPopover from '../components/LinkEditPopover.vue'
 import LinkHoverTooltip from '../components/LinkHoverTooltip.vue'
+import CommandPalette from '../components/CommandPalette.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import { serializeToMarkdown } from '../editor/serializers/markdownSerializer'
 import type { Editor } from '@tiptap/vue-3'
@@ -46,6 +47,7 @@ const copyStatus = ref<'idle' | 'copied'>('idle')
 const statsVisible = ref(false)
 const findReplaceVisible = ref(false)
 const previewVisible = ref(false)
+const commandPaletteVisible = ref(false)
 const previewHtml = ref('')
 const linkPopoverVisible = ref(false)
 const linkPopoverPosition = ref({ x: 0, y: 0 })
@@ -390,9 +392,17 @@ onMounted(() => {
     isTypewriterEnabled: () => isTypewriter.value,
   })
 
+  // Track selection changes for word count
+  editor.value.on('selectionUpdate', ({ editor: e }) => {
+    const { from, to, empty } = e.state.selection
+    selectionLength.value = empty ? 0 : e.state.doc.textBetween(from, to, '\n').length
+  })
+
   window.addEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
   window.addEventListener('keydown', handleGlobalKeydown)
 })
+
+const selectionLength = ref(0)
 
 onBeforeUnmount(() => {
   if (autosaveTimer) clearTimeout(autosaveTimer)
@@ -487,6 +497,12 @@ const readabilityScore = computed(() => {
 
 function handleGlobalKeydown(event: KeyboardEvent) {
   const mod = event.ctrlKey || event.metaKey
+  // Ctrl+P opens command palette
+  if (mod && event.key === 'p') {
+    event.preventDefault()
+    commandPaletteVisible.value = !commandPaletteVisible.value
+    return
+  }
   // Ctrl+F opens find & replace
   if (mod && event.key === 'f') {
     event.preventDefault()
@@ -607,7 +623,7 @@ function goToPublish() {
             :class="isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400 hover:text-gray-600'"
             @click="statsVisible = !statsVisible"
             :title="isOverLimit ? `超出微信字数限制 (${WECHAT_CHAR_LIMIT} 字)` : '文档统计'"
-          >{{ wordCount }} 字 / ~{{ readingTime }}min</button>
+          >{{ selectionLength > 0 ? `${selectionLength} / ` : '' }}{{ wordCount }} 字 / ~{{ readingTime }}min</button>
           <div
             v-if="statsVisible"
             class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border rounded-lg shadow-lg p-3 z-50 w-48"
@@ -759,6 +775,12 @@ function goToPublish() {
       @confirm="handleLinkConfirm"
       @remove="handleLinkRemove"
       @close="linkPopoverVisible = false"
+    />
+
+    <CommandPalette
+      :editor="editor"
+      :visible="commandPaletteVisible"
+      @close="commandPaletteVisible = false"
     />
   </div>
 </template>

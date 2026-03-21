@@ -28,6 +28,7 @@ import { ParagraphNumbers } from '../extensions/ParagraphNumbers'
 import { DuplicateBlock } from '../extensions/DuplicateBlock'
 import { PastePlainText } from '../extensions/PastePlainText'
 import { createTypewriterScroll } from '../extensions/TypewriterScroll'
+import { TextTransform } from '../extensions/TextTransform'
 import type { EditorDocument } from '@/types/editor'
 
 export interface CreateEditorOptions {
@@ -106,6 +107,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       DuplicateBlock,
       PastePlainText,
       createTypewriterScroll(isTypewriterEnabled),
+      TextTransform,
       SlashCommand,
     ],
     onUpdate: ({ editor }) => {

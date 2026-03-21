@@ -37,6 +37,7 @@ const shortcuts = [
     { keys: 'Ctrl+Shift+V', desc: '粘贴为纯文本' },
     { keys: 'Ctrl+Shift+F', desc: '专注模式' },
     { keys: 'Ctrl+F', desc: '查找与替换' },
+    { keys: 'Ctrl+P', desc: '命令面板' },
     { keys: '/', desc: '打开命令菜单' },
     { keys: 'Ctrl+Enter', desc: '插入分隔线' },
     { keys: 'Shift+Enter', desc: '换行 (不换段)' },
