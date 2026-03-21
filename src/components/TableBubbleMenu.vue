@@ -75,6 +75,28 @@ function run(fn: () => void) {
 
     <span class="w-px h-4 bg-gray-300 mx-1" />
 
+    <!-- Cell text alignment -->
+    <button
+      class="tbl-btn"
+      :class="{ 'text-blue-600 bg-blue-50': editor?.isActive({ textAlign: 'left' }) }"
+      @click="run(() => editor!.chain().focus().setTextAlign('left').run())"
+      title="Align left"
+    >&#x21E4;</button>
+    <button
+      class="tbl-btn"
+      :class="{ 'text-blue-600 bg-blue-50': editor?.isActive({ textAlign: 'center' }) }"
+      @click="run(() => editor!.chain().focus().setTextAlign('center').run())"
+      title="Align center"
+    >&#x2194;</button>
+    <button
+      class="tbl-btn"
+      :class="{ 'text-blue-600 bg-blue-50': editor?.isActive({ textAlign: 'right' }) }"
+      @click="run(() => editor!.chain().focus().setTextAlign('right').run())"
+      title="Align right"
+    >&#x21E5;</button>
+
+    <span class="w-px h-4 bg-gray-300 mx-1" />
+
     <button
       class="tbl-btn text-red-500 hover:bg-red-50"
       @click="run(() => editor!.chain().focus().deleteTable().run())"

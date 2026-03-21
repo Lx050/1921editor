@@ -34,6 +34,8 @@ const shortcuts = [
   { section: '其他', items: [
     { keys: 'Ctrl+S', desc: '手动保存' },
     { keys: 'Ctrl+Shift+C', desc: '复制微信HTML' },
+    { keys: 'Ctrl+Shift+M', desc: '导出 Markdown' },
+    { keys: 'Ctrl+Shift+D', desc: '下载 HTML 文件' },
     { keys: 'Ctrl+Shift+V', desc: '粘贴为纯文本' },
     { keys: 'Ctrl+Shift+F', desc: '专注模式' },
     { keys: 'Ctrl+F', desc: '查找与替换' },

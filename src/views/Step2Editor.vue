@@ -14,6 +14,7 @@ import ImageSlotPopover from '../components/ImageSlotPopover.vue'
 import KeyboardShortcutHelp from '../components/KeyboardShortcutHelp.vue'
 import FindReplace from '../components/FindReplace.vue'
 import TableBubbleMenu from '../components/TableBubbleMenu.vue'
+import BlockquoteBubbleMenu from '../components/BlockquoteBubbleMenu.vue'
 import HtmlPreviewModal from '../components/HtmlPreviewModal.vue'
 import SelectionToolbar from '../components/SelectionToolbar.vue'
 import LinkEditPopover from '../components/LinkEditPopover.vue'
@@ -145,6 +146,24 @@ async function exportMarkdown() {
     a.click()
     URL.revokeObjectURL(url)
   }
+}
+
+function downloadAsHtml() {
+  if (!editor.value) return
+  const doc = editor.value.getJSON() as EditorDocument
+  const html = serializeToWechatHtml(doc, configStore.resolvedStyle, null)
+  const fullHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Article</title></head>
+<body style="max-width:600px;margin:0 auto;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${html}</body>
+</html>`
+  const blob = new Blob([fullHtml], { type: 'text/html' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'article.html'
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 function openLinkEditor() {
@@ -459,16 +478,20 @@ const avgSentenceLength = computed(() => {
 })
 
 const detailedStats = computed(() => {
-  if (!editor.value) return { paragraphs: 0, headings: 0, images: 0, svgs: 0, tables: 0 }
-  let paragraphs = 0, headings = 0, images = 0, svgs = 0, tables = 0
+  if (!editor.value) return { paragraphs: 0, headings: 0, images: 0, svgs: 0, tables: 0, codeBlocks: 0, charCount: 0, charNoSpaces: 0 }
+  let paragraphs = 0, headings = 0, images = 0, svgs = 0, tables = 0, codeBlocks = 0
   editor.value.state.doc.descendants((node) => {
     if (node.type.name === 'manifoldParagraph') paragraphs++
     else if (node.type.name === 'manifoldHeading') headings++
     else if (node.type.name === 'manifoldImage') images++
     else if (node.type.name === 'manifoldSvgBlock') svgs++
     else if (node.type.name === 'table') tables++
+    else if (node.type.name === 'codeBlock') codeBlocks++
   })
-  return { paragraphs, headings, images, svgs, tables }
+  const fullText = editor.value.getText()
+  const charCount = fullText.length
+  const charNoSpaces = fullText.replace(/\s/g, '').length
+  return { paragraphs, headings, images, svgs, tables, codeBlocks, charCount, charNoSpaces }
 })
 
 const canUndo = computed(() => editor.value?.can().undo() ?? false)
@@ -541,6 +564,18 @@ function handleGlobalKeydown(event: KeyboardEvent) {
     copyAsWechatHtml()
     return
   }
+  // Ctrl+Shift+M export Markdown
+  if (mod && event.shiftKey && event.key === 'M') {
+    event.preventDefault()
+    exportMarkdown()
+    return
+  }
+  // Ctrl+Shift+D download as HTML file
+  if (mod && event.shiftKey && event.key === 'D') {
+    event.preventDefault()
+    downloadAsHtml()
+    return
+  }
   // Escape exits fullscreen or closes find
   if (event.key === 'Escape') {
     if (findReplaceVisible.value) { findReplaceVisible.value = false; return }
@@ -570,6 +605,7 @@ function goToPublish() {
   >
     <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" @edit-link="openLinkEditor" />
     <TableBubbleMenu :editor="editor" />
+    <BlockquoteBubbleMenu :editor="editor" />
 
     <div class="flex flex-1 overflow-hidden">
       <EditorSidebar ref="sidebarRef" :editor="editor" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
@@ -631,6 +667,7 @@ function goToPublish() {
             <div class="text-xs font-medium text-gray-700 mb-2">文档统计</div>
             <div class="space-y-1 text-xs text-gray-500">
               <div class="flex justify-between"><span>字数</span><span class="text-gray-700 font-medium">{{ wordCount }}</span></div>
+              <div class="flex justify-between"><span>字符数</span><span class="text-gray-700">{{ detailedStats.charCount }} ({{ detailedStats.charNoSpaces }})</span></div>
               <div class="flex justify-between"><span>阅读时间</span><span class="text-gray-700">~{{ readingTime }} 分钟</span></div>
               <div class="flex justify-between"><span>标题</span><span class="text-gray-700">{{ detailedStats.headings }}</span></div>
               <div class="flex justify-between"><span>段落</span><span class="text-gray-700">{{ detailedStats.paragraphs }}</span></div>
@@ -640,6 +677,7 @@ function goToPublish() {
               <div class="flex justify-between"><span>图片</span><span class="text-gray-700">{{ detailedStats.images }}</span></div>
               <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
               <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
+              <div v-if="detailedStats.codeBlocks > 0" class="flex justify-between"><span>代码块</span><span class="text-gray-700">{{ detailedStats.codeBlocks }}</span></div>
               <div class="border-t pt-1 mt-1 flex justify-between"><span>撤销/重做</span><span class="text-gray-700 font-mono text-[10px]">{{ canUndo ? '&#x21A9;' : '' }} {{ canRedo ? '&#x21AA;' : '' }}</span></div>
               <!-- Word count goal -->
               <div class="border-t pt-2 mt-2">
