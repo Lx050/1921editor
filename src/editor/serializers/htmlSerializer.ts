@@ -122,10 +122,14 @@ function serializeNode(
       return serializeTable(node, styleConfig, orgPreset)
     case 'tableRow':
       return `<tr>${(node.content || []).map((c: any) => serializeNode(c, styleConfig, orgPreset)).join('')}</tr>`
-    case 'tableHeader':
-      return `<th style="border: 1px solid #d1d5db; padding: 8px 12px; background: #f3f4f6; font-weight: 600; font-size: 14px;">${serializeCellContent(node, styleConfig, orgPreset)}</th>`
-    case 'tableCell':
-      return `<td style="border: 1px solid #d1d5db; padding: 8px 12px; font-size: 14px;">${serializeCellContent(node, styleConfig, orgPreset)}</td>`
+    case 'tableHeader': {
+      const thAlign = getCellTextAlign(node)
+      return `<th style="border: 1px solid #d1d5db; padding: 8px 12px; background: #f3f4f6; font-weight: 600; font-size: 14px;${thAlign ? ` text-align: ${thAlign};` : ''}">${serializeCellContent(node, styleConfig, orgPreset)}</th>`
+    }
+    case 'tableCell': {
+      const tdAlign = getCellTextAlign(node)
+      return `<td style="border: 1px solid #d1d5db; padding: 8px 12px; font-size: 14px;${tdAlign ? ` text-align: ${tdAlign};` : ''}">${serializeCellContent(node, styleConfig, orgPreset)}</td>`
+    }
     default:
       return serializeInlineContent(node)
   }
@@ -249,11 +253,23 @@ function serializeParagraph(
 function serializeImage(node: any): string {
   const src = node.attrs?.src || ''
   const caption = node.attrs?.caption || ''
+  const width = node.attrs?.width
+  const layout = node.attrs?.layout || 'full_width'
   const sanitizedSrc = DOMPurify.sanitize(src)
+
+  const imgStyles: string[] = ['max-width: 100%']
+  if (width) imgStyles.push(`width: ${width}px`)
+  const imgStyle = imgStyles.join('; ')
+
+  let sectionStyle = 'margin: 15px 0; text-align: center;'
+  if (layout === 'left') sectionStyle = 'margin: 15px 0; float: left; margin-right: 15px; max-width: 50%;'
+  else if (layout === 'right') sectionStyle = 'margin: 15px 0; float: right; margin-left: 15px; max-width: 50%;'
+  else if (layout === 'inline') sectionStyle = 'margin: 15px auto; text-align: center; max-width: 60%;'
+
   if (caption) {
-    return `<section style="margin: 15px 0; text-align: center;"><img src="${sanitizedSrc}" style="max-width: 100%;" /><p style="font-size: 12px; color: #999; margin-top: 5px;">${DOMPurify.sanitize(caption)}</p></section>`
+    return `<section style="${sectionStyle}"><img src="${sanitizedSrc}" style="${imgStyle}" /><p style="font-size: 12px; color: #999; margin-top: 5px;">${DOMPurify.sanitize(caption)}</p></section>`
   }
-  return `<section style="margin: 15px 0; text-align: center;"><img src="${sanitizedSrc}" style="max-width: 100%;" /></section>`
+  return `<section style="${sectionStyle}"><img src="${sanitizedSrc}" style="${imgStyle}" /></section>`
 }
 
 function serializeSvgBlock(node: any): string {
@@ -303,6 +319,18 @@ function serializeListItem(
     return serializeNode(child, styleConfig, orgPreset)
   }).join('')
   return `<li style="margin: 2px 0;">${inner}</li>`
+}
+
+/** Extract text-align from the first paragraph in a cell */
+function getCellTextAlign(node: any): string | null {
+  if (!node.content) return null
+  for (const child of node.content) {
+    if ((child.type === 'manifoldParagraph' || child.type === 'paragraph') && child.attrs?.textAlign) {
+      const align = child.attrs.textAlign
+      if (align !== 'left') return align
+    }
+  }
+  return null
 }
 
 /** Serialize cell content (table header/cell) -- may contain paragraphs */

@@ -49,6 +49,8 @@ const statsVisible = ref(false)
 const findReplaceVisible = ref(false)
 const previewVisible = ref(false)
 const commandPaletteVisible = ref(false)
+const showScrollTop = ref(false)
+const editorScrollContainer = ref<HTMLElement | null>(null)
 const previewHtml = ref('')
 const linkPopoverVisible = ref(false)
 const linkPopoverPosition = ref({ x: 0, y: 0 })
@@ -113,6 +115,10 @@ function handleEditorUpdate(json: EditorDocument) {
 
 function toggleFullscreen() {
   isFullscreen.value = !isFullscreen.value
+}
+
+function scrollToTop() {
+  editorScrollContainer.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 async function copyAsWechatHtml() {
@@ -640,8 +646,10 @@ function goToPublish() {
       <EditorSidebar ref="sidebarRef" :editor="editor" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
 
       <div
+        ref="editorScrollContainer"
         class="flex-1 overflow-y-auto relative transition-colors"
         :class="editorTheme === 'dark' ? 'bg-[#11111b]' : editorTheme === 'sepia' ? 'bg-[#f0e6d3]' : ''"
+        @scroll="showScrollTop = ($event.target as HTMLElement).scrollTop > 300"
         @click="handleCanvasClick"
         @drop="handleDrop"
         @dragover="handleDragOver"
@@ -669,6 +677,13 @@ function goToPublish() {
         >
           <span class="text-blue-600 text-sm font-medium bg-white px-4 py-2 rounded-lg shadow">松开以插入图片</span>
         </div>
+        <!-- Scroll to top -->
+        <button
+          v-if="showScrollTop"
+          class="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-gray-800/70 text-white flex items-center justify-center text-sm shadow-lg hover:bg-gray-800 transition-all z-20"
+          @click="scrollToTop"
+          title="回到顶部"
+        >&#x2191;</button>
       </div>
     </div>
 
