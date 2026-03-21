@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 
 const props = defineProps<{ editor: Editor | null }>()
@@ -9,9 +9,18 @@ const isInTable = computed(() => {
   return props.editor.isActive('table')
 })
 
+const cellBgColors = ['transparent', '#f3f4f6', '#dbeafe', '#dcfce7', '#fef9c3', '#fee2e2', '#f3e8ff', '#e0e7ff']
+
 function run(fn: () => void) {
   if (props.editor) fn()
 }
+
+function setCellBackground(color: string) {
+  if (!props.editor) return
+  props.editor.chain().focus().setCellAttribute('backgroundColor', color === 'transparent' ? null : color).run()
+}
+
+const showBgPicker = ref(false)
 </script>
 
 <template>
@@ -94,6 +103,30 @@ function run(fn: () => void) {
       @click="run(() => editor!.chain().focus().setTextAlign('right').run())"
       title="Align right"
     >&#x21E5;</button>
+
+    <span class="w-px h-4 bg-gray-300 mx-1" />
+
+    <!-- Cell background color -->
+    <div class="relative">
+      <button
+        class="tbl-btn"
+        @click="showBgPicker = !showBgPicker"
+        title="Cell background color"
+      >BG</button>
+      <div
+        v-if="showBgPicker"
+        class="absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg p-1.5 flex gap-1 z-50"
+      >
+        <button
+          v-for="c in cellBgColors"
+          :key="c"
+          class="w-5 h-5 rounded border border-gray-200 hover:scale-110 transition-transform"
+          :style="{ background: c === 'transparent' ? 'repeating-conic-gradient(#e5e7eb 0% 25%, white 0% 50%) 50% / 8px 8px' : c }"
+          @mousedown.prevent="setCellBackground(c); showBgPicker = false"
+          :title="c === 'transparent' ? 'No background' : c"
+        />
+      </div>
+    </div>
 
     <span class="w-px h-4 bg-gray-300 mx-1" />
 

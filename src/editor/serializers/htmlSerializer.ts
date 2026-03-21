@@ -124,11 +124,13 @@ function serializeNode(
       return `<tr>${(node.content || []).map((c: any) => serializeNode(c, styleConfig, orgPreset)).join('')}</tr>`
     case 'tableHeader': {
       const thAlign = getCellTextAlign(node)
-      return `<th style="border: 1px solid #d1d5db; padding: 8px 12px; background: #f3f4f6; font-weight: 600; font-size: 14px;${thAlign ? ` text-align: ${thAlign};` : ''}">${serializeCellContent(node, styleConfig, orgPreset)}</th>`
+      const thBg = node.attrs?.backgroundColor || '#f3f4f6'
+      return `<th style="border: 1px solid #d1d5db; padding: 8px 12px; background: ${thBg}; font-weight: 600; font-size: 14px;${thAlign ? ` text-align: ${thAlign};` : ''}">${serializeCellContent(node, styleConfig, orgPreset)}</th>`
     }
     case 'tableCell': {
       const tdAlign = getCellTextAlign(node)
-      return `<td style="border: 1px solid #d1d5db; padding: 8px 12px; font-size: 14px;${tdAlign ? ` text-align: ${tdAlign};` : ''}">${serializeCellContent(node, styleConfig, orgPreset)}</td>`
+      const tdBg = node.attrs?.backgroundColor
+      return `<td style="border: 1px solid #d1d5db; padding: 8px 12px; font-size: 14px;${tdBg ? ` background: ${tdBg};` : ''}${tdAlign ? ` text-align: ${tdAlign};` : ''}">${serializeCellContent(node, styleConfig, orgPreset)}</td>`
     }
     default:
       return serializeInlineContent(node)

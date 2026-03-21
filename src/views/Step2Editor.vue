@@ -20,6 +20,7 @@ import SelectionToolbar from '../components/SelectionToolbar.vue'
 import LinkEditPopover from '../components/LinkEditPopover.vue'
 import LinkHoverTooltip from '../components/LinkHoverTooltip.vue'
 import CommandPalette from '../components/CommandPalette.vue'
+import RecoveryDialog from '../components/RecoveryDialog.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import { serializeToMarkdown } from '../editor/serializers/markdownSerializer'
 import type { Editor } from '@tiptap/vue-3'
@@ -109,6 +110,7 @@ function handleEditorUpdate(json: EditorDocument) {
   autosaveTimer = setTimeout(() => {
     try {
       localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
+      localStorage.setItem('manifold_editor_autosave_ts', String(Date.now()))
       autosaveStatus.value = 'saved'
       lastSavedAt.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
       autosaveFadeTimer = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
@@ -407,13 +409,20 @@ onMounted(() => {
         }
       }
 
-      // 3c. Last resort: autosave from previous editor session
+      // 3c. Last resort: check for autosave and prompt recovery
       if (!recovered) {
         try {
           const saved = localStorage.getItem('manifold_editor_autosave')
           if (saved) {
-            initialContent = JSON.parse(saved) as EditorDocument
-            console.log('[Step2] restored from autosave')
+            const parsed = JSON.parse(saved) as EditorDocument
+            // Check if autosave has actual content (not just empty doc)
+            const hasContent = parsed.content && parsed.content.length > 0 &&
+              parsed.content.some((n: any) => n.content && n.content.some((c: any) => c.text?.trim()))
+            if (hasContent) {
+              recoveryData.value = parsed
+              showRecoveryDialog.value = true
+              console.log('[Step2] autosave found, prompting recovery')
+            }
           }
         } catch { /* ignore */ }
       }
@@ -538,6 +547,29 @@ const detailedStats = computed(() => {
 const canUndo = computed(() => editor.value?.can().undo() ?? false)
 const canRedo = computed(() => editor.value?.can().redo() ?? false)
 
+/** Top keywords (Chinese bigrams + single chars, excluding common stop words) */
+const topKeywords = computed(() => {
+  if (!editor.value) return []
+  const text = editor.value.getText()
+  if (text.length < 20) return []
+  // Chinese stop words
+  const stops = new Set(['的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一', '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好', '自己', '这', '他', '她', '它', '们', '那', '被', '从', '把', '让', '用', '对', '中', '等', '能', '下', '过', '与', '而', '及', '所', '但', '如', '为', '以', '其', '可', '之', '更', '来', '这个', '那个', '还', '又', '做', '比', '已', '吗', '呢', '吧', '啊', '哦', '嗯'])
+  const freq = new Map<string, number>()
+  // Extract Chinese bigrams
+  const chinese = text.replace(/[^\u4e00-\u9fff]/g, '')
+  for (let i = 0; i < chinese.length - 1; i++) {
+    const bigram = chinese.slice(i, i + 2)
+    if (!stops.has(bigram[0]) && !stops.has(bigram[1]) && !stops.has(bigram)) {
+      freq.set(bigram, (freq.get(bigram) || 0) + 1)
+    }
+  }
+  return [...freq.entries()]
+    .filter(([, c]) => c >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([word, count]) => ({ word, count }))
+})
+
 const goalProgress = computed(() => {
   if (wordCountGoal.value <= 0) return 0
   return Math.min(100, Math.round((wordCount.value / wordCountGoal.value) * 100))
@@ -580,6 +612,7 @@ function handleGlobalKeydown(event: KeyboardEvent) {
       const json = editor.value.getJSON() as EditorDocument
       try {
         localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
+        localStorage.setItem('manifold_editor_autosave_ts', String(Date.now()))
         autosaveStatus.value = 'saved'
         lastSavedAt.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
         if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
@@ -645,6 +678,22 @@ function handleGlobalKeydown(event: KeyboardEvent) {
     event.preventDefault()
     shortcutHelpVisible.value = !shortcutHelpVisible.value
   }
+}
+
+function handleRestore() {
+  if (!editor.value || !recoveryData.value) return
+  editor.value.commands.setContent(recoveryData.value)
+  appStore.editorJson = recoveryData.value
+  showRecoveryDialog.value = false
+  recoveryData.value = null
+}
+
+function handleDiscardRecovery() {
+  showRecoveryDialog.value = false
+  recoveryData.value = null
+  // Clear stale autosave
+  try { localStorage.removeItem('manifold_editor_autosave') } catch { /* ignore */ }
+  try { localStorage.removeItem('manifold_editor_autosave_ts') } catch { /* ignore */ }
 }
 
 function goBack() {
@@ -751,6 +800,19 @@ function goToPublish() {
               <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
               <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
               <div v-if="detailedStats.codeBlocks > 0" class="flex justify-between"><span>代码块</span><span class="text-gray-700">{{ detailedStats.codeBlocks }}</span></div>
+              <!-- Top keywords -->
+              <template v-if="topKeywords.length > 0">
+                <div class="border-t pt-1 mt-1">
+                  <span class="text-gray-400 text-[10px]">高频词</span>
+                  <div class="flex flex-wrap gap-1 mt-0.5">
+                    <span
+                      v-for="kw in topKeywords"
+                      :key="kw.word"
+                      class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px]"
+                    >{{ kw.word }}<span class="text-blue-300">{{ kw.count }}</span></span>
+                  </div>
+                </div>
+              </template>
               <div class="border-t pt-1 mt-1 flex justify-between"><span>撤销/重做</span><span class="text-gray-700 font-mono text-[10px]">{{ canUndo ? '&#x21A9;' : '' }} {{ canRedo ? '&#x21AA;' : '' }}</span></div>
               <!-- Word count goal -->
               <div class="border-t pt-2 mt-2">
@@ -911,6 +973,13 @@ function goToPublish() {
       :visible="commandPaletteVisible"
       @close="commandPaletteVisible = false"
     />
+
+    <RecoveryDialog
+      :visible="showRecoveryDialog"
+      :recovery-data="recoveryData"
+      @restore="handleRestore"
+      @discard="handleDiscardRecovery"
+    />
   </div>
 </template>
 
@@ -1027,7 +1096,12 @@ function goToPublish() {
   font-weight: 600;
 }
 .manifold-editor-content .ProseMirror .selectedCell {
-  background: #dbeafe;
+  background: #dbeafe !important;
+}
+/* Support cell background color attribute */
+.manifold-editor-content .ProseMirror td[style*="background"],
+.manifold-editor-content .ProseMirror th[style*="background"] {
+  transition: background-color 0.15s ease;
 }
 /* Inline code */
 .manifold-editor-content .ProseMirror code {
