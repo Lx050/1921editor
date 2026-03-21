@@ -57,6 +57,8 @@ const isFocusMode = ref(false)
 const wordCountGoal = ref(0) // 0 = no goal set
 const editorTheme = ref<'light' | 'sepia' | 'dark'>('light')
 const isTypewriter = ref(false)
+const zoomLevel = ref(100) // percentage: 80, 90, 100, 110, 120, 130, 150
+const lastSavedAt = ref<string>('')
 
 // Restore editor preferences from localStorage
 try {
@@ -65,6 +67,7 @@ try {
   if (prefs.focusMode) isFocusMode.value = prefs.focusMode
   if (prefs.typewriter) isTypewriter.value = prefs.typewriter
   if (prefs.wordCountGoal) wordCountGoal.value = prefs.wordCountGoal
+  if (prefs.zoom) zoomLevel.value = prefs.zoom
 } catch { /* ignore */ }
 
 // Persist preferences on change
@@ -75,10 +78,18 @@ function savePrefs() {
       focusMode: isFocusMode.value,
       typewriter: isTypewriter.value,
       wordCountGoal: wordCountGoal.value,
+      zoom: zoomLevel.value,
     }))
   } catch { /* ignore */ }
 }
-watch([editorTheme, isFocusMode, isTypewriter, wordCountGoal], savePrefs)
+watch([editorTheme, isFocusMode, isTypewriter, wordCountGoal, zoomLevel], savePrefs)
+
+const zoomLevels = [80, 90, 100, 110, 120, 130, 150]
+function cycleZoom(direction: 1 | -1) {
+  const idx = zoomLevels.indexOf(zoomLevel.value)
+  const newIdx = Math.max(0, Math.min(zoomLevels.length - 1, idx + direction))
+  zoomLevel.value = zoomLevels[newIdx]
+}
 
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
@@ -94,6 +105,7 @@ function handleEditorUpdate(json: EditorDocument) {
     try {
       localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
       autosaveStatus.value = 'saved'
+      lastSavedAt.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
       autosaveFadeTimer = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
     } catch { /* ignore quota errors */ }
   }, 2000)
@@ -540,6 +552,7 @@ function handleGlobalKeydown(event: KeyboardEvent) {
       try {
         localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
         autosaveStatus.value = 'saved'
+        lastSavedAt.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
         if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
         autosaveFadeTimer = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
       } catch { /* ignore */ }
@@ -574,6 +587,22 @@ function handleGlobalKeydown(event: KeyboardEvent) {
   if (mod && event.shiftKey && event.key === 'D') {
     event.preventDefault()
     downloadAsHtml()
+    return
+  }
+  // Ctrl+= zoom in, Ctrl+- zoom out, Ctrl+0 reset zoom
+  if (mod && (event.key === '=' || event.key === '+')) {
+    event.preventDefault()
+    cycleZoom(1)
+    return
+  }
+  if (mod && event.key === '-') {
+    event.preventDefault()
+    cycleZoom(-1)
+    return
+  }
+  if (mod && event.key === '0') {
+    event.preventDefault()
+    zoomLevel.value = 100
     return
   }
   // Escape exits fullscreen or closes find
@@ -629,7 +658,7 @@ function goToPublish() {
             editorTheme === 'dark' ? 'bg-[#1e1e2e] editor-dark' : '',
           ]"
         >
-          <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" />
+          <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" :style="zoomLevel !== 100 ? { fontSize: (zoomLevel / 100) + 'em' } : {}" />
           <SelectionToolbar :editor="editor" @edit-link="openLinkEditor" />
           <LinkHoverTooltip :editor="editor" @edit-link="openLinkEditor" />
         </div>
@@ -652,7 +681,8 @@ function goToPublish() {
       </button>
       <div class="flex items-center gap-4">
         <span v-if="autosaveStatus === 'saving'" class="text-xs text-amber-500">保存中...</span>
-        <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存</span>
+        <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存{{ lastSavedAt ? ` ${lastSavedAt}` : '' }}</span>
+        <span v-else-if="lastSavedAt" class="text-xs text-gray-300" :title="`上次保存: ${lastSavedAt}`">{{ lastSavedAt }}</span>
         <div class="relative">
           <button
             class="text-xs transition-colors"
@@ -740,6 +770,24 @@ function goToPublish() {
           @click="editorTheme = editorTheme === 'light' ? 'sepia' : editorTheme === 'sepia' ? 'dark' : 'light'"
           title="切换主题 (明/暖/暗)"
         >T</button>
+        <!-- Zoom control -->
+        <div class="flex items-center gap-0.5">
+          <button
+            class="text-[10px] text-gray-400 hover:text-gray-600 w-4 h-5 flex items-center justify-center"
+            @click="cycleZoom(-1)"
+            :disabled="zoomLevel <= 80"
+            :class="zoomLevel <= 80 ? 'opacity-30' : ''"
+            title="缩小"
+          >-</button>
+          <span class="text-[10px] text-gray-400 w-7 text-center select-none" :title="`缩放 ${zoomLevel}%`">{{ zoomLevel }}%</span>
+          <button
+            class="text-[10px] text-gray-400 hover:text-gray-600 w-4 h-5 flex items-center justify-center"
+            @click="cycleZoom(1)"
+            :disabled="zoomLevel >= 150"
+            :class="zoomLevel >= 150 ? 'opacity-30' : ''"
+            title="放大"
+          >+</button>
+        </div>
         <button
           class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
           @click="toggleFullscreen"
