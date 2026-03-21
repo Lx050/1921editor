@@ -59,6 +59,21 @@ export const slashMenuItems: SlashMenuItem[] = [
     command: (editor) => editor.chain().focus().toggleBlockquote().run(),
   },
   {
+    title: '提示引用',
+    icon: '>+',
+    command: (editor) => editor.chain().focus().toggleBlockquote().updateAttributes('blockquote', { variant: 'tip' }).run(),
+  },
+  {
+    title: '警告引用',
+    icon: '>!',
+    command: (editor) => editor.chain().focus().toggleBlockquote().updateAttributes('blockquote', { variant: 'warning' }).run(),
+  },
+  {
+    title: '高亮引用',
+    icon: '>"',
+    command: (editor) => editor.chain().focus().toggleBlockquote().updateAttributes('blockquote', { variant: 'quote' }).run(),
+  },
+  {
     title: '图片',
     icon: 'I',
     command: (editor) => editor.chain().focus().insertContent({ type: 'manifoldImage', attrs: { src: '', layout: 'full_width' } }).run(),

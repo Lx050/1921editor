@@ -52,6 +52,7 @@ const linkPopoverPosition = ref({ x: 0, y: 0 })
 const linkPopoverInitialUrl = ref('')
 const isFocusMode = ref(false)
 const wordCountGoal = ref(0) // 0 = no goal set
+const editorTheme = ref<'light' | 'sepia' | 'dark'>('light')
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
@@ -466,7 +467,8 @@ function goToPublish() {
       <EditorSidebar ref="sidebarRef" :editor="editor" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
 
       <div
-        class="flex-1 overflow-y-auto relative"
+        class="flex-1 overflow-y-auto relative transition-colors"
+        :class="editorTheme === 'dark' ? 'bg-[#11111b]' : editorTheme === 'sepia' ? 'bg-[#f0e6d3]' : ''"
         @click="handleCanvasClick"
         @drop="handleDrop"
         @dragover="handleDragOver"
@@ -474,8 +476,14 @@ function goToPublish() {
       >
         <FindReplace :editor="editor" :visible="findReplaceVisible" @close="findReplaceVisible = false" />
         <div
-          class="max-w-[680px] mx-auto py-8 px-6 bg-white min-h-full shadow-sm my-4 rounded transition-all"
-          :class="isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : ''"
+          class="max-w-[680px] mx-auto py-8 px-6 min-h-full shadow-sm my-4 rounded transition-all"
+          :class="[
+            isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : '',
+            editorTheme === 'light' ? 'bg-white' : '',
+            editorTheme === 'sepia' ? 'bg-[#f8f0e3]' : '',
+            editorTheme === 'sepia' ? 'editor-sepia' : '',
+            editorTheme === 'dark' ? 'bg-[#1e1e2e] editor-dark' : '',
+          ]"
         >
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" />
           <SelectionToolbar :editor="editor" @edit-link="openLinkEditor" />
@@ -569,6 +577,16 @@ function goToPublish() {
           @click="isFocusMode = !isFocusMode"
           title="专注模式 (Ctrl+Shift+F)"
         >F</button>
+        <button
+          class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
+          :class="{
+            'text-gray-400 hover:text-gray-600 border-gray-200': editorTheme === 'light',
+            'bg-amber-100 text-amber-700 border-amber-300': editorTheme === 'sepia',
+            'bg-gray-700 text-gray-200 border-gray-600': editorTheme === 'dark',
+          }"
+          @click="editorTheme = editorTheme === 'light' ? 'sepia' : editorTheme === 'sepia' ? 'dark' : 'light'"
+          title="切换主题 (明/暖/暗)"
+        >T</button>
         <button
           class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
           @click="toggleFullscreen"
@@ -706,6 +724,28 @@ function goToPublish() {
   margin: 1rem 0;
   color: #6b7280;
 }
+.manifold-editor-content .ProseMirror blockquote[data-variant="tip"] {
+  border-left-color: #22c55e;
+  background: #f0fdf4;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  color: #15803d;
+}
+.manifold-editor-content .ProseMirror blockquote[data-variant="warning"] {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  color: #92400e;
+}
+.manifold-editor-content .ProseMirror blockquote[data-variant="quote"] {
+  border-left-color: #3b82f6;
+  background: #eff6ff;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  color: #1e40af;
+  font-style: italic;
+}
 /* Image nodes (NodeView) */
 .manifold-editor-content .ProseMirror .manifold-image-block {
   margin: 0.75rem 0;
@@ -804,5 +844,79 @@ function goToPublish() {
 }
 .manifold-editor-content.focus-mode .ProseMirror > .focus-active {
   opacity: 1;
+}
+/* Dark theme */
+.editor-dark .manifold-editor-content .ProseMirror {
+  color: #cdd6f4;
+}
+.editor-dark .manifold-editor-content .ProseMirror h1,
+.editor-dark .manifold-editor-content .ProseMirror h2,
+.editor-dark .manifold-editor-content .ProseMirror h3 {
+  color: #e2e8f0;
+}
+.editor-dark .manifold-editor-content .ProseMirror .is-empty::before {
+  color: #585b70;
+}
+.editor-dark .manifold-editor-content .ProseMirror blockquote {
+  border-left-color: #585b70;
+  color: #a6adc8;
+}
+.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="tip"] {
+  border-left-color: #22c55e;
+  background: #052e16;
+  color: #86efac;
+}
+.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="warning"] {
+  border-left-color: #f59e0b;
+  background: #451a03;
+  color: #fcd34d;
+}
+.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="quote"] {
+  border-left-color: #3b82f6;
+  background: #172554;
+  color: #93c5fd;
+}
+.editor-dark .manifold-editor-content .ProseMirror hr {
+  border-top-color: #313244;
+}
+.editor-dark .manifold-editor-content .ProseMirror code {
+  background: #313244;
+  color: #f38ba8;
+}
+.editor-dark .manifold-editor-content .ProseMirror th {
+  background: #313244;
+  color: #cdd6f4;
+}
+.editor-dark .manifold-editor-content .ProseMirror th,
+.editor-dark .manifold-editor-content .ProseMirror td {
+  border-color: #45475a;
+}
+.editor-dark .manifold-editor-content .ProseMirror .selectedCell {
+  background: #313244;
+}
+.editor-dark .manifold-editor-content .ProseMirror a {
+  color: #89b4fa;
+}
+.editor-dark .paragraph-number {
+  color: #585b70 !important;
+}
+/* Sepia theme */
+.editor-sepia .manifold-editor-content .ProseMirror {
+  color: #5c4b37;
+}
+.editor-sepia .manifold-editor-content .ProseMirror h1,
+.editor-sepia .manifold-editor-content .ProseMirror h2,
+.editor-sepia .manifold-editor-content .ProseMirror h3 {
+  color: #3e2f1e;
+}
+.editor-sepia .manifold-editor-content .ProseMirror .is-empty::before {
+  color: #c4a882;
+}
+.editor-sepia .manifold-editor-content .ProseMirror blockquote {
+  border-left-color: #c4a882;
+  color: #7a6450;
+}
+.editor-sepia .manifold-editor-content .ProseMirror hr {
+  border-top-color: #d4c4a8;
 }
 </style>

@@ -334,7 +334,15 @@ function serializeBlockquote(
   orgPreset: OrgStylePreset | null
 ): string {
   const inner = (node.content || []).map((child: any) => serializeNode(child, styleConfig, orgPreset)).join('')
-  return `<blockquote style="margin: 15px 0; padding: 10px 15px; border-left: 3px solid #d1d5db; color: #6b7280; font-size: 14px; line-height: 1.75em;">${inner}</blockquote>`
+  const variant = node.attrs?.variant || 'default'
+  const variantStyles: Record<string, string> = {
+    default: 'border-left: 3px solid #d1d5db; color: #6b7280;',
+    tip: 'border-left: 3px solid #22c55e; background: #f0fdf4; color: #15803d;',
+    warning: 'border-left: 3px solid #f59e0b; background: #fffbeb; color: #92400e;',
+    quote: 'border-left: 3px solid #3b82f6; background: #eff6ff; color: #1e40af; font-style: italic;',
+  }
+  const style = variantStyles[variant] || variantStyles.default
+  return `<blockquote style="margin: 15px 0; padding: 10px 15px; ${style} font-size: 14px; line-height: 1.75em;">${inner}</blockquote>`
 }
 
 function serializeTable(

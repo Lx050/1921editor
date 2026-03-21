@@ -18,6 +18,7 @@ import { ManifoldHeading } from '../nodes/ManifoldHeading'
 import { ManifoldParagraph } from '../nodes/ManifoldParagraph'
 import { ManifoldImage } from '../nodes/ManifoldImage'
 import { ManifoldSvgBlock } from '../nodes/ManifoldSvgBlock'
+import { ManifoldBlockquote } from '../nodes/ManifoldBlockquote'
 import { SlashCommand } from '../extensions/SlashCommand'
 import { FontSize } from '../extensions/FontSize'
 import { DragHandle } from '../extensions/DragHandle'
@@ -25,6 +26,7 @@ import { SmartPaste } from '../extensions/SmartPaste'
 import { FocusMode } from '../extensions/FocusMode'
 import { ParagraphNumbers } from '../extensions/ParagraphNumbers'
 import { DuplicateBlock } from '../extensions/DuplicateBlock'
+import { PastePlainText } from '../extensions/PastePlainText'
 import type { EditorDocument } from '@/types/editor'
 
 export interface CreateEditorOptions {
@@ -52,7 +54,9 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       StarterKit.configure({
         heading: false,
         paragraph: false,
+        blockquote: false,
       }),
+      ManifoldBlockquote,
       ManifoldHeading,
       ManifoldParagraph,
       ManifoldImage,
@@ -98,6 +102,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       FocusMode,
       ParagraphNumbers,
       DuplicateBlock,
+      PastePlainText,
       SlashCommand,
     ],
     onUpdate: ({ editor }) => {
