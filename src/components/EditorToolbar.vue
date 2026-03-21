@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 
 const props = defineProps<{ editor: Editor | null }>()
@@ -13,6 +13,22 @@ const colorInput = ref<HTMLInputElement | null>(null)
 
 const presetColors = ['#000000', '#374151', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
 const highlightColors = ['#fef08a', '#fed7aa', '#bbf7d0', '#bae6fd', '#e9d5ff', '#fecdd3']
+
+// Recent custom colors
+const recentColors = ref<string[]>([])
+try {
+  const saved = JSON.parse(localStorage.getItem('manifold_recent_colors') || '[]')
+  if (Array.isArray(saved)) recentColors.value = saved.slice(0, 5)
+} catch { /* ignore */ }
+
+function addRecentColor(color: string) {
+  if (presetColors.includes(color)) return
+  recentColors.value = [color, ...recentColors.value.filter(c => c !== color)].slice(0, 5)
+  try { localStorage.setItem('manifold_recent_colors', JSON.stringify(recentColors.value)) } catch { /* ignore */ }
+}
+
+const canUndo = computed(() => props.editor?.can().undo() ?? false)
+const canRedo = computed(() => props.editor?.can().redo() ?? false)
 const fontSizes = ['12', '13', '14', '15', '16', '18', '20', '24']
 const lineHeights = ['1', '1.25', '1.5', '1.75', '2']
 
@@ -64,6 +80,7 @@ function setColor(color: string) {
 function handleColorInput(event: Event) {
   const value = (event.target as HTMLInputElement).value
   setColor(value)
+  addRecentColor(value)
 }
 
 function setHighlight(color: string) {
@@ -188,6 +205,17 @@ function toggleLink() {
           @mousedown.prevent="colorInput?.click()"
           title="自定义颜色"
         >...</button>
+        <template v-if="recentColors.length > 0">
+          <div class="w-full border-t my-0.5" />
+          <button
+            v-for="c in recentColors"
+            :key="'r-' + c"
+            class="w-5 h-5 rounded border border-gray-200 hover:scale-110 transition-transform"
+            :style="{ background: c }"
+            @mousedown.prevent="setColor(c)"
+            :title="c"
+          />
+        </template>
         <input ref="colorInput" type="color" class="sr-only" @input="handleColorInput" />
       </div>
     </div>
@@ -327,13 +355,19 @@ function toggleLink() {
       @click="run(() => editor!.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())"
       title="插入表格"
     >TBL</button>
+    <button
+      class="toolbar-btn text-xs font-mono"
+      :class="{ active: isActive('codeBlock') }"
+      @click="run(() => editor!.chain().focus().toggleCodeBlock().run())"
+      title="代码块"
+    >{}</button>
     <input ref="imageInput" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
     <!-- Undo/Redo -->
-    <button class="toolbar-btn" @click="run(() => editor!.chain().focus().undo().run())" title="撤销">&#x21A9;</button>
-    <button class="toolbar-btn" @click="run(() => editor!.chain().focus().redo().run())" title="重做">&#x21AA;</button>
+    <button class="toolbar-btn" :class="{ 'opacity-30': !canUndo }" @click="run(() => editor!.chain().focus().undo().run())" title="撤销 (Ctrl+Z)">&#x21A9;</button>
+    <button class="toolbar-btn" :class="{ 'opacity-30': !canRedo }" @click="run(() => editor!.chain().focus().redo().run())" title="重做 (Ctrl+Shift+Z)">&#x21AA;</button>
     <button class="toolbar-btn text-xs text-gray-400" @click="clearFormatting" title="清除格式">Tx</button>
 
     <div class="flex-1" />
