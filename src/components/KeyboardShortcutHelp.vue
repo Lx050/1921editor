@@ -33,9 +33,11 @@ const shortcuts = [
   { section: '其他', items: [
     { keys: 'Ctrl+S', desc: '手动保存' },
     { keys: 'Ctrl+Shift+C', desc: '复制微信HTML' },
+    { keys: 'Ctrl+Shift+F', desc: '专注模式' },
     { keys: 'Ctrl+F', desc: '查找与替换' },
     { keys: '/', desc: '打开命令菜单' },
     { keys: 'Ctrl+Enter', desc: '插入分隔线' },
+    { keys: 'Shift+Enter', desc: '换行 (不换段)' },
     { keys: '?', desc: '显示此面板' },
   ]},
 ]

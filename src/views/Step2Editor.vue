@@ -49,6 +49,8 @@ const previewHtml = ref('')
 const linkPopoverVisible = ref(false)
 const linkPopoverPosition = ref({ x: 0, y: 0 })
 const linkPopoverInitialUrl = ref('')
+const isFocusMode = ref(false)
+const wordCountGoal = ref(0) // 0 = no goal set
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
@@ -351,6 +353,11 @@ const detailedStats = computed(() => {
 const canUndo = computed(() => editor.value?.can().undo() ?? false)
 const canRedo = computed(() => editor.value?.can().redo() ?? false)
 
+const goalProgress = computed(() => {
+  if (wordCountGoal.value <= 0) return 0
+  return Math.min(100, Math.round((wordCount.value / wordCountGoal.value) * 100))
+})
+
 function handleGlobalKeydown(event: KeyboardEvent) {
   const mod = event.ctrlKey || event.metaKey
   // Ctrl+F opens find & replace
@@ -377,6 +384,12 @@ function handleGlobalKeydown(event: KeyboardEvent) {
   if (mod && event.key === 'k') {
     event.preventDefault()
     openLinkEditor()
+    return
+  }
+  // Ctrl+Shift+F toggle focus mode
+  if (mod && event.shiftKey && event.key === 'F') {
+    event.preventDefault()
+    isFocusMode.value = !isFocusMode.value
     return
   }
   // Ctrl+Shift+C copy as WeChat HTML
@@ -430,7 +443,7 @@ function goToPublish() {
           class="max-w-[680px] mx-auto py-8 px-6 bg-white min-h-full shadow-sm my-4 rounded transition-all"
           :class="isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : ''"
         >
-          <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" />
+          <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" />
           <SelectionToolbar :editor="editor" @edit-link="openLinkEditor" />
           <LinkHoverTooltip :editor="editor" @edit-link="openLinkEditor" />
         </div>
@@ -475,9 +488,51 @@ function goToPublish() {
               <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
               <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
               <div class="border-t pt-1 mt-1 flex justify-between"><span>撤销/重做</span><span class="text-gray-700 font-mono text-[10px]">{{ canUndo ? '&#x21A9;' : '' }} {{ canRedo ? '&#x21AA;' : '' }}</span></div>
+              <!-- Word count goal -->
+              <div class="border-t pt-2 mt-2">
+                <div class="flex items-center gap-1 mb-1">
+                  <span class="text-gray-500">字数目标</span>
+                  <input
+                    type="number"
+                    :value="wordCountGoal || ''"
+                    @change="wordCountGoal = parseInt(($event.target as HTMLInputElement).value) || 0"
+                    placeholder="--"
+                    class="w-14 text-right text-gray-700 border border-gray-200 rounded px-1 py-0.5 text-[10px]"
+                    min="0"
+                    step="100"
+                  />
+                </div>
+                <div v-if="wordCountGoal > 0" class="flex items-center gap-1">
+                  <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-all duration-500"
+                      :class="goalProgress >= 100 ? 'bg-green-500' : goalProgress >= 75 ? 'bg-blue-500' : 'bg-amber-500'"
+                      :style="{ width: goalProgress + '%' }"
+                    />
+                  </div>
+                  <span class="text-[10px] font-medium" :class="goalProgress >= 100 ? 'text-green-600' : 'text-gray-500'">{{ goalProgress }}%</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        <!-- Word count goal progress (compact) -->
+        <div v-if="wordCountGoal > 0" class="flex items-center gap-1" :title="`目标: ${wordCountGoal} 字 (${goalProgress}%)`">
+          <div class="w-12 h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all"
+              :class="goalProgress >= 100 ? 'bg-green-500' : 'bg-blue-400'"
+              :style="{ width: goalProgress + '%' }"
+            />
+          </div>
+          <span class="text-[10px]" :class="goalProgress >= 100 ? 'text-green-600' : 'text-gray-400'">{{ goalProgress }}%</span>
+        </div>
+        <button
+          class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
+          :class="isFocusMode ? 'bg-blue-100 text-blue-600 border-blue-300' : 'text-gray-400 hover:text-gray-600 border-gray-200'"
+          @click="isFocusMode = !isFocusMode"
+          title="专注模式 (Ctrl+Shift+F)"
+        >F</button>
         <button
           class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
           @click="toggleFullscreen"
@@ -696,5 +751,13 @@ function goToPublish() {
 }
 .manifold-editor-content .ProseMirror li > p {
   margin-bottom: 0.25rem;
+}
+/* Focus mode - dim non-active blocks */
+.manifold-editor-content.focus-mode .ProseMirror > * {
+  opacity: 0.25;
+  transition: opacity 0.2s ease;
+}
+.manifold-editor-content.focus-mode .ProseMirror > .focus-active {
+  opacity: 1;
 }
 </style>
