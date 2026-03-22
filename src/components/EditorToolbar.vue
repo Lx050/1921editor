@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
+import HrStylePicker from './HrStylePicker.vue'
 
 const props = defineProps<{ editor: Editor | null }>()
 const emit = defineEmits<{
@@ -49,11 +50,6 @@ function getCurrentRole(): string {
 function setBlockRole(role: string) {
   if (!props.editor) return
   props.editor.chain().focus().updateAttributes('manifoldParagraph', { blockRole: role }).run()
-}
-
-function insertHR() {
-  if (!props.editor) return
-  props.editor.chain().focus().setHorizontalRule().run()
 }
 
 function triggerImageUpload() {
@@ -349,7 +345,7 @@ function toggleLink() {
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
     <!-- Insert items -->
-    <button class="toolbar-btn" @click="insertHR" title="分隔线">&#x2015;</button>
+    <HrStylePicker :editor="editor" />
     <button class="toolbar-btn" @click="triggerImageUpload" title="插入图片">IMG</button>
     <button class="toolbar-btn" @click="emit('open-svg-panel')" title="插入SVG模板">SVG</button>
     <button

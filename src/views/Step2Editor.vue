@@ -461,10 +461,32 @@ onMounted(() => {
     isTypewriterEnabled: () => isTypewriter.value,
   })
 
-  // Track selection changes for word count
+  // Track selection changes for word count and cursor position
   editor.value.on('selectionUpdate', ({ editor: e }) => {
     const { from, to, empty } = e.state.selection
     selectionLength.value = empty ? 0 : e.state.doc.textBetween(from, to, '\n').length
+
+    // Track current block index and offset within block
+    const $from = e.state.selection.$from
+    let blockIdx = 0
+    e.state.doc.forEach((_node, _offset, idx) => {
+      if (_offset <= from) blockIdx = idx + 1
+    })
+    cursorBlock.value = blockIdx
+    cursorOffset.value = $from.parentOffset
+
+    // Track current node type for status bar
+    const nodeName = $from.parent.type.name
+    const nodeLabel: Record<string, string> = {
+      'manifoldHeading': `H${$from.parent.attrs?.level || 1}`,
+      'manifoldParagraph': $from.parent.attrs?.blockRole === 'intro' ? '引言' : $from.parent.attrs?.blockRole === 'outro' ? '结尾' : '正文',
+      'manifoldCodeBlock': '代码',
+      'manifoldBlockquote': '引用',
+      'listItem': '列表项',
+      'tableCell': '表格',
+      'tableHeader': '表头',
+    }
+    currentNodeType.value = nodeLabel[nodeName] || nodeName
   })
 
   window.addEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
@@ -472,6 +494,9 @@ onMounted(() => {
 })
 
 const selectionLength = ref(0)
+const cursorBlock = ref(0)
+const cursorOffset = ref(0)
+const currentNodeType = ref('')
 
 /** Breadcrumb: find the nearest heading above cursor */
 const currentHeading = computed(() => {
@@ -804,7 +829,11 @@ function goToPublish() {
       >
         &larr; 返回文本输入
       </button>
-      <span v-if="currentHeading" class="hidden md:block text-xs text-gray-300 truncate max-w-[200px]" :title="currentHeading">{{ currentHeading }}</span>
+      <div class="hidden md:flex items-center gap-2">
+        <span v-if="currentNodeType" class="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-medium">{{ currentNodeType }}</span>
+        <span v-if="cursorBlock > 0" class="text-[10px] text-gray-300 font-mono">B{{ cursorBlock }}:{{ cursorOffset }}</span>
+        <span v-if="currentHeading" class="text-xs text-gray-300 truncate max-w-[200px]" :title="currentHeading">{{ currentHeading }}</span>
+      </div>
       <div class="flex items-center gap-4">
         <span v-if="autosaveStatus === 'saving'" class="text-xs text-amber-500">保存中...</span>
         <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存{{ lastSavedAt ? ` ${lastSavedAt}` : '' }}</span>
