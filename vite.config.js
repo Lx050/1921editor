@@ -171,8 +171,8 @@ export default defineConfig({
     // 排除 7z-wasm，避免预构建导致 WASM 加载问题
     exclude: ['7z-wasm']
   },
-  // 配置资源缓存
-  cacheDir: 'node_modules/.vite',
+  // 配置资源缓存 (use /tmp to avoid JuiceFS EIO issues in dev)
+  cacheDir: '/tmp/1921editor-vite-cache',
   // 支持 WebAssembly 文件
   assetsInclude: ['**/*.wasm']
 })

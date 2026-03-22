@@ -368,23 +368,31 @@ function handleDragLeave() {
 
 onMounted(() => {
   let initialContent: EditorDocument
+  let contentSource = 'empty' // Track where content came from for diagnostics
 
-  console.log('[Step2] onMounted — editorJson:', !!appStore.editorJson, 'contentBlocks:', contentBlocks.value.length, 'rawText len:', appStore.rawText?.length || 0)
+  console.log('[Step2] onMounted — editorJson:', !!appStore.editorJson,
+    'contentBlocks:', contentBlocks.value.length,
+    'rawText len:', appStore.rawText?.length || 0,
+    'localStorage rawText:', !!localStorage.getItem('manifold_step1_rawText'),
+    'sessionStorage blocks:', !!sessionStorage.getItem('manifold_step1_blocks'),
+    'autosave:', !!localStorage.getItem('manifold_editor_autosave'))
 
   try {
     if (appStore.editorJson) {
       // Case 1: returning to editor (has saved JSON state)
-      console.log('[Step2] using editorJson')
+      console.log('[Step2] using editorJson, nodes:', (appStore.editorJson as any)?.content?.length)
       initialContent = appStore.editorJson as EditorDocument
+      contentSource = 'editorJson'
 
     } else if (contentBlocks.value.length > 0) {
       // Case 2: freshly navigated from Step1 (blocks pre-parsed there)
       console.log('[Step2] using pre-parsed contentBlocks:', contentBlocks.value.length)
       initialContent = contentBlocksToTiptap(contentBlocks.value)
+      contentSource = 'contentBlocks'
 
     } else {
       // Case 3: fallback chain — try store rawText → localStorage rawText → sessionStorage blocks → autosave
-      console.log('[Step2] fallback chain triggered')
+      console.log('[Step2] fallback chain triggered — no editorJson and no contentBlocks in store')
 
       // 3a. Try sessionStorage pre-parsed blocks (written by Step1.goToNextStep)
       let recovered = false
@@ -396,12 +404,13 @@ onMounted(() => {
             console.log('[Step2] recovered', blocks.length, 'blocks from sessionStorage')
             appStore.setContentBlocks(blocks)
             initialContent = contentBlocksToTiptap(blocks)
+            contentSource = 'sessionStorage'
             recovered = true
           }
         }
-      } catch { /* ignore */ }
+      } catch (e) { console.warn('[Step2] sessionStorage recovery failed:', e) }
 
-      // 3b. Try rawText from store
+      // 3b. Try rawText from store or localStorage
       if (!recovered) {
         let rawText = appStore.rawText
         if (!rawText) {
@@ -411,13 +420,14 @@ onMounted(() => {
               console.log('[Step2] recovered rawText from localStorage, len:', rawText.length)
               appStore.setRawText(rawText)
             }
-          } catch { /* ignore */ }
+          } catch (e) { console.warn('[Step2] localStorage recovery failed:', e) }
         }
         if (rawText) {
           console.log('[Step2] parsing rawText, len:', rawText.length)
           const blocks = smartTextParser(rawText)
           appStore.setContentBlocks(blocks)
           initialContent = contentBlocksToTiptap(blocks)
+          contentSource = 'rawText'
           recovered = true
         }
       }
@@ -434,18 +444,21 @@ onMounted(() => {
             if (hasContent) {
               recoveryData.value = parsed
               showRecoveryDialog.value = true
+              contentSource = 'autosave-pending'
               console.log('[Step2] autosave found, prompting recovery')
             }
           }
-        } catch { /* ignore */ }
+        } catch (e) { console.warn('[Step2] autosave recovery failed:', e) }
       }
     }
   } catch (e) {
     console.error('[Step2] Error initializing content:', e)
+    contentSource = 'error'
     initialContent = undefined as any
   }
 
   if (!initialContent) {
+    console.warn('[Step2] No content found from any source! Content source was:', contentSource)
     initialContent = {
       type: 'doc',
       content: [
@@ -455,11 +468,24 @@ onMounted(() => {
     }
   }
 
-  editor.value = createManifoldEditor({
-    content: initialContent,
-    onUpdate: handleEditorUpdate,
-    isTypewriterEnabled: () => isTypewriter.value,
-  })
+  console.log('[Step2] Creating editor with content source:', contentSource,
+    'nodes:', initialContent.content?.length)
+
+  try {
+    editor.value = createManifoldEditor({
+      content: initialContent,
+      onUpdate: handleEditorUpdate,
+      isTypewriterEnabled: () => isTypewriter.value,
+    })
+    console.log('[Step2] Editor created successfully, text length:', editor.value.getText().length)
+  } catch (e) {
+    console.error('[Step2] FATAL: Editor creation failed:', e)
+    // Try creating editor without content as last resort
+    editor.value = createManifoldEditor({
+      onUpdate: handleEditorUpdate,
+      isTypewriterEnabled: () => isTypewriter.value,
+    })
+  }
 
   // Track selection changes for word count and cursor position
   editor.value.on('selectionUpdate', ({ editor: e }) => {
@@ -789,6 +815,12 @@ function goToPublish() {
           ]"
         >
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" :style="zoomLevel !== 100 ? { fontSize: (zoomLevel / 100) + 'em' } : {}" />
+          <div v-else class="flex items-center justify-center py-20 text-gray-400">
+            <div class="text-center">
+              <div class="text-lg mb-2">编辑器加载中...</div>
+              <div class="text-sm">如果持续显示此消息，请刷新页面或返回上一步重试</div>
+            </div>
+          </div>
           <SelectionToolbar :editor="editor" @edit-link="openLinkEditor" />
           <LinkHoverTooltip :editor="editor" @edit-link="openLinkEditor" />
         </div>
