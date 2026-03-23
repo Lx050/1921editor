@@ -215,6 +215,8 @@ export const useAppStore = defineStore('app', () => {
     currentArticleId.value = null
     rawText.value = ''
     contentBlocks.value = []
+    editorJson.value = null
+    imageSlotRegistry.value = {}
     styleConfig.value = null
     // V2: 重置微信图片状态
     wechatImages.value = []
@@ -229,6 +231,12 @@ export const useAppStore = defineStore('app', () => {
     sourceAccount.value = ''
     imageSource.value = ''
     editorInput.value = ''  // 编辑人员（用户填写）
+
+    // 清除持久化存储，防止旧数据干扰新会话
+    try { localStorage.removeItem('manifold_editor_autosave') } catch {}
+    try { localStorage.removeItem('manifold_editor_autosave_ts') } catch {}
+    try { sessionStorage.removeItem('manifold_step1_blocks') } catch {}
+    try { sessionStorage.removeItem('manifold_step1_rawText_len') } catch {}
 
     // 🚀 核心优化：每次重置时，如果用户已登录，自动填充姓名
     const userStore = useUserStore()
