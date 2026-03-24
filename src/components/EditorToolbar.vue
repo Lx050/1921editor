@@ -321,9 +321,7 @@ function toggleLink() {
       title="两端对齐"
     >&#x2630;</button>
 
-    <!-- Indent/Outdent -->
-    <button class="toolbar-btn text-xs" @click="outdent" title="减少缩进 (Shift+Tab)">&#x21E4;</button>
-    <button class="toolbar-btn text-xs" @click="indent" title="增加缩进 (Tab)">&#x21E5;</button>
+    <!-- 缩进由排版样式预设统一控制 -->
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
