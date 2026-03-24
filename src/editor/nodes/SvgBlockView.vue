@@ -38,7 +38,7 @@ const slotProgress = computed(() => {
 </script>
 
 <template>
-  <NodeViewWrapper class="manifold-svg-block" data-drag-handle>
+  <NodeViewWrapper class="manifold-svg-block" data-drag-handle data-node-type="manifold-svg-block">
     <div class="relative group border border-transparent hover:border-blue-300 rounded-lg transition-colors">
       <!-- SVG Render Area -->
       <div class="svg-container" v-html="renderedSvg" />

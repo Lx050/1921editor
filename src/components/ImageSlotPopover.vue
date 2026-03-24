@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/appStore'
+import { uploadImage, getWechatProxyUrl } from '../utils/wechatApi'
 import type { ImageSlotData } from '@/types/editor'
 
 defineProps<{
@@ -19,6 +20,8 @@ const emit = defineEmits<{
 const appStore = useAppStore()
 const { wechatImages } = storeToRefs(appStore)
 const uploadInput = ref<HTMLInputElement | null>(null)
+const uploading = ref(false)
+const uploadError = ref('')
 
 function selectFromLibrary(img: any) {
   emit('select', { url: img.proxyUrl || img.url, mediaId: img.mediaId, name: img.name })
@@ -28,12 +31,46 @@ function triggerUpload() {
   uploadInput.value?.click()
 }
 
-function handleFileUpload(event: Event) {
+async function handleFileUpload(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
+
+  uploading.value = true
+  uploadError.value = ''
+
+  // Show local preview immediately
   const localUrl = URL.createObjectURL(file)
-  emit('select', { url: localUrl, name: file.name })
+
+  try {
+    // Upload to WeChat to get a permanent URL
+    const result = await uploadImage(file)
+    const wechatUrl = result.url || ''
+    const proxyUrl = wechatUrl ? getWechatProxyUrl(wechatUrl) : localUrl
+
+    // Add to image library
+    if (result.media_id) {
+      appStore.addWechatImage({
+        id: result.media_id,
+        mediaId: result.media_id,
+        url: wechatUrl,
+        proxyUrl,
+        localPreviewUrl: localUrl,
+        name: file.name,
+        uploadedAt: new Date().toISOString()
+      })
+    }
+
+    emit('select', { url: proxyUrl, mediaId: result.media_id, name: file.name })
+  } catch (err: any) {
+    // Fallback to local URL if upload fails
+    uploadError.value = err.message || '上传失败'
+    emit('select', { url: localUrl, name: file.name })
+  } finally {
+    uploading.value = false
+    // Reset input so same file can be re-selected
+    if (input) input.value = ''
+  }
 }
 </script>
 
@@ -51,11 +88,15 @@ function handleFileUpload(event: Event) {
 
         <button
           class="w-full py-2 mb-2 border-2 border-dashed border-gray-300 rounded text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
+          :class="{ 'opacity-50 cursor-wait': uploading }"
+          :disabled="uploading"
           @click="triggerUpload"
         >
-          + 上传本地图片
+          {{ uploading ? '上传中...' : '+ 上传本地图片' }}
         </button>
         <input ref="uploadInput" type="file" accept="image/*" class="hidden" @change="handleFileUpload" />
+
+        <p v-if="uploadError" class="text-xs text-red-500 mb-1">{{ uploadError }}（已使用本地预览）</p>
 
         <div v-if="wechatImages.length" class="max-h-48 overflow-y-auto">
           <p class="text-xs text-gray-400 mb-1">素材库</p>
