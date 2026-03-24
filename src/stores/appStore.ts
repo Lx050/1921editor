@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import type { Ref } from 'vue'
 import type { ContentBlock, StyleConfig, BlockType, WechatImage, UploadProgress } from '@/types'
 import { useUserStore } from './userStore'
+import { getWechatProxyUrl } from '../utils/wechatApi'
 
 export const useAppStore = defineStore('app', () => {
   // 状态（明确类型注解，无向后兼容）
@@ -25,7 +26,23 @@ export const useAppStore = defineStore('app', () => {
   const editorInput: Ref<string> = ref('')        // 编辑人员（用户填写，默认为空）
 
   // V2 新增状态：微信图片上传相关
-  const wechatImages: Ref<WechatImage[]> = ref([])
+  // Hydrate from localStorage (only images with real URLs, not blob:)
+  // Re-apply proxy URLs so WeChat CDN images display in browser
+  const _savedImages: WechatImage[] = (() => {
+    try {
+      const raw = localStorage.getItem('manifold_wechat_images')
+      if (raw) {
+        return JSON.parse(raw)
+          .filter((img: any) => img.url && !img.url.startsWith('blob:'))
+          .map((img: any) => ({
+            ...img,
+            proxyUrl: img.url ? getWechatProxyUrl(img.url) : img.proxyUrl
+          }))
+      }
+    } catch { /* ignore */ }
+    return []
+  })()
+  const wechatImages: Ref<WechatImage[]> = ref(_savedImages)
   const uploadProgress: Ref<UploadProgress> = ref({
     total: 0,
     completed: 0,
@@ -173,16 +190,27 @@ export const useAppStore = defineStore('app', () => {
   }
 
   // V2 新增方法：微信图片管理
+  /** Persist wechatImages to localStorage (exclude ephemeral blob: URLs) */
+  const _persistImages = (): void => {
+    try {
+      const persistable = wechatImages.value.filter(img => img.url && !img.url.startsWith('blob:'))
+      localStorage.setItem('manifold_wechat_images', JSON.stringify(persistable))
+    } catch { /* quota exceeded or unavailable */ }
+  }
+
   const addWechatImage = (image: WechatImage): void => {
     wechatImages.value.push(image)
+    _persistImages()
   }
 
   const addWechatImages = (images: WechatImage[]): void => {
     wechatImages.value.push(...images)
+    _persistImages()
   }
 
   const setWechatImages = (images: WechatImage[]): void => {
     wechatImages.value = [...images]
+    _persistImages()
   }
 
   const updateUploadProgress = (progress: UploadProgress): void => {
@@ -198,6 +226,7 @@ export const useAppStore = defineStore('app', () => {
     wechatImages.value = []
     uploadProgress.value = { total: 0, completed: 0, failed: 0, uploading: 0 }
     isUploading.value = false
+    try { localStorage.removeItem('manifold_wechat_images') } catch {}
   }
 
   const clearEditorState = (): void => {
