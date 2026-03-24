@@ -2,8 +2,12 @@
   <div class="tenant-settings">
     <div class="settings-header">
       <h1>租户配置</h1>
-      <p class="subtitle">配置飞书多维表格，实现自动同步</p>
+      <p class="subtitle">管理飞书表格、邀请码、排版模板等组织级配置</p>
     </div>
+
+    <el-tabs v-model="activeTab" type="border-card">
+      <!-- Tab 1: 飞书表格 -->
+      <el-tab-pane label="飞书表格" name="feishu">
 
     <!-- 人员管理表配置 -->
     <div class="config-section">
@@ -135,6 +139,11 @@
       </div>
     </div>
 
+      </el-tab-pane>
+
+      <!-- Tab 2: 邀请码 -->
+      <el-tab-pane label="邀请码" name="invite">
+
     <!-- 邀请码设置 -->
     <div class="config-section">
       <div class="section-header">
@@ -179,15 +188,20 @@
       </div>
     </div>
 
+      </el-tab-pane>
+
+      <!-- Tab 3: 排版模板 -->
+      <el-tab-pane label="排版模板" name="template">
+
     <!-- 组织模板配置 -->
     <div class="config-section">
       <div class="section-header">
         <h2>组织模板配置</h2>
-        <el-tag type="info">全员共享</el-tag>
+        <el-tag type="warning">仅本地浏览器</el-tag>
       </div>
 
       <div class="config-description">
-        <p>设置组织的首尾图模板和排版样式，保存后所有团队成员自动使用此配置。</p>
+        <p>设置组织的首尾图模板和排版样式。当前配置保存在本地浏览器中，可通过下方的导入/导出功能在设备间同步。</p>
         <p class="hint-text">支持从微信编辑器 / 135编辑器直接复制粘贴富文本到画布中。</p>
       </div>
 
@@ -237,6 +251,11 @@
       </div>
     </div>
 
+      </el-tab-pane>
+
+      <!-- Tab 4: 租户信息 -->
+      <el-tab-pane label="租户信息" name="info">
+
     <!-- 租户信息 -->
     <div class="tenant-info">
       <h3>当前租户信息</h3>
@@ -278,6 +297,9 @@
         </el-collapse-item>
       </el-collapse>
     </div>
+
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -301,6 +323,7 @@ const loading = ref(false);
 const inviteCodeLoading = ref(false);
 const inviteCodeInput = ref('');
 const orgEditMode = ref<'daily' | 'three_rural' | 'reprint'>('daily');
+const activeTab = ref('feishu');
 
 // 获取默认首图 HTML（直接读取常量，不触发 setMode 副作用）
 function getDefaultHeader(mode: string): string {

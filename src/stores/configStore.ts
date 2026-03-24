@@ -16,7 +16,7 @@ export interface WechatConfig {
 // 默认配置
 const DEFAULT_WECHAT_CONFIG: WechatConfig = {
 	id: 'default',
-	name: 'Lx05.art',
+	name: '未配置',
 	appId: '',
 	appSecretMasked: '',
 	hasSecret: false
@@ -59,7 +59,7 @@ const DAILY_FOOTER = `
 				<br/>
 			</p>
 			<p style="outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;" data-doubao-translate-traverse-mark="1">
-				<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><strong style="outline: 0px;"><span style="padding: 10px 15px;outline: 0px;border-color: #fbfbfb;border-style: solid;border-width: 1px;line-height: 42px;">校团委青年媒体中心</span></strong></span>
+				<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><strong style="outline: 0px;"><span style="padding: 10px 15px;outline: 0px;border-color: #fbfbfb;border-style: solid;border-width: 1px;line-height: 42px;">{{ORG_NAME}}</span></strong></span>
 			</p>
 		</section>
 		<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: rgb(255, 255, 255);line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: rgb(211, 42, 99);text-align:center;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1" align="center">
@@ -77,10 +77,10 @@ const DAILY_FOOTER = `
 		<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;" class="" data-doubao-translate-traverse-mark="1">
 			<section style="outline: 0px;letter-spacing: 0.54px;text-indent: 0em;line-height: 1.75em;min-height: 14px;font-stretch: normal;" class="" data-doubao-translate-traverse-mark="1">
 				<section style="line-height: 1.75em;" class="" data-doubao-translate-traverse-mark="1">
-					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：王雪 宋欣翼</span>
+					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：{{PLANNERS}}</span>
 				</section>
 				<section style="line-height: 1.75em;" class="" data-doubao-translate-traverse-mark="1">
-					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：朱梦鹤</span>
+					<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：{{EDITORS}}</span>
 				</section>
 				<p style="line-height: 1.75em;" data-doubao-translate-traverse-mark="1">
 					<br/>
@@ -158,7 +158,7 @@ const THREE_RURAL_FOOTER = `
 			<br/>
 		</p>
 		<p style="outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;" data-doubao-translate-traverse-mark="1">
-			<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><strong style="outline: 0px;"><span style="padding: 10px 15px;outline: 0px;border-color: #fbfbfb;border-style: solid;border-width: 1px;line-height: 42px;">校团委青年媒体中心</span></strong></span>
+			<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><strong style="outline: 0px;"><span style="padding: 10px 15px;outline: 0px;border-color: #fbfbfb;border-style: solid;border-width: 1px;line-height: 42px;">{{ORG_NAME}}</span></strong></span>
 		</p>
 	</section>
 	<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: rgb(255, 255, 255);line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: rgb(211, 42, 99);text-align:center;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1" align="center">
@@ -171,12 +171,12 @@ const THREE_RURAL_FOOTER = `
 		<span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">编辑：</span><span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">{{EDITOR_INPUT}}</span>
 	</p>
 	<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: #ffffff;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: #d32a63;line-height: 1.75em;text-align:center;font-family:微软雅黑;" align="center">
-		<span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">审核：王雪 宋欣翼&nbsp;</span>
+		<span style="letter-spacing: 1.5px; text-indent: 0em; caret-color: red;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">审核：{{PLANNERS}}&nbsp;</span>
 	</p>
 	<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;" class="" data-doubao-translate-traverse-mark="1">
 		<section style="outline: 0px;letter-spacing: 0.54px;text-indent: 0em;line-height: 1.75em;min-height: 14px;font-stretch: normal;" class="" data-doubao-translate-traverse-mark="1">
 			<p style="line-height: 1.75em;">
-				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：朱梦鹤</span>
+				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：{{EDITORS}}</span>
 			</p>
 			<p style="line-height: 1.75em;">
 				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><br/></span>
@@ -267,7 +267,7 @@ const REPRINT_FOOTER = `
 			<br/>
 		</p>
 		<p style="outline: 0px;vertical-align: initial;letter-spacing: 1px;line-height: 1.75em;" data-doubao-translate-traverse-mark="1">
-			<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><strong style="outline: 0px;"><span style="padding: 10px 15px;outline: 0px;border-color: #fbfbfb;border-style: solid;border-width: 1px;line-height: 42px;">校团委青年媒体中心</span></strong></span>
+			<span style="outline: 0px;letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;"><strong style="outline: 0px;"><span style="padding: 10px 15px;outline: 0px;border-color: #fbfbfb;border-style: solid;border-width: 1px;line-height: 42px;">{{ORG_NAME}}</span></strong></span>
 		</p>
 	</section>
 	<p style="margin-bottom: 0px;min-height: 14px;text-indent: 0em;white-space: normal;outline: 0px;color: rgb(255, 255, 255);line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;font-stretch: normal;background-color: rgb(211, 42, 99);text-align:center;font-family:微软雅黑;" data-doubao-translate-traverse-mark="1" align="center">
@@ -282,10 +282,10 @@ const REPRINT_FOOTER = `
 	<section style="margin-bottom: 0px;text-indent: 0em;white-space: normal;outline: 0px;text-align: center;color: #ffffff;line-height: 1.5em;letter-spacing: 0.54px;font-size: 14px;min-height: 14px;font-stretch: normal;background-color: #d32a63;" class="" data-doubao-translate-traverse-mark="1">
 		<section style="outline: 0px;letter-spacing: 0.54px;text-indent: 0em;line-height: 1.75em;min-height: 14px;font-stretch: normal;" class="" data-doubao-translate-traverse-mark="1">
 			<section style="line-height: 1.75em;" class="" data-doubao-translate-traverse-mark="1">
-				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：王雪 宋欣翼&nbsp;</span>
+				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">校对：{{PLANNERS}}&nbsp;</span>
 			</section>
 			<p style="line-height: 1.75em;">
-				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：朱梦鹤</span>
+				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;">责编：{{EDITORS}}</span>
 			</p>
 			<p style="line-height: 1.75em;">
 				<span style="letter-spacing: 1.5px;font-family:微软雅黑, &quot;Microsoft YaHei&quot;;" ><br/></span>

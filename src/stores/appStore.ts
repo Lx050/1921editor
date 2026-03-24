@@ -14,10 +14,10 @@ export const useAppStore = defineStore('app', () => {
   const styleConfig: Ref<StyleConfig | null> = ref(null)
 
   // V3 新增状态：参与者姓名（用于自动化尾部）
-  // 固定人员：责编 - 朱梦鹤，审核 - 王雪 宋欣翼
-  const plannerNames: Ref<string[]> = ref(['王雪', '宋欣翼'])  // 审核/校对
-  const copywriterNames: Ref<string[]> = ref([])                 // 文案/图片来源（需从文档解析）
-  const editorNames: Ref<string[]> = ref(['朱梦鹤'])             // 责编（固定）
+  // 默认为空，由用户在设置页配置或从文档解析
+  const plannerNames: Ref<string[]> = ref([])   // 审核/校对
+  const copywriterNames: Ref<string[]> = ref([]) // 文案/图片来源（需从文档解析）
+  const editorNames: Ref<string[]> = ref([])     // 责编
 
   // V4 新增状态：尾部可变字段（用于不同模式）
   const teamName: Ref<string> = ref('')           // 团队名称（三下乡模式，需从文档解析）
@@ -251,10 +251,10 @@ export const useAppStore = defineStore('app', () => {
     wechatImages.value = []
     uploadProgress.value = { total: 0, completed: 0, failed: 0, uploading: 0 }
     isUploading.value = false
-    // V3: 重置参与者名称（保留固定人员，只重置需解析的字段）
-    plannerNames.value = ['王雪', '宋欣翼']  // 审核（固定）
-    copywriterNames.value = []                // 文案（需解析）
-    editorNames.value = ['朱梦鹤']            // 责编（固定）
+    // V3: 重置参与者名称
+    plannerNames.value = []
+    copywriterNames.value = []
+    editorNames.value = []
     // V4: 重置尾部可变字段（需从文档解析）
     teamName.value = ''
     sourceAccount.value = ''

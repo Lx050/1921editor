@@ -5,6 +5,7 @@ import { getSvgTemplateById } from '../styles/svgTemplates'
 import type { ContentBlock, StyleConfig, BlockType, StyleTemplate } from '@/types'
 import { useConfigStore } from '../stores/configStore'
 import { useAppStore } from '../stores/appStore'
+import { useOrgConfigStore } from '../stores/orgConfigStore'
 import type { OrgStylePreset } from '../stores/orgConfigStore'
 
 
@@ -93,7 +94,10 @@ export function buildHtml(
 
 	// 添加HTML头部
 	const configStore = useConfigStore()
-	htmlParts.push(configStore.currentHeader)
+	const orgConfigStore = useOrgConfigStore()
+	const orgName = orgConfigStore.config.orgName || '组织名称'
+	let header = configStore.currentHeader.replace(/\{\{ORG_NAME\}\}/g, orgName)
+	htmlParts.push(header)
 
 	// 读取组织级样式预设（仅在配置过时生效）
 	const orgPreset = getOrgPresetIfConfigured()
@@ -123,13 +127,14 @@ export function buildHtml(
 
 	// 替换参与者占位符
 	footer = footer
-		.replace(/{{PLANNERS}}/g, appStore.plannerNames.join(' ') || ' ')
-		.replace(/{{COPYWRITERS}}/g, appStore.copywriterNames.join(' ') || ' ')
-		.replace(/{{EDITORS}}/g, appStore.editorNames.join(' ') || ' ')
+		.replace(/\{\{ORG_NAME\}\}/g, orgName)
+		.replace(/\{\{PLANNERS\}\}/g, appStore.plannerNames.join(' ') || ' ')
+		.replace(/\{\{COPYWRITERS\}\}/g, appStore.copywriterNames.join(' ') || ' ')
+		.replace(/\{\{EDITORS\}\}/g, appStore.editorNames.join(' ') || ' ')
 		// V4: 替换尾部可变字段
-		.replace(/{{TEAM_NAME}}/g, appStore.teamName || '"团队名称待填写"')
-		.replace(/{{SOURCE_ACCOUNT}}/g, appStore.sourceAccount || '"来源公众号待填写"')
-		.replace(/{{EDITOR_INPUT}}/g, appStore.editorInput || ' ')  // 编辑（用户填写，默认为空）
+		.replace(/\{\{TEAM_NAME\}\}/g, appStore.teamName || '"团队名称待填写"')
+		.replace(/\{\{SOURCE_ACCOUNT\}\}/g, appStore.sourceAccount || '"来源公众号待填写"')
+		.replace(/\{\{EDITOR_INPUT\}\}/g, appStore.editorInput || ' ')  // 编辑（用户填写，默认为空）
 
 	// 🚀 将 footer 包裹在 contenteditable 容器中，允许用户直接在预览中编辑
 	footer = `<div id="editable-footer" contenteditable="true" style="outline: none;">${footer}</div>`
