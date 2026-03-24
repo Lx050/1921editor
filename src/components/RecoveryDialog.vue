@@ -24,7 +24,7 @@ const previewInfo = computed(() => {
         firstHeading = node.content.map((c: any) => c.text || '').join('') || ''
       }
     }
-    if (node.type === 'manifoldParagraph') paragraphs++
+    if (node.type === 'paragraph') paragraphs++
   }
   return { headings, paragraphs, firstHeading }
 })

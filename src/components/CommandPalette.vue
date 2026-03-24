@@ -36,9 +36,9 @@ const commands = computed<PaletteCommand[]>(() => {
     { id: 'lower', label: '转小写 lowercase', category: '转换', action: () => (e.commands as any).transformText('lower') },
     { id: 'title', label: '转首字母大写 Title Case', category: '转换', action: () => (e.commands as any).transformText('title') },
     // Headings
-    { id: 'h1', label: '一级标题', shortcut: 'Ctrl+Alt+1', category: '标题', action: () => e.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 1 }).run() },
-    { id: 'h2', label: '二级标题', shortcut: 'Ctrl+Alt+2', category: '标题', action: () => e.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 2 }).run() },
-    { id: 'h3', label: '三级标题', shortcut: 'Ctrl+Alt+3', category: '标题', action: () => e.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 3 }).run() },
+    { id: 'h1', label: '一级标题', shortcut: 'Ctrl+Alt+1', category: '标题', action: () => e.chain().focus().toggleNode('manifoldHeading', 'paragraph', { level: 1 }).run() },
+    { id: 'h2', label: '二级标题', shortcut: 'Ctrl+Alt+2', category: '标题', action: () => e.chain().focus().toggleNode('manifoldHeading', 'paragraph', { level: 2 }).run() },
+    { id: 'h3', label: '三级标题', shortcut: 'Ctrl+Alt+3', category: '标题', action: () => e.chain().focus().toggleNode('manifoldHeading', 'paragraph', { level: 3 }).run() },
     // Blocks
     { id: 'quote', label: '引用', category: '块', action: () => e.chain().focus().toggleBlockquote().run() },
     { id: 'codeblock', label: '代码块', category: '块', action: () => e.chain().focus().toggleCodeBlock().run() },
@@ -68,9 +68,9 @@ const commands = computed<PaletteCommand[]>(() => {
       e.chain().focus().insertContent(now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })).run()
     }},
     // Block roles
-    { id: 'role-body', label: '设为正文', category: '角色', action: () => e.chain().focus().updateAttributes('manifoldParagraph', { blockRole: 'body' }).run() },
-    { id: 'role-intro', label: '设为引言', category: '角色', action: () => e.chain().focus().updateAttributes('manifoldParagraph', { blockRole: 'intro' }).run() },
-    { id: 'role-outro', label: '设为结尾', category: '角色', action: () => e.chain().focus().updateAttributes('manifoldParagraph', { blockRole: 'outro' }).run() },
+    { id: 'role-body', label: '设为正文', category: '角色', action: () => e.chain().focus().updateAttributes('paragraph', { blockRole: 'body' }).run() },
+    { id: 'role-intro', label: '设为引言', category: '角色', action: () => e.chain().focus().updateAttributes('paragraph', { blockRole: 'intro' }).run() },
+    { id: 'role-outro', label: '设为结尾', category: '角色', action: () => e.chain().focus().updateAttributes('paragraph', { blockRole: 'outro' }).run() },
   ]
 })
 

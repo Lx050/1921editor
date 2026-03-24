@@ -60,7 +60,7 @@ export function markdownToTiptap(md: string): EditorDocument {
       content.push({
         type: 'blockquote',
         content: quoteLines.map(ql => ({
-          type: 'manifoldParagraph',
+          type: 'paragraph',
           content: parseInline(ql),
         })),
       })
@@ -74,7 +74,7 @@ export function markdownToTiptap(md: string): EditorDocument {
         items.push({
           type: 'listItem',
           content: [{
-            type: 'manifoldParagraph',
+            type: 'paragraph',
             content: parseInline(lines[i].replace(/^[-*+]\s/, '')),
           }],
         })
@@ -91,7 +91,7 @@ export function markdownToTiptap(md: string): EditorDocument {
         items.push({
           type: 'listItem',
           content: [{
-            type: 'manifoldParagraph',
+            type: 'paragraph',
             content: parseInline(lines[i].replace(/^\d+\.\s/, '')),
           }],
         })
@@ -109,7 +109,7 @@ export function markdownToTiptap(md: string): EditorDocument {
 
     // Regular paragraph
     content.push({
-      type: 'manifoldParagraph',
+      type: 'paragraph',
       attrs: { blockRole: 'body' },
       content: parseInline(line),
     })
@@ -118,7 +118,7 @@ export function markdownToTiptap(md: string): EditorDocument {
 
   if (content.length === 0) {
     content.push({
-      type: 'manifoldParagraph',
+      type: 'paragraph',
       content: [{ type: 'text', text: '' }],
     })
   }

@@ -46,7 +46,7 @@ export class ManifoldEditorAPI {
 
   insertParagraph(text: string, blockRole: 'body' | 'intro' | 'outro' = 'body') {
     this.editor?.chain().focus().insertContent({
-      type: 'manifoldParagraph',
+      type: 'paragraph',
       attrs: { blockRole },
       content: text ? [{ type: 'text', text }] : [],
     }).run()

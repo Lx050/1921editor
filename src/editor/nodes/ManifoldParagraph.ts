@@ -1,7 +1,7 @@
 import { Node, mergeAttributes } from '@tiptap/vue-3'
 
 export const ManifoldParagraph = Node.create({
-  name: 'manifoldParagraph',
+  name: 'paragraph',
   group: 'block',
   content: 'inline*',
   defining: true,

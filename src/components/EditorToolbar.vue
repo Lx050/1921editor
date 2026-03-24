@@ -49,7 +49,7 @@ function getCurrentRole(): string {
 
 function setBlockRole(role: string) {
   if (!props.editor) return
-  props.editor.chain().focus().updateAttributes('manifoldParagraph', { blockRole: role }).run()
+  props.editor.chain().focus().updateAttributes('paragraph', { blockRole: role }).run()
 }
 
 function triggerImageUpload() {
@@ -92,10 +92,10 @@ function setFontSize(size: string) {
 function indent() {
   if (!props.editor) return
   const { $from } = props.editor.state.selection
-  if ($from.parent.type.name === 'manifoldParagraph') {
+  if ($from.parent.type.name === 'paragraph') {
     const current = $from.parent.attrs.textIndent || 0
     if (current < 4) {
-      props.editor.commands.updateAttributes('manifoldParagraph', { textIndent: current + 1 })
+      props.editor.commands.updateAttributes('paragraph', { textIndent: current + 1 })
     }
   }
 }
@@ -103,17 +103,17 @@ function indent() {
 function outdent() {
   if (!props.editor) return
   const { $from } = props.editor.state.selection
-  if ($from.parent.type.name === 'manifoldParagraph') {
+  if ($from.parent.type.name === 'paragraph') {
     const current = $from.parent.attrs.textIndent || 0
     if (current > 0) {
-      props.editor.commands.updateAttributes('manifoldParagraph', { textIndent: current - 1 })
+      props.editor.commands.updateAttributes('paragraph', { textIndent: current - 1 })
     }
   }
 }
 
 function setLineHeight(value: string) {
   if (!props.editor) return
-  props.editor.commands.updateAttributes('manifoldParagraph', { lineHeight: value })
+  props.editor.commands.updateAttributes('paragraph', { lineHeight: value })
 }
 
 function clearFormatting() {
@@ -254,7 +254,7 @@ function toggleLink() {
 
     <!-- Line height -->
     <select
-      v-if="isActive('manifoldParagraph')"
+      v-if="isActive('paragraph')"
       class="text-xs border rounded px-1 h-7 text-gray-600 bg-white w-12"
       @change="setLineHeight(($event.target as HTMLSelectElement).value)"
       title="行高"
@@ -270,14 +270,14 @@ function toggleLink() {
       :key="level"
       class="toolbar-btn text-xs"
       :class="{ active: isActive('manifoldHeading', { level }) }"
-      @click="run(() => editor!.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level }).run())"
+      @click="run(() => editor!.chain().focus().toggleNode('manifoldHeading', 'paragraph', { level }).run())"
     >H{{ level }}</button>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
     <!-- Block role (for paragraphs) -->
     <select
-      v-if="isActive('manifoldParagraph')"
+      v-if="isActive('paragraph')"
       class="text-xs border rounded px-1 h-7 text-gray-600 bg-white"
       :value="getCurrentRole()"
       @change="setBlockRole(($event.target as HTMLSelectElement).value)"

@@ -42,12 +42,24 @@ export interface CreateEditorOptions {
   isTypewriterEnabled?: () => boolean
 }
 
+/** Migrate legacy node type names in stored JSON content */
+function migrateContent(doc: any): any {
+  if (!doc || typeof doc !== 'object') return doc
+  if (doc.type === 'manifoldParagraph') doc.type = 'paragraph'
+  if (Array.isArray(doc.content)) {
+    doc.content = doc.content.map(migrateContent)
+  }
+  return doc
+}
+
 export function createManifoldEditor(options: CreateEditorOptions = {}): Editor {
   const { content, onUpdate, editable = true, isTypewriterEnabled = () => false } = options
 
+  const migratedContent = content ? migrateContent(JSON.parse(JSON.stringify(content))) : null
+
   return new Editor({
     editable,
-    content: content || {
+    content: migratedContent || {
       type: 'doc',
       content: [
         {
@@ -77,7 +89,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
             const level = node.attrs?.level || 1
             return level === 1 ? '输入标题...' : `输入 H${level} 标题...`
           }
-          if (node.type.name === 'manifoldParagraph') {
+          if (node.type.name === 'paragraph') {
             const role = node.attrs?.blockRole || 'body'
             switch (role) {
               case 'intro': return '输入引言... (/ 打开命令菜单)'
@@ -100,7 +112,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       Color,
       FontSize,
       TextAlign.configure({
-        types: ['manifoldHeading', 'manifoldParagraph'],
+        types: ['manifoldHeading', 'paragraph'],
       }),
       Table.configure({ resizable: true }),
       TableRow,

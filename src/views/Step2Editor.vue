@@ -466,7 +466,7 @@ onMounted(() => {
       type: 'doc',
       content: [
         { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '' }] },
-        { type: 'manifoldParagraph', content: [{ type: 'text', text: '' }] },
+        { type: 'paragraph', content: [{ type: 'text', text: '' }] },
       ]
     }
   }
@@ -520,7 +520,7 @@ onMounted(() => {
     const nodeName = $from.parent.type.name
     const nodeLabel: Record<string, string> = {
       'manifoldHeading': `H${$from.parent.attrs?.level || 1}`,
-      'manifoldParagraph': $from.parent.attrs?.blockRole === 'intro' ? '引言' : $from.parent.attrs?.blockRole === 'outro' ? '结尾' : '正文',
+      'paragraph': $from.parent.attrs?.blockRole === 'intro' ? '引言' : $from.parent.attrs?.blockRole === 'outro' ? '结尾' : '正文',
       'manifoldCodeBlock': '代码',
       'manifoldBlockquote': '引用',
       'listItem': '列表项',
@@ -610,7 +610,7 @@ const detailedStats = computed(() => {
   if (!editor.value) return { paragraphs: 0, headings: 0, images: 0, svgs: 0, tables: 0, codeBlocks: 0, charCount: 0, charNoSpaces: 0 }
   let paragraphs = 0, headings = 0, images = 0, svgs = 0, tables = 0, codeBlocks = 0
   editor.value.state.doc.descendants((node) => {
-    if (node.type.name === 'manifoldParagraph') paragraphs++
+    if (node.type.name === 'paragraph') paragraphs++
     else if (node.type.name === 'manifoldHeading') headings++
     else if (node.type.name === 'manifoldImage') images++
     else if (node.type.name === 'manifoldSvgBlock') svgs++

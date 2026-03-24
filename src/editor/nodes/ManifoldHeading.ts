@@ -30,9 +30,9 @@ export const ManifoldHeading = Node.create({
 
   addKeyboardShortcuts() {
     return {
-      'Mod-Alt-1': () => this.editor.commands.toggleNode(this.name, 'manifoldParagraph', { level: 1 }),
-      'Mod-Alt-2': () => this.editor.commands.toggleNode(this.name, 'manifoldParagraph', { level: 2 }),
-      'Mod-Alt-3': () => this.editor.commands.toggleNode(this.name, 'manifoldParagraph', { level: 3 }),
+      'Mod-Alt-1': () => this.editor.commands.toggleNode(this.name, 'paragraph', { level: 1 }),
+      'Mod-Alt-2': () => this.editor.commands.toggleNode(this.name, 'paragraph', { level: 2 }),
+      'Mod-Alt-3': () => this.editor.commands.toggleNode(this.name, 'paragraph', { level: 3 }),
     }
   },
 })

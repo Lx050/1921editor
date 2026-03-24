@@ -17,7 +17,7 @@ function serializeNode(node: any): string {
       const prefix = '#'.repeat(level)
       return `${prefix} ${serializeInline(node)}`
     }
-    case 'manifoldParagraph':
+    case 'paragraph':
       return serializeInline(node)
     case 'codeBlock': {
       const lang = node.attrs?.language || ''
@@ -49,7 +49,7 @@ function serializeNode(node: any): string {
 function serializeListItem(node: any, prefix: string): string {
   if (!node.content) return prefix
   const parts = node.content.map((child: any) => {
-    if (child.type === 'manifoldParagraph' || child.type === 'paragraph') {
+    if (child.type === 'paragraph' || child.type === 'paragraph') {
       return serializeInline(child)
     }
     return serializeNode(child)

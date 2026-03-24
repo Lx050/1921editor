@@ -14,34 +14,34 @@ export const slashMenuItems: SlashMenuItem[] = [
     title: '一级标题',
     icon: 'H1',
     shortcut: 'Ctrl+Alt+1',
-    command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 1 }).run(),
+    command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'paragraph', { level: 1 }).run(),
   },
   {
     title: '二级标题',
     icon: 'H2',
     shortcut: 'Ctrl+Alt+2',
-    command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 2 }).run(),
+    command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'paragraph', { level: 2 }).run(),
   },
   {
     title: '三级标题',
     icon: 'H3',
     shortcut: 'Ctrl+Alt+3',
-    command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'manifoldParagraph', { level: 3 }).run(),
+    command: (editor) => editor.chain().focus().toggleNode('manifoldHeading', 'paragraph', { level: 3 }).run(),
   },
   {
     title: '正文',
     icon: 'P',
-    command: (editor) => editor.chain().focus().setNode('manifoldParagraph', { blockRole: 'body' }).run(),
+    command: (editor) => editor.chain().focus().setNode('paragraph', { blockRole: 'body' }).run(),
   },
   {
     title: '引言',
     icon: 'Q',
-    command: (editor) => editor.chain().focus().setNode('manifoldParagraph', { blockRole: 'intro' }).run(),
+    command: (editor) => editor.chain().focus().setNode('paragraph', { blockRole: 'intro' }).run(),
   },
   {
     title: '结尾',
     icon: 'E',
-    command: (editor) => editor.chain().focus().setNode('manifoldParagraph', { blockRole: 'outro' }).run(),
+    command: (editor) => editor.chain().focus().setNode('paragraph', { blockRole: 'outro' }).run(),
   },
   {
     title: '无序列表',
@@ -140,7 +140,7 @@ export const slashMenuItems: SlashMenuItem[] = [
       ]
       for (const line of tocLines) {
         content.push({
-          type: 'manifoldParagraph',
+          type: 'paragraph',
           attrs: { blockRole: 'body' },
           content: [{ type: 'text', text: line }],
         })
@@ -154,13 +154,13 @@ export const slashMenuItems: SlashMenuItem[] = [
     command: (editor) => {
       editor.chain().focus().insertContent([
         { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '新闻标题' }] },
-        { type: 'manifoldParagraph', attrs: { blockRole: 'intro' }, content: [{ type: 'text', text: '导语：概括新闻核心内容，回答谁、什么、何时、何地。' }] },
+        { type: 'paragraph', attrs: { blockRole: 'intro' }, content: [{ type: 'text', text: '导语：概括新闻核心内容，回答谁、什么、何时、何地。' }] },
         { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '事件详情' }] },
-        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '详细描述事件的来龙去脉...' }] },
+        { type: 'paragraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '详细描述事件的来龙去脉...' }] },
         { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '背景信息' }] },
-        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '提供相关背景和上下文...' }] },
+        { type: 'paragraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '提供相关背景和上下文...' }] },
         { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '后续展望' }] },
-        { type: 'manifoldParagraph', attrs: { blockRole: 'outro' }, content: [{ type: 'text', text: '总结和展望...' }] },
+        { type: 'paragraph', attrs: { blockRole: 'outro' }, content: [{ type: 'text', text: '总结和展望...' }] },
       ]).run()
     },
   },
@@ -170,13 +170,13 @@ export const slashMenuItems: SlashMenuItem[] = [
     command: (editor) => {
       editor.chain().focus().insertContent([
         { type: 'manifoldHeading', attrs: { level: 1 }, content: [{ type: 'text', text: '活动名称' }] },
-        { type: 'manifoldParagraph', attrs: { blockRole: 'intro' }, content: [{ type: 'text', text: '一句话介绍活动亮点和意义。' }] },
+        { type: 'paragraph', attrs: { blockRole: 'intro' }, content: [{ type: 'text', text: '一句话介绍活动亮点和意义。' }] },
         { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '活动详情' }] },
-        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '时间：\n地点：\n主办方：\n参与对象：' }] },
+        { type: 'paragraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '时间：\n地点：\n主办方：\n参与对象：' }] },
         { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '活动流程' }] },
-        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '1. ...\n2. ...\n3. ...' }] },
+        { type: 'paragraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '1. ...\n2. ...\n3. ...' }] },
         { type: 'manifoldHeading', attrs: { level: 2 }, content: [{ type: 'text', text: '报名方式' }] },
-        { type: 'manifoldParagraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '请通过以下方式报名...' }] },
+        { type: 'paragraph', attrs: { blockRole: 'body' }, content: [{ type: 'text', text: '请通过以下方式报名...' }] },
       ]).run()
     },
   },

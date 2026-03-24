@@ -101,7 +101,7 @@ function serializeNode(
   switch (node.type) {
     case 'manifoldHeading':
       return serializeHeading(node, styleConfig, orgPreset)
-    case 'manifoldParagraph':
+    case 'paragraph':
       return serializeParagraph(node, styleConfig, orgPreset)
     case 'manifoldImage':
       return serializeImage(node)
@@ -314,7 +314,7 @@ function serializeListItem(
   if (!node.content) return '<li></li>'
   const inner = node.content.map((child: any) => {
     // If child is a paragraph, just inline its content (don't wrap in <p>)
-    if (child.type === 'manifoldParagraph' || child.type === 'paragraph') {
+    if (child.type === 'paragraph' || child.type === 'paragraph') {
       return serializeInlineContent(child)
     }
     // For nested lists, blockquotes, etc. -- serialize normally
@@ -327,7 +327,7 @@ function serializeListItem(
 function getCellTextAlign(node: any): string | null {
   if (!node.content) return null
   for (const child of node.content) {
-    if ((child.type === 'manifoldParagraph' || child.type === 'paragraph') && child.attrs?.textAlign) {
+    if ((child.type === 'paragraph' || child.type === 'paragraph') && child.attrs?.textAlign) {
       const align = child.attrs.textAlign
       if (align !== 'left') return align
     }
@@ -343,7 +343,7 @@ function serializeCellContent(
 ): string {
   if (!node.content) return ''
   return node.content.map((child: any) => {
-    if (child.type === 'manifoldParagraph' || child.type === 'paragraph') {
+    if (child.type === 'paragraph' || child.type === 'paragraph') {
       return serializeInlineContent(child)
     }
     return serializeNode(child, styleConfig, orgPreset)

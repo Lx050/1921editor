@@ -21,7 +21,7 @@ export function contentBlocksToTiptap(blocks: ContentBlock[]): EditorDocument {
 
       case 'body':
         content.push({
-          type: 'manifoldParagraph',
+          type: 'paragraph',
           attrs: { blockRole: 'body' },
           content: block.text ? [{ type: 'text', text: block.text }] : [],
         })
@@ -29,7 +29,7 @@ export function contentBlocksToTiptap(blocks: ContentBlock[]): EditorDocument {
 
       case 'intro':
         content.push({
-          type: 'manifoldParagraph',
+          type: 'paragraph',
           attrs: { blockRole: 'intro' },
           content: block.text ? [{ type: 'text', text: block.text }] : [],
         })
@@ -37,7 +37,7 @@ export function contentBlocksToTiptap(blocks: ContentBlock[]): EditorDocument {
 
       case 'outro':
         content.push({
-          type: 'manifoldParagraph',
+          type: 'paragraph',
           attrs: { blockRole: 'outro' },
           content: block.text ? [{ type: 'text', text: block.text }] : [],
         })
@@ -119,7 +119,7 @@ export function contentBlocksToTiptap(blocks: ContentBlock[]): EditorDocument {
       default:
         // Unknown block types become paragraphs
         content.push({
-          type: 'manifoldParagraph',
+          type: 'paragraph',
           attrs: { blockRole: 'body' },
           content: block.text ? [{ type: 'text', text: block.text }] : [],
         })
@@ -128,7 +128,7 @@ export function contentBlocksToTiptap(blocks: ContentBlock[]): EditorDocument {
 
   if (content.length === 0) {
     content.push({
-      type: 'manifoldParagraph',
+      type: 'paragraph',
       content: [{ type: 'text', text: '' }],
     })
   }
