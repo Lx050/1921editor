@@ -53,24 +53,6 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/step2old',
-    name: 'Step2Old',
-    component: () => import('../views/Step2Curtain.vue'),
-    meta: {
-      step: 2,
-      title: '步骤 2/3: 编辑内容 (旧版)'
-    }
-  },
-  {
-    path: '/step3old',
-    name: 'Step3Old',
-    component: () => import('../views/Step3Preview.vue'),
-    meta: {
-      step: 3,
-      title: '步骤 3/3: 生成预览 (旧版)'
-    }
-  },
-  {
     path: '/step3/:id',
     name: 'Step3WithArticle',
     component: () => import('../views/Step3Preview.vue'),
@@ -149,7 +131,8 @@ const routes: RouteRecordRaw[] = [
     name: 'WechatCredentialConfirm',
     component: () => import('../views/Settings/WechatCredentialsConfirm.vue'),
     meta: {
-      title: '确认公众号密钥'
+      title: '确认公众号密钥',
+      requiresAuth: true
     }
   },
   {
@@ -214,16 +197,6 @@ const routeGuards: Record<string, RouteGuard> = {
     validator: (appStore) => Boolean(appStore.editorJson) || Boolean(appStore.contentBlocks?.length),
     redirect: '/step2',
     description: 'step3需要编辑器内容或内容块'
-  },
-  '/step2old': {
-    validator: (appStore) => Boolean(appStore.rawText) || Boolean(appStore.contentBlocks?.length),
-    redirect: '/step1',
-    description: 'step2old需要文本内容或内容块'
-  },
-  '/step3old': {
-    validator: (appStore) => Boolean(appStore.contentBlocks?.length),
-    redirect: '/step2old',
-    description: 'step3old需要内容块'
   },
 }
 

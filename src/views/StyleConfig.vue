@@ -275,6 +275,19 @@
         </div>
       </div>
     </div>
+    <!-- 删除确认对话框 -->
+    <Teleport to="body">
+      <div v-if="showDeleteConfirm" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" @click.self="showDeleteConfirm = false">
+        <div class="bg-white rounded-xl shadow-2xl w-[360px] p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">确认删除</h3>
+          <p class="text-sm text-gray-600 mb-6">确定要删除样式"{{ pendingDeleteStyle?.name }}"吗？此操作不可恢复。</p>
+          <div class="flex justify-end gap-3">
+            <button class="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200" @click="showDeleteConfirm = false">取消</button>
+            <button class="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700" @click="confirmDelete">删除</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -282,6 +295,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { sanitizeHtml } from '../utils/sanitizeHtml'
+import toast from '../composables/useToast'
 import { useStyleStore } from '../stores/styleStore'
 import { useUserStore } from '../stores/userStore'
 import {
@@ -424,51 +438,6 @@ const syncCodeToVisual = () => {
   visualEditor.value.innerHTML = escapedHtml.replace(tempPlaceholder, '<span data-placeholder="true">[内容占位符]</span>')
 }
 
-// 标准化样式
-const standardizeStyle = (html, type) => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  // 使用 data-placeholder 属性查找
-  let placeholder = doc.querySelector('span[data-placeholder="true"]')
-  
-  // 如果没找到，尝试通过文本内容查找（兼容性）
-  if (!placeholder) {
-    const spans = doc.getElementsByTagName('span')
-    for (let i = 0; i < spans.length; i++) {
-      if (spans[i].textContent === '[内容占位符]') {
-        placeholder = spans[i]
-        break
-      }
-    }
-  }
-  
-  if (placeholder) {
-    // 获取占位符的直接父元素
-    const parent = placeholder.parentElement
-    if (parent) {
-      // 强制应用标准样式
-      if (type === 'title') {
-        parent.style.fontSize = '16px'
-        parent.style.fontWeight = 'normal'
-        parent.style.color = parent.style.color || '#333'
-        parent.style.lineHeight = '1.75'
-        parent.style.textIndent = '0'
-        parent.style.fontFamily = "'微软雅黑', 'Microsoft YaHei', sans-serif"
-      } else if (type === 'body' || type === 'intro') {
-        parent.style.fontSize = '14px'
-        parent.style.fontFamily = "'微软雅黑', 'Microsoft YaHei', SimHei, STHeiti, sans-serif"
-        parent.style.lineHeight = '1.75em'
-        parent.style.textAlign = 'justify'
-        parent.style.textIndent = '2.25em'
-        parent.style.letterSpacing = '1.75px'
-        parent.style.color = '#000000'
-      }
-    }
-  }
-  
-  return doc.body.innerHTML
-}
-
 // 自动识别占位符
 const autoDetectPlaceholder = () => {
   if (!visualEditor.value) return
@@ -523,9 +492,9 @@ const autoDetectPlaceholder = () => {
     
     // 同步
     syncVisualToCode()
-    alert('已自动识别占位符并应用标准样式！')
+    toast.success('已自动识别占位符并应用标准样式')
   } else {
-    alert('未找到合适的文本内容，请手动选中文字设置。')
+    toast.warning('未找到合适的文本内容，请手动选中文字设置')
   }
 }
 
@@ -538,7 +507,7 @@ const setSelectionAsPlaceholder = () => {
   
   // 检查选区是否在编辑器内
   if (!visualEditor.value.contains(range.commonAncestorContainer)) {
-    alert('请先选中编辑器内的文字')
+    toast.warning('请先选中编辑器内的文字')
     return
   }
   
@@ -619,30 +588,23 @@ const getPreviewWithContent = (style) => {
 // 保存样式
 const saveStyle = async () => {
   if (!editForm.value.name || !editForm.value.fullExample) {
-    alert('请填写样式名称和完整模板HTML')
+    toast.warning('请填写样式名称和完整模板HTML')
     return
   }
 
   if (!editForm.value.fullExample.includes('{{CONTENT}}')) {
-    alert('完整模板HTML必须包含 {{CONTENT}} 占位符')
+    toast.warning('完整模板HTML必须包含 {{CONTENT}} 占位符')
     return
   }
 
   try {
     if (editingStyle.value) {
-      // 编辑现有样式 - 检查权限
       if (!canEditStyle(editingStyle.value)) {
-        if (editingStyle.value.source === 'local') {
-          alert('只有管理员可以修改本地样式')
-        } else {
-          alert('您没有权限修改此样式')
-        }
+        toast.error(editingStyle.value.source === 'local' ? '只有管理员可以修改本地样式' : '您没有权限修改此样式')
         return
       }
 
-      // 根据样式来源决定使用 API 还是本地存储
       if (editingStyle.value.source === 'api') {
-        // 使用 API 更新（云端样式）
         await styleStore.updateStyle(editingStyle.value.id, {
           name: editForm.value.name,
           type: editForm.value.type,
@@ -650,7 +612,6 @@ const saveStyle = async () => {
           fullExample: editForm.value.fullExample
         })
       } else {
-        // 使用本地存储更新
         updateLocalStyle(editingStyle.value.id, {
           name: editForm.value.name,
           type: editForm.value.type,
@@ -661,9 +622,8 @@ const saveStyle = async () => {
 
       await loadStyles()
       closeEditDialog()
-      alert('保存成功！')
+      toast.success('保存成功')
     } else {
-      // 添加新样式 - 保存到数据库
       await styleStore.addStyle({
         name: editForm.value.name,
         type: editForm.value.type,
@@ -673,43 +633,48 @@ const saveStyle = async () => {
 
       await loadStyles()
       closeEditDialog()
-      alert('添加成功！')
+      toast.success('添加成功')
     }
   } catch (error) {
     console.error('保存样式失败:', error)
-    alert('保存失败: ' + (error.message || '请重试'))
+    toast.error('保存失败: ' + (error.message || '请重试'))
   }
 }
 
+// 确认删除对话框状态
+const pendingDeleteStyle = ref(null)
+const showDeleteConfirm = ref(false)
+
 // 删除样式
 const deleteStyleHandler = async (style) => {
-  // 检查权限
   if (!canEditStyle(style)) {
-    if (style.source === 'local') {
-      alert('只有管理员可以删除本地样式')
-    } else {
-      alert('您没有权限删除此样式')
-    }
+    toast.error(style.source === 'local' ? '只有管理员可以删除本地样式' : '您没有权限删除此样式')
     return
   }
 
-  if (confirm(`确定要删除样式"${style.name}"吗？此操作不可恢复。`)) {
-    try {
-      // 根据样式来源决定使用 API 还是本地存储
-      if (style.source === 'api') {
-        // 使用 API 删除（云端样式）
-        await styleStore.deleteStyle(style.id)
-      } else {
-        // 使用本地存储删除
-        deleteLocalStyle(style.id)
-      }
+  pendingDeleteStyle.value = style
+  showDeleteConfirm.value = true
+}
 
-      await loadStyles()
-      alert('删除成功！')
-    } catch (error) {
-      console.error('删除样式失败:', error)
-      alert('删除失败: ' + (error.message || '请重试'))
+const confirmDelete = async () => {
+  const style = pendingDeleteStyle.value
+  if (!style) return
+  showDeleteConfirm.value = false
+
+  try {
+    if (style.source === 'api') {
+      await styleStore.deleteStyle(style.id)
+    } else {
+      deleteLocalStyle(style.id)
     }
+
+    await loadStyles()
+    toast.success('删除成功')
+  } catch (error) {
+    console.error('删除样式失败:', error)
+    toast.error('删除失败: ' + (error.message || '请重试'))
+  } finally {
+    pendingDeleteStyle.value = null
   }
 }
 

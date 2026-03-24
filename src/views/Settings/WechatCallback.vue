@@ -40,10 +40,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import api from '../../utils/api'
 
 /**
  * 微信授权回调处理页面
- * 
+ *
  * 职责：
  * 1. 从 URL 查询参数中提取 auth_code
  * 2. 将 auth_code 发送至后端换取授权令牌 (API: /api/wechat/exchange-auth)
@@ -58,7 +59,7 @@ const goBack = () => router.push('/settings/wechat')
 
 onMounted(async () => {
   const authCode = route.query.auth_code as string
-  
+
   if (!authCode) {
     error.value = '未获取到授权码，请重试'
     loading.value = false
@@ -66,17 +67,7 @@ onMounted(async () => {
   }
 
   try {
-    const token = localStorage.getItem('auth_token')
-    const response = await fetch('/api/wechat/exchange-auth', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ code: authCode })
-    })
-
-    const data = await response.json()
+    const { data } = await api.post('/wechat/exchange-auth', { code: authCode })
     if (data.success) {
       setTimeout(() => {
         router.push('/settings/wechat?authorized=success')
@@ -85,7 +76,7 @@ onMounted(async () => {
       error.value = data.error || '换取授权失败'
     }
   } catch (e: any) {
-    error.value = '网络错误，请稍后重试'
+    error.value = e.response?.data?.error || '网络错误，请稍后重试'
   } finally {
     loading.value = false
   }
