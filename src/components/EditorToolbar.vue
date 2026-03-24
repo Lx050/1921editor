@@ -243,18 +243,7 @@ function toggleLink() {
       </div>
     </div>
 
-    <!-- 字号、行高由排版样式预设统一控制，不在工具栏显示 -->
-
-    <span class="w-px h-5 bg-gray-300 mx-1" />
-
-    <!-- Headings -->
-    <button
-      v-for="level in [1, 2, 3]"
-      :key="level"
-      class="toolbar-btn text-xs"
-      :class="{ active: isActive('manifoldHeading', { level }) }"
-      @click="run(() => editor!.chain().focus().toggleNode('manifoldHeading', 'paragraph', { level }).run())"
-    >H{{ level }}</button>
+    <!-- 字号、行高、标题级别由排版样式预设统一控制，不在工具栏显示 -->
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
