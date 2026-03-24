@@ -243,24 +243,7 @@ function toggleLink() {
       </div>
     </div>
 
-    <!-- Font size -->
-    <select
-      class="text-xs border rounded px-1 h-7 text-gray-600 bg-white w-14"
-      @change="setFontSize(($event.target as HTMLSelectElement).value)"
-      title="字号"
-    >
-      <option v-for="s in fontSizes" :key="s" :value="s">{{ s }}px</option>
-    </select>
-
-    <!-- Line height -->
-    <select
-      v-if="isActive('paragraph')"
-      class="text-xs border rounded px-1 h-7 text-gray-600 bg-white w-12"
-      @change="setLineHeight(($event.target as HTMLSelectElement).value)"
-      title="行高"
-    >
-      <option v-for="lh in lineHeights" :key="lh" :value="lh">{{ lh }}x</option>
-    </select>
+    <!-- 字号、行高由排版样式预设统一控制，不在工具栏显示 -->
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
