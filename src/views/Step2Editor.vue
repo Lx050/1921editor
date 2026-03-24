@@ -37,6 +37,8 @@ const { contentBlocks } = storeToRefs(appStore)
 const editor = ref<Editor | null>(null)
 const sidebarRef = ref<InstanceType<typeof EditorSidebar> | null>(null)
 const toastRef = ref<InstanceType<typeof EditorToast> | null>(null)
+const editorError = ref<string>('')
+const editorRetryCount = ref(0)
 
 function showToast(message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
   toastRef.value?.addToast(message, type)
@@ -52,6 +54,7 @@ const popoverCurrentData = ref<ImageSlotData | null>(null)
 const shortcutHelpVisible = ref(false)
 const isDragOver = ref(false)
 const isFullscreen = ref(false)
+const mobileSidebarOpen = ref(false)
 const autosaveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
 const copyStatus = ref<'idle' | 'copied'>('idle')
 const statsVisible = ref(false)
@@ -478,16 +481,28 @@ onMounted(() => {
       isTypewriterEnabled: () => isTypewriter.value,
     })
     console.log('[Step2] Editor created successfully, text length:', editor.value.getText().length)
-  } catch (e) {
-    console.error('[Step2] FATAL: Editor creation failed:', e)
-    // Try creating editor without content as last resort
-    editor.value = createManifoldEditor({
-      onUpdate: handleEditorUpdate,
-      isTypewriterEnabled: () => isTypewriter.value,
-    })
+    editorError.value = ''
+  } catch (e: any) {
+    const errMsg = e?.message || String(e)
+    console.error('[Step2] Editor creation with content failed, trying empty fallback:', errMsg, e)
+    try {
+      // Try creating editor without content as last resort
+      editor.value = createManifoldEditor({
+        onUpdate: handleEditorUpdate,
+        isTypewriterEnabled: () => isTypewriter.value,
+      })
+      console.log('[Step2] Fallback editor created successfully')
+      editorError.value = ''
+    } catch (e2: any) {
+      const errMsg2 = e2?.message || String(e2)
+      console.error('[Step2] FATAL: Fallback editor creation also failed:', errMsg2, e2)
+      editor.value = null
+      editorError.value = `编辑器初始化失败: ${errMsg}${errMsg2 !== errMsg ? ' | 备用: ' + errMsg2 : ''}`
+    }
   }
 
   // Track selection changes for word count and cursor position
+  if (!editor.value) return
   editor.value.on('selectionUpdate', ({ editor: e }) => {
     const { from, to, empty } = e.state.selection
     selectionLength.value = empty ? 0 : e.state.doc.textBetween(from, to, '\n').length
@@ -768,6 +783,30 @@ function handleDiscardRecovery() {
   try { localStorage.removeItem('manifold_editor_autosave_ts') } catch { /* ignore */ }
 }
 
+function retryEditorCreation() {
+  editorRetryCount.value++
+  editorError.value = ''
+  console.log('[Step2] Retrying editor creation, attempt:', editorRetryCount.value)
+
+  try {
+    // Try with empty content
+    editor.value = createManifoldEditor({
+      onUpdate: handleEditorUpdate,
+      isTypewriterEnabled: () => isTypewriter.value,
+    })
+    console.log('[Step2] Retry succeeded!')
+
+    // Re-attach selection handler
+    editor.value.on('selectionUpdate', ({ editor: e }) => {
+      const { from, to, empty } = e.state.selection
+      selectionLength.value = empty ? 0 : e.state.doc.textBetween(from, to, '\n').length
+    })
+  } catch (e: any) {
+    console.error('[Step2] Retry failed:', e)
+    editorError.value = `重试失败 (#${editorRetryCount.value}): ${e?.message || String(e)}`
+  }
+}
+
 function goBack() {
   router.push('/step1')
 }
@@ -790,8 +829,22 @@ function goToPublish() {
     <TableBubbleMenu :editor="editor" />
     <BlockquoteBubbleMenu :editor="editor" />
 
-    <div class="flex flex-1 overflow-hidden">
-      <EditorSidebar ref="sidebarRef" :editor="editor" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
+    <div class="flex flex-1 overflow-hidden relative">
+      <!-- Mobile sidebar overlay backdrop -->
+      <div
+        v-if="mobileSidebarOpen"
+        class="md:hidden fixed inset-0 bg-black/40 z-30"
+        @click="mobileSidebarOpen = false"
+      />
+      <!-- Sidebar wrapper: hidden on mobile by default, block on desktop -->
+      <div
+        class="flex-shrink-0 h-full md:relative"
+        :class="mobileSidebarOpen
+          ? 'fixed inset-y-0 left-0 z-40 shadow-xl'
+          : 'hidden md:block'"
+      >
+        <EditorSidebar ref="sidebarRef" :editor="editor" @insert-svg="insertSvgTemplate" @insert-image="handleInsertImage" />
+      </div>
 
       <div
         ref="editorScrollContainer"
@@ -816,7 +869,21 @@ function goToPublish() {
         >
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" :style="zoomLevel !== 100 ? { fontSize: (zoomLevel / 100) + 'em' } : {}" />
           <div v-else class="flex items-center justify-center py-20 text-gray-400">
-            <div class="text-center">
+            <div v-if="editorError" class="text-center max-w-md">
+              <div class="text-red-500 text-lg mb-2 font-medium">编辑器加载失败</div>
+              <div class="text-red-400 text-sm mb-4 bg-red-50 rounded p-3 text-left font-mono break-all">{{ editorError }}</div>
+              <div class="flex gap-3 justify-center">
+                <button
+                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm transition-colors"
+                  @click="retryEditorCreation"
+                >重试加载</button>
+                <button
+                  class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm transition-colors"
+                  @click="goBack"
+                >返回上一步</button>
+              </div>
+            </div>
+            <div v-else class="text-center">
               <div class="text-lg mb-2">编辑器加载中...</div>
               <div class="text-sm">如果持续显示此消息，请刷新页面或返回上一步重试</div>
             </div>
@@ -854,193 +921,179 @@ function goToPublish() {
       >超出 {{ wordCount - WECHAT_CHAR_LIMIT }} 字</span>
     </div>
 
-    <div class="flex-shrink-0 border-t bg-white px-6 py-3 flex items-center justify-between">
-      <button
-        class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-        @click="goBack"
-      >
-        &larr; 返回文本输入
-      </button>
-      <div class="hidden md:flex items-center gap-2">
-        <span v-if="currentNodeType" class="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-medium">{{ currentNodeType }}</span>
-        <span v-if="cursorBlock > 0" class="text-[10px] text-gray-300 font-mono">B{{ cursorBlock }}:{{ cursorOffset }}</span>
-        <span v-if="currentHeading" class="text-xs text-gray-300 truncate max-w-[200px]" :title="currentHeading">{{ currentHeading }}</span>
+    <!-- Footer: mobile-first, two-row layout on small screens -->
+    <div class="flex-shrink-0 border-t bg-white">
+      <!-- Mobile footer: single row with essentials only -->
+      <div class="flex md:hidden items-center justify-between px-3 py-2 gap-2">
+        <button
+          class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          @click="goBack"
+        >&larr; 返回</button>
+        <!-- Mobile sidebar toggle -->
+        <button
+          class="flex items-center gap-1 px-2 py-1.5 border border-gray-200 text-gray-500 rounded-lg text-xs"
+          @click="mobileSidebarOpen = !mobileSidebarOpen"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          <span>侧栏</span>
+        </button>
+        <span
+          class="text-xs transition-colors flex-shrink-0"
+          :class="isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'"
+        >{{ wordCount }}字</span>
+        <button
+          class="px-3 py-1.5 border border-gray-300 text-gray-600 rounded-lg text-xs"
+          @click="copyAsWechatHtml"
+        >{{ copyStatus === 'copied' ? '已复制!' : '复制HTML' }}</button>
+        <button
+          class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium"
+          @click="goToPublish"
+        >下一步</button>
       </div>
-      <div class="flex items-center gap-4">
-        <span v-if="autosaveStatus === 'saving'" class="text-xs text-amber-500">保存中...</span>
-        <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存{{ lastSavedAt ? ` ${lastSavedAt}` : '' }}</span>
-        <span v-else-if="lastSavedAt" class="text-xs text-gray-300" :title="`上次保存: ${lastSavedAt}`">{{ lastSavedAt }}</span>
-        <div class="relative">
-          <button
-            class="text-xs transition-colors"
-            :class="isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400 hover:text-gray-600'"
-            @click="statsVisible = !statsVisible"
-            :title="isOverLimit ? `超出微信字数限制 (${WECHAT_CHAR_LIMIT} 字)` : '文档统计'"
-          >{{ selectionLength > 0 ? `${selectionLength} / ` : '' }}{{ wordCount }} 字 / ~{{ readingTime }}min</button>
-          <div
-            v-if="statsVisible"
-            class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border rounded-lg shadow-lg p-3 z-50 w-48"
-          >
-            <div class="text-xs font-medium text-gray-700 mb-2">文档统计</div>
-            <div class="space-y-1 text-xs text-gray-500">
-              <div class="flex justify-between"><span>字数</span><span class="text-gray-700 font-medium">{{ wordCount }}</span></div>
-              <div class="flex justify-between"><span>字符数</span><span class="text-gray-700">{{ detailedStats.charCount }} ({{ detailedStats.charNoSpaces }})</span></div>
-              <div class="flex justify-between"><span>阅读时间</span><span class="text-gray-700">~{{ readingTime }} 分钟</span></div>
-              <div class="flex justify-between"><span>标题</span><span class="text-gray-700">{{ detailedStats.headings }}</span></div>
-              <div class="flex justify-between"><span>段落</span><span class="text-gray-700">{{ detailedStats.paragraphs }}</span></div>
-              <div class="flex justify-between"><span>句子</span><span class="text-gray-700">{{ sentenceCount }}</span></div>
-              <div class="flex justify-between"><span>句均字数</span><span class="text-gray-700">{{ avgSentenceLength }}</span></div>
-              <div class="flex justify-between"><span>可读性</span><span :class="readabilityScore.color" class="font-medium">{{ readabilityScore.label }} ({{ readabilityScore.score }})</span></div>
-              <div class="flex justify-between"><span>图片</span><span class="text-gray-700">{{ detailedStats.images }}</span></div>
-              <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
-              <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
-              <div v-if="detailedStats.codeBlocks > 0" class="flex justify-between"><span>代码块</span><span class="text-gray-700">{{ detailedStats.codeBlocks }}</span></div>
-              <!-- Top keywords -->
-              <template v-if="topKeywords.length > 0">
-                <div class="border-t pt-1 mt-1">
-                  <span class="text-gray-400 text-[10px]">高频词</span>
-                  <div class="flex flex-wrap gap-1 mt-0.5">
-                    <span
-                      v-for="kw in topKeywords"
-                      :key="kw.word"
-                      class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px]"
-                    >{{ kw.word }}<span class="text-blue-300">{{ kw.count }}</span></span>
+
+      <!-- Desktop footer: full controls -->
+      <div class="hidden md:flex items-center justify-between px-6 py-3">
+        <button
+          class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          @click="goBack"
+        >
+          &larr; 返回文本输入
+        </button>
+        <div class="flex items-center gap-2">
+          <span v-if="currentNodeType" class="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-medium">{{ currentNodeType }}</span>
+          <span v-if="cursorBlock > 0" class="text-[10px] text-gray-300 font-mono">B{{ cursorBlock }}:{{ cursorOffset }}</span>
+          <span v-if="currentHeading" class="text-xs text-gray-300 truncate max-w-[200px]" :title="currentHeading">{{ currentHeading }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span v-if="autosaveStatus === 'saving'" class="text-xs text-amber-500">保存中...</span>
+          <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存{{ lastSavedAt ? ` ${lastSavedAt}` : '' }}</span>
+          <span v-else-if="lastSavedAt" class="text-xs text-gray-300" :title="`上次保存: ${lastSavedAt}`">{{ lastSavedAt }}</span>
+          <div class="relative">
+            <button
+              class="text-xs transition-colors"
+              :class="isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400 hover:text-gray-600'"
+              @click="statsVisible = !statsVisible"
+              :title="isOverLimit ? `超出微信字数限制 (${WECHAT_CHAR_LIMIT} 字)` : '文档统计'"
+            >{{ selectionLength > 0 ? `${selectionLength} / ` : '' }}{{ wordCount }} 字 / ~{{ readingTime }}min</button>
+            <div
+              v-if="statsVisible"
+              class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border rounded-lg shadow-lg p-3 z-50 w-48"
+            >
+              <div class="text-xs font-medium text-gray-700 mb-2">文档统计</div>
+              <div class="space-y-1 text-xs text-gray-500">
+                <div class="flex justify-between"><span>字数</span><span class="text-gray-700 font-medium">{{ wordCount }}</span></div>
+                <div class="flex justify-between"><span>字符数</span><span class="text-gray-700">{{ detailedStats.charCount }} ({{ detailedStats.charNoSpaces }})</span></div>
+                <div class="flex justify-between"><span>阅读时间</span><span class="text-gray-700">~{{ readingTime }} 分钟</span></div>
+                <div class="flex justify-between"><span>标题</span><span class="text-gray-700">{{ detailedStats.headings }}</span></div>
+                <div class="flex justify-between"><span>段落</span><span class="text-gray-700">{{ detailedStats.paragraphs }}</span></div>
+                <div class="flex justify-between"><span>句子</span><span class="text-gray-700">{{ sentenceCount }}</span></div>
+                <div class="flex justify-between"><span>句均字数</span><span class="text-gray-700">{{ avgSentenceLength }}</span></div>
+                <div class="flex justify-between"><span>可读性</span><span :class="readabilityScore.color" class="font-medium">{{ readabilityScore.label }} ({{ readabilityScore.score }})</span></div>
+                <div class="flex justify-between"><span>图片</span><span class="text-gray-700">{{ detailedStats.images }}</span></div>
+                <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
+                <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
+                <div v-if="detailedStats.codeBlocks > 0" class="flex justify-between"><span>代码块</span><span class="text-gray-700">{{ detailedStats.codeBlocks }}</span></div>
+                <template v-if="topKeywords.length > 0">
+                  <div class="border-t pt-1 mt-1">
+                    <span class="text-gray-400 text-[10px]">高频词</span>
+                    <div class="flex flex-wrap gap-1 mt-0.5">
+                      <span
+                        v-for="kw in topKeywords"
+                        :key="kw.word"
+                        class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px]"
+                      >{{ kw.word }}<span class="text-blue-300">{{ kw.count }}</span></span>
+                    </div>
                   </div>
-                </div>
-              </template>
-              <div class="border-t pt-1 mt-1 flex justify-between"><span>撤销/重做</span><span class="text-gray-700 font-mono text-[10px]">{{ canUndo ? '&#x21A9;' : '' }} {{ canRedo ? '&#x21AA;' : '' }}</span></div>
-              <!-- Word count goal -->
-              <div class="border-t pt-2 mt-2">
-                <div class="flex items-center gap-1 mb-1">
-                  <span class="text-gray-500">字数目标</span>
-                  <input
-                    type="number"
-                    :value="wordCountGoal || ''"
-                    @change="wordCountGoal = parseInt(($event.target as HTMLInputElement).value) || 0"
-                    placeholder="--"
-                    class="w-14 text-right text-gray-700 border border-gray-200 rounded px-1 py-0.5 text-[10px]"
-                    min="0"
-                    step="100"
-                  />
-                </div>
-                <div v-if="wordCountGoal > 0" class="flex items-center gap-1">
-                  <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      class="h-full rounded-full transition-all duration-500"
-                      :class="goalProgress >= 100 ? 'bg-green-500' : goalProgress >= 75 ? 'bg-blue-500' : 'bg-amber-500'"
-                      :style="{ width: goalProgress + '%' }"
+                </template>
+                <div class="border-t pt-1 mt-1 flex justify-between"><span>撤销/重做</span><span class="text-gray-700 font-mono text-[10px]">{{ canUndo ? '&#x21A9;' : '' }} {{ canRedo ? '&#x21AA;' : '' }}</span></div>
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex items-center gap-1 mb-1">
+                    <span class="text-gray-500">字数目标</span>
+                    <input
+                      type="number"
+                      :value="wordCountGoal || ''"
+                      @change="wordCountGoal = parseInt(($event.target as HTMLInputElement).value) || 0"
+                      placeholder="--"
+                      class="w-14 text-right text-gray-700 border border-gray-200 rounded px-1 py-0.5 text-[10px]"
+                      min="0"
+                      step="100"
                     />
                   </div>
-                  <span class="text-[10px] font-medium" :class="goalProgress >= 100 ? 'text-green-600' : 'text-gray-500'">{{ goalProgress }}%</span>
+                  <div v-if="wordCountGoal > 0" class="flex items-center gap-1">
+                    <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        class="h-full rounded-full transition-all duration-500"
+                        :class="goalProgress >= 100 ? 'bg-green-500' : goalProgress >= 75 ? 'bg-blue-500' : 'bg-amber-500'"
+                        :style="{ width: goalProgress + '%' }"
+                      />
+                    </div>
+                    <span class="text-[10px] font-medium" :class="goalProgress >= 100 ? 'text-green-600' : 'text-gray-500'">{{ goalProgress }}%</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <!-- Word count goal progress (compact) -->
-        <div v-if="wordCountGoal > 0" class="flex items-center gap-1" :title="`目标: ${wordCountGoal} 字 (${goalProgress}%)`">
-          <div class="w-12 h-1 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              class="h-full rounded-full transition-all"
-              :class="goalProgress >= 100 ? 'bg-green-500' : 'bg-blue-400'"
-              :style="{ width: goalProgress + '%' }"
-            />
+          <div v-if="wordCountGoal > 0" class="flex items-center gap-1" :title="`目标: ${wordCountGoal} 字 (${goalProgress}%)`">
+            <div class="w-12 h-1 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                class="h-full rounded-full transition-all"
+                :class="goalProgress >= 100 ? 'bg-green-500' : 'bg-blue-400'"
+                :style="{ width: goalProgress + '%' }"
+              />
+            </div>
+            <span class="text-[10px]" :class="goalProgress >= 100 ? 'text-green-600' : 'text-gray-400'">{{ goalProgress }}%</span>
           </div>
-          <span class="text-[10px]" :class="goalProgress >= 100 ? 'text-green-600' : 'text-gray-400'">{{ goalProgress }}%</span>
-        </div>
-        <button
-          class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
-          :class="isFocusMode ? 'bg-blue-100 text-blue-600 border-blue-300' : 'text-gray-400 hover:text-gray-600 border-gray-200'"
-          @click="isFocusMode = !isFocusMode"
-          title="专注模式 (Ctrl+Shift+F)"
-        >F</button>
-        <button
-          class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
-          :class="isTypewriter ? 'bg-green-100 text-green-600 border-green-300' : 'text-gray-400 hover:text-gray-600 border-gray-200'"
-          @click="isTypewriter = !isTypewriter"
-          title="打字机滚动模式"
-        >W</button>
-        <button
-          class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
-          :class="{
-            'text-gray-400 hover:text-gray-600 border-gray-200': editorTheme === 'light',
-            'bg-amber-100 text-amber-700 border-amber-300': editorTheme === 'sepia',
-            'bg-gray-700 text-gray-200 border-gray-600': editorTheme === 'dark',
-          }"
-          @click="editorTheme = editorTheme === 'light' ? 'sepia' : editorTheme === 'sepia' ? 'dark' : 'light'"
-          title="切换主题 (明/暖/暗)"
-        >T</button>
-        <!-- Zoom control -->
-        <div class="flex items-center gap-0.5">
           <button
-            class="text-[10px] text-gray-400 hover:text-gray-600 w-4 h-5 flex items-center justify-center"
-            @click="cycleZoom(-1)"
-            :disabled="zoomLevel <= 80"
-            :class="zoomLevel <= 80 ? 'opacity-30' : ''"
-            title="缩小"
-          >-</button>
-          <span class="text-[10px] text-gray-400 w-7 text-center select-none" :title="`缩放 ${zoomLevel}%`">{{ zoomLevel }}%</span>
+            class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
+            :class="isFocusMode ? 'bg-blue-100 text-blue-600 border-blue-300' : 'text-gray-400 hover:text-gray-600 border-gray-200'"
+            @click="isFocusMode = !isFocusMode"
+            title="专注模式 (Ctrl+Shift+F)"
+          >F</button>
           <button
-            class="text-[10px] text-gray-400 hover:text-gray-600 w-4 h-5 flex items-center justify-center"
-            @click="cycleZoom(1)"
-            :disabled="zoomLevel >= 150"
-            :class="zoomLevel >= 150 ? 'opacity-30' : ''"
-            title="放大"
-          >+</button>
+            class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
+            :class="isTypewriter ? 'bg-green-100 text-green-600 border-green-300' : 'text-gray-400 hover:text-gray-600 border-gray-200'"
+            @click="isTypewriter = !isTypewriter"
+            title="打字机滚动模式"
+          >W</button>
+          <button
+            class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
+            :class="{
+              'text-gray-400 hover:text-gray-600 border-gray-200': editorTheme === 'light',
+              'bg-amber-100 text-amber-700 border-amber-300': editorTheme === 'sepia',
+              'bg-gray-700 text-gray-200 border-gray-600': editorTheme === 'dark',
+            }"
+            @click="editorTheme = editorTheme === 'light' ? 'sepia' : editorTheme === 'sepia' ? 'dark' : 'light'"
+            title="切换主题 (明/暖/暗)"
+          >T</button>
+          <div class="flex items-center gap-0.5">
+            <button class="text-[10px] text-gray-400 hover:text-gray-600 w-4 h-5 flex items-center justify-center" @click="cycleZoom(-1)" :disabled="zoomLevel <= 80" :class="zoomLevel <= 80 ? 'opacity-30' : ''" title="缩小">-</button>
+            <span class="text-[10px] text-gray-400 w-7 text-center select-none" :title="`缩放 ${zoomLevel}%`">{{ zoomLevel }}%</span>
+            <button class="text-[10px] text-gray-400 hover:text-gray-600 w-4 h-5 flex items-center justify-center" @click="cycleZoom(1)" :disabled="zoomLevel >= 150" :class="zoomLevel >= 150 ? 'opacity-30' : ''" title="放大">+</button>
+          </div>
+          <button class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏 (Esc)' : '全屏编辑'">{{ isFullscreen ? '&#x2716;' : '&#x26F6;' }}</button>
+          <button class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center" @click="shortcutHelpVisible = true" title="键盘快捷键 (?)">?</button>
+          <span
+            class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+            :class="{
+              'bg-orange-100 text-orange-600': configStore.mode === 'daily',
+              'bg-green-100 text-green-600': configStore.mode === 'three_rural',
+              'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+            }"
+          >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
+          <span class="text-xs text-gray-300">Manifold v2</span>
         </div>
-        <button
-          class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
-          @click="toggleFullscreen"
-          :title="isFullscreen ? '退出全屏 (Esc)' : '全屏编辑'"
-        >{{ isFullscreen ? '&#x2716;' : '&#x26F6;' }}</button>
-        <button
-          class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center"
-          @click="shortcutHelpVisible = true"
-          title="键盘快捷键 (?)"
-        >?</button>
-        <span
-          class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-          :class="{
-            'bg-orange-100 text-orange-600': configStore.mode === 'daily',
-            'bg-green-100 text-green-600': configStore.mode === 'three_rural',
-            'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
-          }"
-        >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
-        <span class="text-xs text-gray-300">Manifold v2</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <button
-          class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-          @click="emojiPickerVisible = true"
-          title="插入表情"
-        >Emoji</button>
-        <button
-          class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-          @click="snapshotsVisible = true"
-          title="版本快照"
-        >Snap</button>
-        <button
-          class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-          @click="exportMarkdown"
-          title="Export as Markdown"
-        >MD</button>
-        <button
-          class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-          @click="openPreview"
-          title="Preview HTML output"
-        >Preview</button>
-        <button
-          class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-          @click="copyAsWechatHtml"
-        >
-          {{ copyStatus === 'copied' ? '已复制!' : '复制微信HTML' }}
-        </button>
-        <button
-          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-          @click="goToPublish"
-        >
-          下一步: 发布确认
-        </button>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="emojiPickerVisible = true" title="插入表情">Emoji</button>
+          <button class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="snapshotsVisible = true" title="版本快照">Snap</button>
+          <button class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="exportMarkdown" title="Export as Markdown">MD</button>
+          <button class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="openPreview" title="Preview HTML output">Preview</button>
+          <button class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="copyAsWechatHtml">
+            {{ copyStatus === 'copied' ? '已复制!' : '复制微信HTML' }}
+          </button>
+          <button class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm" @click="goToPublish">
+            下一步: 发布确认
+          </button>
+        </div>
       </div>
     </div>
 

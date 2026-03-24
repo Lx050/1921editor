@@ -63,6 +63,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
         paragraph: false,
         blockquote: false,
         codeBlock: false,
+        dropcursor: false, // 使用下方单独配置的 Dropcursor
       }),
       ManifoldBlockquote,
       ManifoldCodeBlock,
