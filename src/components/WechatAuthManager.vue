@@ -240,6 +240,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import api from '../utils/api';
+import { copyToClipboard } from '../utils/clipboard';
 import { ThirdPartyWechatAuth } from '../services/ThirdPartyWechatAuth';
 
 interface WechatAuthInfo {
@@ -367,7 +370,7 @@ const generateAuthUrl = async () => {
     setLoading('授权链接已生成，等待用户授权...', false);
   } catch (error) {
     console.error('生成授权链接失败:', error);
-    alert('生成授权链接失败，请重试');
+    ElMessage.error('生成授权链接失败，请重试');
   }
 };
 
@@ -389,13 +392,13 @@ const handleAuthCallback = async (event: MessageEvent) => {
 
       // 显示成功消息
       setTimeout(() => {
-        alert(`公众号 ${result.nick_name} 授权成功！`);
+        ElMessage.success(`公众号 ${result.nick_name} 授权成功`);
         closeAuthModal();
       }, 1000);
 
     } catch (error) {
       console.error('处理授权回调失败:', error);
-      alert('授权失败: ' + (error as Error).message);
+      ElMessage.error('授权失败: ' + (error as Error).message);
     } finally {
       setLoading('', false);
     }
@@ -403,15 +406,13 @@ const handleAuthCallback = async (event: MessageEvent) => {
 };
 
 // 复制授权链接
-const copyAuthUrl = () => {
-  const input = document.createElement('input');
-  input.value = authUrl.value;
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  document.body.removeChild(input);
-
-  alert('授权链接已复制到剪贴板');
+const copyAuthUrl = async () => {
+  const result = await copyToClipboard(authUrl.value);
+  if (result.ok) {
+    ElMessage.success('授权链接已复制到剪贴板');
+  } else {
+    ElMessage.warning('复制失败，请手动选择链接复制');
+  }
 };
 
 // 关闭授权弹窗
@@ -437,29 +438,21 @@ const testAccount = async (account: WechatAuthInfo) => {
   try {
     setLoading('正在测试连接...');
 
-    const response = await fetch('/api/wechat/test-connection', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        app_id: account.authorizer_appid,
-        access_token: account.authorizer_access_token,
-      }),
+    const { data } = await api.post('/wechat/test-connection', {
+      app_id: account.authorizer_appid,
+      access_token: account.authorizer_access_token,
     });
 
-    const data = await response.json();
-
     if (data.success) {
-      alert('连接测试成功！');
+      ElMessage.success('连接测试成功');
       account.lastUsed = Date.now();
       await saveAccounts();
     } else {
-      alert('连接测试失败: ' + data.error);
+      ElMessage.error('连接测试失败: ' + data.error);
     }
   } catch (error) {
     console.error('测试连接失败:', error);
-    alert('连接测试失败: ' + (error as Error).message);
+    ElMessage.error('连接测试失败: ' + (error as Error).message);
   } finally {
     setLoading('', false);
   }
@@ -479,10 +472,10 @@ const refreshAccount = async (account: WechatAuthInfo) => {
     }
 
     await saveAccounts();
-    alert('Token刷新成功！');
+    ElMessage.success('Token刷新成功');
   } catch (error) {
     console.error('刷新Token失败:', error);
-    alert('刷新Token失败: ' + (error as Error).message);
+    ElMessage.error('刷新Token失败: ' + (error as Error).message);
   } finally {
     setLoading('', false);
   }
@@ -513,10 +506,10 @@ const removeAccount = async () => {
 
     await saveAccounts();
     closeRemoveModal();
-    alert('授权已移除');
+    ElMessage.success('授权已移除');
   } catch (error: any) {
     console.error('移除授权失败:', error);
-    alert('移除授权失败: ' + error.message);
+    ElMessage.error('移除授权失败: ' + error.message);
   } finally {
     setLoading('', false);
   }
