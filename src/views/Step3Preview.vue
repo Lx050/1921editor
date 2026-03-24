@@ -225,7 +225,7 @@ import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
 import { buildHtml } from '../utils/styleAssembler'
 import { createDraft, uploadImage, getWechatProxyUrl, restoreWechatUrl } from '../utils/wechatApi'
-import { copyToClipboard } from '../utils/clipboard'
+import { copyToClipboard, copyRichText } from '../utils/clipboard'
 import ImageReplacer from '../components/ImageReplacer.vue'
 import QuickImageStrip from '../components/QuickImageStrip.vue'
 import CreateDraftFormModal from '../components/CreateDraftFormModal.vue'
@@ -849,16 +849,23 @@ const getOutputHtml = () => {
   return html
 }
 
-// 复制HTML代码（使用微信 URL）
+// 复制HTML代码（使用微信 URL）— 富文本复制，可直接粘贴到微信编辑器
 const copyHtml = async () => {
   const htmlToCopy = getOutputHtml()
 
-  const result = await copyToClipboard(htmlToCopy)
+  // Try rich text copy first (text/html), fall back to plain text
+  const result = await copyRichText(htmlToCopy)
   if (result.ok) {
     showCopySuccess()
   } else {
-    console.error('Copy failed:', result.error)
-    alert('复制失败，请手动选择代码进行复制')
+    // Last resort: plain text copy
+    const textResult = await copyToClipboard(htmlToCopy)
+    if (textResult.ok) {
+      showCopySuccess()
+    } else {
+      console.error('Copy failed:', result.error)
+      alert('复制失败，请手动选择代码进行复制')
+    }
   }
 }
 

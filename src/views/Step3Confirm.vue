@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
+import { copyRichText, copyToClipboard } from '../utils/clipboard'
 import type { EditorDocument } from '@/types/editor'
 
 const router = useRouter()
@@ -41,28 +42,27 @@ function setMode(mode: 'daily' | 'three_rural' | 'reprint') {
 
 const copyMode = ref<'html' | 'rich'>('rich')
 
-function copyHtml() {
+async function copyHtml() {
   if (!finalHtml.value) return
 
+  const markCopied = () => {
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  }
+
   if (copyMode.value === 'rich') {
-    // Copy as rich text (for pasting into WeChat editor)
-    const blob = new Blob([finalHtml.value], { type: 'text/html' })
-    const item = new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([finalHtml.value], { type: 'text/plain' }) })
-    navigator.clipboard.write([item]).then(() => {
-      copied.value = true
-      setTimeout(() => { copied.value = false }, 2000)
-    }).catch(() => {
-      // Fallback to plain text copy
-      navigator.clipboard.writeText(finalHtml.value).then(() => {
-        copied.value = true
-        setTimeout(() => { copied.value = false }, 2000)
-      })
-    })
+    const result = await copyRichText(finalHtml.value)
+    if (result.ok) {
+      markCopied()
+    } else {
+      const textResult = await copyToClipboard(finalHtml.value)
+      if (textResult.ok) markCopied()
+      else alert('复制失败，请手动选择代码进行复制')
+    }
   } else {
-    navigator.clipboard.writeText(finalHtml.value).then(() => {
-      copied.value = true
-      setTimeout(() => { copied.value = false }, 2000)
-    })
+    const result = await copyToClipboard(finalHtml.value)
+    if (result.ok) markCopied()
+    else alert('复制失败，请手动选择代码进行复制')
   }
 }
 

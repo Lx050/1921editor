@@ -26,6 +26,7 @@ import VersionSnapshots from '../components/VersionSnapshots.vue'
 import EditorToast from '../components/EditorToast.vue'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import { serializeToMarkdown } from '../editor/serializers/markdownSerializer'
+import { copyRichText, copyToClipboard } from '../utils/clipboard'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'
 
@@ -150,15 +151,14 @@ async function copyAsWechatHtml() {
   if (!editor.value) return
   const doc = editor.value.getJSON() as EditorDocument
   const html = serializeToWechatHtml(doc)
-  try {
-    const blob = new Blob([html], { type: 'text/html' })
-    const plainBlob = new Blob([html], { type: 'text/plain' })
-    await navigator.clipboard.write([
-      new ClipboardItem({ 'text/html': blob, 'text/plain': plainBlob })
-    ])
-  } catch {
-    // Fallback to plain text copy
-    await navigator.clipboard.writeText(html).catch(() => {})
+  const result = await copyRichText(html)
+  if (!result.ok) {
+    // Last resort: plain text copy
+    const textResult = await copyToClipboard(html)
+    if (!textResult.ok) {
+      showToast('复制失败，请手动选择代码复制', 'error')
+      return
+    }
   }
   copyStatus.value = 'copied'
   showToast('微信 HTML 已复制到剪贴板', 'success')
@@ -176,12 +176,12 @@ async function exportMarkdown() {
   if (!editor.value) return
   const doc = editor.value.getJSON() as EditorDocument
   const md = serializeToMarkdown(doc)
-  try {
-    await navigator.clipboard.writeText(md)
+  const result = await copyToClipboard(md)
+  if (result.ok) {
     copyStatus.value = 'copied'
     showToast('Markdown 已复制到剪贴板', 'success')
     setTimeout(() => { copyStatus.value = 'idle' }, 2000)
-  } catch {
+  } else {
     // Fallback: download as file
     const blob = new Blob([md], { type: 'text/markdown' })
     const url = URL.createObjectURL(blob)
