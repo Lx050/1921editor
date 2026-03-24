@@ -5,6 +5,7 @@ import { EditorContent } from '@tiptap/vue-3'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
+import { useOrgConfigStore } from '../stores/orgConfigStore'
 import { createManifoldEditor } from '../editor/core/createEditor'
 import { contentBlocksToTiptap } from '../editor/serializers/jsonImporter'
 import { smartTextParser } from '../utils/textParser'
@@ -33,7 +34,25 @@ import type { EditorDocument, ImageSlotData } from '@/types/editor'
 const router = useRouter()
 const appStore = useAppStore()
 const configStore = useConfigStore()
+const orgConfigStore = useOrgConfigStore()
 const { contentBlocks } = storeToRefs(appStore)
+
+// Live style preview: inject org style preset as CSS custom properties
+const editorPresetStyle = computed(() => {
+  const p = orgConfigStore.stylePreset
+  return {
+    '--preset-body-font': p.bodyFontFamily,
+    '--preset-body-size': p.bodyFontSize + 'px',
+    '--preset-body-lh': String(p.bodyLineHeight),
+    '--preset-body-ls': p.bodyLetterSpacing + 'px',
+    '--preset-body-indent': p.bodyIndent ? '2em' : '0',
+    '--preset-title-font': p.titleFontFamily,
+    '--preset-title-size': p.titleFontSize + 'px',
+    '--preset-title-bold': p.titleBold ? 'bold' : 'normal',
+    '--preset-intro-font': p.introFontFamily,
+    '--preset-intro-size': p.introFontSize + 'px',
+  }
+})
 
 const editor = ref<Editor | null>(null)
 const sidebarRef = ref<InstanceType<typeof EditorSidebar> | null>(null)
@@ -867,7 +886,7 @@ function goToPublish() {
             editorTheme === 'dark' ? 'bg-[#1e1e2e] editor-dark' : '',
           ]"
         >
-          <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" :style="zoomLevel !== 100 ? { fontSize: (zoomLevel / 100) + 'em' } : {}" />
+          <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" :style="{ ...editorPresetStyle, ...(zoomLevel !== 100 ? { fontSize: (zoomLevel / 100) + 'em' } : {}) }" />
           <div v-else class="flex items-center justify-center py-20 text-gray-400">
             <div v-if="editorError" class="text-center max-w-md">
               <div class="text-red-500 text-lg mb-2 font-medium">编辑器加载失败</div>
@@ -1165,23 +1184,30 @@ function goToPublish() {
   position: relative;
 }
 .manifold-editor-content .ProseMirror h1 {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-family: var(--preset-title-font, inherit);
+  font-size: var(--preset-title-size, 1.5rem);
+  font-weight: var(--preset-title-bold, bold);
   margin-bottom: 1rem;
 }
 .manifold-editor-content .ProseMirror h2 {
-  font-size: 1.25rem;
-  font-weight: bold;
+  font-family: var(--preset-title-font, inherit);
+  font-size: var(--preset-title-size, 1.25rem);
+  font-weight: var(--preset-title-bold, bold);
   margin-bottom: 0.75rem;
 }
 .manifold-editor-content .ProseMirror h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-family: var(--preset-title-font, inherit);
+  font-size: calc(var(--preset-title-size, 1.125rem) * 0.9);
+  font-weight: var(--preset-title-bold, 600);
   margin-bottom: 0.5rem;
 }
 .manifold-editor-content .ProseMirror p {
+  font-family: var(--preset-body-font, inherit);
+  font-size: var(--preset-body-size, 14px);
+  line-height: var(--preset-body-lh, 1.625);
+  letter-spacing: var(--preset-body-ls, normal);
+  text-indent: var(--preset-body-indent, 0);
   margin-bottom: 0.75rem;
-  line-height: 1.625;
 }
 .manifold-editor-content .ProseMirror hr {
   border: none;
@@ -1201,12 +1227,18 @@ function goToPublish() {
   padding-left: 12px;
   color: #4b5563;
   font-style: italic;
+  font-family: var(--preset-intro-font, inherit);
+  font-size: var(--preset-intro-size, 14px);
+  text-indent: 0;
 }
 .manifold-editor-content .ProseMirror p[data-role="outro"] {
   border-left: 3px solid #a78bfa;
   padding-left: 12px;
   color: #4b5563;
   font-style: italic;
+  font-family: var(--preset-intro-font, inherit);
+  font-size: var(--preset-intro-size, 14px);
+  text-indent: 0;
 }
 /* Blockquote */
 .manifold-editor-content .ProseMirror blockquote {
@@ -1214,6 +1246,9 @@ function goToPublish() {
   padding-left: 12px;
   margin: 1rem 0;
   color: #6b7280;
+}
+.manifold-editor-content .ProseMirror blockquote p {
+  text-indent: 0;
 }
 .manifold-editor-content .ProseMirror blockquote[data-variant="tip"] {
   border-left-color: #22c55e;
@@ -1332,6 +1367,7 @@ function goToPublish() {
 }
 .manifold-editor-content .ProseMirror li > p {
   margin-bottom: 0.25rem;
+  text-indent: 0;
 }
 /* Focus mode - dim non-active blocks */
 .manifold-editor-content.focus-mode .ProseMirror > * {
