@@ -107,6 +107,9 @@ function serializeNode(
       return serializeImage(node)
     case 'manifoldSvgBlock':
       return serializeSvgBlock(node)
+    case 'manifoldGroup':
+      // Group is a transparent container - serialize children directly as a section
+      return `<section style="margin: 8px 0;">${(node.content || []).map((c: any) => serializeNode(c, styleConfig, orgPreset)).join('')}</section>`
     case 'horizontalRule':
       return '<hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />'
     case 'codeBlock':

@@ -10,6 +10,7 @@ export const DragHandle = Extension.create({
   name: 'dragHandle',
 
   addProseMirrorPlugins() {
+    const editorRef = this.editor
     let barEl: HTMLElement | null = null
     let currentNodePos: number | null = null
     let hideTimer: ReturnType<typeof setTimeout> | null = null
@@ -40,6 +41,15 @@ export const DragHandle = Extension.create({
       // Separator
       const sep = document.createElement('span')
       sep.style.cssText = 'width:1px;height:16px;background:#e5e7eb;margin:0 2px;'
+      // Group with above
+      const groupUp = createBtn('\u229E', '合并到上方块 (Ctrl+Shift+G)', 'groupUp')
+      groupUp.style.color = '#8b5cf6'
+      // Ungroup
+      const ungroup = createBtn('\u229F', '拆分组合', 'ungroup')
+      ungroup.style.color = '#8b5cf6'
+      // Separator
+      const sep2 = document.createElement('span')
+      sep2.style.cssText = 'width:1px;height:16px;background:#e5e7eb;margin:0 2px;'
       // Delete
       const del = createBtn('\u2715', '删除块', 'delete')
       del.style.color = '#ef4444'
@@ -48,6 +58,9 @@ export const DragHandle = Extension.create({
       bar.appendChild(moveUp)
       bar.appendChild(moveDown)
       bar.appendChild(sep)
+      bar.appendChild(groupUp)
+      bar.appendChild(ungroup)
+      bar.appendChild(sep2)
       bar.appendChild(del)
 
       // Drag start on grip
@@ -166,6 +179,23 @@ export const DragHandle = Extension.create({
               const insertAt = currentNodePos + nextNode.nodeSize
               tr.insert(Math.min(insertAt, tr.doc.content.size), node)
               view.dispatch(tr)
+            } else if (action === 'groupUp') {
+              // Group this block with the one above it
+              // Set selection into this block first, then call groupBlocks
+              const tr = view.state.tr
+              tr.setSelection(view.state.selection.constructor.near(tr.doc.resolve(currentNodePos + 1)))
+              view.dispatch(tr)
+              ;(view as any).dispatch = view.dispatch.bind(view)
+              if (editorRef) {
+                (editorRef.commands as any).groupBlocks('above')
+              }
+            } else if (action === 'ungroup') {
+              const tr = view.state.tr
+              tr.setSelection(view.state.selection.constructor.near(tr.doc.resolve(currentNodePos + 1)))
+              view.dispatch(tr)
+              if (editorRef) {
+                (editorRef.commands as any).ungroupBlocks()
+              }
             } else if (action === 'delete') {
               const tr = view.state.tr
               tr.delete(currentNodePos, currentNodePos + node.nodeSize)

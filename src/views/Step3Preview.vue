@@ -38,58 +38,51 @@
       <!-- 右侧：工作区 (包含 Header, Body, BottomBar) -->
       <div class="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-white">
         <!-- 精简头部 -->
-        <div class="flex-shrink-0 w-full border-b p-3 md:p-4" style="background: var(--color-content-card); border-color: var(--color-content-border);">
-          <div class="flex items-center justify-between gap-2 md:gap-3">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 md:gap-3">
-                <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap">Step 3/3</span>
-                <h2 class="text-base md:text-lg font-bold truncate" style="color: var(--color-content-text);">生成预览</h2>
-                <span
-                  class="text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap"
-                  :class="{
-                    'bg-orange-100 text-orange-600': configStore.mode === 'daily',
-                    'bg-green-100 text-green-600': configStore.mode === 'three_rural',
-                    'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
-                  }"
-                >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
-              </div>
-              <p class="text-[10px] md:text-xs mt-0.5 truncate" style="color: var(--color-content-text-secondary);">
-                {{ hasWechatImages ? (isMobile ? '选择图片替换' : '点击占位符，选择图片替换') : '预览效果并获取 HTML' }}
-              </p>
+        <div class="flex-shrink-0 w-full border-b p-2 md:p-4" style="background: var(--color-content-card); border-color: var(--color-content-border);">
+          <!-- Mobile: stacked layout -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap shrink-0">3/3</span>
+              <h2 class="text-sm md:text-lg font-bold truncate" style="color: var(--color-content-text);">预览</h2>
+              <span
+                class="text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap shrink-0"
+                :class="{
+                  'bg-orange-100 text-orange-600': configStore.mode === 'daily',
+                  'bg-green-100 text-green-600': configStore.mode === 'three_rural',
+                  'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+                }"
+              >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
             </div>
-            
-            <div class="flex items-center gap-1 md:gap-2">
-              <button
-                @click="copyShareLink"
-                class="px-2 md:px-3 py-1.5 bg-white border border-blue-200 hover:border-blue-400 text-blue-600 text-[10px] md:text-xs font-bold rounded-md transition-all flex items-center space-x-1 shadow-sm h-8"
-                title="分享"
-              >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
-                <span class="hidden sm:inline">协作分享</span>
-              </button>
 
-              <div class="h-4 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
-
-              <div class="flex bg-gray-100 p-0.5 md:p-1 rounded-lg">
+            <div class="flex items-center gap-1">
+              <!-- Preview/Code toggle -->
+              <div class="flex bg-gray-100 p-0.5 rounded-lg">
                 <button
                   @click="activeTab = 'preview'"
-                  :class="['px-2 md:px-4 py-1 md:py-1.5 text-[10px] md:text-xs font-bold rounded-md transition-all', activeTab === 'preview' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-black']"
+                  :class="['px-2 md:px-4 py-1 text-[10px] md:text-xs font-bold rounded-md transition-all', activeTab === 'preview' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500']"
                 >预览</button>
                 <button
                   @click="activeTab = 'code'"
-                  :class="['px-2 md:px-4 py-1 md:py-1.5 text-[10px] md:text-xs font-bold rounded-md transition-all', activeTab === 'code' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-black']"
+                  :class="['px-2 md:px-4 py-1 text-[10px] md:text-xs font-bold rounded-md transition-all', activeTab === 'code' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500']"
                 >代码</button>
               </div>
 
-              <div class="h-6 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
-
+              <!-- Copy button -->
               <button
                 @click="copyHtml"
-                class="px-2 md:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[10px] md:text-xs font-bold rounded-md transition-all flex items-center space-x-1 shadow-sm h-8"
+                class="px-2 md:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[10px] md:text-xs font-bold rounded-md transition-all flex items-center gap-1 shadow-sm h-8"
               >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                 <span class="hidden sm:inline">{{ copyButtonText.replace('HTML代码', '') }}</span>
-                <span class="sm:hidden">复制</span>
+              </button>
+
+              <!-- Share button - hidden on very small screens -->
+              <button
+                @click="copyShareLink"
+                class="hidden sm:flex px-2 py-1.5 bg-white border border-blue-200 hover:border-blue-400 text-blue-600 text-[10px] font-bold rounded-md items-center gap-1 shadow-sm h-8"
+                title="分享"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
               </button>
             </div>
           </div>
@@ -105,7 +98,7 @@
         />
 
         <!-- 主体区域 - 预览框居中，两侧留白 -->
-        <div class="flex-1 flex flex-col relative overflow-hidden bg-gray-100">
+        <div class="flex-1 flex flex-col relative overflow-hidden bg-gray-100 pb-16 md:pb-0">
           <!-- 预览模式: 手机框居中，两侧留空 -->
           <div v-show="activeTab === 'preview'" class="flex-1 flex justify-center items-stretch overflow-hidden p-0 md:p-4 bg-gray-100">
             <div class="w-full md:w-[390px] h-full flex flex-col overflow-hidden shrink-0 shadow-2xl bg-white md:rounded-2xl border-x md:border border-gray-200">
@@ -137,10 +130,9 @@
                 <iframe ref="previewFrame" :srcdoc="previewHtml" class="w-full h-full border-0 absolute inset-0" title="版式预览" @load="setupIframeClickHandler"></iframe>
               </div>
               
-              <!-- 底部操作栏 - 在手机框内部 -->
-              <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3">
+              <!-- 底部操作栏 - desktop only inside frame -->
+              <div class="hidden md:block flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3">
                 <div class="flex items-center justify-between gap-4">
-                  <!-- 上一步按钮 -->
                   <button
                     @click="goToPreviousStep"
                     class="flex-1 h-11 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-black text-sm font-medium rounded-xl transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-1"
@@ -148,8 +140,6 @@
                     <span>←</span>
                     <span>上一步</span>
                   </button>
-                  
-                  <!-- 创建微信草稿按钮 -->
                   <button
                     @click="openDraftModal"
                     class="flex-[2] h-11 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-[0.98]"
@@ -174,6 +164,30 @@
               <div class="bg-gray-900 text-gray-100 rounded-2xl p-6 md:p-8 font-mono text-xs md:text-sm break-all leading-relaxed shadow-2xl border border-white/5 select-all">{{ finalHtml }}</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Mobile fixed bottom bar - outside phone frame -->
+      <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 safe-area-bottom">
+        <div class="flex items-center gap-3">
+          <button
+            @click="goToPreviousStep"
+            class="flex-1 h-11 bg-white border border-gray-200 active:bg-gray-50 text-black text-sm font-medium rounded-xl shadow-sm flex items-center justify-center gap-1"
+          >
+            <span>← 上一步</span>
+          </button>
+          <button
+            @click="copyShareLink"
+            class="h-11 px-4 bg-white border border-blue-200 active:border-blue-400 text-blue-600 text-sm font-medium rounded-xl shadow-sm flex items-center justify-center"
+          >
+            分享
+          </button>
+          <button
+            @click="openDraftModal"
+            class="flex-[2] h-11 bg-gradient-to-r from-blue-500 to-blue-600 active:from-blue-600 active:to-blue-700 text-white text-sm font-bold rounded-xl shadow-md flex items-center justify-center gap-1"
+          >
+            创建草稿 →
+          </button>
         </div>
       </div>
     </template>
@@ -408,6 +422,10 @@ const handleCoverUpload = async (file: File | null) => {
 // 计算属性
 const contentBlocks = computed(() => appStore.contentBlocks)
 const isMobile = computed(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false))
+// On actual mobile, disable phone frame simulation - user IS on a phone
+if (typeof window !== 'undefined' && window.innerWidth < 768) {
+  showMobileFrame.value = false
+}
 const wechatImages = computed(() => appStore.wechatImages)
 const hasWechatImages = computed(() => wechatImages.value.length > 0)
 const successfulWechatImages = computed(() => 

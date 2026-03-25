@@ -1195,6 +1195,47 @@ function goToPublish() {
   border-color: #93c5fd;
   box-shadow: 0 0 0 1px rgba(59,130,246,0.08);
 }
+/* ManifoldGroup - shared container with visible border */
+.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
+  border: 2px solid #c4b5fd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: rgba(139,92,246,0.03);
+  position: relative;
+}
+.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]:hover {
+  border-color: #a78bfa;
+  background: rgba(139,92,246,0.05);
+}
+.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"].focus-active {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.15);
+}
+/* Children inside group share the container - reduce their individual borders */
+.manifold-editor-content .ProseMirror [data-node-type="manifold-group"] > * {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin-bottom: 2px;
+  transition: border-color 0.15s;
+}
+.manifold-editor-content .ProseMirror [data-node-type="manifold-group"] > *:hover {
+  border-color: #ddd6fe;
+}
+/* Group label */
+.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
+  content: '组合';
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  font-size: 10px;
+  color: #8b5cf6;
+  background: white;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-weight: 500;
+  line-height: 1.4;
+}
 .manifold-editor-content .ProseMirror h1 {
   font-family: var(--preset-title-font, inherit);
   font-size: var(--preset-title-size, 1.5rem);
@@ -1407,6 +1448,24 @@ function goToPublish() {
 }
 .manifold-editor-content.focus-mode .ProseMirror > *:hover {
   opacity: 0.8;
+}
+/* Dark theme - group */
+.editor-dark .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
+  border-color: #6d28d9;
+  background: rgba(139,92,246,0.08);
+}
+.editor-dark .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
+  color: #a78bfa;
+  background: #1e1e2e;
+}
+/* Sepia theme - group */
+.editor-sepia .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
+  border-color: #a78bfa;
+  background: rgba(139,92,246,0.04);
+}
+.editor-sepia .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
+  color: #7c3aed;
+  background: #f8f0e3;
 }
 /* Dark theme */
 .editor-dark .manifold-editor-content .ProseMirror {
