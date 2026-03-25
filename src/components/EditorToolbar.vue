@@ -30,8 +30,6 @@ function addRecentColor(color: string) {
 
 const canUndo = computed(() => props.editor?.can().undo() ?? false)
 const canRedo = computed(() => props.editor?.can().redo() ?? false)
-const fontSizes = ['12', '13', '14', '15', '16', '18', '20', '24']
-const lineHeights = ['1', '1.25', '1.5', '1.75', '2']
 
 function isActive(name: string, attrs?: Record<string, unknown>): boolean {
   return props.editor?.isActive(name, attrs) ?? false
@@ -41,15 +39,70 @@ function run(fn: () => boolean | void) {
   if (props.editor) fn()
 }
 
-function getCurrentRole(): string {
-  if (!props.editor) return 'body'
-  const { $from } = props.editor.state.selection
-  return $from.parent.attrs?.blockRole || 'body'
-}
+// --- Universal block type switcher ---
+type BlockType = 'body' | 'intro' | 'outro' | 'h1' | 'h2' | 'h3' | 'blockquote'
 
-function setBlockRole(role: string) {
+const blockTypeOptions: { value: BlockType; label: string }[] = [
+  { value: 'body', label: '正文' },
+  { value: 'intro', label: '引言' },
+  { value: 'outro', label: '结尾语' },
+  { value: 'h1', label: 'H1 大标题' },
+  { value: 'h2', label: 'H2 小标题' },
+  { value: 'h3', label: 'H3 段标题' },
+  { value: 'blockquote', label: '引用块' },
+]
+
+const currentBlockType = computed<BlockType>(() => {
+  if (!props.editor) return 'body'
+  if (isActive('manifoldHeading', { level: 1 })) return 'h1'
+  if (isActive('manifoldHeading', { level: 2 })) return 'h2'
+  if (isActive('manifoldHeading', { level: 3 })) return 'h3'
+  if (isActive('blockquote')) return 'blockquote'
+  if (isActive('paragraph')) {
+    const { $from } = props.editor.state.selection
+    const role = $from.parent.attrs?.blockRole || 'body'
+    if (role === 'intro') return 'intro'
+    if (role === 'outro') return 'outro'
+    return 'body'
+  }
+  return 'body'
+})
+
+function setBlockType(type: BlockType) {
   if (!props.editor) return
-  props.editor.chain().focus().updateAttributes('paragraph', { blockRole: role }).run()
+  const chain = props.editor.chain().focus()
+
+  switch (type) {
+    case 'h1':
+      chain.setNode('manifoldHeading', { level: 1 }).run()
+      break
+    case 'h2':
+      chain.setNode('manifoldHeading', { level: 2 }).run()
+      break
+    case 'h3':
+      chain.setNode('manifoldHeading', { level: 3 }).run()
+      break
+    case 'blockquote':
+      // If already in blockquote, this toggles it off; if not, wraps
+      if (isActive('blockquote')) {
+        chain.lift('blockquote').run()
+      } else {
+        // First ensure we're in a paragraph, then wrap
+        chain.setParagraph().run()
+        props.editor.chain().focus().toggleBlockquote().run()
+      }
+      break
+    case 'intro':
+      chain.setParagraph().updateAttributes('paragraph', { blockRole: 'intro' }).run()
+      break
+    case 'outro':
+      chain.setParagraph().updateAttributes('paragraph', { blockRole: 'outro' }).run()
+      break
+    case 'body':
+    default:
+      chain.setParagraph().updateAttributes('paragraph', { blockRole: 'body' }).run()
+      break
+  }
 }
 
 function triggerImageUpload() {
@@ -84,38 +137,6 @@ function setHighlight(color: string) {
   props.editor.chain().focus().toggleHighlight({ color }).run()
 }
 
-function setFontSize(size: string) {
-  if (!props.editor) return
-  props.editor.chain().focus().setFontSize(`${size}px`).run()
-}
-
-function indent() {
-  if (!props.editor) return
-  const { $from } = props.editor.state.selection
-  if ($from.parent.type.name === 'paragraph') {
-    const current = $from.parent.attrs.textIndent || 0
-    if (current < 4) {
-      props.editor.commands.updateAttributes('paragraph', { textIndent: current + 1 })
-    }
-  }
-}
-
-function outdent() {
-  if (!props.editor) return
-  const { $from } = props.editor.state.selection
-  if ($from.parent.type.name === 'paragraph') {
-    const current = $from.parent.attrs.textIndent || 0
-    if (current > 0) {
-      props.editor.commands.updateAttributes('paragraph', { textIndent: current - 1 })
-    }
-  }
-}
-
-function setLineHeight(value: string) {
-  if (!props.editor) return
-  props.editor.commands.updateAttributes('paragraph', { lineHeight: value })
-}
-
 function clearFormatting() {
   if (!props.editor) return
   props.editor.chain().focus().clearNodes().unsetAllMarks().run()
@@ -128,22 +149,35 @@ function toggleLink() {
 </script>
 
 <template>
-  <div v-if="editor" role="toolbar" aria-label="编辑器工具栏" class="flex items-center gap-1 px-4 py-2 border-b bg-white flex-wrap overflow-x-auto scrollbar-thin">
-    <!-- Text formatting -->
+  <div v-if="editor" role="toolbar" aria-label="编辑器工具栏" class="flex items-center gap-1 px-3 py-2 border-b bg-white flex-wrap overflow-x-auto scrollbar-thin">
+
+    <!-- Block type switcher (universal) -->
+    <select
+      class="text-xs border rounded px-1.5 h-8 text-gray-700 bg-white font-medium min-w-[80px]"
+      :value="currentBlockType"
+      @change="setBlockType(($event.target as HTMLSelectElement).value as BlockType)"
+      title="块类型"
+    >
+      <option v-for="opt in blockTypeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+    </select>
+
+    <span class="w-px h-5 bg-gray-300 mx-1" />
+
+    <!-- Text formatting: Bold, Italic, Underline -->
     <button
       class="toolbar-btn"
       :class="{ active: isActive('bold') }"
       @click="run(() => editor!.chain().focus().toggleBold().run())"
       title="加粗 (Ctrl+B)"
       aria-label="加粗"
-    >B</button>
+    ><strong>B</strong></button>
     <button
       class="toolbar-btn"
       :class="{ active: isActive('italic') }"
       @click="run(() => editor!.chain().focus().toggleItalic().run())"
       title="斜体 (Ctrl+I)"
       aria-label="斜体"
-    >I</button>
+    ><em>I</em></button>
     <button
       class="toolbar-btn"
       :class="{ active: isActive('underline') }"
@@ -151,35 +185,13 @@ function toggleLink() {
       title="下划线 (Ctrl+U)"
     ><span class="underline">U</span></button>
     <button
-      class="toolbar-btn"
-      :class="{ active: isActive('strike') }"
-      @click="run(() => editor!.chain().focus().toggleStrike().run())"
-      title="删除线 (Ctrl+Shift+S)"
-    ><span class="line-through">S</span></button>
-    <button
-      class="toolbar-btn text-[10px]"
-      :class="{ active: isActive('superscript') }"
-      @click="run(() => editor!.chain().focus().toggleSuperscript().run())"
-      title="上标 (Ctrl+.)"
-    >X<sup>2</sup></button>
-    <button
-      class="toolbar-btn text-[10px]"
-      :class="{ active: isActive('subscript') }"
-      @click="run(() => editor!.chain().focus().toggleSubscript().run())"
-      title="下标 (Ctrl+,)"
-    >X<sub>2</sub></button>
-    <button
-      class="toolbar-btn text-xs"
-      :class="{ active: isActive('code') }"
-      @click="run(() => editor!.chain().focus().toggleCode().run())"
-      title="行内代码 (Ctrl+E)"
-    ><span class="font-mono text-[10px] bg-gray-100 px-0.5 rounded">&lt;/&gt;</span></button>
-    <button
       class="toolbar-btn text-xs"
       :class="{ active: isActive('link') }"
       @click="toggleLink"
       title="链接 (Ctrl+K)"
     >&#x1F517;</button>
+
+    <span class="w-px h-5 bg-gray-300 mx-1" />
 
     <!-- Color picker -->
     <div class="relative group">
@@ -243,44 +255,21 @@ function toggleLink() {
       </div>
     </div>
 
-    <!-- 字号、行高、标题级别由排版样式预设统一控制，不在工具栏显示 -->
-
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
-    <!-- Block role (for paragraphs) -->
-    <select
-      v-if="isActive('paragraph')"
-      class="text-xs border rounded px-1 h-7 text-gray-600 bg-white"
-      :value="getCurrentRole()"
-      @change="setBlockRole(($event.target as HTMLSelectElement).value)"
-      title="段落角色"
-    >
-      <option value="body">正文</option>
-      <option value="intro">引言</option>
-      <option value="outro">结尾</option>
-    </select>
-
-    <span class="w-px h-5 bg-gray-300 mx-1" />
-
-    <!-- Lists & Blockquote -->
+    <!-- Lists -->
     <button
-      class="toolbar-btn"
+      class="toolbar-btn text-xs"
       :class="{ active: isActive('bulletList') }"
       @click="run(() => editor!.chain().focus().toggleBulletList().run())"
       title="无序列表"
     >UL</button>
     <button
-      class="toolbar-btn"
+      class="toolbar-btn text-xs"
       :class="{ active: isActive('orderedList') }"
       @click="run(() => editor!.chain().focus().toggleOrderedList().run())"
       title="有序列表"
     >OL</button>
-    <button
-      class="toolbar-btn text-xs"
-      :class="{ active: isActive('blockquote') }"
-      @click="run(() => editor!.chain().focus().toggleBlockquote().run())"
-      title="引用"
-    >&#x201C;</button>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
@@ -310,25 +299,12 @@ function toggleLink() {
       title="两端对齐"
     >&#x2630;</button>
 
-    <!-- 缩进由排版样式预设统一控制 -->
-
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
-    <!-- Insert items -->
+    <!-- Insert: HR, Image, SVG -->
     <HrStylePicker :editor="editor" />
-    <button class="toolbar-btn" @click="triggerImageUpload" title="插入图片">IMG</button>
-    <button class="toolbar-btn" @click="emit('open-svg-panel')" title="插入SVG模板">SVG</button>
-    <button
-      class="toolbar-btn text-xs"
-      @click="run(() => editor!.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())"
-      title="插入表格"
-    >TBL</button>
-    <button
-      class="toolbar-btn text-xs font-mono"
-      :class="{ active: isActive('codeBlock') }"
-      @click="run(() => editor!.chain().focus().toggleCodeBlock().run())"
-      title="代码块"
-    >{}</button>
+    <button class="toolbar-btn text-xs" @click="triggerImageUpload" title="插入图片">IMG</button>
+    <button class="toolbar-btn text-xs" @click="emit('open-svg-panel')" title="插入SVG模板">SVG</button>
     <input ref="imageInput" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
@@ -337,9 +313,6 @@ function toggleLink() {
     <button class="toolbar-btn" :class="{ 'opacity-30': !canUndo }" @click="run(() => editor!.chain().focus().undo().run())" title="撤销 (Ctrl+Z)">&#x21A9;</button>
     <button class="toolbar-btn" :class="{ 'opacity-30': !canRedo }" @click="run(() => editor!.chain().focus().redo().run())" title="重做 (Ctrl+Shift+Z)">&#x21AA;</button>
     <button class="toolbar-btn text-xs text-gray-400" @click="clearFormatting" title="清除格式">Tx</button>
-
-    <div class="flex-1" />
-    <span class="text-xs text-gray-400 select-none">Manifold Editor</span>
   </div>
 </template>
 
@@ -350,6 +323,17 @@ function toggleLink() {
 }
 .toolbar-btn.active {
   @apply bg-blue-100 text-blue-700;
+}
+/* Mobile: larger touch targets */
+@media (max-width: 768px) {
+  .toolbar-btn {
+    @apply w-9 h-9;
+  }
+}
+@media (pointer: coarse) {
+  .toolbar-btn {
+    @apply w-10 h-10;
+  }
 }
 .scrollbar-thin::-webkit-scrollbar {
   height: 2px;

@@ -877,7 +877,7 @@ function goToPublish() {
       >
         <FindReplace :editor="editor" :visible="findReplaceVisible" @close="findReplaceVisible = false" />
         <div
-          class="max-w-[680px] mx-auto py-8 px-6 min-h-full shadow-sm my-4 rounded transition-all"
+          class="max-w-[680px] mx-auto py-4 md:py-8 px-3 md:px-6 min-h-full shadow-sm my-1 md:my-4 rounded transition-all"
           :class="[
             isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : '',
             editorTheme === 'light' ? 'bg-white' : '',
@@ -1179,9 +1179,21 @@ function goToPublish() {
   outline: none;
   min-height: 400px;
 }
-/* Paragraph numbers - each top-level block needs relative positioning */
+/* Block boundaries - every top-level block has visible edges */
 .manifold-editor-content .ProseMirror > * {
   position: relative;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.manifold-editor-content .ProseMirror > *:hover {
+  border-color: #e5e7eb;
+}
+.manifold-editor-content .ProseMirror > .focus-active {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.08);
 }
 .manifold-editor-content .ProseMirror h1 {
   font-family: var(--preset-title-font, inherit);
@@ -1285,6 +1297,22 @@ function goToPublish() {
   height: auto;
   border-radius: 4px;
 }
+/* Inline images within paragraphs */
+.manifold-editor-content .ProseMirror img[data-inline-image] {
+  display: block;
+  margin: 8px auto;
+  max-width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.manifold-editor-content .ProseMirror img[data-inline-image]:hover {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+.manifold-editor-content .ProseMirror img[data-inline-image].ProseMirror-selectednode {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
 /* Table */
 .manifold-editor-content .ProseMirror table {
   border-collapse: collapse;
@@ -1369,13 +1397,16 @@ function goToPublish() {
   margin-bottom: 0.25rem;
   text-indent: 0;
 }
-/* Focus mode - dim non-active blocks */
+/* Focus mode - softer dim for non-active blocks (was 0.25, now 0.55 for touch usability) */
 .manifold-editor-content.focus-mode .ProseMirror > * {
-  opacity: 0.25;
+  opacity: 0.55;
   transition: opacity 0.2s ease;
 }
 .manifold-editor-content.focus-mode .ProseMirror > .focus-active {
   opacity: 1;
+}
+.manifold-editor-content.focus-mode .ProseMirror > *:hover {
+  opacity: 0.8;
 }
 /* Dark theme */
 .editor-dark .manifold-editor-content .ProseMirror {
@@ -1479,6 +1510,29 @@ function goToPublish() {
 }
 .editor-sepia .manifold-codeblock-content {
   color: #5c4b37;
+}
+/* Mobile / touch optimization */
+@media (max-width: 768px) {
+  .manifold-editor-content .ProseMirror > * {
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  .manifold-editor-content .ProseMirror > *:hover {
+    border-color: #d1d5db;
+  }
+}
+/* Touch devices: always show block boundaries subtly */
+@media (pointer: coarse) {
+  .manifold-editor-content .ProseMirror > * {
+    border-color: rgba(0,0,0,0.04);
+  }
+  .manifold-editor-content .ProseMirror > *:hover {
+    border-color: #d1d5db;
+  }
+  /* Disable harsh focus mode on touch by default */
+  .manifold-editor-content.focus-mode .ProseMirror > * {
+    opacity: 0.7;
+  }
 }
 /* Print stylesheet */
 @media print {

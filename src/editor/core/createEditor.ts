@@ -18,6 +18,7 @@ import { ManifoldHeading } from '../nodes/ManifoldHeading'
 import { ManifoldParagraph } from '../nodes/ManifoldParagraph'
 import { ManifoldImage } from '../nodes/ManifoldImage'
 import { ManifoldSvgBlock } from '../nodes/ManifoldSvgBlock'
+import { ManifoldInlineImage } from '../nodes/ManifoldInlineImage'
 import { ManifoldBlockquote } from '../nodes/ManifoldBlockquote'
 import { ManifoldCodeBlock } from '../nodes/ManifoldCodeBlock'
 import { SlashCommand } from '../extensions/SlashCommand'
@@ -83,6 +84,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       ManifoldParagraph,
       ManifoldImage,
       ManifoldSvgBlock,
+      ManifoldInlineImage,
       Placeholder.configure({
         placeholder: ({ node }) => {
           if (node.type.name === 'manifoldHeading') {
