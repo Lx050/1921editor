@@ -34,6 +34,7 @@ import { createTypewriterScroll } from '../extensions/TypewriterScroll'
 import { TextTransform } from '../extensions/TextTransform'
 import { Bookmarks } from '../extensions/Bookmarks'
 import { MoveBlock } from '../extensions/MoveBlock'
+import { GroupDrop } from '../extensions/GroupDrop'
 import { AutoPair } from '../extensions/AutoPair'
 import type { EditorDocument } from '@/types/editor'
 
@@ -133,6 +134,7 @@ export function createManifoldEditor(options: CreateEditorOptions = {}): Editor 
       TextTransform,
       Bookmarks,
       MoveBlock,
+      GroupDrop,
       AutoPair,
       SlashCommand,
     ],

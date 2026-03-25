@@ -1195,6 +1195,13 @@ function goToPublish() {
   border-color: #93c5fd;
   box-shadow: 0 0 0 1px rgba(59,130,246,0.08);
 }
+/* Drag-to-merge: target block "swallow" glow */
+.manifold-editor-content .ProseMirror > .merge-target-glow {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 4px 12px rgba(139,92,246,0.15) !important;
+  transform: scale(1.01);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
 /* ManifoldGroup - shared container with visible border */
 .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
   border: 2px solid #c4b5fd;
