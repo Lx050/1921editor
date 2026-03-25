@@ -8,9 +8,12 @@ const src = computed(() => props.node.attrs.src || '')
 const layout = computed(() => props.node.attrs.layout || 'full_width')
 const caption = computed(() => props.node.attrs.caption || '')
 const imageWidth = computed(() => props.node.attrs.width as number | null)
+const href = computed(() => props.node.attrs.href || '')
 
 const isEditing = ref(false)
 const captionInput = ref('')
+const isEditingLink = ref(false)
+const linkInput = ref('')
 const isResizing = ref(false)
 const resizeWidth = ref(0)
 const imgRef = ref<HTMLImageElement | null>(null)
@@ -36,6 +39,26 @@ function handleCaptionKeydown(e: KeyboardEvent) {
 
 function setLayout(newLayout: string) {
   props.updateAttributes({ layout: newLayout })
+}
+
+function startEditLink() {
+  linkInput.value = href.value
+  isEditingLink.value = true
+}
+
+function saveLink() {
+  props.updateAttributes({ href: linkInput.value.trim() })
+  isEditingLink.value = false
+}
+
+function removeLink() {
+  props.updateAttributes({ href: '' })
+  isEditingLink.value = false
+}
+
+function handleLinkKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter') { e.preventDefault(); saveLink() }
+  if (e.key === 'Escape') { e.preventDefault(); isEditingLink.value = false }
 }
 
 // --- Resize logic ---
@@ -199,6 +222,14 @@ const widthDisplay = computed(() => {
           />
         </div>
 
+        <!-- Link button -->
+        <button
+          class="px-1.5 py-1 bg-white/90 backdrop-blur rounded shadow-sm border border-gray-200 text-[10px] hover:bg-gray-100 transition-colors"
+          :class="href ? 'text-blue-600' : 'text-gray-600'"
+          @click="startEditLink"
+          title="设置链接"
+        >&#x1F517;</button>
+
         <!-- Delete button -->
         <button
           v-if="editor?.isEditable"
@@ -206,6 +237,43 @@ const widthDisplay = computed(() => {
           @click="deleteNode"
           title="Delete image"
         >x</button>
+      </div>
+
+      <!-- Link indicator (when link is set) -->
+      <div
+        v-if="href && !isEditingLink"
+        class="absolute bottom-2 left-2 right-2 bg-blue-50 border border-blue-200 rounded px-2 py-1 text-[10px] text-blue-600 truncate opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+        @click="startEditLink"
+        :title="href"
+      >
+        &#x1F517; {{ href }}
+      </div>
+
+      <!-- Link editor popup -->
+      <div
+        v-if="isEditingLink"
+        class="absolute bottom-2 left-2 right-2 bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-30"
+        @click.stop
+      >
+        <div class="text-[10px] text-gray-500 mb-1">图片链接</div>
+        <div class="flex items-center gap-1">
+          <input
+            v-model="linkInput"
+            class="flex-1 text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400"
+            placeholder="https://..."
+            @keydown="handleLinkKeydown"
+            autofocus
+          />
+          <button
+            class="text-[10px] px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            @click="saveLink"
+          >确定</button>
+          <button
+            v-if="href"
+            class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded hover:bg-red-100"
+            @click="removeLink"
+          >删除</button>
+        </div>
       </div>
     </div>
   </NodeViewWrapper>

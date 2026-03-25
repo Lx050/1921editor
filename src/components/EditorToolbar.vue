@@ -10,6 +10,7 @@ const emit = defineEmits<{
 }>()
 
 const imageInput = ref<HTMLInputElement | null>(null)
+const inlineImageInput = ref<HTMLInputElement | null>(null)
 const colorInput = ref<HTMLInputElement | null>(null)
 
 const presetColors = ['#000000', '#374151', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
@@ -109,6 +110,10 @@ function triggerImageUpload() {
   imageInput.value?.click()
 }
 
+function triggerInlineImageUpload() {
+  inlineImageInput.value?.click()
+}
+
 function handleImageUpload(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
@@ -117,6 +122,18 @@ function handleImageUpload(event: Event) {
   props.editor.chain().focus().insertContent({
     type: 'manifoldImage',
     attrs: { src: localUrl, caption: '', layout: 'full_width' },
+  }).run()
+  input.value = ''
+}
+
+function handleInlineImageUpload(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file || !props.editor) return
+  const localUrl = URL.createObjectURL(file)
+  props.editor.chain().focus().insertContent({
+    type: 'manifoldInlineImage',
+    attrs: { src: localUrl, width: '100%' },
   }).run()
   input.value = ''
 }
@@ -301,11 +318,24 @@ function toggleLink() {
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
-    <!-- Insert: HR, Image, SVG -->
+    <!-- Insert: HR, Image (block + inline), SVG -->
     <HrStylePicker :editor="editor" />
-    <button class="toolbar-btn text-xs" @click="triggerImageUpload" title="插入图片">IMG</button>
+    <div class="relative group">
+      <button class="toolbar-btn text-xs" title="插入图片">IMG</button>
+      <div class="hidden group-hover:flex absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg p-1 z-50 flex-col w-[120px]">
+        <button
+          class="text-left text-xs px-2 py-1.5 rounded hover:bg-gray-100 text-gray-700 whitespace-nowrap"
+          @mousedown.prevent="triggerImageUpload"
+        >图片块</button>
+        <button
+          class="text-left text-xs px-2 py-1.5 rounded hover:bg-gray-100 text-gray-700 whitespace-nowrap"
+          @mousedown.prevent="triggerInlineImageUpload"
+        >段内图片</button>
+      </div>
+    </div>
     <button class="toolbar-btn text-xs" @click="emit('open-svg-panel')" title="插入SVG模板">SVG</button>
     <input ref="imageInput" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
+    <input ref="inlineImageInput" type="file" accept="image/*" class="hidden" @change="handleInlineImageUpload" />
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 

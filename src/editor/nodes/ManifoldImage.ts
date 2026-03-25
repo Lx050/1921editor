@@ -14,6 +14,7 @@ export const ManifoldImage = Node.create({
       caption: { default: '' },
       layout: { default: 'full_width' },
       width: { default: null },
+      href: { default: '' },
     }
   },
 
@@ -27,9 +28,14 @@ export const ManifoldImage = Node.create({
     const src = HTMLAttributes.src || ''
     const caption = HTMLAttributes.caption || ''
     const width = HTMLAttributes.width
+    const href = HTMLAttributes.href || ''
     const imgStyle = width ? `max-width:100%;width:${width}px;height:auto;` : 'max-width:100%;height:auto;'
-    return ['figure', mergeAttributes({ 'data-node-type': 'manifold-image' }, HTMLAttributes),
-      ['img', { src, draggable: 'false', style: imgStyle }],
+    const imgTag: any = ['img', { src, draggable: 'false', style: imgStyle }]
+    const imgOrLink = href
+      ? ['a', { href, target: '_blank', rel: 'noopener noreferrer' }, imgTag]
+      : imgTag
+    return ['figure', mergeAttributes({ 'data-node-type': 'manifold-image' }, { ...HTMLAttributes, href: undefined }),
+      imgOrLink,
       ...(caption ? [['figcaption', { style: 'font-size:12px;color:#999;text-align:center;margin-top:4px;' }, caption]] : []),
     ]
   },

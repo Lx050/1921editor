@@ -2,10 +2,9 @@ import { Extension } from '@tiptap/vue-3'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 /**
- * DragHandle extension – v2.
- * Shows a block action bar (drag + move up/down + delete) on hover (desktop)
- * or tap (mobile/tablet). Positioned inside the block boundary for better
- * visibility and touch usability.
+ * DragHandle extension – v3.
+ * Compact action pill (drag + move up/down + delete) at the top-right corner
+ * of each block. Appears on hover (desktop) or tap (mobile/tablet).
  */
 export const DragHandle = Extension.create({
   name: 'dragHandle',
@@ -20,32 +19,35 @@ export const DragHandle = Extension.create({
       const bar = document.createElement('div')
       bar.className = 'manifold-block-bar'
       bar.style.cssText =
-        'position:absolute;left:0;right:0;top:-1px;height:28px;display:flex;align-items:center;gap:2px;' +
-        'padding:0 6px;opacity:0;transition:opacity 0.15s;z-index:20;pointer-events:none;user-select:none;' +
-        'background:linear-gradient(to bottom,rgba(249,250,251,0.95),rgba(249,250,251,0.7));' +
-        'border-radius:6px 6px 0 0;font-size:12px;color:#6b7280;'
+        'position:absolute;display:flex;align-items:center;gap:1px;' +
+        'padding:2px 4px;opacity:0;transition:opacity 0.15s;z-index:20;pointer-events:none;user-select:none;' +
+        'background:rgba(255,255,255,0.95);border:1px solid #e5e7eb;' +
+        'border-radius:6px;font-size:12px;color:#6b7280;box-shadow:0 1px 3px rgba(0,0,0,0.08);'
 
       // Drag grip
       const grip = document.createElement('span')
       grip.setAttribute('draggable', 'true')
-      grip.style.cssText = 'cursor:grab;padding:2px 4px;border-radius:3px;font-size:14px;line-height:1;'
+      grip.style.cssText = 'cursor:grab;padding:2px 4px;border-radius:3px;font-size:13px;line-height:1;'
       grip.textContent = '\u2630'
       grip.title = '拖拽移动'
-      grip.addEventListener('mouseenter', () => { grip.style.background = '#e5e7eb' })
+      grip.addEventListener('mouseenter', () => { grip.style.background = '#f3f4f6' })
       grip.addEventListener('mouseleave', () => { grip.style.background = 'transparent' })
 
       // Move up
       const moveUp = createBtn('\u2191', '上移 (Alt+Up)', 'moveUp')
       // Move down
       const moveDown = createBtn('\u2193', '下移 (Alt+Down)', 'moveDown')
+      // Separator
+      const sep = document.createElement('span')
+      sep.style.cssText = 'width:1px;height:16px;background:#e5e7eb;margin:0 2px;'
       // Delete
       const del = createBtn('\u2715', '删除块', 'delete')
-      del.style.marginLeft = 'auto'
       del.style.color = '#ef4444'
 
       bar.appendChild(grip)
       bar.appendChild(moveUp)
       bar.appendChild(moveDown)
+      bar.appendChild(sep)
       bar.appendChild(del)
 
       // Drag start on grip
@@ -71,10 +73,10 @@ export const DragHandle = Extension.create({
       btn.title = title
       btn.dataset.action = action
       btn.style.cssText =
-        'cursor:pointer;border:none;background:transparent;padding:2px 6px;border-radius:3px;' +
-        'font-size:13px;line-height:1;color:#6b7280;min-width:28px;min-height:28px;' +
+        'cursor:pointer;border:none;background:transparent;padding:2px 5px;border-radius:3px;' +
+        'font-size:13px;line-height:1;color:#6b7280;min-width:24px;min-height:24px;' +
         'display:flex;align-items:center;justify-content:center;'
-      btn.addEventListener('mouseenter', () => { btn.style.background = '#e5e7eb' })
+      btn.addEventListener('mouseenter', () => { btn.style.background = '#f3f4f6' })
       btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent' })
       return btn
     }
@@ -96,6 +98,23 @@ export const DragHandle = Extension.create({
         }
         currentNodePos = null
       }, delay)
+    }
+
+    function positionBar(view: any, nodePos: number) {
+      const domNode = view.nodeDOM(nodePos) as HTMLElement
+      if (!domNode || !barEl) return false
+
+      const editorRect = view.dom.getBoundingClientRect()
+      const nodeRect = domNode.getBoundingClientRect()
+
+      // Position at top-right corner of the block, just inside the boundary
+      const top = nodeRect.top - editorRect.top - 2
+      const right = editorRect.right - nodeRect.right + 4
+      barEl.style.top = `${top}px`
+      barEl.style.right = `${right}px`
+      barEl.style.left = 'auto'
+      barEl.style.width = 'auto'
+      return true
     }
 
     return [
@@ -124,12 +143,9 @@ export const DragHandle = Extension.create({
             if (!node) return
 
             if (action === 'moveUp') {
-              // Find previous sibling
               if (currentNodePos === 0) return
               const $pos = doc.resolve(currentNodePos)
               if ($pos.index(0) === 0) return
-              const prevNodePos = $pos.before(1) - (doc.nodeAt($pos.before(1) - 1) ? 0 : 0)
-              // Use simpler approach: delete node, insert before previous
               const prevIndex = $pos.index(0) - 1
               let targetPos = 0
               doc.forEach((n, offset, index) => {
@@ -141,15 +157,12 @@ export const DragHandle = Extension.create({
               view.dispatch(tr)
             } else if (action === 'moveDown') {
               const $pos = doc.resolve(currentNodePos)
-              const parentChildCount = doc.childCount
-              if ($pos.index(0) >= parentChildCount - 1) return
-              // Find next sibling
+              if ($pos.index(0) >= doc.childCount - 1) return
               const nextPos = currentNodePos + node.nodeSize
               const nextNode = doc.nodeAt(nextPos)
               if (!nextNode) return
               const tr = view.state.tr
               tr.delete(currentNodePos, currentNodePos + node.nodeSize)
-              // After deletion, next node shifted
               const insertAt = currentNodePos + nextNode.nodeSize
               tr.insert(Math.min(insertAt, tr.doc.content.size), node)
               view.dispatch(tr)
@@ -167,7 +180,7 @@ export const DragHandle = Extension.create({
           })
           barEl.addEventListener('mouseleave', () => { hideBar(300) })
 
-          // Mouse move over editor: find top-level block, position bar
+          // Mouse move over editor
           const handleMouseMove = (e: MouseEvent) => {
             const pos = view.posAtCoords({ left: e.clientX, top: e.clientY })
             if (!pos) { hideBar(); return }
@@ -179,17 +192,9 @@ export const DragHandle = Extension.create({
             const node = view.state.doc.nodeAt(nodePos)
             if (!node || !node.isBlock) { hideBar(); return }
 
-            // Position bar at top of the block
-            const domNode = view.nodeDOM(nodePos) as HTMLElement
-            if (!domNode || !barEl) { hideBar(); return }
-
-            const editorRect = view.dom.getBoundingClientRect()
-            const nodeRect = domNode.getBoundingClientRect()
-
-            barEl.style.top = `${nodeRect.top - editorRect.top}px`
-            barEl.style.width = `${nodeRect.width}px`
-            barEl.style.left = `${nodeRect.left - editorRect.left}px`
-            showBar(nodePos)
+            if (positionBar(view, nodePos)) {
+              showBar(nodePos)
+            }
           }
 
           // Touch: show bar on touchstart
@@ -206,18 +211,10 @@ export const DragHandle = Extension.create({
             const node = view.state.doc.nodeAt(nodePos)
             if (!node || !node.isBlock) return
 
-            const domNode = view.nodeDOM(nodePos) as HTMLElement
-            if (!domNode || !barEl) return
-
-            const editorRect = view.dom.getBoundingClientRect()
-            const nodeRect = domNode.getBoundingClientRect()
-
-            barEl.style.top = `${nodeRect.top - editorRect.top}px`
-            barEl.style.width = `${nodeRect.width}px`
-            barEl.style.left = `${nodeRect.left - editorRect.left}px`
-            showBar(nodePos)
-            // Auto-hide after 4s on touch
-            hideBar(4000)
+            if (positionBar(view, nodePos)) {
+              showBar(nodePos)
+              hideBar(4000)
+            }
           }
 
           view.dom.addEventListener('mousemove', handleMouseMove)
