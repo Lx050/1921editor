@@ -120,13 +120,17 @@ export const DragHandle = Extension.create({
       const editorRect = view.dom.getBoundingClientRect()
       const nodeRect = domNode.getBoundingClientRect()
 
-      // Position at top-right corner of the block, just inside the boundary
-      const top = nodeRect.top - editorRect.top - 2
-      const right = editorRect.right - nodeRect.right + 4
+      // Position centered on the top border of the block (straddles the border line)
+      const barHeight = 26 // approximate height of the bar
+      const top = nodeRect.top - editorRect.top - (barHeight / 2)
+      // Center horizontally within the block
+      const blockLeft = nodeRect.left - editorRect.left
+      const blockWidth = nodeRect.width
       barEl.style.top = `${top}px`
-      barEl.style.right = `${right}px`
-      barEl.style.left = 'auto'
-      barEl.style.width = 'auto'
+      barEl.style.left = `${blockLeft}px`
+      barEl.style.right = 'auto'
+      barEl.style.width = `${blockWidth}px`
+      barEl.style.justifyContent = 'center'
       return true
     }
 
