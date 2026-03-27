@@ -27,6 +27,7 @@ export default defineConfig({
   // 预加载关键资源
   define: {
     __VUE_OPTIONS_API__: false, // 禁用 Vue Options API 以减小包体积
+    __AI_GATEWAY_KEY__: JSON.stringify(process.env.AI_GATEWAY_API_KEY || ''),
   },
   server: {
     port: 1921,

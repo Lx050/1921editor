@@ -15,6 +15,9 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+// Vite define injections
+declare const __AI_GATEWAY_KEY__: string
+
 // 扩展环境变量类型
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'

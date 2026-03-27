@@ -25,6 +25,9 @@ import RecoveryDialog from '../components/RecoveryDialog.vue'
 import EmojiPicker from '../components/EmojiPicker.vue'
 import VersionSnapshots from '../components/VersionSnapshots.vue'
 import EditorToast from '../components/EditorToast.vue'
+import { generateAndUpload, buildPromptFromContext } from '../utils/aiImageService'
+import { getSvgTemplateById } from '../styles/svgTemplates'
+import { ElMessage } from 'element-plus'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import { serializeToMarkdown } from '../editor/serializers/markdownSerializer'
 import { copyRichText, copyToClipboard } from '../utils/clipboard'
@@ -68,8 +71,26 @@ function showToast(message: string, type: 'info' | 'success' | 'warning' | 'erro
 const popoverVisible = ref(false)
 const popoverPosition = ref({ x: 0, y: 0 })
 const popoverSlotId = ref('')
+const popoverSlotLabel = ref('')
 const popoverNodePos = ref<number | null>(null)
 const popoverCurrentData = ref<ImageSlotData | null>(null)
+const popoverContextText = ref('')
+
+// AI batch fill state
+const aiFilling = ref(false)
+const aiFillProgress = ref({ total: 0, done: 0 })
+
+function getContextAroundNode(nodePos: number): string {
+  if (!editor.value) return ''
+  const doc = editor.value.state.doc
+  const texts: string[] = []
+  doc.forEach((node, offset) => {
+    if (Math.abs(offset - nodePos) < 500 && node.textContent) {
+      texts.push(node.textContent)
+    }
+  })
+  return texts.join('\n').slice(0, 500)
+}
 
 const shortcutHelpVisible = ref(false)
 const isDragOver = ref(false)
@@ -311,6 +332,7 @@ function handleCanvasClick(event: MouseEvent) {
 
   const rect = slotEl.getBoundingClientRect()
   popoverSlotId.value = slotId
+  popoverSlotLabel.value = slotEl.getAttribute('aria-label') || slotId
   popoverPosition.value = { x: rect.left + rect.width / 2, y: rect.bottom + 8 }
   popoverVisible.value = true
 
@@ -318,6 +340,7 @@ function handleCanvasClick(event: MouseEvent) {
     const view = editor.value.view
     const pos = view.posAtDOM(svgBlockEl, 0)
     popoverNodePos.value = pos > 0 ? pos - 1 : 0
+    popoverContextText.value = getContextAroundNode(popoverNodePos.value)
 
     const node = editor.value.state.doc.nodeAt(popoverNodePos.value)
     if (node) {
@@ -327,6 +350,74 @@ function handleCanvasClick(event: MouseEvent) {
   }
 
   event.stopPropagation()
+}
+
+async function aiAutoFillSlots() {
+  if (!editor.value || aiFilling.value) return
+  aiFilling.value = true
+
+  const doc = editor.value.state.doc
+  const emptySlots: Array<{ nodePos: number; slotId: string; label: string; contextText: string }> = []
+
+  doc.forEach((node, offset) => {
+    if (node.type.name === 'manifoldSvgBlock') {
+      const slots = node.attrs.imageSlots || {}
+      const templateId = node.attrs.templateId
+      const tpl = templateId ? getSvgTemplateById(templateId) : null
+      const slotDefs = (tpl as any)?.imageSlots || []
+
+      for (const slotDef of slotDefs) {
+        if (!slots[slotDef.id] || !slots[slotDef.id]?.url) {
+          emptySlots.push({
+            nodePos: offset,
+            slotId: slotDef.id,
+            label: slotDef.label || slotDef.id,
+            contextText: getContextAroundNode(offset),
+          })
+        }
+      }
+    }
+  })
+
+  if (emptySlots.length === 0) {
+    ElMessage.info('所有SVG图片槽位已填充')
+    aiFilling.value = false
+    return
+  }
+
+  aiFillProgress.value = { total: emptySlots.length, done: 0 }
+  ElMessage.info(`开始AI生图，共 ${emptySlots.length} 个槽位...`)
+
+  for (const slot of emptySlots) {
+    try {
+      const prompt = buildPromptFromContext(slot.contextText, slot.label)
+      const result = await generateAndUpload(prompt)
+
+      const node = editor.value!.state.doc.nodeAt(slot.nodePos)
+      if (node && node.type.name === 'manifoldSvgBlock') {
+        const newSlots = { ...(node.attrs.imageSlots || {}) }
+        newSlots[slot.slotId] = { url: result.proxyUrl, mediaId: result.mediaId, name: result.prompt.slice(0, 20) }
+        const tr = editor.value!.state.tr
+        tr.setNodeMarkup(slot.nodePos, undefined, { ...node.attrs, imageSlots: newSlots })
+        editor.value!.view.dispatch(tr)
+      }
+
+      appStore.addWechatImage({
+        id: result.mediaId || `ai-${Date.now()}`,
+        mediaId: result.mediaId,
+        url: result.url,
+        proxyUrl: result.proxyUrl,
+        name: `AI-${slot.label}`,
+        uploadedAt: new Date().toISOString()
+      })
+    } catch (err: any) {
+      console.error(`AI fill failed for slot ${slot.slotId}:`, err)
+    }
+    aiFillProgress.value.done++
+  }
+
+  aiFilling.value = false
+  ElMessage.success(`AI已填充 ${aiFillProgress.value.done}/${aiFillProgress.value.total} 个图片槽位`)
 }
 
 function handleOpenSvgPanel() {
@@ -840,7 +931,7 @@ function goToPublish() {
     class="flex flex-col h-full w-full bg-gray-50 transition-all"
     :class="isFullscreen ? 'fixed inset-0 z-[100]' : ''"
   >
-    <EditorToolbar :editor="editor" @open-svg-panel="handleOpenSvgPanel" @edit-link="openLinkEditor" />
+    <EditorToolbar :editor="editor" :ai-filling="aiFilling" @open-svg-panel="handleOpenSvgPanel" @edit-link="openLinkEditor" @ai-fill-slots="aiAutoFillSlots" />
     <!-- Reading progress bar -->
     <div v-if="scrollProgress > 0" class="h-0.5 bg-gray-100 relative">
       <div class="h-full bg-blue-400 transition-all duration-150" :style="{ width: scrollProgress + '%' }" />
@@ -1120,7 +1211,9 @@ function goToPublish() {
       :visible="popoverVisible"
       :position="popoverPosition"
       :slot-id="popoverSlotId"
+      :slot-label="popoverSlotLabel"
       :current-data="popoverCurrentData"
+      :context-text="popoverContextText"
       @select="handleSlotImageSelect"
       @close="popoverVisible = false"
     />

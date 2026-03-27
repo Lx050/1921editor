@@ -3,10 +3,11 @@ import { ref, computed } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 import HrStylePicker from './HrStylePicker.vue'
 
-const props = defineProps<{ editor: Editor | null }>()
+const props = defineProps<{ editor: Editor | null; aiFilling?: boolean }>()
 const emit = defineEmits<{
   (e: 'open-svg-panel'): void
   (e: 'edit-link'): void
+  (e: 'ai-fill-slots'): void
 }>()
 
 const imageInput = ref<HTMLInputElement | null>(null)
@@ -336,6 +337,16 @@ function toggleLink() {
     <button class="toolbar-btn text-xs" @click="emit('open-svg-panel')" title="插入SVG模板">SVG</button>
     <input ref="imageInput" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
     <input ref="inlineImageInput" type="file" accept="image/*" class="hidden" @change="handleInlineImageUpload" />
+
+    <span class="w-px h-5 bg-gray-300 mx-1" />
+
+    <!-- AI Image Generation -->
+    <button
+      class="toolbar-btn text-xs font-medium"
+      :class="aiFilling ? 'bg-purple-100 text-purple-600 animate-pulse' : 'text-purple-500 hover:bg-purple-50'"
+      @click="emit('ai-fill-slots')"
+      :title="aiFilling ? 'AI生图中...' : 'AI自动填充SVG图片槽位'"
+    >AI</button>
 
     <span class="w-px h-5 bg-gray-300 mx-1" />
 
