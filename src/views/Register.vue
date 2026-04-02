@@ -26,7 +26,7 @@
             <span class="text-white font-bold text-xl" style="font-family: var(--font-display)">B</span>
           </div>
           <h1 class="text-xl font-bold text-black mb-0.5">注册账号</h1>
-          <p class="text-gray-500 text-xs">Professional Layout Engine</p>
+          <p class="text-gray-500 text-xs">个人排版助手</p>
         </div>
 
         <!-- 注册方式选择 -->
@@ -106,7 +106,7 @@
 
           <!-- 加入组织 -->
           <div v-if="registerMode === 'join'">
-            <label class="block text-sm font-medium text-black mb-1.5">企业邀请码</label>
+            <label class="block text-sm font-medium text-black mb-1.5">邀请码</label>
             <input
               v-model="formData.inviteCode"
               type="text"
@@ -115,7 +115,7 @@
               maxlength="64"
               class="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-black placeholder:text-gray-500"
             />
-            <p class="mt-1 text-xs text-gray-500">请联系您的组织管理员获取邀请码</p>
+            <p class="mt-1 text-xs text-gray-500">请联系好友获取邀请码</p>
           </div>
 
           <!-- 创建新组织 -->

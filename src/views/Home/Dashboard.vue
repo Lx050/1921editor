@@ -17,7 +17,7 @@
             </div>
             <div>
               <p class="text-xs text-gray-500">
-                {{ userStore.userInfo?.displayName || userStore.userInfo?.name || '创作者' }} · {{ userStore.currentTenant?.name || '默认组织' }}
+                {{ userStore.userInfo?.displayName || userStore.userInfo?.name || '创作者' }} · {{ userStore.currentTenant?.name || '个人空间' }}
               </p>
             </div>
           </div>
@@ -75,9 +75,9 @@
                   v-if="showSettings"
                   class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
                 >
-                  <!-- 组织管理 -->
+                  <!-- 空间管理 -->
                   <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    组织管理
+                    空间管理
                   </div>
                   <button
                     @click="router.push('/tenant-select')"
@@ -86,7 +86,7 @@
                     <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                     </svg>
-                    切换组织
+                    切换空间
                   </button>
                   <button
                     @click="router.push('/settings/tenant')"

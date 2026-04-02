@@ -25,11 +25,10 @@
             </div>
             <div class="hidden sm:block">
               <h1 class="text-sm md:text-lg font-bold text-gray-900 leading-tight" style="font-family: var(--font-display)">
-                版式装配引擎
+                我的排版助手
               </h1>
               <div class="flex items-center space-x-2">
-                <span class="text-[8px] md:text-[10px] tracking-widest text-blue-600 font-bold uppercase">Professional Edition</span>
-                <span class="text-[8px] md:text-[10px] text-gray-400">V1.0</span>
+                <span class="text-[8px] md:text-[10px] tracking-widest text-blue-600 font-bold">个人创作工具</span>
               </div>
             </div>
           </div>

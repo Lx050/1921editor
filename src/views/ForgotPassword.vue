@@ -26,7 +26,7 @@
             <span class="text-white font-bold text-xl" style="font-family: var(--font-display)">B</span>
           </div>
           <h1 class="text-xl font-bold text-black mb-0.5">忘记密码</h1>
-          <p class="text-gray-500 text-xs">Professional Layout Engine</p>
+          <p class="text-gray-500 text-xs">个人排版助手</p>
         </div>
 
         <!-- 表单 -->
