@@ -114,6 +114,13 @@
     <main class="flex-1 flex flex-col min-h-0 relative">
       <router-view />
     </main>
+
+    <!-- ICP 备案号 -->
+    <footer v-if="showFooter" class="flex-none py-3 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" class="hover:text-gray-600 transition-colors">
+        陕ICP备2025074122号
+      </a>
+    </footer>
   </div>
 </template>
 
@@ -127,6 +134,12 @@ import Toast from './components/Toast.vue'
 const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
+
+// 是否显示底部备案号
+const showFooter = computed(() => {
+  const footerPages = ['Landing', 'Home', 'Login', 'Register', 'ForgotPassword', 'VerifyEmail']
+  return footerPages.includes(route.name as string) || !route.name
+})
 
 // 是否显示 Header
 const showHeader = computed(() => {
