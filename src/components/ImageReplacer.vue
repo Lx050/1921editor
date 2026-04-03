@@ -77,13 +77,13 @@
         />
       </div>
 
-      <!-- 团队名称 (三下乡模式) -->
+      <!-- 项目名称 (三下乡模式) -->
       <div v-if="configStore.mode === 'three_rural'" class="space-y-1">
-        <label class="block text-xs font-semibold text-gray-700">团队名称</label>
-        <input 
+        <label class="block text-xs font-semibold text-gray-700">项目名称</label>
+        <input
           v-model="appStore.teamName"
           type="text"
-          placeholder="请输入团队名称"
+          placeholder="请输入项目名称"
           class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
         />
       </div>

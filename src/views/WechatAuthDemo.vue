@@ -16,7 +16,7 @@
         <h4>1. 申请微信开放平台</h4>
         <p>首先需要在 <a href="https://open.weixin.qq.com/" target="_blank">微信开放平台</a> 申请成为开发者，创建第三方平台应用。</p>
         <ul>
-          <li>需要企业认证（300元/年）</li>
+          <li>需要完成开发者认证</li>
           <li>创建第三方平台应用</li>
           <li>获取 component_appid 和 component_appsecret</li>
           <li>配置授权事件接收URL</li>

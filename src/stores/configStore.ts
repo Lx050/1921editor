@@ -409,7 +409,7 @@ export const useConfigStore = defineStore('config', () => {
 	const setMode = (newMode: WorkMode) => {
 		mode.value = newMode
 
-		// 优先使用组织级自定义模板，无则回退到默认值
+		// 优先使用空间级自定义模板，无则回退到默认值
 		let orgHeader: string | null = null
 		let orgFooter: string | null = null
 		try {

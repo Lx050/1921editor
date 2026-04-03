@@ -91,7 +91,7 @@
               />
             </div>
             <div v-if="configStore.mode === 'three_rural'">
-              <label class="block text-xs font-medium text-gray-500 mb-1.5">团队名称</label>
+              <label class="block text-xs font-medium text-gray-500 mb-1.5">项目名称</label>
               <input
                 v-model="appStore.teamName"
                 type="text"
@@ -413,7 +413,7 @@ const processDocxFile = async (file) => {
     // 将 HTML 转换为我们需要的文本格式
     const text = convertHtmlToCustomFormat(html)
 
-    // V4: 从文本中提取元数据（团队名称、来源公众号等）
+    // V4: 从文本中提取元数据（项目名称、来源公众号等）
     extractMetadataFromText(text)
 
     // 检查是否全屏乱码
@@ -453,12 +453,12 @@ const extractMetadataFromText = (text) => {
   
   // 提取模式：
   // 1. 队伍名称：xxx  或  队伍名称:xxx
-  // 2. 团队名称：xxx
+  // 2. 项目名称：xxx
   // 3. 来源：xxx  或  来源:xxx
   // 4. 文案：xxx  或  图文来源：xxx
   
   const patterns = {
-    // 三下乡模式 - 团队名称
+    // 三下乡模式 - 项目名称
     teamName: [
       /队伍名称[：:]\s*[""]?([^"""\n]+)[""]?/,
       /团队名称[：:]\s*[""]?([^"""\n]+)[""]?/,
@@ -481,12 +481,12 @@ const extractMetadataFromText = (text) => {
     ]
   }
   
-  // 提取团队名称
+  // 提取项目名称
   for (const pattern of patterns.teamName) {
     const match = text.match(pattern)
     if (match && match[1]) {
       const teamName = match[1].trim()
-      console.log('[Step1] 解析到团队名称:', teamName)
+      console.log('[Step1] 解析到项目名称:', teamName)
       appStore.teamName = `"${teamName}"社会实践队`
       break
     }

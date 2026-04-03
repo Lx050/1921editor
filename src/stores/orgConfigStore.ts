@@ -1,7 +1,7 @@
 /**
- * 组织级模板配置 Store
- * 管理组织的首尾图、字体、字号等全局样式预设
- * 所有同组织用户共享同一套配置
+ * 空间级模板配置 Store
+ * 管理空间的首尾图、字体、字号等全局样式预设
+ * 所有同空间用户共享同一套配置
  *
  * 存储策略：
  * - 读取优先级：API > localStorage > 默认值
@@ -10,7 +10,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-/** 组织样式预设 */
+/** 空间样式预设 */
 export interface OrgStylePreset {
 	/** 小标题字体 */
 	titleFontFamily: string
@@ -34,13 +34,13 @@ export interface OrgStylePreset {
 	introFontSize: number
 }
 
-/** 组织模板配置（完整） */
+/** 空间模板配置（完整） */
 export interface OrgTemplateConfig {
 	/** 配置版本号 */
 	version: number
 	/** 最后更新时间 */
 	updatedAt: string
-	/** 组织名称（用于 footer 显示） */
+	/** 空间名称（用于 footer 显示） */
 	orgName: string
 	/** 各模式的首图 HTML */
 	headers: Record<string, string>
@@ -162,7 +162,7 @@ export const useOrgConfigStore = defineStore('orgConfig', () => {
 		saveToStorage()
 	}
 
-	/** 设置组织名称 */
+	/** 设置空间名称 */
 	function setOrgName(name: string) {
 		config.value.orgName = name
 		saveToStorage()

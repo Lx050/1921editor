@@ -11,7 +11,7 @@ export interface Article {
     images: any[] | null
     wechatResult: any | null
     ownerId: string
-    tenantId?: string  // 🏢 多租户支持
+    tenantId?: string  // 🏢 多空间支持
     createdAt: string
     updatedAt: string
 }

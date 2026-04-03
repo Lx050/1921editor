@@ -142,8 +142,8 @@ const wordCount = computed(() => {
 
         <!-- Mode-specific metadata -->
         <label v-if="currentMode === 'three_rural'" class="block mb-3">
-          <span class="text-xs text-gray-500">团队名称</span>
-          <input v-model="appStore.teamName" type="text" class="mt-1 w-full px-3 py-2 border rounded text-sm" placeholder="三下乡团队" />
+          <span class="text-xs text-gray-500">项目名称</span>
+          <input v-model="appStore.teamName" type="text" class="mt-1 w-full px-3 py-2 border rounded text-sm" placeholder="实践项目" />
         </label>
         <label v-if="currentMode === 'reprint'" class="block mb-3">
           <span class="text-xs text-gray-500">来源公众号</span>

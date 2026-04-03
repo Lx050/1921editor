@@ -157,7 +157,7 @@ const routes: RouteRecordRaw[] = [
     name: 'TenantSelect',
     component: () => import('../views/TenantSelect.vue'),
     meta: {
-      title: '选择组织'
+      title: '选择空间'
     }
   },
   {
@@ -165,9 +165,9 @@ const routes: RouteRecordRaw[] = [
     name: 'TenantSettings',
     component: () => import('../views/TenantSettings.vue'),
     meta: {
-      title: '租户配置',
+      title: '空间设置',
       requiresAuth: true,
-      description: '配置飞书多维表格实现多租户自助管理'
+      description: '配置飞书表格与排版模板'
     }
   }
 ]

@@ -4,7 +4,7 @@
 			<h3>排版样式预设</h3>
 			<button class="btn-reset" @click="handleResetAll">恢复默认</button>
 		</div>
-		<p class="section-desc">设置后所有团队成员默认使用此样式，无需逐篇调整。</p>
+		<p class="section-desc">设置后默认使用此样式，无需逐篇调整。</p>
 
 		<!-- 小标题设置 -->
 		<div class="preset-group">

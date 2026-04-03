@@ -11,7 +11,7 @@ import type { OrgStylePreset } from '../stores/orgConfigStore'
 
 
 /**
- * 读取组织级样式预设（仅当显式配置过时返回，否则返回 null）
+ * 读取空间级样式预设（仅当显式配置过时返回，否则返回 null）
  * @private
  */
 function getOrgPresetIfConfigured(): OrgStylePreset | null {
@@ -40,7 +40,7 @@ function getOrgPresetIfConfigured(): OrgStylePreset | null {
 }
 
 /**
- * 用组织字体样式包裹内容文本（内联 span，优先级最高）
+ * 用空间字体样式包裹内容文本（内联 span，优先级最高）
  * @private
  */
 function wrapContentWithOrgFont(content: string, blockType: string, preset: OrgStylePreset): string {
@@ -63,7 +63,7 @@ function wrapContentWithOrgFont(content: string, blockType: string, preset: OrgS
 }
 
 /**
- * 用组织块级样式包裹整个样式化块（text-indent / line-height / letter-spacing）
+ * 用空间块级样式包裹整个样式化块（text-indent / line-height / letter-spacing）
  * @private
  */
 function wrapBlockWithOrgStyle(html: string, blockType: string, preset: OrgStylePreset): string {
@@ -95,11 +95,11 @@ export function buildHtml(
 	// 添加HTML头部
 	const configStore = useConfigStore()
 	const orgConfigStore = useOrgConfigStore()
-	const orgName = orgConfigStore.config.orgName || '组织名称'
+	const orgName = orgConfigStore.config.orgName || '空间名称'
 	let header = configStore.currentHeader.replace(/\{\{ORG_NAME\}\}/g, orgName)
 	htmlParts.push(header)
 
-	// 读取组织级样式预设（仅在配置过时生效）
+	// 读取空间级样式预设（仅在配置过时生效）
 	const orgPreset = getOrgPresetIfConfigured()
 
 	// 遍历内容块并应用装饰样式（只使用用户选择的装饰样式，不使用默认模板）
@@ -132,7 +132,7 @@ export function buildHtml(
 		.replace(/\{\{COPYWRITERS\}\}/g, appStore.copywriterNames.join(' ') || ' ')
 		.replace(/\{\{EDITORS\}\}/g, appStore.editorNames.join(' ') || ' ')
 		// V4: 替换尾部可变字段
-		.replace(/\{\{TEAM_NAME\}\}/g, appStore.teamName || '"团队名称待填写"')
+		.replace(/\{\{TEAM_NAME\}\}/g, appStore.teamName || '"项目名称待填写"')
 		.replace(/\{\{SOURCE_ACCOUNT\}\}/g, appStore.sourceAccount || '"来源公众号待填写"')
 		.replace(/\{\{EDITOR_INPUT\}\}/g, appStore.editorInput || ' ')  // 编辑（用户填写，默认为空）
 
@@ -151,7 +151,7 @@ export function buildHtml(
  * @param styleConfig - 样式配置
  * @param addPlaceholderMarkers - V2: 是否添加占位符标记
  * @param imageIndex - V2: 图片索引
- * @param orgPreset - 组织级样式预设（可选，null 则不覆盖）
+ * @param orgPreset - 空间级样式预设（可选，null 则不覆盖）
  * @returns 样式化后的HTML字符串
  */
 function buildStyledBlock(
@@ -166,7 +166,7 @@ function buildStyledBlock(
 	}
 
 	const content: string = block.text || ''
-	// 如果有组织预设，用 span 包裹内容文本以覆盖模板字体
+	// 如果有空间预设，用 span 包裹内容文本以覆盖模板字体
 	const styledContent = orgPreset ? wrapContentWithOrgFont(content, block.type, orgPreset) : content
 
 	// AI 生成图片优先渲染
@@ -256,7 +256,7 @@ function buildStyledBlock(
 			result = ''
 	}
 
-	// 应用组织级块样式覆盖（text-indent / line-height / letter-spacing）
+	// 应用空间级块样式覆盖（text-indent / line-height / letter-spacing）
 	if (orgPreset && result) {
 		result = wrapBlockWithOrgStyle(result, block.type, orgPreset)
 	}

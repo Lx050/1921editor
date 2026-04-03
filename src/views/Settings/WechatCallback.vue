@@ -30,7 +30,7 @@
           </svg>
         </div>
         <h2 class="text-xl font-semibold text-gray-800">授权成功</h2>
-        <p class="text-gray-600">公众号已成功关联到您的组织</p>
+        <p class="text-gray-600">公众号已成功关联到您的空间</p>
         <p class="text-sm text-gray-400">正在为您跳转...</p>
       </div>
     </div>

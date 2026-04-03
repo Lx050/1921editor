@@ -192,7 +192,7 @@ export const healthApi = {
   },
 }
 
-// 租户 API
+// 空间 API
 export const tenantApi = {
   getWechatConfig: (tenantId: string) => {
     return api.get(`/tenants/${tenantId}/wechat-config`)

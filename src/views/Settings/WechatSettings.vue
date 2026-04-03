@@ -3,14 +3,14 @@
     <div class="mb-8 flex flex-col gap-2">
       <h1 class="text-2xl font-bold text-gray-900">公众号管理</h1>
       <p class="text-sm text-gray-500">
-        仅租户管理员可修改公众号密钥，更新需邮箱确认。
+        仅管理员可修改公众号密钥，更新需邮箱确认。
       </p>
     </div>
 
     <div class="bg-white shadow rounded-lg p-6 space-y-6">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="space-y-1">
-          <p class="text-sm text-gray-500">当前组织</p>
+          <p class="text-sm text-gray-500">当前空间</p>
           <p class="text-lg font-semibold text-gray-900">
             {{ tenantName }}
           </p>
@@ -47,7 +47,7 @@
     <div class="mt-8">
       <div class="mb-4">
         <h2 class="text-lg font-semibold text-gray-900">公众号授权</h2>
-        <p class="text-sm text-gray-500">用于将组织公众号与平台绑定，支持素材上传与草稿同步。</p>
+        <p class="text-sm text-gray-500">用于将公众号与平台绑定，支持素材上传与草稿同步。</p>
       </div>
       <WechatAuthManager />
     </div>
@@ -127,7 +127,7 @@ const form = ref({
 })
 
 const tenantName = computed(() => {
-  return userStore.currentTenant?.name || '未选择组织'
+  return userStore.currentTenant?.name || '未选择空间'
 })
 
 const canEdit = computed(() => userStore.isAdmin)

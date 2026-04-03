@@ -1,8 +1,8 @@
 <template>
   <div class="tenant-settings">
     <div class="settings-header">
-      <h1>租户配置</h1>
-      <p class="subtitle">管理飞书表格、邀请码、排版模板等组织级配置</p>
+      <h1>空间设置</h1>
+      <p class="subtitle">管理飞书表格、加入码、排版模板等配置</p>
     </div>
 
     <el-tabs v-model="activeTab" type="border-card">
@@ -141,20 +141,20 @@
 
       </el-tab-pane>
 
-      <!-- Tab 2: 邀请码 -->
-      <el-tab-pane label="邀请码" name="invite">
+      <!-- Tab 2: 加入码 -->
+      <el-tab-pane label="加入码" name="invite">
 
-    <!-- 邀请码设置 -->
+    <!-- 加入码设置 -->
     <div class="config-section">
       <div class="section-header">
-        <h2>邀请码设置</h2>
+        <h2>加入码设置</h2>
         <el-tag v-if="config.inviteCode" type="success">已配置</el-tag>
         <el-tag v-else type="warning">未配置</el-tag>
       </div>
 
       <div class="config-description">
-        <p>管理员可设置组织邀请码，支持中文、英文和标点；邀请码必须全局唯一。</p>
-        <p class="hint-text">💡 修改后立即生效，其他成员需使用新邀请码加入。</p>
+        <p>管理员可设置加入码，支持中文、英文和标点；加入码必须全局唯一。</p>
+        <p class="hint-text">💡 修改后立即生效，其他协作者需使用新加入码加入。</p>
       </div>
 
       <div class="config-input">
@@ -164,7 +164,7 @@
           clearable
           :disabled="loading || !userStore.isAdmin"
         >
-          <template #prepend>邀请码</template>
+          <template #prepend>加入码</template>
         </el-input>
         <el-button
           type="primary"
@@ -172,13 +172,13 @@
           @click="updateInviteCode"
           :disabled="!inviteCodeInput || !userStore.isAdmin"
         >
-          保存邀请码
+          保存加入码
         </el-button>
       </div>
 
       <div v-if="config.inviteCode" class="config-details">
         <el-descriptions :column="1" border>
-          <el-descriptions-item label="当前邀请码">
+          <el-descriptions-item label="当前加入码">
             {{ config.inviteCode }}
           </el-descriptions-item>
           <el-descriptions-item v-if="config.inviteCodeExpires" label="过期时间">
@@ -193,15 +193,15 @@
       <!-- Tab 3: 排版模板 -->
       <el-tab-pane label="排版模板" name="template">
 
-    <!-- 组织模板配置 -->
+    <!-- 排版模板配置 -->
     <div class="config-section">
       <div class="section-header">
-        <h2>组织模板配置</h2>
+        <h2>排版模板配置</h2>
         <el-tag type="warning">仅本地浏览器</el-tag>
       </div>
 
       <div class="config-description">
-        <p>设置组织的首尾图模板和排版样式。当前配置保存在本地浏览器中，可通过下方的导入/导出功能在设备间同步。</p>
+        <p>设置首尾图模板和排版样式。当前配置保存在本地浏览器中，可通过下方的导入/导出功能在设备间同步。</p>
         <p class="hint-text">支持从微信编辑器 / 135编辑器直接复制粘贴富文本到画布中。</p>
       </div>
 
@@ -253,17 +253,17 @@
 
       </el-tab-pane>
 
-      <!-- Tab 4: 租户信息 -->
-      <el-tab-pane label="租户信息" name="info">
+      <!-- Tab 4: 空间信息 -->
+      <el-tab-pane label="空间信息" name="info">
 
-    <!-- 租户信息 -->
+    <!-- 空间信息 -->
     <div class="tenant-info">
-      <h3>当前租户信息</h3>
+      <h3>当前空间信息</h3>
       <el-descriptions :column="2" border>
-        <el-descriptions-item label="租户名称">
+        <el-descriptions-item label="空间名称">
           {{ config.tenantName || '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="租户标识">
+        <el-descriptions-item label="空间标识">
           {{ config.tenantSlug || '-' }}
         </el-descriptions-item>
       </el-descriptions>
@@ -482,12 +482,12 @@ async function updateInviteCode() {
   }
 
   if (!userStore.isAdmin) {
-    ElMessage.error('仅管理员可修改邀请码');
+    ElMessage.error('仅管理员可修改加入码');
     return;
   }
 
   if (!userStore.tenantId) {
-    ElMessage.error('未获取到当前租户信息');
+    ElMessage.error('未获取到当前空间信息');
     return;
   }
 
@@ -499,9 +499,9 @@ async function updateInviteCode() {
     config.value.inviteCode = res.data.inviteCode;
     config.value.inviteCodeExpires = res.data.inviteCodeExpires || null;
     inviteCodeInput.value = res.data.inviteCode;
-    ElMessage.success('邀请码更新成功');
+    ElMessage.success('加入码更新成功');
   } catch (error: any) {
-    const message = error.response?.data?.message || '邀请码更新失败';
+    const message = error.response?.data?.message || '加入码更新失败';
     ElMessage.error(message);
   } finally {
     inviteCodeLoading.value = false;

@@ -20,7 +20,7 @@ export const useAppStore = defineStore('app', () => {
   const editorNames: Ref<string[]> = ref([])     // 责编
 
   // V4 新增状态：尾部可变字段（用于不同模式）
-  const teamName: Ref<string> = ref('')           // 团队名称（三下乡模式，需从文档解析）
+  const teamName: Ref<string> = ref('')           // 项目名称（三下乡模式，需从文档解析）
   const sourceAccount: Ref<string> = ref('')      // 来源公众号名称（转载模式，需从文档解析）
   const imageSource: Ref<string> = ref('')        // 图片来源（日常模式）
   const editorInput: Ref<string> = ref('')        // 编辑人员（用户填写，默认为空）

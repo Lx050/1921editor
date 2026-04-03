@@ -15,7 +15,7 @@ export const useUserStore = defineStore('user', () => {
     const token = ref(tokenStorage.getToken() || '')
     const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
 
-    // 🏢 多租户支持
+    // 🏢 多空间支持
     const currentTenant = ref<TenantInfo | null>(
         JSON.parse(localStorage.getItem('currentTenant') || 'null')
     )
@@ -29,7 +29,7 @@ export const useUserStore = defineStore('user', () => {
     // 判断用户是否为管理员
     const isAdmin = computed(() => userInfo.value?.role === 'ADMIN')
 
-    // 获取用户的租户ID
+    // 获取用户的空间ID
     const tenantId = computed(() => userInfo.value?.tenantId || currentTenant.value?.id || null)
 
     const setToken = (newToken: string) => {
@@ -45,7 +45,7 @@ export const useUserStore = defineStore('user', () => {
         localStorage.setItem('userInfo', JSON.stringify(info))
     }
 
-    // 🏢 设置当前租户
+    // 🏢 设置当前空间
     const setCurrentTenant = (tenant: TenantInfo | null) => {
         currentTenant.value = tenant
         if (tenant) {

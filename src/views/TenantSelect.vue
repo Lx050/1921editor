@@ -4,20 +4,20 @@
       
       <!-- 移动端顶部状态栏背景 (仅移动端) -->
       <div class="md:hidden bg-white px-6 pt-8 pb-4 border-b border-slate-100">
-        <h1 class="text-2xl font-bold text-slate-900">选择组织</h1>
+        <h1 class="text-2xl font-bold text-slate-900">选择空间</h1>
         <p class="text-sm text-slate-500">登录排版引擎以继续</p>
       </div>
 
       <!-- 桌面端标题 (仅桌面端) -->
       <div class="hidden md:block text-center mb-8">
         <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">排版引擎</h1>
-        <p class="text-slate-600 font-medium">选择您的组织空间</p>
+        <p class="text-slate-600 font-medium">选择您的工作空间</p>
       </div>
 
       <!-- 主体列表区域 -->
       <div class="bg-white md:shadow-2xl md:rounded-3xl flex-1 md:flex-initial overflow-hidden flex flex-col border-none md:border md:border-white/20">
         
-        <!-- 搜索栏 + 加入组织 -->
+        <!-- 搜索栏 + 加入空间 -->
         <div class="p-4 md:p-6 pb-3 border-b border-slate-50 space-y-3">
           <div class="relative group">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -28,7 +28,7 @@
             <input 
               v-model="searchQuery"
               type="text" 
-              placeholder="搜索组织名称或标识..."
+              placeholder="搜索空间名称或标识..."
               class="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl text-sm transition-all outline-none"
             >
           </div>
@@ -36,14 +36,14 @@
             <input
               v-model="displayNameInput"
               type="text"
-              placeholder="填写加入该组织的显示名称"
+              placeholder="填写加入该空间的显示名称"
               class="w-full px-3 py-2.5 bg-slate-50 border border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl text-sm transition-all outline-none"
             />
             <div class="flex items-center gap-2">
               <input
                 v-model="inviteCodeInput"
                 type="text"
-                placeholder="输入邀请码加入组织"
+                placeholder="输入加入码加入空间"
                 class="flex-1 px-3 py-2.5 bg-slate-50 border border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl text-sm transition-all outline-none"
               />
               <button
@@ -58,13 +58,13 @@
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-          <!-- 当前组织提示 -->
+          <!-- 当前空间提示 -->
           <div v-if="currentTenant" class="rounded-2xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-xs text-blue-700 flex items-center justify-between">
-            <span>当前组织：{{ currentTenant.name }}</span>
+            <span>当前空间：{{ currentTenant.name }}</span>
             <span class="font-semibold">{{ currentTenant.slug }}</span>
           </div>
           
-          <!-- 默认组织 (置顶显示) -->
+          <!-- 默认空间 (置顶显示) -->
           <div v-if="!searchQuery && defaultTenant" class="space-y-2">
             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">常用</h3>
             <div
@@ -96,10 +96,10 @@
             </div>
           </div>
 
-          <!-- 动态组织列表 -->
+          <!-- 动态空间列表 -->
           <div class="space-y-2">
             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-              {{ searchQuery ? '搜索结果' : '所有组织' }}
+              {{ searchQuery ? '搜索结果' : '所有空间' }}
             </h3>
             
             <!-- 加载状态 -->
@@ -110,7 +110,7 @@
             <!-- 空结果状态 -->
             <div v-else-if="filteredTenants.length === 0" class="py-12 text-center">
               <div class="mb-4 text-4xl">🔍</div>
-              <p class="text-sm text-slate-500 font-medium">未能找到匹配的组织</p>
+              <p class="text-sm text-slate-500 font-medium">未能找到匹配的空间</p>
             </div>
 
             <!-- 列表渲染 -->
@@ -162,7 +162,7 @@
         <!-- 底部信息 -->
         <div class="p-6 bg-slate-50/50 border-t border-slate-50 mt-auto md:mt-0">
           <p class="text-[11px] text-slate-400 text-center leading-relaxed">
-            找不到所属组织？请联系系统管理员 
+            找不到所属空间？请联系管理员 
             <br class="md:hidden" />
             或访问 <a href="#" class="text-blue-500 font-semibold hover:underline">帮助中心</a>
           </p>
@@ -200,7 +200,7 @@ const displayNameInput = ref('')
 const isJoining = ref(false)
 const isLeaving = ref(false)
 
-// 模拟组织列表样式
+// 空间列表头像样式
 const avatarStyles = [
   'bg-indigo-100 text-indigo-600',
   'bg-emerald-100 text-emerald-600',
@@ -215,7 +215,7 @@ const getAvatarStyles = (name: string) => {
   return avatarStyles[index]
 }
 
-// 组织检索过滤
+// 空间检索过滤
 const defaultTenant = computed(() => {
   return tenants.value.find(t => t.isDefault) || tenants.value.find(t => t.slug === 'default') || null
 })
@@ -251,7 +251,7 @@ const loadTenants = async () => {
     const response = await listTenants()
     userStore.setTenants(response.tenants || [])
   } catch (e) {
-    error.value = '加载组织列表失败，请重试'
+    error.value = '加载空间列表失败，请重试'
     console.error('Failed to load tenants:', e)
   } finally {
     loading.value = false
@@ -283,13 +283,13 @@ const selectTenant = async (tenant: TenantInfo | null) => {
     router.push('/step1')
   } catch (e) {
     console.error('Failed to switch tenant:', e)
-    error.value = '切换组织失败，请重试'
+    error.value = '切换空间失败，请重试'
   }
 }
 
 const handleJoinTenant = async () => {
   if (!inviteCodeInput.value || !displayNameInput.value) {
-    toast.warning('请输入邀请码和显示名称')
+    toast.warning('请输入加入码和显示名称')
     return
   }
   if (isJoining.value) return
@@ -322,7 +322,7 @@ const handleJoinTenant = async () => {
     router.push('/step1')
   } catch (e) {
     console.error('Failed to join tenant:', e)
-    toast.error('加入组织失败，请检查邀请码')
+    toast.error('加入空间失败，请检查加入码')
   } finally {
     isJoining.value = false
   }
@@ -330,7 +330,7 @@ const handleJoinTenant = async () => {
 
 const handleLeaveTenant = async (tenant: TenantInfo) => {
   if (tenant.isDefault) {
-    toast.warning('默认组织不可退出')
+    toast.warning('默认空间不可退出')
     return
   }
   if (isLeaving.value) return
@@ -356,10 +356,10 @@ const handleLeaveTenant = async (tenant: TenantInfo) => {
       slug: response.tenant.slug
     })
     userStore.setTenants(response.tenants || [])
-    toast.success('已退出组织')
+    toast.success('已退出空间')
   } catch (e) {
     console.error('Failed to leave tenant:', e)
-    toast.error('退出组织失败，请稍后再试')
+    toast.error('退出空间失败，请稍后再试')
   } finally {
     isLeaving.value = false
   }

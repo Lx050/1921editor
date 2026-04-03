@@ -132,7 +132,7 @@ const handleLogin = async () => {
       emailVerified: response.user.emailVerified
     })
 
-    // 保存租户信息 - tenant 在根对象或者 user 里（兼容处理）
+    // 保存空间信息 - tenant 在根对象或者 user 里（兼容处理）
     const tenant = response.tenant || (response.user as any).tenant
     if (tenant) {
       userStore.setCurrentTenant({
