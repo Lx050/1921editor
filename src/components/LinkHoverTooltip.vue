@@ -86,34 +86,42 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to="body">
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0 scale-95"
+      leave-to-class="opacity-0 scale-95"
+    >
     <div
       v-if="visible"
-      class="link-hover-tooltip fixed z-[140] bg-gray-800 text-white rounded-lg shadow-xl px-3 py-2 text-xs"
+      class="link-hover-tooltip fixed z-[140] rounded-lg px-3 py-2 text-xs"
+      style="background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.1); color:rgba(0,0,0,0.7); box-shadow:var(--shadow-float);"
       :style="{ left: position.x + 'px', top: position.y + 'px', transform: 'translateX(-50%)' }"
       @mouseenter="cancelHide"
       @mouseleave="scheduleHide"
     >
       <div class="flex items-center gap-2">
-        <span class="text-gray-300 truncate max-w-[200px]" :title="linkUrl">{{ truncateUrl(linkUrl) }}</span>
-        <span class="w-px h-3 bg-gray-600" />
+        <span class="truncate max-w-[200px]" style="color:rgba(0,0,0,0.5);" :title="linkUrl">{{ truncateUrl(linkUrl) }}</span>
+        <span class="w-px h-3" style="background:rgba(0,0,0,0.1);" />
         <button
-          class="text-blue-400 hover:text-blue-300 transition-colors"
+          class="transition-colors" style="color:var(--color-accent-primary);"
           @click="openLink"
           title="Open link"
         >Open</button>
         <button
-          class="text-gray-400 hover:text-white transition-colors"
+          class="transition-colors" style="color:rgba(0,0,0,0.5);"
           @click="editLink"
           title="Edit link"
         >Edit</button>
         <button
-          class="text-red-400 hover:text-red-300 transition-colors"
+          class="transition-colors" style="color:var(--color-error);"
           @click="removeLink"
           title="Remove link"
         >Remove</button>
       </div>
       <!-- Arrow pointing up -->
-      <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45" />
+      <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45" style="background:var(--color-bg-card); border-left:1px solid rgba(0,0,0,0.1); border-top:1px solid rgba(0,0,0,0.1);" />
     </div>
+    </Transition>
   </Teleport>
 </template>

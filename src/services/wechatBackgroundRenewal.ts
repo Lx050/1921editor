@@ -39,7 +39,7 @@ export class WechatBackgroundRenewal {
     this.backgroundSyncSupported = 'serviceWorker' in navigator &&
       'PeriodicSyncManager' in window;
 
-    console.log('[后台续期] 背景同步支持:', this.backgroundSyncSupported);
+    console.debug('[后台续期] 背景同步支持:', this.backgroundSyncSupported);
   }
 
   /**
@@ -49,7 +49,7 @@ export class WechatBackgroundRenewal {
     if (this.isRunning) return;
 
     this.isRunning = true;
-    console.log('[后台续期] 启动服务...');
+    console.debug('[后台续期] 启动服务...');
 
     // 1. 恢复未完成的续期任务
     await this.restorePendingTasks();
@@ -65,7 +65,7 @@ export class WechatBackgroundRenewal {
     // 4. 监听网络状态变化
     this.registerNetworkListeners();
 
-    console.log('[后台续期] 服务启动完成');
+    console.debug('[后台续期] 服务启动完成');
   }
 
   /**
@@ -74,7 +74,7 @@ export class WechatBackgroundRenewal {
   stop(): void {
     this.isRunning = false;
     this.activeRenewals.clear();
-    console.log('[后台续期] 服务已停止');
+    console.debug('[后台续期] 服务已停止');
   }
 
   /**
@@ -104,7 +104,7 @@ export class WechatBackgroundRenewal {
 
     // 检查是否已在进行中
     if (this.isRenewalInProgress(accountId)) {
-      console.log(`[后台续期] 账号 ${accountId} 续期已在进行中，跳过`);
+      console.debug(`[后台续期] 账号 ${accountId} 续期已在进行中，跳过`);
       return false;
     }
 
@@ -124,7 +124,7 @@ export class WechatBackgroundRenewal {
     const startTime = Date.now();
 
     try {
-      console.log(`[后台续期] 开始续期任务: ${task.id}, 账号: ${task.accountId}`);
+      console.debug(`[后台续期] 开始续期任务: ${task.id}, 账号: ${task.accountId}`);
 
       // 检查网络连接
       if (!navigator.onLine) {
@@ -151,7 +151,7 @@ export class WechatBackgroundRenewal {
         tokenData: result,
       };
 
-      console.log(`[后台续期] 续期成功: ${task.id}, 耗时: ${Date.now() - startTime}ms`);
+      console.debug(`[后台续期] 续期成功: ${task.id}, 耗时: ${Date.now() - startTime}ms`);
 
       return renewalResult;
 
@@ -160,7 +160,7 @@ export class WechatBackgroundRenewal {
 
       // 处理重试逻辑
       if (task.retryCount < task.maxRetries) {
-        console.log(`[后台续期] 准备重试: ${task.id}, 第${task.retryCount + 1}次重试`);
+        console.debug(`[后台续期] 准备重试: ${task.id}, 第${task.retryCount + 1}次重试`);
 
         // 指数退避重试
         const delay = Math.min(1000 * Math.pow(2, task.retryCount), 30000);
@@ -196,7 +196,7 @@ export class WechatBackgroundRenewal {
 
       // 2. 检查是否真的需要续期
       if (!this.needsRenewal(accountInfo)) {
-        console.log(`[后台续期] 账号 ${task.accountId} 不需要续期`);
+        console.debug(`[后台续期] 账号 ${task.accountId} 不需要续期`);
         return accountInfo.tokenData;
       }
 
@@ -299,7 +299,7 @@ export class WechatBackgroundRenewal {
         await (registration as any).periodicSync.register('wechat-renewal-check', {
           minInterval: 60 * 60 * 1000, // 每小时检查一次
         });
-        console.log('[后台续期] 周期性同步注册成功');
+        console.debug('[后台续期] 周期性同步注册成功');
       }
     } catch (error) {
       console.error('[后台续期] 注册周期性同步失败:', error);
@@ -340,13 +340,13 @@ export class WechatBackgroundRenewal {
   private registerNetworkListeners(): void {
     // 网络恢复时处理待处理任务
     window.addEventListener('online', () => {
-      console.log('[后台续期] 网络恢复，处理待处理任务');
+      console.debug('[后台续期] 网络恢复，处理待处理任务');
       this.handleNetworkRecovery();
     });
 
     // 网络断开时暂停任务
     window.addEventListener('offline', () => {
-      console.log('[后台续期] 网络断开，暂停任务');
+      console.debug('[后台续期] 网络断开，暂停任务');
     });
   }
 
@@ -380,7 +380,7 @@ export class WechatBackgroundRenewal {
         });
 
         this.renewalQueue.push(...validTasks);
-        console.log(`[后台续期] 恢复了 ${validTasks.length} 个待处理任务`);
+        console.debug(`[后台续期] 恢复了 ${validTasks.length} 个待处理任务`);
       }
     } catch (error) {
       console.error('[后台续期] 恢复待处理任务失败:', error);

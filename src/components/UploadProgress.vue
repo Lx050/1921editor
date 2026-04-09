@@ -1,14 +1,14 @@
 <template>
-  <div 
+  <div
     v-if="showProgress"
-    class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-3"
+    style="background:var(--color-badge-bg); border:1px solid rgba(0,117,222,0.2); border-radius:6px; padding:10px 14px;"
   >
     <div class="flex items-center justify-between mb-2">
       <div class="flex items-center space-x-2">
         <!-- 上传图标和状态 -->
         <div v-if="isUploading" class="flex items-center space-x-2">
-          <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span class="text-sm font-medium text-blue-700">图片上传中...</span>
+          <div class="w-4 h-4 border-2 rounded-full animate-spin" style="border-color:rgba(0,117,222,0.3); border-top-color:var(--color-accent-primary);"></div>
+          <span class="text-sm font-medium" style="color:var(--color-accent-primary);">图片上传中...</span>
         </div>
         <div v-else-if="progress.failed > 0" class="flex items-center space-x-2">
           <span class="text-amber-500">⚠️</span>
@@ -22,8 +22,8 @@
 
       <!-- 进度统计 -->
       <div class="flex items-center space-x-3 text-sm">
-        <span class="text-gray-600">
-          <span class="font-semibold text-blue-600">{{ progress.completed }}</span>
+        <span style="color:rgba(0,0,0,0.55);">
+          <span class="font-semibold" style="color:var(--color-accent-primary);">{{ progress.completed }}</span>
           / {{ progress.total }} 完成
         </span>
         <span v-if="progress.failed > 0" class="text-red-600">
@@ -33,7 +33,7 @@
     </div>
 
     <!-- 进度条 -->
-    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+    <div class="w-full rounded-full h-2 overflow-hidden" style="background:rgba(0,0,0,0.08);">
       <div class="h-full flex">
         <!-- 成功部分 -->
         <div 
@@ -42,7 +42,8 @@
         ></div>
         <!-- 上传中部分 -->
         <div 
-          class="bg-blue-400 animate-pulse transition-all duration-300"
+          class="animate-pulse transition-all duration-300"
+          style="background:rgba(0,117,222,0.5);"
           :style="{ width: `${uploadingPercentage}%` }"
         ></div>
         <!-- 失败部分 -->

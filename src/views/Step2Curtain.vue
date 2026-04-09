@@ -101,7 +101,10 @@
         @drop.prevent="onAreaDrop"
       >
         <div class="max-w-2xl mx-auto py-4">
-          <TransitionGroup name="block-list" tag="div" class="space-y-2">
+          <div v-if="contentBlocks.length === 0" class="text-center py-8" style="color:var(--color-text-muted);">
+            <p class="text-sm">暂无内容块</p>
+          </div>
+          <TransitionGroup v-else name="block-list" tag="div" class="space-y-2">
             <div
               v-for="(block, index) in contentBlocks"
               :key="block.id"
@@ -121,8 +124,8 @@
                   'rounded-xl transition-all duration-200 relative cursor-pointer',
                   draggingIndex === index ? 'opacity-40 scale-[0.97]' : '',
                   selectedBlockId === block.id
-                    ? 'bg-white shadow-[0_0_0_2px_rgba(232,96,60,0.15),0_4px_20px_rgba(0,0,0,0.06)]'
-                    : 'bg-white/60 hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.04)]'
+                    ? 'bg-white shadow-[0_0_0_2px_rgba(0,117,222,0.2),0_4px_20px_rgba(0,0,0,0.06)]'
+                    : 'bg-white/60 hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)]'
                 ]"
               >
                 <!-- 顶部栏 — 拖拽手柄 + 标签 + 操作 -->
@@ -142,7 +145,7 @@
                       style="background: var(--color-content-bg-muted); color: var(--color-content-text);"
                       @click.stop
                     >
-                      <option v-for="option in getBlockTypeOptions()" :key="option.value" :value="option.value">
+                      <option v-for="option in blockTypeOptions" :key="option.value" :value="option.value">
                         {{ option.icon }} {{ option.label }}
                       </option>
                     </select>
@@ -357,7 +360,7 @@
       </div>
 
       <!-- 底部操作栏 — 毛玻璃融入背景 -->
-      <div class="absolute bottom-0 left-0 right-0 px-5 py-3 z-10" style="background: linear-gradient(180deg, transparent 0%, var(--color-content-bg) 30%); backdrop-filter: blur(8px);">
+      <div class="absolute bottom-0 left-0 right-0 px-5 py-3 z-10" style="background: linear-gradient(180deg, transparent 0%, var(--color-content-bg) 30%); backdrop-filter: blur(8px); padding-bottom: env(safe-area-inset-bottom, 0);">
         <div class="max-w-2xl mx-auto flex items-center gap-3">
           <button
             @click="goToPreviousStep"
@@ -389,7 +392,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue'
+import { showConfirm, showAlert } from '@/composables/useConfirm'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
@@ -397,7 +401,7 @@ import { smartTextParser } from '../utils/textParser'
 import { getBlockTypeDisplayName } from '../utils/styleAssembler'
 import { uploadManager } from '../utils/uploadManager'
 import StyleSelector from '../components/StyleSelector.vue'
-import SvgTemplatePanel from '../components/SvgTemplatePanel.vue'
+const SvgTemplatePanel = defineAsyncComponent(() => import('../components/SvgTemplatePanel.vue'))
 import LayoutInserter from '../components/LayoutInserter.vue'
 import UploadProgress from '../components/UploadProgress.vue'
 import LazyImage from '../components/LazyImage.vue'
@@ -437,18 +441,16 @@ const selectBlock = (blockId: string) => {
   selectedBlockId.value = blockId === selectedBlockId.value ? null : blockId
 }
 
-const getBlockTypeOptions = () => {
-  return [
-    { value: 'title', label: '标题', icon: '📰' },
-    { value: 'body', label: '正文', icon: '📝' },
-    { value: 'intro', label: '引言', icon: '💭' },
-    { value: 'outro', label: '结尾', icon: '🏁' },
-    { value: 'image_single', label: '单图', icon: '🖼️' },
-    { value: 'image_single_caption', label: '单图+注', icon: '🖼️📝' },
-    { value: 'image_double', label: '双图', icon: '🖼️🖼️' },
-    { value: 'image_double_caption', label: '双图+注', icon: '🖼️📝' }
-  ]
-}
+const blockTypeOptions = [
+  { value: 'title', label: '标题', icon: '📰' },
+  { value: 'body', label: '正文', icon: '📝' },
+  { value: 'intro', label: '引言', icon: '💭' },
+  { value: 'outro', label: '结尾', icon: '🏁' },
+  { value: 'image_single', label: '单图', icon: '🖼️' },
+  { value: 'image_single_caption', label: '单图+注', icon: '🖼️📝' },
+  { value: 'image_double', label: '双图', icon: '🖼️🖼️' },
+  { value: 'image_double_caption', label: '双图+注', icon: '🖼️📝' }
+]
 
 const changeBlockType = (blockId: string, newType: BlockType) => {
   appStore.updateBlockType(blockId, newType)
@@ -617,10 +619,11 @@ const deleteBlock = (index: number) => {
   }
 }
 
-const confirmDeleteBlock = (index: number, _blockId: string) => {
+const confirmDeleteBlock = async (index: number, _blockId: string) => {
   const block = contentBlocks.value[index]
   const blockType = block ? getBlockTypeDisplayName(block.type) : '内容块'
-  if (confirm(`确定要删除这个${blockType}吗？`)) {
+  const confirmed = await showConfirm({ title: '确认删除', message: `确定要删除这个${blockType}吗？`, type: 'danger', confirmText: '删除', cancelText: '取消' })
+  if (confirmed) {
     deleteBlock(index)
   }
 }
@@ -653,14 +656,14 @@ const goToPreviousStep = () => {
   router.push('/step1')
 }
 
-const goToNextStep = () => {
+const goToNextStep = async () => {
   if (contentBlocks.value.length > 0) {
     const styleConfig = appStore.styleConfig
     const hasTitleStyle = styleConfig?.title && styleConfig.title.fullExample
     const hasBodyStyle = styleConfig?.body && styleConfig.body.fullExample
     const hasIntroStyle = styleConfig?.intro && styleConfig.intro.fullExample
     if (!hasTitleStyle && !hasBodyStyle && !hasIntroStyle) {
-      alert('请先在左侧选择装饰样式后再进入预览阶段！')
+      await showAlert('请先在左侧选择装饰样式后再进入预览阶段！')
       return
     }
     router.push('/step3')
@@ -741,7 +744,7 @@ const generateAiImage = async (block: ContentBlock) => {
     }
   } catch (e: any) {
     console.error('AI Generation Failed:', e)
-    alert('AI生成失败: ' + e.message)
+    await showAlert('AI图片生成失败，请检查网络后重试', '生成失败')
   } finally {
     generatingBlockId.value = null
   }
@@ -766,6 +769,8 @@ const generateAiImage = async (block: ContentBlock) => {
 
 /* 拖拽指示器 */
 .drag-over-top {
+  border-top: 2px solid var(--color-accent-primary);
+  margin-top: -1px;
   position: relative;
 }
 .drag-over-top::before {
@@ -781,6 +786,8 @@ const generateAiImage = async (block: ContentBlock) => {
   animation: pulse-indicator 1s ease-in-out infinite;
 }
 .drag-over-bottom {
+  border-bottom: 2px solid var(--color-accent-primary);
+  margin-bottom: -1px;
   position: relative;
 }
 .drag-over-bottom::after {

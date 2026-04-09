@@ -3,12 +3,12 @@
     <!-- 总体进度 -->
     <div class="mb-3">
       <div class="flex justify-between items-center mb-1">
-        <span class="text-sm font-medium text-gray-700">{{ title }}</span>
-        <span class="text-sm text-gray-500">{{ overallProgress }}%</span>
+        <span class="text-sm font-medium" style="color:rgba(0,0,0,0.65);">{{ title }}</span>
+        <span class="text-sm" style="color:rgba(0,0,0,0.45);">{{ overallProgress }}%</span>
       </div>
-      <div class="w-full bg-gray-200 rounded-full h-2">
+      <div class="w-full rounded-full h-2" style="background:rgba(0,0,0,0.08);">
         <div
-          class="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+          class="h-2 rounded-full transition-all duration-300 ease-out" style="background: var(--color-accent-primary);"
           :style="{ width: `${overallProgress}%` }"
         ></div>
       </div>
@@ -16,21 +16,24 @@
 
     <!-- 详细进度列表 -->
     <div class="space-y-2 max-h-60 overflow-y-auto">
+      <div v-if="tasks.length === 0" class="text-center py-8" style="color:var(--color-text-muted);">
+        <p class="text-sm">暂无上传任务</p>
+      </div>
       <div
         v-for="task in tasks"
         :key="task.id"
-        class="flex items-center p-2 bg-white rounded-lg border border-gray-200"
+        class="flex items-center p-2 bg-white rounded-lg border" style="border-color:rgba(0,0,0,0.08);"
         :class="{
           'border-green-300 bg-green-50': task.status === 'completed',
           'border-red-300 bg-red-50': task.status === 'failed',
-          'border-blue-300 bg-blue-50': ['downloading', 'uploading', 'retrying'].includes(task.status)
         }"
+        :style="['downloading', 'uploading', 'retrying'].includes(task.status) ? 'border-color: rgba(0,117,222,0.3); background: var(--color-badge-bg);' : ''"
       >
         <!-- 状态图标 -->
         <div class="mr-3 flex-shrink-0">
-          <div v-if="task.status === 'pending'" class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-          <div v-else-if="task.status === 'downloading'" class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <div v-else-if="task.status === 'uploading'" class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div v-if="task.status === 'pending'" class="w-4 h-4 border-2 rounded-full" style="border-color:rgba(0,0,0,0.12);"></div>
+          <div v-else-if="task.status === 'downloading'" class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style="border-color: var(--color-accent-primary); border-top-color: transparent;"></div>
+          <div v-else-if="task.status === 'uploading'" class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style="border-color: var(--color-accent-primary); border-top-color: transparent;"></div>
           <div v-else-if="task.status === 'completed'" class="w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
             <svg class="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -46,17 +49,17 @@
 
         <!-- 任务内容 -->
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-gray-900 truncate">
+          <div class="text-sm font-medium truncate" style="color:rgba(0,0,0,0.85);">
             {{ getTaskName(task) }}
           </div>
-          <div class="text-xs text-gray-500 truncate">
+          <div class="text-xs truncate" style="color:rgba(0,0,0,0.45);">
             {{ task.message }}
           </div>
           <!-- 进度条 -->
           <div v-if="task.status !== 'completed' && task.status !== 'failed'" class="mt-1">
-            <div class="w-full bg-gray-200 rounded-full h-1">
+            <div class="w-full rounded-full h-1" style="background:rgba(0,0,0,0.08);">
               <div
-                class="bg-blue-600 h-1 rounded-full transition-all duration-300"
+                class="h-1 rounded-full transition-all duration-300" style="background: var(--color-accent-primary);"
                 :style="{ width: `${task.progress}%` }"
               ></div>
             </div>
@@ -64,7 +67,7 @@
         </div>
 
         <!-- 速度信息 -->
-        <div v-if="task.speed" class="ml-3 text-xs text-gray-500 flex-shrink-0">
+        <div v-if="task.speed" class="ml-3 text-xs flex-shrink-0" style="color:rgba(0,0,0,0.45);">
           {{ formatSpeed(task.speed) }}
         </div>
 
@@ -76,12 +79,12 @@
     </div>
 
     <!-- 统计信息 -->
-    <div class="mt-3 pt-3 border-t border-gray-200">
-      <div class="flex justify-between text-xs text-gray-600">
+    <div class="mt-3 pt-3 border-t" style="border-color:rgba(0,0,0,0.08);">
+      <div class="flex justify-between text-xs" style="color:rgba(0,0,0,0.55);">
         <span>总计: {{ totalTasks }}</span>
         <span class="text-green-600">完成: {{ completedTasks }}</span>
         <span v-if="failedTasks > 0" class="text-red-600">失败: {{ failedTasks }}</span>
-        <span class="text-blue-600">进行中: {{ activeTasks }}</span>
+        <span style="color: var(--color-accent-primary);">进行中: {{ activeTasks }}</span>
       </div>
     </div>
 

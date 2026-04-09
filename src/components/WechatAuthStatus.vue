@@ -3,7 +3,7 @@
     <!-- 已授权状态 -->
     <div v-if="isLoggedIn" class="logged-in">
       <div class="user-info">
-        <img :src="userInfo.avatar || '/icons/default-avatar.png'" class="avatar" />
+        <img :src="userInfo.avatar || '/icons/default-avatar.png'" alt="用户头像" class="avatar" />
         <div class="info">
           <div class="name">{{ userInfo.name || '微信用户' }}</div>
           <div class="status" :class="authStatus.class">
@@ -26,7 +26,7 @@
     <!-- 未授权状态 -->
     <div v-else class="not-logged-in">
       <button @click="login" class="login-btn">
-        <img src="/icons/wechat.svg" class="wechat-icon" />
+        <img src="/icons/wechat.svg" alt="" class="wechat-icon" />
         微信登录
       </button>
     </div>
@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { wechatTokenManager } from '../services/wechatTokenManager';
+import { showAlert } from '@/composables/useConfirm';
 
 const isLoggedIn = ref(false);
 const userInfo = ref({
@@ -77,7 +78,7 @@ async function login() {
 
   } catch (error) {
     console.error('微信登录失败:', error);
-    alert('微信登录失败，请重试');
+    await showAlert('微信登录失败，请重试', '错误');
   }
 }
 
@@ -117,19 +118,17 @@ onUnmounted(() => {
 });
 
 // 处理token更新事件
-function handleTokenUpdated(event: any) {
-  console.log('微信token已更新:', event.detail);
+function handleTokenUpdated(_event: any) {
   checkLoginStatus();
 }
 
 // 处理需要重新授权事件
-function handleReauthRequired(event: any) {
-  console.log('需要重新授权:', event.detail);
+async function handleReauthRequired(_event: any) {
   checkLoginStatus();
 
   // 可以显示更明显的提醒
   if (needsReauth.value) {
-    alert('您的微信授权即将过期，请重新授权以继续使用');
+    await showAlert('您的微信授权即将过期，请重新授权以继续使用', '授权提醒');
   }
 }
 
@@ -184,35 +183,35 @@ function checkLoginStatus() {
 }
 
 .status.valid {
-  background-color: #e8f5e8;
-  color: #2e7d32;
+  background-color: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .status.expiring-soon {
-  background-color: #fff3e0;
-  color: #f57c00;
+  background-color: #fffbeb;
+  color: #d97706;
 }
 
 .status.expired {
-  background-color: #ffebee;
-  color: #c62828;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .reauth-warning {
-  background-color: #fff3e0;
-  border: 1px solid #ffb74d;
+  background-color: #fffbeb;
+  border: 1px solid #fcd34d;
   border-radius: 8px;
   padding: 12px;
 }
 
 .warning-text {
   margin: 0 0 12px 0;
-  color: #f57c00;
+  color: #d97706;
   font-size: 14px;
 }
 
 .reauth-btn {
-  background-color: #f57c00;
+  background-color: #d97706;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -222,7 +221,7 @@ function checkLoginStatus() {
 }
 
 .reauth-btn:hover {
-  background-color: #ef6c00;
+  background-color: #b45309;
 }
 
 .login-btn {

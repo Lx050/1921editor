@@ -1,6 +1,7 @@
 <template>
   <div
-    class="h-full overflow-auto bg-gray-100"
+    class="h-full overflow-auto"
+    style="background:var(--color-bg-warm);"
     :class="{
       'md:p-8': showMobileFrame,
       'p-0': !showMobileFrame
@@ -9,8 +10,8 @@
     <!-- 真机预览框架 -->
     <div
       v-if="showMobileFrame"
-      class="mx-auto max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
-      style="height: 844px; width: 390px;"
+      class="mx-auto max-w-md bg-white rounded-3xl overflow-hidden"
+      style="height: 844px; width: 390px; box-shadow:var(--shadow-float);"
     >
       <!-- iPhone 状态栏 -->
       <div class="bg-black text-white text-xs px-6 py-1 flex justify-between items-center">
@@ -23,7 +24,7 @@
       </div>
 
       <!-- 微信顶部导航栏 -->
-      <div class="bg-[#ededed] px-4 py-2 flex items-center justify-between border-b">
+      <div class="px-4 py-2 flex items-center justify-between border-b" style="background: var(--color-bg-warm);">
         <div class="flex items-center space-x-3">
           <span class="text-lg">◀</span>
           <span class="font-medium">{{ wechatTitle }}</span>
@@ -36,7 +37,7 @@
 
       <!-- 文章标题栏 -->
       <div class="bg-white px-4 py-3 border-b">
-        <h1 class="text-lg font-bold text-center text-gray-900">{{ articleTitle }}</h1>
+        <h1 class="text-lg font-bold text-center" style="color:rgba(0,0,0,0.85);">{{ articleTitle }}</h1>
       </div>
 
       <!-- 预览内容区域 -->

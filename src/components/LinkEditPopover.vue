@@ -46,28 +46,39 @@ function handleKeydown(event: KeyboardEvent) {
 
 <template>
   <Teleport to="body">
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0 scale-95"
+      leave-to-class="opacity-0 scale-95"
+    >
     <div
       v-if="visible"
       class="fixed inset-0 z-[150]"
       @mousedown.self="emit('close')"
     >
       <div
-        class="fixed z-[151] bg-white rounded-lg shadow-xl border border-gray-200 p-3 w-[320px]"
+        class="fixed z-[151] bg-white rounded-lg shadow-xl p-3 w-[320px]"
+        style="border:1px solid rgba(0,0,0,0.08);"
         :style="{ left: position.x + 'px', top: position.y + 'px', transform: 'translate(-50%, 4px)' }"
         @mousedown.stop
       >
-        <div class="text-xs font-medium text-gray-600 mb-2">Edit Link</div>
+        <div class="text-xs font-medium mb-2" style="color:rgba(0,0,0,0.55);">Edit Link</div>
         <div class="flex gap-2">
           <input
             ref="inputRef"
             v-model="urlInput"
             type="url"
             placeholder="https://example.com"
-            class="flex-1 text-sm border border-gray-300 rounded px-2 py-1.5 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+            class="flex-1 text-sm rounded px-2 py-1.5 outline-none focus:ring-1"
+            style="border:1px solid rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-primary);"
             @keydown="handleKeydown"
           />
           <button
-            class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex-shrink-0"
+            class="px-3 py-1.5 text-white text-xs rounded transition-colors flex-shrink-0"
+            style="background: var(--color-accent-primary);"
+            onmouseover="this.style.background='var(--color-accent-hover)';"
+            onmouseout="this.style.background='var(--color-accent-primary)';"
             @click="handleConfirm"
           >OK</button>
         </div>
@@ -79,11 +90,15 @@ function handleKeydown(event: KeyboardEvent) {
           >Remove link</button>
           <span v-else />
           <button
-            class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            class="text-xs transition-colors"
+            style="color:var(--color-text-muted);"
+            @mouseover="($event.target as HTMLElement).style.color='rgba(0,0,0,0.55)'"
+            @mouseout="($event.target as HTMLElement).style.color='var(--color-text-muted)'"
             @click="emit('close')"
           >Cancel</button>
         </div>
       </div>
     </div>
+    </Transition>
   </Teleport>
 </template>

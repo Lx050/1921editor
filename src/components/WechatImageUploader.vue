@@ -18,7 +18,7 @@
       <!-- 图片列表 -->
       <div v-else class="image-list">
         <div v-for="(file, index) in files" :key="file.id" class="image-item">
-          <img :src="file.url" :alt="file.name" class="image-preview" />
+          <img :src="file.url" :alt="file.name" loading="lazy" class="image-preview" />
 
           <!-- 上传状态 -->
           <div class="upload-status" :class="file.status">
@@ -155,7 +155,6 @@ const uploadImage = async (uploadFile: UploadFile) => {
   try {
     uploadFile.status = 'uploading';
 
-    console.log('开始上传图片到微信:', uploadFile.name);
 
     // 关键：直接调用微信API，无需任何授权
     const result = await wechatService.uploadImage(uploadFile.file);
@@ -172,7 +171,7 @@ const uploadImage = async (uploadFile: UploadFile) => {
       media_id: result.media_id,
     });
 
-    console.log('图片上传成功:', uploadFile.name, 'Media ID:', result.media_id);
+    console.debug('图片上传成功:', uploadFile.name, 'Media ID:', result.media_id);
 
     // 触发成功事件
     const event = new CustomEvent('image-upload-success', {
@@ -250,7 +249,7 @@ defineExpose({
 }
 
 .upload-area {
-  border: 2px dashed #ddd;
+  border: 2px dashed rgba(0,0,0,0.12);
   border-radius: 8px;
   padding: 20px;
   text-align: center;
@@ -258,12 +257,12 @@ defineExpose({
 }
 
 .upload-area.dragover {
-  border-color: #007bff;
+  border-color: var(--color-accent-primary);
   background-color: #f0f8ff;
 }
 
 .upload-placeholder {
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 .upload-icon {
@@ -273,7 +272,7 @@ defineExpose({
 }
 
 .upload-btn {
-  background: #007bff;
+  background: var(--color-accent-primary);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -283,7 +282,7 @@ defineExpose({
 }
 
 .upload-btn:hover {
-  background: #0056b3;
+  background: var(--color-accent-hover);
 }
 
 .image-list {
@@ -294,7 +293,7 @@ defineExpose({
 
 .image-item {
   position: relative;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0,0,0,0.12);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -317,15 +316,15 @@ defineExpose({
 }
 
 .status-text.uploading {
-  background: #007bff;
+  background: var(--color-accent-primary);
 }
 
 .status-text.success {
-  background: #28a745;
+  background: var(--color-success);
 }
 
 .status-text.error {
-  background: #dc3545;
+  background: var(--color-error);
 }
 
 .image-actions {
@@ -337,7 +336,7 @@ defineExpose({
 }
 
 .remove-btn {
-  background: rgba(220, 53, 69, 0.8);
+  background: rgba(220, 38, 38, 0.8);
   color: white;
   border: none;
   padding: 4px 8px;
@@ -352,14 +351,14 @@ defineExpose({
   align-items: center;
   justify-content: center;
   height: 150px;
-  border: 2px dashed #ddd;
+  border: 2px dashed rgba(0,0,0,0.12);
   border-radius: 8px;
   cursor: pointer;
   background: #f8f9fa;
 }
 
 .add-more-btn:hover {
-  border-color: #007bff;
+  border-color: var(--color-accent-primary);
   background: #e3f2fd;
 }
 
@@ -384,7 +383,7 @@ defineExpose({
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
 }
 
 .result-item:last-child {
@@ -402,16 +401,16 @@ defineExpose({
 }
 
 .result-item.success .result-status {
-  color: #28a745;
+  color: var(--color-success);
 }
 
 .result-item.error .result-status {
-  color: #dc3545;
+  color: var(--color-error);
 }
 
 .result-media-id {
   font-size: 12px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
   margin-left: 10px;
 }
 

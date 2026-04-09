@@ -48,13 +48,20 @@ function selectEmoji(emoji: string) {
 
 <template>
   <Teleport to="body">
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0 scale-95"
+      leave-to-class="opacity-0 scale-95"
+    >
     <div
       v-if="visible"
       class="fixed inset-0 z-[150]"
       @click="emit('close')"
     >
       <div
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl border w-[320px] overflow-hidden"
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl border w-[320px] overflow-hidden"
+        style="box-shadow:var(--shadow-float);"
         @click.stop
       >
         <div class="px-3 pt-3 pb-2">
@@ -62,7 +69,8 @@ function selectEmoji(emoji: string) {
             v-model="searchQuery"
             type="text"
             placeholder="搜索表情..."
-            class="w-full px-3 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+            class="w-full px-3 py-1.5 text-sm border rounded-lg focus:outline-none"
+            style="--tw-ring-color: var(--color-accent-focus);"
           />
         </div>
 
@@ -71,7 +79,10 @@ function selectEmoji(emoji: string) {
             v-for="(cat, i) in categories"
             :key="cat.name"
             class="px-2 py-1.5 text-[11px] rounded-t transition-colors"
-            :class="activeCategory === i ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-400 hover:text-gray-600'"
+            :class="activeCategory === i ? 'font-medium' : ''"
+            :style="activeCategory === i ? 'background: var(--color-badge-bg); color: var(--color-accent-primary);' : 'color:var(--color-text-muted);'"
+            @mouseover="(e) => { if (activeCategory !== i) (e.currentTarget as HTMLElement).style.color = 'rgba(0,0,0,0.55)'; }"
+            @mouseout="(e) => { if (activeCategory !== i) (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)'; }"
             @click="activeCategory = i"
           >{{ cat.name }}</button>
         </div>
@@ -80,15 +91,18 @@ function selectEmoji(emoji: string) {
           <button
             v-for="emoji in filteredEmojis"
             :key="emoji"
-            class="w-8 h-8 flex items-center justify-center text-lg rounded hover:bg-gray-100 transition-colors cursor-pointer"
+            class="w-8 h-8 flex items-center justify-center text-lg rounded transition-colors cursor-pointer"
+            @mouseover="($event.currentTarget as HTMLElement).style.background='var(--color-bg-warm)'"
+            @mouseout="($event.currentTarget as HTMLElement).style.background=''"
             @click="selectEmoji(emoji)"
           >{{ emoji }}</button>
         </div>
 
-        <div v-if="filteredEmojis.length === 0" class="py-6 text-center text-sm text-gray-400">
+        <div v-if="filteredEmojis.length === 0" class="py-6 text-center text-sm" style="color:var(--color-text-muted);">
           无匹配表情
         </div>
       </div>
     </div>
+    </Transition>
   </Teleport>
 </template>

@@ -3,11 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-// 导入 Element Plus
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-
-// 导入样式文件
+// 导入样式文件（Element Plus CSS moved to TenantSettings.vue — only route that uses it）
 import './styles/main.css'
 import './styles/compatibility.css'
 import './styles/loader.css'
@@ -17,7 +13,6 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-app.use(ElementPlus)
 
 // 性能标记
 if (typeof window !== 'undefined' && window.performance) {

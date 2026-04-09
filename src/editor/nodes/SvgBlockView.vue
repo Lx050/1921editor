@@ -39,14 +39,15 @@ const slotProgress = computed(() => {
 
 <template>
   <NodeViewWrapper class="manifold-svg-block" data-drag-handle data-node-type="manifold-svg-block">
-    <div class="relative group border border-transparent hover:border-blue-300 rounded-lg transition-colors">
+    <div class="relative group border border-transparent rounded-lg transition-colors" style="--hover-border:var(--color-accent-primary);" onmouseover="this.style.borderColor='rgba(0,117,222,0.3)'" onmouseout="this.style.borderColor='transparent'">
       <!-- SVG Render Area -->
       <div class="svg-container" v-html="renderedSvg" />
 
       <!-- Top-left template ID badge -->
       <div
         v-if="templateId"
-        class="absolute top-2 left-2 bg-gray-800/60 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity font-mono"
+        class="absolute top-2 left-2 text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity font-mono"
+        style="background:rgba(0,0,0,0.06); color:rgba(0,0,0,0.5); border:1px solid rgba(0,0,0,0.08);"
       >
         {{ templateId }}
       </div>
@@ -70,7 +71,8 @@ const slotProgress = computed(() => {
       <!-- Bottom hint for interaction -->
       <div
         v-if="emptySlotCount > 0"
-        class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-blue-600/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+        class="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+        style="background-color: color-mix(in srgb, var(--color-accent-primary) 80%, transparent);"
       >
         点击图片槽位填充图片
       </div>
@@ -80,6 +82,8 @@ const slotProgress = computed(() => {
         v-if="editor?.isEditable"
         class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600"
         @click="deleteNode"
+        title="删除SVG块"
+        aria-label="删除SVG块"
       >
         x
       </button>

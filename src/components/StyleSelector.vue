@@ -27,81 +27,89 @@
 
     <!-- 缩略图网格 — 无 border，纯卡片 -->
     <div class="flex-1 overflow-y-auto scrollbar-hide px-3 pb-3">
-      <!-- API 样式 -->
-      <div v-if="currentApiStyles.length > 0" class="mb-4">
-        <div class="flex items-center justify-between mb-2 px-1">
-          <span class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-content-text-muted);">云端</span>
-          <span class="text-[9px] px-1.5 py-0.5 rounded-full" style="background: var(--color-content-bg-muted); color: var(--color-content-text-muted);">{{ currentApiStyles.length }}</span>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div
-            v-for="style in currentApiStyles"
-            :key="`api-${style.id}`"
-            @click="selectStyle(style)"
-            :class="[
-              'relative cursor-pointer rounded-xl p-2 transition-all duration-200',
-              isSelected(style)
-                ? 'bg-white shadow-[0_0_0_2px_var(--color-accent-primary),0_4px_16px_rgba(0,0,0,0.06)] scale-[1.02]'
-                : 'bg-white/50 hover:bg-white hover:shadow-[0_2px_10px_rgba(0,0,0,0.04)]'
-            ]"
-          >
-            <div class="h-20 overflow-hidden rounded-lg flex items-center justify-center" style="background: var(--color-content-bg-muted);">
-              <div class="preview-wrapper">
-                <div class="preview-container" v-html="sanitizeHtmlForPreview(getPreviewWithContent(style))"></div>
+      <!-- 加载骨架屏 -->
+      <div v-if="styleStore.loading" class="grid grid-cols-2 gap-2">
+        <div v-for="i in 4" :key="i" class="h-24 rounded-xl animate-pulse" style="background:rgba(0,0,0,0.06);"></div>
+      </div>
+
+      <!-- API 样式 + 本地样式 + 空状态（仅在非加载状态下显示） -->
+      <template v-else>
+        <!-- API 样式 -->
+        <div v-if="currentApiStyles.length > 0" class="mb-4">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <span class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-content-text-muted);">云端</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded-full" style="background: var(--color-content-bg-muted); color: var(--color-content-text-muted);">{{ currentApiStyles.length }}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div
+              v-for="style in currentApiStyles"
+              :key="`api-${style.id}`"
+              @click="selectStyle(style)"
+              :class="[
+                'relative cursor-pointer rounded-xl p-2 transition-all duration-200',
+                isSelected(style)
+                  ? 'bg-white shadow-[0_0_0_2px_var(--color-accent-primary),0_4px_16px_rgba(0,0,0,0.06)] scale-[1.02]'
+                  : 'bg-white/50 hover:bg-white hover:shadow-[0_2px_10px_rgba(0,0,0,0.04)]'
+              ]"
+            >
+              <div class="h-20 overflow-hidden rounded-lg flex items-center justify-center" style="background: var(--color-content-bg-muted);">
+                <div class="preview-wrapper">
+                  <div class="preview-container" v-html="sanitizeHtmlForPreview(getPreviewWithContent(style))"></div>
+                </div>
               </div>
-            </div>
-            <div class="mt-1.5 text-[9px] text-center font-semibold truncate" :style="{ color: isSelected(style) ? 'var(--color-accent-primary)' : 'var(--color-content-text-secondary)' }">
-              {{ style.name }}
-            </div>
-            <div v-if="isSelected(style)" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style="background: var(--color-accent-primary);">
-              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-              </svg>
+              <div class="mt-1.5 text-[9px] text-center font-semibold truncate" :style="{ color: isSelected(style) ? 'var(--color-accent-primary)' : 'var(--color-content-text-secondary)' }">
+                {{ style.name }}
+              </div>
+              <div v-if="isSelected(style)" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style="background: var(--color-accent-primary);">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- 本地样式 -->
-      <div v-if="currentLocalStyles.length > 0">
-        <div class="flex items-center justify-between mb-2 px-1">
-          <span class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-content-text-muted);">本地</span>
-          <span class="text-[9px] px-1.5 py-0.5 rounded-full" style="background: var(--color-content-bg-muted); color: var(--color-content-text-muted);">{{ currentLocalStyles.length }}</span>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div
-            v-for="style in currentLocalStyles"
-            :key="`local-${style.id}`"
-            @click="selectStyle(style)"
-            :class="[
-              'relative cursor-pointer rounded-xl p-2 transition-all duration-200',
-              isSelected(style)
-                ? 'bg-white shadow-[0_0_0_2px_var(--color-accent-primary),0_4px_16px_rgba(0,0,0,0.06)] scale-[1.02]'
-                : 'bg-white/50 hover:bg-white hover:shadow-[0_2px_10px_rgba(0,0,0,0.04)]'
-            ]"
-          >
-            <div class="h-20 overflow-hidden rounded-lg flex items-center justify-center" style="background: var(--color-content-bg-muted);">
-              <div class="preview-wrapper">
-                <div class="preview-container" v-html="sanitizeHtmlForPreview(getPreviewWithContent(style))"></div>
+        <!-- 本地样式 -->
+        <div v-if="currentLocalStyles.length > 0">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <span class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-content-text-muted);">本地</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded-full" style="background: var(--color-content-bg-muted); color: var(--color-content-text-muted);">{{ currentLocalStyles.length }}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div
+              v-for="style in currentLocalStyles"
+              :key="`local-${style.id}`"
+              @click="selectStyle(style)"
+              :class="[
+                'relative cursor-pointer rounded-xl p-2 transition-all duration-200',
+                isSelected(style)
+                  ? 'bg-white shadow-[0_0_0_2px_var(--color-accent-primary),0_4px_16px_rgba(0,0,0,0.06)] scale-[1.02]'
+                  : 'bg-white/50 hover:bg-white hover:shadow-[0_2px_10px_rgba(0,0,0,0.04)]'
+              ]"
+            >
+              <div class="h-20 overflow-hidden rounded-lg flex items-center justify-center" style="background: var(--color-content-bg-muted);">
+                <div class="preview-wrapper">
+                  <div class="preview-container" v-html="sanitizeHtmlForPreview(getPreviewWithContent(style))"></div>
+                </div>
               </div>
-            </div>
-            <div class="mt-1.5 text-[9px] text-center font-semibold truncate" :style="{ color: isSelected(style) ? 'var(--color-accent-primary)' : 'var(--color-content-text-secondary)' }">
-              {{ style.name }}
-            </div>
-            <div v-if="isSelected(style)" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style="background: var(--color-accent-primary);">
-              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-              </svg>
+              <div class="mt-1.5 text-[9px] text-center font-semibold truncate" :style="{ color: isSelected(style) ? 'var(--color-accent-primary)' : 'var(--color-content-text-secondary)' }">
+                {{ style.name }}
+              </div>
+              <div v-if="isSelected(style)" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style="background: var(--color-accent-primary);">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- 空状态 -->
-      <div v-if="currentApiStyles.length === 0 && currentLocalStyles.length === 0" class="text-center py-12">
-        <div class="text-2xl mb-2 opacity-30">&#x1F3A8;</div>
-        <p class="text-xs" style="color: var(--color-content-text-muted);">暂无样式</p>
-      </div>
+        <!-- 空状态 -->
+        <div v-if="currentApiStyles.length === 0 && currentLocalStyles.length === 0" class="text-center py-12">
+          <div class="text-2xl mb-2 opacity-30">&#x1F3A8;</div>
+          <p class="text-xs" style="color: var(--color-content-text-muted);">暂无样式</p>
+        </div>
+      </template>
     </div>
 
     <!-- 底部按钮 — 融入背景，无硬边框 -->
@@ -173,7 +181,7 @@ const getPreviewWithContent = (style) => {
   let html = style.fullExample || style.preview || ''
   html = html.replace(/\{\{[^}]+\}\}/g, sampleText)
   if (!html.includes(sampleText)) {
-    html += `<div style="margin-top: 6px; text-align: center; font-size: 14px; color: #333;">${sampleText}</div>`
+    html += `<div style="margin-top: 6px; text-align: center; font-size: 14px; color: rgba(0,0,0,0.85);">${sampleText}</div>`
   }
   return html
 }

@@ -46,8 +46,8 @@
     <div class="px-3 pb-2">
       <select
         v-model="activeCategory"
-        class="w-full mb-1.5 px-2 py-1.5 text-[10px] rounded-lg border-0 cursor-pointer outline-none appearance-none"
-        style="background: var(--color-content-bg-muted); color: var(--color-content-text-secondary); background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239a9a9a%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>'); background-repeat: no-repeat; background-position: right 8px center;"
+        class="w-full mb-1.5 px-2 py-1.5 text-[10px] rounded-lg border-0 cursor-pointer outline-none focus:ring-1 appearance-none"
+        style="--tw-ring-color: var(--color-accent-primary); background: var(--color-content-bg-muted); color: var(--color-content-text-secondary); background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239a9a9a%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>'); background-repeat: no-repeat; background-position: right 8px center;"
       >
         <optgroup v-for="group in currentGroups" :key="group.label" :label="group.label">
           <option v-for="cat in group.items" :key="cat.id" :value="cat.id">
@@ -83,8 +83,8 @@
           v-model="searchQuery"
           type="text"
           :placeholder="viewMode === 'interactive' ? '搜索交互模板...' : '搜索模板...'"
-          class="w-full pl-7 pr-3 py-1.5 text-[10px] rounded-lg border-0 outline-none"
-          style="background: var(--color-content-bg-muted); color: var(--color-content-text);"
+          class="w-full pl-7 pr-3 py-1.5 text-[10px] rounded-lg border-0 outline-none focus:ring-1"
+          style="background: var(--color-content-bg-muted); color: var(--color-content-text); --tw-ring-color: var(--color-accent-primary);"
         />
       </div>
     </div>

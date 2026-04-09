@@ -66,15 +66,18 @@ function handleFileUpload(event: Event) {
 <template>
   <div class="h-full flex flex-col p-3">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="text-sm font-medium text-gray-700">图片管理</h3>
+      <h3 class="text-sm font-medium" style="color:rgba(0,0,0,0.65);">图片管理</h3>
       <button
-        class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+        class="text-xs px-2 py-1 rounded transition-colors"
+        style="background: var(--color-badge-bg); color: var(--color-accent-primary);"
+        onmouseover="this.style.background='var(--color-badge-bg)';"
+        onmouseout="this.style.background='var(--color-badge-bg)';"
         @click="triggerUpload"
       >+ 上传</button>
     </div>
     <input ref="fileInput" type="file" accept="image/*" multiple class="hidden" @change="handleFileUpload" />
 
-    <div v-if="imageCount === 0" class="flex-1 flex items-center justify-center text-gray-400 text-sm">
+    <div v-if="imageCount === 0" class="flex-1 flex items-center justify-center text-sm" style="color:var(--color-text-muted);">
       <div class="text-center">
         <p>暂无图片</p>
         <p class="text-xs mt-1">点击上传或拖入编辑器</p>
@@ -82,12 +85,14 @@ function handleFileUpload(event: Event) {
     </div>
 
     <div v-else class="flex-1 overflow-y-auto">
-      <p class="text-xs text-gray-500 mb-2">{{ imageCount }} 张 &middot; 拖入编辑器或点击插入</p>
+      <p class="text-xs mb-2" style="color:rgba(0,0,0,0.45);">{{ imageCount }} 张 &middot; 拖入编辑器或点击插入</p>
       <div class="grid grid-cols-2 gap-2">
         <div
           v-for="img in wechatImages"
           :key="img.id"
-          class="group relative aspect-square rounded border overflow-hidden cursor-grab hover:border-blue-400 transition-colors"
+          class="group relative aspect-square rounded border overflow-hidden cursor-grab transition-colors"
+          onmouseover="this.style.borderColor='var(--color-accent-primary)';"
+          onmouseout="this.style.borderColor='';"
           draggable="true"
           @dragstart="handleDragStart($event, img)"
           @click="handleClickInsert(img)"
@@ -95,6 +100,7 @@ function handleFileUpload(event: Event) {
           <img
             :src="getImageSrc(img)"
             :alt="img.name"
+            loading="lazy"
             class="w-full h-full object-cover pointer-events-none"
           />
           <div class="absolute inset-x-0 bottom-0 bg-black/50 text-white text-[10px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition-opacity">

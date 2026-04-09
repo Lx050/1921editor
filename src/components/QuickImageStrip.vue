@@ -3,24 +3,25 @@
   <div 
     v-if="images.length > 0 && hasPlaceholder"
     class="flex-shrink-0 w-full border-b overflow-hidden"
-    style="background: linear-gradient(180deg, #fafbfc 0%, #f3f4f6 100%); border-color: var(--color-content-border);"
+    style="background: var(--color-bg-warm); border-color: var(--color-content-border);"
   >
     <!-- 提示文字 -->
     <div class="px-3 pt-2 pb-1 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <span class="text-xs font-medium text-gray-500">📷 图片快选</span>
+        <span class="text-xs font-medium" style="color:rgba(0,0,0,0.45);">📷 图片快选</span>
         <span 
           v-if="selectedPlaceholder" 
-          class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 font-medium animate-pulse"
+          class="text-xs px-2 py-0.5 rounded-full font-medium animate-pulse"
+          style="background: var(--color-badge-bg); color: var(--color-accent-primary);"
         >
           已选中占位符，点击图片一键替换
         </span>
-        <span v-else class="text-xs text-gray-400">
+        <span v-else class="text-xs" style="color:var(--color-text-muted);">
           请先点击下方预览中的占位符
         </span>
       </div>
       <!-- 图片数量 -->
-      <span class="text-xs text-gray-400">{{ images.length }} 张</span>
+      <span class="text-xs" style="color:var(--color-text-muted);">{{ images.length }} 张</span>
     </div>
 
     <!-- 横向滚动图片区 -->
@@ -36,15 +37,18 @@
         class="flex-shrink-0 relative rounded-lg overflow-hidden transition-all duration-200 group"
         :class="[
           selectedPlaceholder
-            ? 'cursor-pointer hover:ring-2 hover:ring-blue-400 hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
+            ? 'cursor-pointer hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
             : 'opacity-50 cursor-not-allowed',
         ]"
+        @mouseover="(e) => { if (props.selectedPlaceholder) (e.currentTarget as HTMLElement).style.outline = '2px solid var(--color-accent-primary)'; }"
+        @mouseout="(e) => { (e.currentTarget as HTMLElement).style.outline = ''; }"
         :style="getImageContainerStyle(image)"
       >
         <!-- 图片缩略图 - 保持原始宽高比 -->
         <img
           :src="image.localPreviewUrl || getProxiedUrl(image.url)"
           :alt="image.name"
+          loading="lazy"
           class="w-full h-full object-cover"
           @load="handleImageLoad($event, image)"
           @error="handleImageError(image)"
@@ -65,7 +69,7 @@
         <!-- 选中反馈动画 -->
         <div 
           v-if="selectedPlaceholder"
-          class="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/10 transition-colors duration-200 pointer-events-none"
+          class="absolute inset-0 bg-transparent group-hover:bg-[rgba(0,117,222,0.1)] transition-colors duration-200 pointer-events-none"
         />
 
         <!-- 比例指示器 (小角标) -->
@@ -176,12 +180,10 @@ const handleHorizontalScroll = (e: WheelEvent) => {
 // 一键替换逻辑
 const handleQuickSelect = (image: WechatImage) => {
   if (!props.selectedPlaceholder) {
-    console.log('[QuickImageStrip] 请先选择占位符')
     return
   }
-  
+
   emit('select', image)
-  console.log('[QuickImageStrip] 触发一键替换:', image.name)
 }
 </script>
 

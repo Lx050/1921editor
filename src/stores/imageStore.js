@@ -48,16 +48,24 @@ export const useImageStore = defineStore('images', () => {
 
   /**
    * 将 blob URL 转换为 base64 data URI（导出用）
+   * @param {string} blobUrl - 要转换的 blob URL
+   * @returns {Promise<string|null>} base64 data URI，若 blob URL 已失效则返回 null
    */
   const convertToBase64 = async (blobUrl) => {
-    const response = await fetch(blobUrl)
-    const blob = await response.blob()
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result)
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
-    })
+    try {
+      const response = await fetch(blobUrl)
+      if (!response.ok) return null
+      const blob = await response.blob()
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      })
+    } catch {
+      // blob URL 已被撤销或无效
+      return null
+    }
   }
 
   /**

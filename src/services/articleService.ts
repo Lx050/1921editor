@@ -52,7 +52,6 @@ export class ArticleService {
             // 调用保存草稿API
             await saveArticleDraft(articleId)
 
-            console.log('草稿保存成功:', articleId)
             return articleId
         } catch (error: any) {
             console.error('保存草稿失败:', error)

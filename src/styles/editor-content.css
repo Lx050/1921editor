@@ -1,0 +1,458 @@
+.manifold-editor-content .ProseMirror {
+  outline: none;
+  min-height: 400px;
+}
+/* Block boundaries - every top-level block has visible edges */
+.manifold-editor-content .ProseMirror > * {
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.manifold-editor-content .ProseMirror > *:hover {
+  border-color: rgba(0,0,0,0.12);
+}
+.manifold-editor-content .ProseMirror > .focus-active {
+  border-color: rgba(0,117,222,0.3);
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.08);
+}
+/* Drag-to-merge: target block "swallow" glow */
+.manifold-editor-content .ProseMirror > .merge-target-glow {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 4px 12px rgba(139,92,246,0.15) !important;
+  transform: scale(1.01);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+/* ManifoldGroup - shared container with visible border */
+.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
+  border: 2px solid #c4b5fd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: rgba(139,92,246,0.03);
+  position: relative;
+}
+.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]:hover {
+  border-color: #a78bfa;
+  background: rgba(139,92,246,0.05);
+}
+.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"].focus-active {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.15);
+}
+/* Children inside group share the container - reduce their individual borders */
+.manifold-editor-content .ProseMirror [data-node-type="manifold-group"] > * {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin-bottom: 2px;
+  transition: border-color 0.15s;
+}
+.manifold-editor-content .ProseMirror [data-node-type="manifold-group"] > *:hover {
+  border-color: #ddd6fe;
+}
+/* Group label */
+.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
+  content: '组合';
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  font-size: 10px;
+  color: #8b5cf6;
+  background: white;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.manifold-editor-content .ProseMirror h1 {
+  font-family: var(--preset-title-font, inherit);
+  font-size: var(--preset-title-size, 1.5rem);
+  font-weight: var(--preset-title-bold, bold);
+  margin-bottom: 1rem;
+}
+.manifold-editor-content .ProseMirror h2 {
+  font-family: var(--preset-title-font, inherit);
+  font-size: var(--preset-title-size, 1.25rem);
+  font-weight: var(--preset-title-bold, bold);
+  margin-bottom: 0.75rem;
+}
+.manifold-editor-content .ProseMirror h3 {
+  font-family: var(--preset-title-font, inherit);
+  font-size: calc(var(--preset-title-size, 1.125rem) * 0.9);
+  font-weight: var(--preset-title-bold, 600);
+  margin-bottom: 0.5rem;
+}
+.manifold-editor-content .ProseMirror p {
+  font-family: var(--preset-body-font, inherit);
+  font-size: var(--preset-body-size, 14px);
+  line-height: var(--preset-body-lh, 1.625);
+  letter-spacing: var(--preset-body-ls, normal);
+  text-indent: var(--preset-body-indent, 0);
+  margin-bottom: 0.75rem;
+}
+.manifold-editor-content .ProseMirror hr {
+  border: none;
+  border-top: 1px solid rgba(0,0,0,0.12);
+  margin: 1.5rem 0;
+}
+.manifold-editor-content .ProseMirror .is-empty::before {
+  color: var(--color-text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+/* BlockRole visual indicators */
+.manifold-editor-content .ProseMirror p[data-role="intro"] {
+  border-left: 3px solid var(--color-accent-primary);
+  padding-left: 12px;
+  color: rgba(0,0,0,0.55);
+  font-style: italic;
+  font-family: var(--preset-intro-font, inherit);
+  font-size: var(--preset-intro-size, 14px);
+  text-indent: 0;
+}
+.manifold-editor-content .ProseMirror p[data-role="outro"] {
+  border-left: 3px solid #a78bfa;
+  padding-left: 12px;
+  color: rgba(0,0,0,0.55);
+  font-style: italic;
+  font-family: var(--preset-intro-font, inherit);
+  font-size: var(--preset-intro-size, 14px);
+  text-indent: 0;
+}
+/* Blockquote */
+.manifold-editor-content .ProseMirror blockquote {
+  border-left: 3px solid rgba(0,0,0,0.2);
+  padding-left: 12px;
+  margin: 1rem 0;
+  color: rgba(0,0,0,0.45);
+}
+.manifold-editor-content .ProseMirror blockquote p {
+  text-indent: 0;
+}
+.manifold-editor-content .ProseMirror blockquote[data-variant="tip"] {
+  border-left-color: #22c55e;
+  background: #f0fdf4;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  color: #15803d;
+}
+.manifold-editor-content .ProseMirror blockquote[data-variant="warning"] {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  color: #92400e;
+}
+.manifold-editor-content .ProseMirror blockquote[data-variant="quote"] {
+  border-left-color: var(--color-accent-primary);
+  background: #eff6ff;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  color: var(--color-badge-text);
+  font-style: italic;
+}
+/* Image nodes (NodeView) */
+.manifold-editor-content .ProseMirror .manifold-image-block {
+  margin: 0.75rem 0;
+}
+.manifold-editor-content .ProseMirror [data-node-type="manifold-image"] {
+  margin: 1rem 0;
+  text-align: center;
+}
+.manifold-editor-content .ProseMirror [data-node-type="manifold-image"] img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+/* Inline images within paragraphs */
+.manifold-editor-content .ProseMirror img[data-inline-image] {
+  display: block;
+  margin: 8px auto;
+  max-width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.manifold-editor-content .ProseMirror img[data-inline-image]:hover {
+  outline: 2px solid rgba(0,117,222,0.3);
+  outline-offset: 2px;
+}
+.manifold-editor-content .ProseMirror img[data-inline-image].ProseMirror-selectednode {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+/* Table */
+.manifold-editor-content .ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+.manifold-editor-content .ProseMirror th,
+.manifold-editor-content .ProseMirror td {
+  border: 1px solid rgba(0,0,0,0.2);
+  padding: 6px 10px;
+  min-width: 80px;
+  vertical-align: top;
+}
+.manifold-editor-content .ProseMirror th {
+  background: var(--color-bg-warm);
+  font-weight: 600;
+}
+.manifold-editor-content .ProseMirror .selectedCell {
+  background: var(--color-badge-bg) !important;
+}
+/* Support cell background color attribute */
+.manifold-editor-content .ProseMirror td[style*="background"],
+.manifold-editor-content .ProseMirror th[style*="background"] {
+  transition: background-color 0.15s ease;
+}
+/* Inline code */
+.manifold-editor-content .ProseMirror code {
+  background: var(--color-bg-warm);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: #ef4444;
+}
+/* Column resize handle */
+.manifold-editor-content .ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--color-accent-primary);
+  cursor: col-resize;
+}
+.manifold-editor-content .ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+/* Code block */
+.manifold-editor-content .ProseMirror pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.manifold-editor-content .ProseMirror pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+/* Lists nested */
+.manifold-editor-content .ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.5em;
+  margin: 0.5rem 0;
+}
+.manifold-editor-content .ProseMirror ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+  margin: 0.5rem 0;
+}
+.manifold-editor-content .ProseMirror li {
+  margin: 0.25rem 0;
+}
+.manifold-editor-content .ProseMirror li > p {
+  margin-bottom: 0.25rem;
+  text-indent: 0;
+}
+/* Focus mode - softer dim for non-active blocks (was 0.25, now 0.55 for touch usability) */
+.manifold-editor-content.focus-mode .ProseMirror > * {
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+.manifold-editor-content.focus-mode .ProseMirror > .focus-active {
+  opacity: 1;
+}
+.manifold-editor-content.focus-mode .ProseMirror > *:hover {
+  opacity: 0.8;
+}
+/* Dark theme - group */
+.editor-dark .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
+  border-color: #6d28d9;
+  background: rgba(139,92,246,0.08);
+}
+.editor-dark .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
+  color: #a78bfa;
+  background: #1e1e2e;
+}
+/* Sepia theme - group */
+.editor-sepia .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
+  border-color: #a78bfa;
+  background: rgba(139,92,246,0.04);
+}
+.editor-sepia .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
+  color: #7c3aed;
+  background: #f8f0e3;
+}
+/* Dark theme */
+.editor-dark .manifold-editor-content .ProseMirror {
+  color: #cdd6f4;
+}
+.editor-dark .manifold-editor-content .ProseMirror h1,
+.editor-dark .manifold-editor-content .ProseMirror h2,
+.editor-dark .manifold-editor-content .ProseMirror h3 {
+  color: #e2e8f0;
+}
+.editor-dark .manifold-editor-content .ProseMirror .is-empty::before {
+  color: #585b70;
+}
+.editor-dark .manifold-editor-content .ProseMirror blockquote {
+  border-left-color: #585b70;
+  color: #a6adc8;
+}
+.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="tip"] {
+  border-left-color: #22c55e;
+  background: #052e16;
+  color: #86efac;
+}
+.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="warning"] {
+  border-left-color: #f59e0b;
+  background: #451a03;
+  color: #fcd34d;
+}
+.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="quote"] {
+  border-left-color: #3b82f6;
+  background: #172554;
+  color: #93c5fd;
+}
+.editor-dark .manifold-editor-content .ProseMirror hr {
+  border-top-color: #313244;
+}
+.editor-dark .manifold-editor-content .ProseMirror code {
+  background: #313244;
+  color: #f38ba8;
+}
+.editor-dark .manifold-editor-content .ProseMirror th {
+  background: #313244;
+  color: #cdd6f4;
+}
+.editor-dark .manifold-editor-content .ProseMirror th,
+.editor-dark .manifold-editor-content .ProseMirror td {
+  border-color: #45475a;
+}
+.editor-dark .manifold-editor-content .ProseMirror .selectedCell {
+  background: #313244;
+}
+.editor-dark .manifold-editor-content .ProseMirror a {
+  color: #89b4fa;
+}
+.editor-dark .paragraph-number {
+  color: #585b70 !important;
+}
+/* Dark code block */
+.editor-dark .manifold-codeblock .rounded-lg {
+  border-color: #45475a;
+  background: #1e1e2e;
+}
+.editor-dark .manifold-codeblock .bg-gray-100 {
+  background: #181825;
+}
+.editor-dark .manifold-codeblock .border-gray-200 {
+  border-color: #45475a;
+}
+.editor-dark .manifold-codeblock .text-gray-500,
+.editor-dark .manifold-codeblock .text-gray-400 {
+  color: #6c7086;
+}
+.editor-dark .manifold-codeblock-content {
+  color: #cdd6f4;
+}
+/* Sepia theme */
+.editor-sepia .manifold-editor-content .ProseMirror {
+  color: #5c4b37;
+}
+.editor-sepia .manifold-editor-content .ProseMirror h1,
+.editor-sepia .manifold-editor-content .ProseMirror h2,
+.editor-sepia .manifold-editor-content .ProseMirror h3 {
+  color: #3e2f1e;
+}
+.editor-sepia .manifold-editor-content .ProseMirror .is-empty::before {
+  color: #c4a882;
+}
+.editor-sepia .manifold-editor-content .ProseMirror blockquote {
+  border-left-color: #c4a882;
+  color: #7a6450;
+}
+.editor-sepia .manifold-editor-content .ProseMirror hr {
+  border-top-color: #d4c4a8;
+}
+/* Sepia code block */
+.editor-sepia .manifold-codeblock .rounded-lg {
+  border-color: #d4c4a8;
+  background: #f5ebe0;
+}
+.editor-sepia .manifold-codeblock .bg-gray-100 {
+  background: #ede0d0;
+}
+.editor-sepia .manifold-codeblock-content {
+  color: #5c4b37;
+}
+/* Mobile / touch optimization */
+@media (max-width: 768px) {
+  .manifold-editor-content .ProseMirror > * {
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  .manifold-editor-content .ProseMirror > *:hover {
+    border-color: rgba(0,0,0,0.2);
+  }
+}
+/* Touch devices: always show block boundaries subtly */
+@media (pointer: coarse) {
+  .manifold-editor-content .ProseMirror > * {
+    border-color: rgba(0,0,0,0.04);
+  }
+  .manifold-editor-content .ProseMirror > *:hover {
+    border-color: rgba(0,0,0,0.2);
+  }
+  /* Disable harsh focus mode on touch by default */
+  .manifold-editor-content.focus-mode .ProseMirror > * {
+    opacity: 0.7;
+  }
+}
+/* Print stylesheet */
+@media print {
+  .manifold-editor-content .ProseMirror {
+    color: #000 !important;
+    background: #fff !important;
+  }
+  .manifold-editor-content .ProseMirror h1,
+  .manifold-editor-content .ProseMirror h2,
+  .manifold-editor-content .ProseMirror h3 {
+    color: #000 !important;
+    page-break-after: avoid;
+  }
+  .manifold-editor-content .ProseMirror img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+  .manifold-editor-content .ProseMirror pre {
+    background: #f5f5f5 !important;
+    color: rgba(0,0,0,0.85) !important;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+  }
+  .manifold-editor-content .ProseMirror table {
+    page-break-inside: avoid;
+  }
+  .manifold-editor-content .ProseMirror blockquote {
+    color: #555 !important;
+    border-left-color: var(--color-text-muted) !important;
+    background: none !important;
+  }
+  .paragraph-number { display: none !important; }
+  .focus-mode .ProseMirror > * { opacity: 1 !important; }
+}

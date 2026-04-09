@@ -149,7 +149,6 @@ async function extractWithJSZip(file: File): Promise<ExtractResult> {
         }
 
         const filename = getFileName(relativePath).trim()
-        console.log('[JSZip] 扫描到文件:', { relativePath, filename })
 
         // 处理图片文件
         if (isImageFile(filename)) {
@@ -162,7 +161,6 @@ async function extractWithJSZip(file: File): Promise<ExtractResult> {
 
         // 处理 Word 文档
         if (isDocxFile(filename)) {
-            console.log('[JSZip] 🎯 识别到 Word 文档:', filename)
             const promise = zipEntry.async('arraybuffer').then((buffer) => {
                 const docxFile = createFileFromBuffer(buffer, filename, getMimeType(filename))
                 result.docxFiles.push(docxFile)
@@ -203,9 +201,6 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
         const inputPath = `${inputDir}/${file.name}`
         sevenZip.FS.writeFile(inputPath, inputData)
 
-        // 执行解压命令
-        console.log('[7z-wasm] 开始解压:', file.name)
-
         // 改进：不再强制 -mcp=936，除非明确需要（7z 对 ZIP 的编码处理有时不如 JSZip 灵活）
         const cmd = ['x', inputPath, `-o${outputDir}`, '-y', '-bso0', '-bsp0']
 
@@ -236,7 +231,6 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
                         const imageFile = createFileFromBuffer(fileData, filename, getMimeType(filename))
                         result.imageFiles.push(imageFile)
                     } else if (isDocxFile(filename)) {
-                        console.log('[7z-wasm] 🎯 识别到 Word 文档:', filename)
                         const docxFile = createFileFromBuffer(fileData, filename, getMimeType(filename))
                         result.docxFiles.push(docxFile)
                     }
@@ -257,7 +251,6 @@ async function extractWith7zWasm(file: File): Promise<ExtractResult> {
  */
 export async function extractArchive(file: File): Promise<ExtractResult> {
     const archiveType = getArchiveType(file)
-    console.log('[Archive Processor v6] 处理文件:', file.name, '类型:', archiveType)
 
     switch (archiveType) {
         case 'zip':

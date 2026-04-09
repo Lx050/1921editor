@@ -1,4 +1,9 @@
-import { getSvgTemplateById } from '@/styles/svgTemplates'
+// Lazy-loaded to defer the large svgTemplates chunk until first SVG import
+let _getSvgTemplateById: ((id: string) => any) | null = null
+import('@/styles/svgTemplates').then((m) => { _getSvgTemplateById = m.getSvgTemplateById })
+function getSvgTemplateById(id: string): any {
+  return _getSvgTemplateById ? _getSvgTemplateById(id) : null
+}
 import type { ContentBlock } from '@/types'
 import type { EditorDocument } from '@/types/editor'
 

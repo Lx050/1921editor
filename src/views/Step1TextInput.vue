@@ -1,33 +1,40 @@
 <template>
-  <div class="h-full flex flex-col bg-white">
+  <div class="h-full flex flex-col" style="background:var(--color-bg-page);">
     <!-- Top bar -->
-    <div class="flex-shrink-0 border-b border-gray-100 px-6 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <!-- Step indicator dots -->
-        <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-          <span class="w-2 h-2 rounded-full bg-gray-200"></span>
-          <span class="w-2 h-2 rounded-full bg-gray-200"></span>
-        </div>
-        <span class="text-xs text-gray-400">步骤 1 / 3</span>
-        <span class="text-gray-200 select-none">|</span>
-        <h2 class="text-sm font-semibold text-gray-700">输入文章文本</h2>
+    <div style="flex-shrink:0; border-bottom:var(--border-whisper); padding:10px 24px; display:flex; align-items:center; justify-content:space-between; background:var(--color-bg-card);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="text-[10px] px-2.5 py-1 rounded-full font-medium" style="background: var(--color-accent-soft); color: var(--color-accent-primary);">1 / 3</span>
+        <h2 style="font-size:14px; font-weight:600; color:rgba(0,0,0,0.85); margin:0;">输入文章文本</h2>
       </div>
-      <div class="flex items-center gap-1">
+      <div style="display:flex; align-items:center; gap:4px;">
         <button
           @click="isMarkdownMode = !isMarkdownMode"
-          class="px-2.5 py-1 text-xs rounded-md transition-colors font-mono"
-          :class="isMarkdownMode ? 'text-blue-600 bg-blue-50 font-medium' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'"
+          :style="{
+            padding: '4px 10px',
+            fontSize: '12px',
+            fontWeight: '600',
+            borderRadius: '4px',
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'all 150ms',
+            fontFamily: 'monospace',
+            background: isMarkdownMode ? 'var(--color-badge-bg)' : 'transparent',
+            color: isMarkdownMode ? 'var(--color-badge-text)' : 'var(--color-text-muted)',
+          }"
           :title="isMarkdownMode ? 'Markdown 模式 (点击切换回普通模式)' : '切换到 Markdown 模式'"
         >{{ isMarkdownMode ? 'MD ON' : 'MD' }}</button>
         <button
           @click="insertSampleText"
-          class="px-2.5 py-1 text-xs text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+          style="padding:4px 10px; font-size:12px; color:var(--color-text-muted); background:transparent; border:none; border-radius:4px; cursor:pointer; transition:all 150ms;"
+          onmouseover="this.style.background='var(--color-bg-warm)'; this.style.color='rgba(0,0,0,0.7)'"
+          onmouseout="this.style.background='transparent'; this.style.color=''"
         >示例文本</button>
         <button
           @click="clearText"
           :disabled="!localText"
-          class="px-2.5 py-1 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          style="padding:4px 10px; font-size:12px; color:var(--color-text-muted); background:transparent; border:none; border-radius:4px; cursor:pointer; transition:all 150ms;"
+          onmouseover="if(!this.disabled){this.style.background='var(--color-error-light)'; this.style.color='var(--color-error)'}"
+          onmouseout="this.style.background='transparent'; this.style.color=''"
         >清空</button>
       </div>
     </div>
@@ -38,10 +45,16 @@
 
         <!-- Textarea card -->
         <div
-          class="flex-1 flex flex-col rounded-xl border transition-all duration-200"
-          :class="isDragging
-            ? 'border-blue-400 bg-blue-50/40 shadow-[0_0_0_3px_rgba(59,130,246,0.12)]'
-            : 'border-gray-200 bg-gray-50/50 hover:border-gray-300'"
+          :style="{
+            flex: '1',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: 'var(--radius-sm)',
+            border: isDragging ? '1.5px solid var(--color-accent-primary)' : 'var(--border-input)',
+            background: isDragging ? 'rgba(0,117,222,0.03)' : 'var(--color-bg-card)',
+            boxShadow: isDragging ? '0 0 0 3px var(--color-accent-focus)' : 'var(--shadow-content-card)',
+            transition: 'all 200ms',
+          }"
         >
           <textarea
             id="textInput"
@@ -49,137 +62,143 @@
             @drop.prevent="handleDrop"
             @dragover.prevent="handleDragOver"
             @dragleave.prevent="handleDragLeave"
-            class="flex-1 w-full min-h-[280px] px-5 py-4 bg-transparent resize-none text-sm text-gray-800 leading-relaxed outline-none placeholder:text-gray-400"
+            style="
+              flex:1;
+              width:100%;
+              min-height:280px;
+              padding:16px 20px;
+              background:transparent;
+              resize:none;
+              font-size:14px;
+              color:rgba(0,0,0,0.85);
+              line-height:1.7;
+              outline:none;
+              font-family:var(--font-body);
+            "
+            onfocus="this.style.boxShadow='inset 0 0 0 2px var(--color-accent-primary)'"
+            onblur="this.style.boxShadow=''"
             :placeholder="isMarkdownMode
               ? '在此粘贴 Markdown 格式文本...\n\n# 一级标题\n## 二级标题\n正文内容\n**加粗** *斜体* `代码`'
               : '在此粘贴文章正文…\n\n支持直接粘贴 Word 内容，也可将 .docx 或 .zip 文件拖拽到此处自动提取。'"
           ></textarea>
           <!-- Textarea footer row -->
-          <div class="flex items-center justify-between px-5 py-2.5 border-t border-gray-100">
-            <span class="text-xs text-gray-400">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 20px; border-top:var(--border-subtle);">
+            <span style="font-size:12px; color:var(--color-text-muted);">
               <template v-if="localText">{{ localText.length }} 字</template>
               <template v-else>拖入 .docx / .zip 文件可自动提取文本和图片</template>
             </span>
-            <div v-if="extractedImages.length > 0" class="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <div v-if="extractedImages.length > 0" class="notion-badge notion-badge-success" style="display:flex; align-items:center; gap:4px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
               已提取 {{ extractedImages.length }} 张图片
             </div>
           </div>
         </div>
 
         <!-- Metadata row -->
-        <div class="rounded-xl border border-gray-200 bg-white">
-          <div class="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-gray-100">
+        <div style="border-radius:var(--radius-sm); border:var(--border-whisper); background:var(--color-bg-card); box-shadow:var(--shadow-content-card);">
+          <div style="display:flex; align-items:center; gap:8px; padding:10px 16px 8px; border-bottom:var(--border-subtle);">
             <span
-              class="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-              :class="{
-                'bg-orange-100 text-orange-600': configStore.mode === 'daily',
-                'bg-emerald-100 text-emerald-600': configStore.mode === 'three_rural',
-                'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+              :style="{
+                padding: '2px 8px',
+                borderRadius: '9999px',
+                fontSize: '11px',
+                fontWeight: '600',
+                background: configStore.mode === 'daily' ? '#fff7ed' : configStore.mode === 'three_rural' ? '#f0fdf4' : '#faf5ff',
+                color: configStore.mode === 'daily' ? '#c2410c' : configStore.mode === 'three_rural' ? '#16a34a' : '#7c3aed',
               }"
             >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
-            <span class="text-xs text-gray-400">尾部信息</span>
+            <span style="font-size:12px; color:var(--color-text-muted);">尾部信息</span>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 px-4 py-3">
             <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1.5">编辑人员</label>
+              <label style="display:block; font-size:12px; font-weight:600; color:rgba(0,0,0,0.55); margin-bottom:5px;">编辑人员</label>
               <input
                 v-model="appStore.editorInput"
                 type="text"
                 placeholder="姓名"
-                class="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-300/60 focus:border-blue-400 transition-all"
+                class="notion-input"
+                style="font-size:13px; padding:7px 10px;"
               />
             </div>
             <div v-if="configStore.mode === 'three_rural'">
-              <label class="block text-xs font-medium text-gray-500 mb-1.5">项目名称</label>
+              <label style="display:block; font-size:12px; font-weight:600; color:rgba(0,0,0,0.55); margin-bottom:5px;">项目名称</label>
               <input
                 v-model="appStore.teamName"
                 type="text"
                 placeholder="如：青春筑梦社会实践队"
-                class="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-300/60 focus:border-emerald-400 transition-all"
+                class="notion-input"
+                style="font-size:13px; padding:7px 10px;"
               />
             </div>
             <div v-if="configStore.mode === 'reprint'">
-              <label class="block text-xs font-medium text-gray-500 mb-1.5">来源公众号</label>
+              <label style="display:block; font-size:12px; font-weight:600; color:rgba(0,0,0,0.55); margin-bottom:5px;">来源公众号</label>
               <input
                 v-model="appStore.sourceAccount"
                 type="text"
                 placeholder="如：人民日报"
-                class="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-purple-300/60 focus:border-purple-400 transition-all"
+                class="notion-input"
+                style="font-size:13px; padding:7px 10px;"
               />
             </div>
           </div>
         </div>
 
         <!-- Format syntax reference (collapsible) -->
-        <details class="group rounded-xl border border-gray-200 bg-white">
-          <summary class="flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-gray-400 cursor-pointer hover:text-gray-600 select-none list-none transition-colors">
-            <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <details style="border-radius:var(--radius-sm); border:var(--border-whisper); background:var(--color-bg-card);">
+          <summary style="display:flex; align-items:center; gap:6px; padding:10px 16px; font-size:12px; font-weight:500; color:var(--color-text-muted); cursor:pointer; list-style:none;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             格式标注语法参考
           </summary>
-          <div class="px-4 pb-4 pt-1 grid grid-cols-2 gap-4">
-            <div class="space-y-1.5">
-              <p class="text-xs font-semibold text-gray-600 mb-2">图片</p>
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">&</code>
-                <span>单图占位</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">&图注</code>
-                <span>单图 + 图注</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">&&</code>
-                <span>双图占位</span>
+          <div style="padding:4px 16px 16px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <p style="font-size:12px; font-weight:600; color:rgba(0,0,0,0.6); margin:0 0 4px;">图片</p>
+              <div v-for="item in [['&', '单图占位'], ['&图注', '单图 + 图注'], ['&&', '双图占位']]" :key="item[0]" style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--color-text-secondary);">
+                <code style="background:var(--color-bg-warm); color:rgba(0,0,0,0.7); padding:2px 6px; border-radius:4px; font-family:monospace; font-size:11px; border:var(--border-subtle);">{{ item[0] }}</code>
+                <span>{{ item[1] }}</span>
               </div>
             </div>
-            <div class="space-y-1.5">
-              <p class="text-xs font-semibold text-gray-600 mb-2">文字结构</p>
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">## 标题</code>
-                <span>小标题</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]"># 正文</code>
-                <span>强制正文</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">&gt; 引言</code>
-                <span>引言段落</span>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <p style="font-size:12px; font-weight:600; color:rgba(0,0,0,0.6); margin:0 0 4px;">文字结构</p>
+              <div v-for="item in [['## 标题', '小标题'], ['# 正文', '强制正文'], ['> 引言', '引言段落']]" :key="item[0]" style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--color-text-secondary);">
+                <code style="background:var(--color-bg-warm); color:rgba(0,0,0,0.7); padding:2px 6px; border-radius:4px; font-family:monospace; font-size:11px; border:var(--border-subtle);">{{ item[0] }}</code>
+                <span>{{ item[1] }}</span>
               </div>
             </div>
           </div>
         </details>
 
         <!-- Error -->
-        <div v-if="errorMessage" class="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
-          <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div v-if="errorMessage" style="display:flex; align-items:flex-start; gap:10px; padding:12px 14px; background:var(--color-error-light); border:1px solid var(--color-error-border); border-radius:8px; font-size:13px; color:var(--color-error);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           {{ errorMessage }}
         </div>
 
-        <!-- Bottom spacer so content doesn't hide behind footer -->
-        <div class="h-4"></div>
+        <div style="height:16px;"></div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="flex-shrink-0 bg-white border-t border-gray-100 px-6 py-3">
+    <div style="flex-shrink:0; padding:12px 24px; background:linear-gradient(180deg, transparent 0%, var(--color-bg-page) 30%); backdrop-filter:blur(8px);">
       <input type="file" ref="fileInput" accept=".docx,.zip,.rar,.7z" class="hidden" @change="handleFileUpload">
-      <div class="max-w-2xl mx-auto flex items-center gap-3">
+      <div style="max-width:672px; margin:0 auto; display:flex; align-items:center; gap:12px;">
         <button
           @click="triggerFileUpload"
-          class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all text-sm font-medium"
+          class="flex-1 h-10 bg-white/80 hover:bg-white text-sm font-medium rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+          style="color:rgba(0,0,0,0.65); box-shadow:var(--shadow-content-card);"
         >
-          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
           导入文件
         </button>
         <button
           @click="goToNextStep"
           :disabled="!localText.trim()"
-          class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-[0.99] transition-all text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-200"
+          class="flex-[2] h-10 text-white text-sm font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          style="background:var(--color-accent-primary); box-shadow:var(--shadow-accent);"
+          onmouseover="if(!this.disabled) this.style.background='var(--color-accent-hover)'"
+          onmouseout="this.style.background='var(--color-accent-primary)'"
         >
           <span>开始编辑排版</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </button>
       </div>
     </div>
@@ -189,12 +208,17 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { showConfirm } from '@/composables/useConfirm'
 import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
 import { extractArchive, isArchiveFile } from '../utils/archiveProcessor'
 import { uploadManager } from '../utils/uploadManager'
 import { smartTextParser } from '../utils/textParser'
 import { markdownToTiptap } from '../utils/markdownImporter'
+import {
+  getImageDimensionsFromBuffer,
+  convertHtmlToCustomFormat,
+} from '../utils/docxProcessor'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -221,31 +245,6 @@ watch(localText, (newText) => {
 })
 
 const isDragging = ref(false)
-
-// ── 图片尺寸读取（通过浏览器 Image 解码，无需手动解析二进制）──
-const getImageDimensionsFromBuffer = (buffer, contentType) => {
-  return new Promise((resolve) => {
-    try {
-      const blob = new Blob([buffer], { type: contentType })
-      const url = URL.createObjectURL(blob)
-      const img = new Image()
-      img.onload = () => { URL.revokeObjectURL(url); resolve({ width: img.naturalWidth, height: img.naturalHeight }) }
-      img.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
-      img.src = url
-    } catch (e) {
-      resolve(null)
-    }
-  })
-}
-
-// 方向判断：横版 / 竖版 / 方形
-const getImageOrientation = (dims) => {
-  if (!dims || !dims.width || !dims.height) return 'unknown'
-  const r = dims.width / dims.height
-  if (r > 1.2) return 'landscape'
-  if (r < 0.85) return 'portrait'
-  return 'square'
-}
 
 // 触发文件选择
 const triggerFileUpload = () => {
@@ -304,23 +303,14 @@ const processFile = async (file) => {
 // V2: 处理压缩包文件 (ZIP/RAR/7z)
 const processArchiveFile = async (file) => {
   try {
-    console.log('[Step1] 处理压缩包文件:', file.name)
     const result = await extractArchive(file)
-    
-    console.log('[Step1] 提取结果:', {
-      docxCount: result.docxFiles.length,
-      docxNames: result.docxFiles.map(f => f.name),
-      imageCount: result.imageFiles.length
-    })
 
     extractedImages.value = result.imageFiles
-    console.log('[Step1] 提取', result.imageFiles.length, '张图片')
-    
+
     // 如果有 docx 文件，处理第一个 (V2: 文档直接替换)
     if (result.docxFiles.length > 0) {
       // 排序优化：避免识别到奇怪的文档，优先处理第一个，但可以添加过滤逻辑
       const mainDoc = result.docxFiles[0]
-      console.log('[Step1] 正在解析主文档:', mainDoc.name, '大小:', mainDoc.size)
       await processDocxFile(mainDoc)
     } else {
       // 仅提示图片提取成功，不报错
@@ -339,18 +329,10 @@ const processArchiveFile = async (file) => {
 // 处理 DOCX 文件
 const processDocxFile = async (file) => {
   try {
-    console.log('[Step1] 开始处理 Word 文档:', {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: file.lastModified
-    })
-    
     // 动态导入 mammoth（仅在需要时加载）
     const { default: mammoth } = await import('mammoth')
 
     const arrayBuffer = await file.arrayBuffer()
-    console.log('[Step1] ArrayBuffer 读取完成，大小:', arrayBuffer.byteLength)
 
     // 配置 mammoth 选项 - 增强版：保留样式信息
     const options = {
@@ -393,22 +375,12 @@ const processDocxFile = async (file) => {
       ],
       // 使用 transformDocument 来提取更多样式信息
       transformDocument: mammoth.transforms.paragraph((paragraph) => {
-        // 检查段落的样式信息
-        if (paragraph.styleId || paragraph.styleName) {
-          console.log('[Mammoth] 段落样式:', {
-            styleId: paragraph.styleId,
-            styleName: paragraph.styleName,
-            text: paragraph.children?.map(c => c.value).join(' ').substring(0, 50)
-          })
-        }
         return paragraph
       })
     }
 
     const result = await mammoth.convertToHtml({ arrayBuffer }, options)
     let html = result.value
-
-    console.log('[Step1] Mammoth 解析完成, HTML 前100字:', html.substring(0, 100))
 
     // 将 HTML 转换为我们需要的文本格式
     const text = convertHtmlToCustomFormat(html)
@@ -425,8 +397,6 @@ const processDocxFile = async (file) => {
 
     localText.value = text
     appStore.setRawText(text)
-    
-    console.log('[Step1] Word 文档解析完成，文本长度:', text.length)
 
     // 清空 input 以便重复上传同名文件
     if (fileInput.value) {
@@ -434,23 +404,16 @@ const processDocxFile = async (file) => {
     }
 
     if (result.messages.length > 0) {
-      console.log('[Step1] 解析警告:', result.messages)
+      console.warn('[Step1] 解析警告:', result.messages)
     }
   } catch (error) {
     console.error('[Step1] 文档解析失败:', error)
-    console.error('[Step1] 错误详情:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    })
     errorMessage.value = `文档解析失败: ${error.message || '请检查文件是否损坏'}`
   }
 }
 
 // V4: 从文档文本中提取元数据
 const extractMetadataFromText = (text) => {
-  console.log('[Step1] 开始提取文档元数据...')
-  
   // 提取模式：
   // 1. 队伍名称：xxx  或  队伍名称:xxx
   // 2. 项目名称：xxx
@@ -486,7 +449,6 @@ const extractMetadataFromText = (text) => {
     const match = text.match(pattern)
     if (match && match[1]) {
       const teamName = match[1].trim()
-      console.log('[Step1] 解析到项目名称:', teamName)
       appStore.teamName = `"${teamName}"社会实践队`
       break
     }
@@ -497,7 +459,6 @@ const extractMetadataFromText = (text) => {
     const match = text.match(pattern)
     if (match && match[1]) {
       const source = match[1].trim()
-      console.log('[Step1] 解析到来源公众号:', source)
       appStore.sourceAccount = `"${source}"公众号`
       break
     }
@@ -510,419 +471,12 @@ const extractMetadataFromText = (text) => {
       // 分割多个作者（支持空格、顿号、逗号分隔）
       const authors = match[1].trim().split(/[、，,\s]+/).filter(Boolean)
       if (authors.length > 0) {
-        console.log('[Step1] 解析到文案作者:', authors)
         appStore.copywriterNames = authors
         break
       }
     }
   }
   
-  console.log('[Step1] 元数据提取完成:', {
-    teamName: appStore.teamName,
-    sourceAccount: appStore.sourceAccount,
-    copywriterNames: appStore.copywriterNames
-  })
-}
-
-// 将 HTML 转换为自定义文本格式（增强版：识别样式）
-const convertHtmlToCustomFormat = (html) => {
-  // 创建临时 DOM 元素来解析 HTML
-  const div = document.createElement('div')
-  div.innerHTML = html
-
-  let text = ''
-
-  // 遍历子节点
-  const processNode = (node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      return node.textContent
-    }
-
-    if (node.nodeType !== Node.ELEMENT_NODE) return ''
-
-    let content = ''
-
-    // 递归处理子节点
-    node.childNodes.forEach(child => {
-      content += processNode(child)
-    })
-
-    // 根据标签类型和class添加格式
-    switch (node.tagName) {
-      case 'H1':
-      case 'H2':
-      case 'H3':
-        // Word 标题转为 ## (标题)，而非 # (正文)
-        return `\n\n## ${content.trim()}\n\n`
-      case 'P': {
-        const className = node.className || ''
-
-        // ── 同段落双图检测（Word 中两张图并排在同一段落）──
-        // 这种情况直接合并为双图，尊重作者的原文布局
-        const imgEls = Array.from(node.querySelectorAll('img'))
-        if (imgEls.length === 2) {
-          const a1 = imgEls[0].getAttribute('alt') || ''
-          const a2 = imgEls[1].getAttribute('alt') || ''
-          if (a1.startsWith('&') && a2.startsWith('&')) {
-            // 去掉 & 前缀，cleanCaption 会在后续处理尺寸后缀
-            const raw1 = a1.slice(1)
-            const raw2 = a2.slice(1)
-            // 保留 |WxH 供 convertConsecutiveImagesToDouble 方向判断时已略过（同段落直接双图）
-            // 这里直接清洗输出
-            const c1 = cleanCaption(raw1.replace(/\|\d+x\d+$/, ''))
-            const c2 = cleanCaption(raw2.replace(/\|\d+x\d+$/, ''))
-            if (c1 && c2) return `\n\n&&${c1} ${c2}\n\n`
-            if (c1 || c2) return `\n\n&&${c1 || c2}\n\n`
-            return '\n\n&&\n\n'
-          }
-        }
-
-        // 如果是图注段落
-        if (className.includes('caption')) {
-          if (isLikelyHeading(content)) {
-            return `\n\n${content.trim()}\n\n`
-          }
-          const cleanedContent = content.trim().replace(/\s+/g, ' ')
-          return `\n\n&${cleanedContent}\n\n`
-        }
-
-        // 如果段落只包含图片占位符，直接返回
-        if (content.trim().startsWith('&')) return content
-        return `\n\n${content.trim()}\n\n`
-      }
-      case 'IMG':
-        // 处理图片占位符
-        if (node.alt && node.alt.startsWith('&')) {
-          return '\n\n' + node.alt + '\n\n'
-        }
-        return ''
-      case 'BR':
-        return '\n'
-      case 'UL':
-      case 'OL':
-        // 列表作为独立段落
-        return `\n\n${content.trim()}\n\n`
-      case 'LI':
-        // 列表项添加项目符号
-        return `• ${content.trim()}\n`
-      case 'BLOCKQUOTE':
-        // 引用块使用 > 语法
-        return `\n\n> ${content.trim()}\n\n`
-      default:
-        return content
-    }
-  }
-
-  div.childNodes.forEach(node => {
-    text += processNode(node)
-  })
-
-  // 清理多余的空行
-  text = text.replace(/\n{3,}/g, '\n\n').trim()
-
-  // 多阶段后处理
-  text = mergeImageWithCaption(text)              // 第0阶段：合并图片标记和后续图注
-  text = convertConsecutiveImagesToDouble(text)   // 第1阶段：合并双图
-  // 注意：已禁用 fixImageCaptions，改为使用明确的冒号分隔符语法
-  // text = fixImageCaptions(text)  // 第2阶段：修复图注识别（已禁用）
-
-  return text
-}
-
-// 第0阶段：合并图片标记和后续的图注段落
-// 处理模式：& \n\n （图为xxx） → &xxx
-const mergeImageWithCaption = (text) => {
-  // 匹配：& 后面跟着换行，然后是一个可能的图注段落
-  // 图注段落特征：以 （ 或 ( 开头，或者包含 "图为"、"图一" 等关键词
-  
-  const lines = text.split('\n')
-  const result = []
-  let i = 0
-  
-  while (i < lines.length) {
-    const currentLine = lines[i].trim()
-    
-    // 检查是否是单独的图片标记（& 或 &|WxH，没有图注文字）
-    const isBareImage = /^&&?(\|\d+x\d+)?$/.test(currentLine)
-    const isDoubleBareLine = currentLine.startsWith('&&')
-    if (isBareImage) {
-      // 查找后面的图注段落
-      let nextNonEmpty = i + 1
-      while (nextNonEmpty < lines.length && lines[nextNonEmpty].trim() === '') {
-        nextNonEmpty++
-      }
-      
-      if (nextNonEmpty < lines.length) {
-        const nextLine = lines[nextNonEmpty].trim()
-        
-        // 检查是否是图注（以括号开头，或包含"图为"等关键词）
-        if (isLikelyCaption(nextLine)) {
-          // 清洗图注并合并
-          const cleanedCaption = cleanCaption(nextLine)
-          
-          // 提取当前行的尺寸后缀（如 |750x500），合并后需要保留给后续方向判断
-          const dimsSuffix = (currentLine.match(/(\|\d+x\d+)$/) || [])[1] || ''
-
-          if (isDoubleBareLine) {
-            // 双图情况：可能需要查找两个图注
-            let secondCaption = ''
-            let nextNext = nextNonEmpty + 1
-            while (nextNext < lines.length && lines[nextNext].trim() === '') {
-              nextNext++
-            }
-            if (nextNext < lines.length && isLikelyCaption(lines[nextNext].trim())) {
-              secondCaption = cleanCaption(lines[nextNext].trim())
-              i = nextNext + 1
-            } else {
-              i = nextNonEmpty + 1
-            }
-
-            if (cleanedCaption && secondCaption) {
-              result.push(`&&${cleanedCaption} ${secondCaption}`)
-            } else if (cleanedCaption) {
-              result.push(`&&${cleanedCaption}`)
-            } else {
-              result.push('&&')
-            }
-          } else {
-            // 单图情况：合并图注，保留尺寸后缀供方向判断
-            if (cleanedCaption) {
-              result.push(`&${cleanedCaption}${dimsSuffix}`)
-            } else {
-              result.push(`&${dimsSuffix}` || '&')
-            }
-            i = nextNonEmpty + 1
-          }
-          continue
-        }
-      }
-    }
-    
-    result.push(lines[i])
-    i++
-  }
-  
-  return result.join('\n')
-}
-
-// 判断是否可能是图注
-const isLikelyCaption = (line) => {
-  if (!line) return false
-  
-  // 以括号开头
-  if (/^[（(]/.test(line)) return true
-  
-  // 包含"图为"、"图一"等关键词
-  if (/^图[为一二三四五六七八九十\d中示]/.test(line)) return true
-  
-  // 短文本且看起来像图注（少于50字符，无句号结尾）
-  if (line.length < 50 && !line.endsWith('。') && !line.endsWith('.')) {
-    return true
-  }
-  
-  return false
-}
-
-// 后处理函数：将连续的单图按方向判断合并或保持独立
-// 规则：横+横 / 竖+竖 / 方+方 → 双图；其他组合 → 各自单图
-const convertConsecutiveImagesToDouble = (text) => {
-  // 从 alt 里解析尺寸后缀 |WxH
-  const parseDims = (raw) => {
-    const m = raw.match(/\|(\d+)x(\d+)$/)
-    return m ? { width: +m[1], height: +m[2] } : null
-  }
-
-  // 匹配两个连续 & 行（中间可能有空行）
-  // raw1/raw2 包含原始内容（含 |WxH 后缀）
-  const regex = /&([^\n&]*?)\n+&([^\n&]*?)(?=\n|$)/g
-
-  let result = text.replace(regex, (match, raw1, raw2) => {
-    // ── 方向判断 ──
-    const dims1 = parseDims(raw1)
-    const dims2 = parseDims(raw2)
-    const orient1 = getImageOrientation(dims1)
-    const orient2 = getImageOrientation(dims2)
-
-    // 去掉尺寸后缀再清洗图注
-    const clean1 = cleanCaption(raw1.replace(/\|\d+x\d+$/, ''))
-    const clean2 = cleanCaption(raw2.replace(/\|\d+x\d+$/, ''))
-
-    // 两者都有已知方向且方向不同 → 保持各自单图
-    if (orient1 !== 'unknown' && orient2 !== 'unknown' && orient1 !== orient2) {
-      const s1 = clean1 ? `&${clean1}` : '&'
-      const s2 = clean2 ? `&${clean2}` : '&'
-      return `${s1}\n\n${s2}\n\n`
-    }
-
-    // 同向（含未知）→ 合并双图
-    if (clean1 && clean2) return `&&${clean1} ${clean2}\n\n`
-    if (clean1 || clean2) return `&&${clean1 || clean2}\n\n`
-    return '&&\n\n'
-  })
-
-  // 清除所有残余的尺寸后缀（未被合并的单图行）
-  result = result.replace(/&([^&\n]*)\|\d+x\d+/g, (_, caption) => {
-    const c = cleanCaption(caption)
-    return c ? `&${c}` : '&'
-  })
-
-  return result
-}
-
-// 清洗所有图注（遍历整个文本）
-const cleanAllCaptions = (text) => {
-  // 匹配 &后面跟着的图注内容
-  return text.replace(/&([^\n&]+)/g, (match, caption) => {
-    const cleaned = cleanCaption(caption)
-    return cleaned ? `&${cleaned}` : '&'
-  })
-}
-
-// 清洗单个图注内容
-const cleanCaption = (caption) => {
-  if (!caption) return ''
-
-  let cleaned = caption.trim()
-
-  // 移除尺寸后缀（如 |750x500）——可能残留在未合并的 alt 中
-  cleaned = cleaned.replace(/\|\d+x\d+$/, '')
-  
-  // 移除外层括号（中文和英文）
-  cleaned = cleaned.replace(/^[（(](.+)[）)]$/, '$1')
-  
-  // 移除常见前缀模式
-  const prefixPatterns = [
-    /^图为[:：]?\s*/,           // "图为：" 或 "图为"
-    /^图[一二三四五六七八九十\d]+[:：、]?\s*/,  // "图一：" 或 "图1、"
-    /^图中[:：]?\s*/,           // "图中："
-    /^图示[:：]?\s*/,           // "图示："
-    /^如图[:：]?\s*/,           // "如图："
-    /^上图[:：]?\s*/,           // "上图："
-    /^下图[:：]?\s*/,           // "下图："
-    /^左图[:：]?\s*/,           // "左图："
-    /^右图[:：]?\s*/,           // "右图："
-    /^图片[:：]?\s*/,           // "图片："
-    /^配图[:：]?\s*/,           // "配图："
-  ]
-  
-  for (const pattern of prefixPatterns) {
-    cleaned = cleaned.replace(pattern, '')
-  }
-  
-  // 再次移除可能残留的括号
-  cleaned = cleaned.replace(/^[（(]/, '').replace(/[）)]$/, '')
-  
-  // 移除多余的空格
-  cleaned = cleaned.replace(/\s+/g, ' ').trim()
-  
-  return cleaned
-}
-
-// 后处理函数：修复图片后的图注识别问题
-const fixImageCaptions = (text) => {
-  // 处理模式：识别图片后的短文本段（应为图注但被识别为正文）
-  // 识别以下模式：
-  // 模式1（高置信度）：图片 → 短文本 → 图片/标题
-  // 模式2（中置信度）：图片 → 短文本 → 长文本（图片已结束）
-
-  const paragraphs = text.split(/\n\n/g)
-  const result = []
-  let i = 0
-
-  while (i < paragraphs.length) {
-    const current = paragraphs[i]?.trim() || ''
-    const next = paragraphs[i + 1]?.trim() || ''
-    const nextNext = paragraphs[i + 2]?.trim() || ''
-
-    result.push(paragraphs[i])
-
-    // 模式1：检查是否是图片 → 短文本 → 图片/标题
-    // 这是最高置信度的图注模式
-    if (
-      current.startsWith('&单图') &&
-      next && // 有下一段
-      !next.startsWith('&') && // 下一段不是图片标记
-      nextNext && // 有下下段
-      (nextNext.startsWith('&单图') || isLikelyHeading(nextNext)) // 下下段是图片或标题
-    ) {
-      // 检查中间段是否是图注
-      if (isShortCaptionText(next)) {
-        console.log('[Fix] 模式1（高置信度）- 识别到图注:', next)
-        // 将中间段标记为图注
-        result[result.length - 1] = current + ' ' + next // 合并到图片标记中
-        i += 2 // 跳过已经处理的中间段
-        continue
-      }
-    }
-
-    // 模式2：检查是否是图片 → 短文本 → 长文本（图片已结束）
-    // 中置信度的图注模式
-    if (
-      current.startsWith('&单图') &&
-      next && // 有下一段
-      !next.startsWith('&') && // 下一段不是图片标记
-      nextNext && // 有下下段
-      nextNext.length > 100 // 下下段是正文（长度>100）
-    ) {
-      if (isShortCaptionText(next)) {
-        console.log('[Fix] 模式2（中置信度）- 识别到图注:', next)
-        result[result.length - 1] = current + ' ' + next // 合并到图片标记中
-        i += 2 // 跳过已经处理的中间段
-        continue
-      }
-    }
-
-    // 模式3：检查是否是图片 → 短文本 → 结束（末尾的图注）
-    if (
-      current.startsWith('&单图') &&
-      next && // 有下一段
-      !next.startsWith('&') && // 下一段不是图片标记
-      !nextNext // 没有下下段（已到结尾）
-    ) {
-      if (isShortCaptionText(next)) {
-        console.log('[Fix] 模式3（末尾图注）- 识别到图注:', next)
-        result[result.length - 1] = current + ' ' + next // 合并到图片标记中
-        i += 2 // 跳过已经处理的中间段
-        continue
-      }
-    }
-
-    i++
-  }
-
-  return result.join('\n\n')
-}
-
-// 判断是否是标题
-const isLikelyHeading = (text) => {
-  const trimmed = text.trim()
-  return (
-    trimmed.startsWith('##') || // 有标注
-    trimmed.startsWith('#') || // 有标注
-    /^第[一二三四五六七八九十\d]+[章节部分]/.test(trimmed) || // 章节标题
-    /^\d+[\.、]/.test(trimmed) || // 编号标题
-    (trimmed.length < 30 && !trimmed.includes('，')) // 短且无逗号
-  )
-}
-
-// 判断是否是可能的图注文本
-const isShortCaptionText = (text) => {
-  const trimmed = text.trim()
-  if (!trimmed) return false
-
-  // 图注特征检查
-  const features = {
-    length: trimmed.length < 50, // 短文本
-    hasKeywords: /图|注|说明|示意|示例|caption|pic|image/i.test(trimmed), // 含关键词
-    noPunctuations: !/[，。！？；：“”"]{2,}/.test(trimmed), // 无长句标点
-    noCommas: !trimmed.includes('，'), // 无逗号
-    noPeriods: !trimmed.includes('。'), // 无句号
-    notEmpty: trimmed.length > 0,
-    notOnlyNumbers: !/^[\d\s]+$/.test(trimmed) // 非纯数字
-  }
-
-  // 如果满足所有条件，极可能是图注
-  return Object.values(features).every(v => v === true)
 }
 
 // 插入智能示例文本（无标注）
@@ -984,7 +538,15 @@ const insertMarkedSampleText = () => {
 }
 
 // 清空文本
-const clearText = () => {
+const clearText = async () => {
+  const confirmed = await showConfirm({
+    title: '确认清空',
+    message: '将清除所有输入的文本和图片，是否继续？',
+    confirmText: '清空',
+    cancelText: '取消',
+    type: 'danger',
+  })
+  if (!confirmed) return
   localText.value = ''
   appStore.setRawText('')
   errorMessage.value = ''
@@ -1015,14 +577,12 @@ const goToNextStep = () => {
   if (isMarkdownMode.value) {
     // Markdown mode: parse directly to tiptap document JSON
     const doc = markdownToTiptap(text)
-    console.log('[Step1→Step2] markdown parsed to tiptap doc, nodes:', doc.content?.length)
     appStore.editorJson = doc
     appStore.setContentBlocks([]) // Not using blocks in MD mode
     try { sessionStorage.setItem('manifold_step1_blocks', '[]') } catch { /* ignore */ }
   } else {
     // Normal mode: parse to content blocks
     const blocks = smartTextParser(text)
-    console.log('[Step1→Step2] pre-parsed blocks:', blocks.length, 'rawText length:', text.length)
     appStore.setContentBlocks(blocks)
     try {
       sessionStorage.setItem('manifold_step1_blocks', JSON.stringify(blocks))
@@ -1030,12 +590,9 @@ const goToNextStep = () => {
     } catch { /* ignore */ }
     appStore.clearEditorJson()
   }
-  console.log('[Step1→Step2] after clearEditorJson, contentBlocks:', appStore.contentBlocks.length, 'rawText len:', appStore.rawText.length)
 
   // V2: 如果有提取的图片，启动后台上传
   if (extractedImages.value.length > 0) {
-    console.log('[Step1] 启动图片上传,', extractedImages.value.length, '张图片')
-    
     // 清空之前的微信图片
     appStore.clearWechatImages()
     
@@ -1047,8 +604,7 @@ const goToNextStep = () => {
       .onImageUploaded((image) => {
         appStore.addWechatImage(image)
       })
-      .onComplete((results) => {
-        console.log('[Step1] 所有图片上传完成:', results.length)
+      .onComplete(() => {
         appStore.setIsUploading(false)
       })
     

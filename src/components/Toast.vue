@@ -4,14 +4,12 @@
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        :class="[
-          'px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 min-w-[280px] max-w-md border backdrop-blur-xl animate-slideDown',
-          toastTypeClass(toast.type)
-        ]"
+        class="animate-slideDown"
+        :style="toastStyle(toast.type)"
       >
         <span class="text-lg">{{ toastIcon(toast.type) }}</span>
         <span class="flex-1 text-sm font-medium">{{ toast.message }}</span>
-        <button @click="removeToast(toast.id)" class="opacity-60 hover:opacity-100 transition-opacity">
+        <button @click="removeToast(toast.id)" class="opacity-60 hover:opacity-100 transition-opacity" title="关闭通知" aria-label="关闭通知">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -33,14 +31,15 @@ interface Toast {
 const toasts = ref<Toast[]>([])
 let toastId = 0
 
-const toastTypeClass = (type: string) => {
-  const classes: Record<string, string> = {
-    success: 'bg-[#2dd4a6]/20 text-[#2dd4a6] border-[#2dd4a6]/30',
-    error: 'bg-[#f87171]/20 text-[#f87171] border-[#f87171]/30',
-    warning: 'bg-[#d4a574]/20 text-[#d4a574] border-[#d4a574]/30',
-    info: 'bg-[#60a5fa]/20 text-[#60a5fa] border-[#60a5fa]/30'
+const toastStyle = (type: string) => {
+  const styles: Record<string, string> = {
+    success: 'background:var(--color-bg-card); border:1px solid var(--color-success-border); color:var(--color-success); box-shadow:var(--shadow-content-card);',
+    error: 'background:var(--color-bg-card); border:1px solid var(--color-error-border); color:var(--color-error); box-shadow:var(--shadow-content-card);',
+    warning: 'background:var(--color-bg-card); border:1px solid var(--color-warning-border); color:var(--color-warning); box-shadow:var(--shadow-content-card);',
+    info: 'background:var(--color-bg-card); border:1px solid rgba(0,117,222,0.2); color:#0075de; box-shadow:var(--shadow-content-card);'
   }
-  return classes[type] || classes.info
+  const base = 'display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:8px; min-width:280px; max-width:400px; font-size:13px; font-weight:500;'
+  return base + (styles[type] || styles.info)
 }
 
 const toastIcon = (type: string) => {
@@ -100,7 +99,7 @@ defineExpose({ addToast, removeToast })
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(100px) scale(0.98);
+  transform: translateY(-20px) scale(0.95);
 }
 
 @keyframes slideDown {

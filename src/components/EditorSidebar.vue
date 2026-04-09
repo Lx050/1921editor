@@ -31,8 +31,13 @@ defineExpose({ activeTab, collapsed, switchToSvg })
     :class="collapsed ? 'w-12' : 'w-72'"
   >
     <button
-      class="self-end p-1 m-1 text-gray-400 hover:text-gray-600 text-sm"
+      class="self-end p-1 m-1 text-sm transition-colors"
+      style="color:rgba(0,0,0,0.35);"
+      onmouseover="this.style.color='rgba(0,0,0,0.7)'"
+      onmouseout="this.style.color='rgba(0,0,0,0.35)'"
       @click="collapsed = !collapsed"
+      :title="collapsed ? '展开侧边栏' : '折叠侧边栏'"
+      :aria-label="collapsed ? '展开侧边栏' : '折叠侧边栏'"
     >
       {{ collapsed ? '>' : '<' }}
     </button>
@@ -49,9 +54,11 @@ defineExpose({ activeTab, collapsed, switchToSvg })
           ]"
           :key="tab.key"
           class="flex-1 py-2 text-xs text-center transition-colors"
-          :class="activeTab === tab.key
-            ? 'text-blue-600 border-b-2 border-blue-600 font-medium'
-            : 'text-gray-500 hover:text-gray-700'"
+          :style="activeTab === tab.key
+            ? 'color:var(--color-accent-primary); border-bottom:2px solid var(--color-accent-primary); font-weight:500;'
+            : 'color:rgba(0,0,0,0.45);'"
+          @mouseover="activeTab !== tab.key && ($event.currentTarget.style.color = 'rgba(0,0,0,0.7)')"
+          @mouseout="activeTab !== tab.key && ($event.currentTarget.style.color = 'rgba(0,0,0,0.45)')"
           @click="activeTab = tab.key as typeof activeTab"
         >
           {{ tab.label }}

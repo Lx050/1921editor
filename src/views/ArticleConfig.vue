@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8" style="background:var(--color-bg-page);">
     <div class="max-w-3xl mx-auto w-full">
       <!-- Loading State -->
       <div v-if="loading" class="text-center">
-        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p class="mt-4 text-gray-600">加载中...</p>
+        <div class="inline-block animate-spin rounded-full h-12 w-12" style="border-bottom:2px solid var(--color-accent-primary);"></div>
+        <p class="mt-4" style="color:rgba(0,0,0,0.55);">加载中...</p>
       </div>
 
       <!-- Error State -->
@@ -15,7 +15,7 @@
           </svg>
           <h3 class="mt-2 text-lg font-medium">加载失败</h3>
           <p class="mt-1 text-sm">{{ error }}</p>
-          <button @click="router.push('/')" class="mt-4 text-blue-600 hover:text-blue-800">返回首页</button>
+          <button @click="router.push('/')" class="mt-4" style="color:var(--color-accent-primary);">返回首页</button>
         </div>
       </div>
 
@@ -23,23 +23,23 @@
       <div v-else-if="article" class="space-y-6">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg p-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-2">配置文章</h2>
-          <div class="flex items-center space-x-4 text-sm text-gray-500">
+          <h2 class="text-2xl font-bold mb-2" style="color:rgba(0,0,0,0.85);">配置文章</h2>
+          <div class="flex items-center space-x-4 text-sm" style="color:rgba(0,0,0,0.45);">
             <span>📄 {{ article.title }}</span>
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded">{{ article.status }}</span>
+            <span class="px-2 py-1 rounded" style="background:var(--color-badge-bg); color:var(--color-badge-text);">{{ article.status }}</span>
           </div>
-          <p class="mt-2 text-xs text-gray-400">文章ID: {{ article.id }}</p>
+          <p class="mt-2 text-xs" style="color:var(--color-text-muted);">文章ID: {{ article.id }}</p>
         </div>
 
         <!-- Mode Selection -->
         <div class="bg-white shadow rounded-lg p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">选择工作模式</h3>
+          <h3 class="text-lg font-medium mb-4" style="color:rgba(0,0,0,0.85);">选择工作模式</h3>
           <ModeSelector v-model="selectedMode" />
         </div>
 
         <!-- WeChat Account Selection -->
         <div v-if="configStore.savedAccounts.length > 0" class="bg-white shadow rounded-lg p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">选择公众号</h3>
+          <h3 class="text-lg font-medium mb-4" style="color:rgba(0,0,0,0.85);">选择公众号</h3>
           <div class="space-y-2">
             <div
               v-for="account in configStore.savedAccounts"
@@ -47,24 +47,34 @@
               @click="selectedAccountId = account.id"
               :class="[
                 'border rounded-lg p-3 cursor-pointer transition-colors',
-                selectedAccountId === account.id ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500' : 'border-gray-200 hover:border-blue-300'
+                ''
               ]"
+              :style="selectedAccountId === account.id
+                ? 'border-color:var(--color-accent-primary); background:var(--color-badge-bg); box-shadow:0 0 0 2px var(--color-accent-focus);'
+                : 'border-color:rgba(0,0,0,0.1);'"
             >
-              <h4 class="font-bold text-gray-900">{{ account.name }}</h4>
-              <p class="text-xs text-gray-500">AppID: {{ maskAppId(account.appId) }}</p>
+              <h4 class="font-bold" style="color:rgba(0,0,0,0.85);">{{ account.name }}</h4>
+              <p class="text-xs" style="color:rgba(0,0,0,0.45);">AppID: {{ maskAppId(account.appId) }}</p>
             </div>
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="flex justify-between">
-          <button @click="router.push('/')" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+          <button
+            @click="router.push('/')"
+            class="h-10 px-5 text-sm font-medium rounded-xl transition-all active:scale-[0.98]"
+            style="color:rgba(0,0,0,0.65); background:white; box-shadow:var(--shadow-content-card);"
+          >
             返回首页
           </button>
           <button
             @click="startProcessing"
             :disabled="!selectedMode"
-            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            class="h-10 px-5 text-sm font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+            style="background:var(--color-accent-primary); color:#fff;"
+            onmouseover="this.style.background='var(--color-accent-hover)'"
+            onmouseout="this.style.background='var(--color-accent-primary)'"
           >
             开始处理
           </button>
@@ -120,7 +130,6 @@ const startProcessing = async () => {
       // 1. 加载样式配置（如果有）
       if (article.value.config) {
         appStore.setStyleConfig(article.value.config)
-        console.log('[ArticleConfig] Loaded style config')
       }
       
       // 2. 解析保存的内容并恢复到 contentBlocks
@@ -138,11 +147,9 @@ const startProcessing = async () => {
             }))
             
             appStore.setContentBlocks(restoredBlocks)
-            console.log('[ArticleConfig] Restored contentBlocks:', restoredBlocks.length)
           }
         } catch (parseError) {
           // 如果不是 JSON，当作原始文本处理
-          console.log('[ArticleConfig] Content is raw text, setting as rawText')
           appStore.setRawText(article.value.content)
         }
       }
@@ -166,7 +173,6 @@ const startProcessing = async () => {
         })
         
         appStore.addWechatImages(wechatImages)
-        console.log('[ArticleConfig] Loaded images:', wechatImages.length)
       }
       
       // 4. 根据文章状态决定跳转到哪个步骤
@@ -175,15 +181,12 @@ const startProcessing = async () => {
       
       if (status === 'ADJUSTED' || status === 'PUBLISHED') {
         // 已调整或已发布 -> 跳转到 Step3 预览
-        console.log('[ArticleConfig] Status is', status, '-> jumping to Step3')
         router.push('/step3')
       } else if (status === 'PARSED' || hasContentBlocks) {
         // 已解析或有内容块 -> 跳转到 Step2 编辑
-        console.log('[ArticleConfig] Status is', status, 'or has contentBlocks -> jumping to Step2')
         router.push('/step2')
       } else {
         // 草稿状态且无内容 -> 跳转到 Step1
-        console.log('[ArticleConfig] Status is DRAFT without content -> jumping to Step1')
         router.push('/step1')
       }
     } else {

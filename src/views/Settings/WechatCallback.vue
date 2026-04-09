@@ -1,10 +1,10 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-50">
+  <div class="flex items-center justify-center min-h-screen" style="background:var(--color-bg-page);">
     <div class="max-w-md w-full p-8 bg-white rounded-xl shadow-lg text-center">
       <div v-if="loading" class="space-y-4">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
         <h2 class="text-xl font-semibold">正在完成授权...</h2>
-        <p class="text-gray-500">正在与微信服务器同步授权信息</p>
+        <p style="color:rgba(0,0,0,0.45);">正在与微信服务器同步授权信息</p>
       </div>
 
       <div v-else-if="error" class="space-y-4">
@@ -13,11 +13,14 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </div>
-        <h2 class="text-xl font-semibold text-gray-800">授权失败</h2>
+        <h2 class="text-xl font-semibold" style="color:rgba(0,0,0,0.75);">授权失败</h2>
         <p class="text-red-500">{{ error }}</p>
         <button 
           @click="goBack"
-          class="inline-block px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium mt-4"
+          class="inline-block h-10 px-5 text-sm font-medium rounded-xl transition-all active:scale-[0.98] mt-4"
+          style="color:rgba(0,0,0,0.65); background:var(--color-bg-warm);"
+          onmouseover="this.style.background='rgba(0,0,0,0.08)'"
+          onmouseout="this.style.background='var(--color-bg-warm)'"
         >
           返回设置
         </button>
@@ -29,9 +32,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
           </svg>
         </div>
-        <h2 class="text-xl font-semibold text-gray-800">授权成功</h2>
-        <p class="text-gray-600">公众号已成功关联到您的空间</p>
-        <p class="text-sm text-gray-400">正在为您跳转...</p>
+        <h2 class="text-xl font-semibold" style="color:rgba(0,0,0,0.75);">授权成功</h2>
+        <p style="color:rgba(0,0,0,0.55);">公众号已成功关联到您的空间</p>
+        <p class="text-sm" style="color:var(--color-text-muted);">正在为您跳转...</p>
       </div>
     </div>
   </div>

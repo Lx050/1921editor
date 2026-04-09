@@ -1,45 +1,178 @@
 <template>
-  <div class="relative bg-white overflow-hidden">
-    <div class="max-w-7xl mx-auto">
-      <div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-        <svg class="hidden lg:block absolute right-0 inset-y-0 h-full w-48 text-white transform translate-x-1/2" fill="currentColor" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <polygon points="50,0 100,0 50,100 0,100" />
-        </svg>
+  <div style="background:#fff; min-height:100vh; display:flex; flex-direction:column;">
 
-       <main class="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-          <div class="sm:text-center lg:text-left">
-            <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-              <span class="block xl:inline">为公众号而生的</span>
-              <span class="block text-blue-600 xl:inline">智能排版引擎</span>
-            </h1>
-            <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">Streamline layout work. Team collaboration and smart styles keep focus on content.</p>
-            <div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-              <div class="rounded-md shadow">
-                <button
-                  @click="router.push('/step1')"
-                  class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
-                >
-                  <svg class="mr-2 h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                  Get Started</button>
-              </div>
-              <div class="mt-3 sm:mt-0 sm:ml-3">
-                <a
-                  href="#"
-                  class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 md:py-4 md:text-lg md:px-10"
-                >
-                  了解更多
-                </a>
-              </div>
-            </div>
-          </div>
-        </main>
+    <!-- Hero 区域 -->
+    <div style="
+      max-width:1200px; margin:0 auto;
+      padding:80px 24px 64px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:64px;
+      align-items:center;
+    " class="hero-grid">
+      <!-- 左侧文字 -->
+      <div>
+        <div style="
+          display:inline-flex; align-items:center; gap:6px;
+          padding:4px 12px;
+          background:var(--color-badge-bg);
+          color:var(--color-badge-text);
+          border-radius:9999px;
+          font-size:12px;
+          font-weight:600;
+          letter-spacing:0.02em;
+          margin-bottom:24px;
+        ">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+            <circle cx="6" cy="6" r="3"/>
+          </svg>
+          版式装配引擎 V1.0
+        </div>
+
+        <h1 style="
+          font-size:52px; font-weight:700;
+          color:rgba(0,0,0,0.95);
+          line-height:1.08;
+          letter-spacing:-1.75px;
+          margin:0 0 20px;
+          font-family:var(--font-display);
+        ">
+          为公众号而生的<br>
+          <span style="color:var(--color-accent-primary);">智能排版引擎</span>
+        </h1>
+
+        <p style="
+          font-size:18px; font-weight:400;
+          color:var(--color-text-secondary);
+          line-height:1.65;
+          margin:0 0 36px;
+          max-width:420px;
+        ">
+          简化排版工作流。团队协作与智能样式让你专注内容本身，告别重复的格式调整。
+        </p>
+
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <button
+            @click="router.push('/step1')"
+            style="
+              padding:10px 24px;
+              background:var(--color-accent-primary);
+              color:#fff;
+              border:none;
+              border-radius:4px;
+              font-size:15px;
+              font-weight:600;
+              cursor:pointer;
+              transition:background 150ms;
+              letter-spacing:-0.1px;
+            "
+            onmouseover="this.style.background='var(--color-accent-hover)'"
+            onmouseout="this.style.background='var(--color-accent-primary)'"
+          >
+            免费开始使用
+          </button>
+          <a
+            href="#features"
+            style="
+              padding:10px 20px;
+              background:rgba(0,0,0,0.05);
+              color:rgba(0,0,0,0.75);
+              border:none;
+              border-radius:4px;
+              font-size:15px;
+              font-weight:600;
+              cursor:pointer;
+              text-decoration:none;
+              transition:background 150ms;
+            "
+            onmouseover="this.style.background='rgba(0,0,0,0.08)'"
+            onmouseout="this.style.background='rgba(0,0,0,0.05)'"
+          >了解更多</a>
+        </div>
+
+      </div>
+
+      <!-- 右侧图片 -->
+      <div style="border-radius:12px; overflow:hidden; border:1px solid rgba(0,0,0,0.1); box-shadow:var(--shadow-float);">
+        <img
+          src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80"
+          alt="工作台"
+          style="width:100%; display:block; aspect-ratio:16/10; object-fit:cover;"
+        />
       </div>
     </div>
-    <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-      <img class="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full" src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80" alt="Workplace" />
+
+    <!-- 特性区域 -->
+    <div id="features" style="background:var(--color-bg-warm); border-top:1px solid rgba(0,0,0,0.07); border-bottom:1px solid rgba(0,0,0,0.07);">
+      <div style="max-width:1200px; margin:0 auto; padding:64px 24px;">
+        <div style="text-align:center; margin-bottom:48px;">
+          <h2 style="
+            font-size:36px; font-weight:700;
+            color:rgba(0,0,0,0.95);
+            letter-spacing:-1px;
+            margin:0 0 12px;
+            font-family:var(--font-display);
+          ">一切为内容服务</h2>
+          <p style="font-size:16px; color:var(--color-text-secondary); margin:0; max-width:480px; margin-inline:auto; line-height:1.6;">
+            专为微信公众号内容团队设计的排版工具，让每次发布都轻松高效
+          </p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
+          <div v-for="f in features" :key="f.title" style="
+            background:#fff;
+            border:1px solid rgba(0,0,0,0.1);
+            border-radius:12px;
+            padding:24px;
+            box-shadow:var(--shadow-content-card);
+          ">
+            <div style="
+              width:40px; height:40px;
+              border-radius:8px;
+              display:flex; align-items:center; justify-content:center;
+              font-size:20px;
+              margin-bottom:16px;
+            " :style="{background: f.bg}">{{ f.icon }}</div>
+            <h3 style="font-size:15px; font-weight:700; color:rgba(0,0,0,0.9); margin:0 0 8px; letter-spacing:-0.2px;">{{ f.title }}</h3>
+            <p style="font-size:13px; color:var(--color-text-secondary); line-height:1.6; margin:0;">{{ f.desc }}</p>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- CTA 区域 -->
+    <div style="max-width:1200px; margin:0 auto; padding:80px 24px; text-align:center;">
+      <h2 style="
+        font-size:40px; font-weight:700;
+        color:rgba(0,0,0,0.95);
+        letter-spacing:-1.2px;
+        margin:0 0 16px;
+        font-family:var(--font-display);
+      ">现在就开始</h2>
+      <p style="font-size:16px; color:var(--color-text-secondary); margin:0 0 32px; line-height:1.6;">
+        无需安装，打开浏览器即可使用
+      </p>
+      <button
+        @click="router.push('/step1')"
+        style="
+          padding:12px 32px;
+          background:var(--color-accent-primary);
+          color:#fff;
+          border:none;
+          border-radius:4px;
+          font-size:16px;
+          font-weight:600;
+          cursor:pointer;
+          transition:background 150ms;
+          letter-spacing:-0.2px;
+        "
+        onmouseover="this.style.background='var(--color-accent-hover)'"
+        onmouseout="this.style.background='var(--color-accent-primary)'"
+      >
+        免费开始排版
+      </button>
+    </div>
+
   </div>
 </template>
 
@@ -47,4 +180,21 @@
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+const features = [
+  { icon: '⚡', bg: 'var(--color-warning-light)', title: '三步完成排版', desc: '输入文本 → 编辑内容 → 生成预览，最快三分钟完成一篇公众号图文排版。' },
+  { icon: '🎨', bg: '#f0f7ff', title: '多套专业样式', desc: '内置多种经过实战验证的排版样式，覆盖日常推文、活动宣传、转载等常用场景。' },
+  { icon: '🤝', bg: 'var(--color-success-light)', title: '团队协作', desc: '多人共享空间，统一样式配置，保持团队内容风格的高度一致性。' },
+  { icon: '📱', bg: '#faf5ff', title: '真机预览', desc: '实时模拟微信公众号的实际显示效果，所见即所得，避免发布后的格式意外。' },
+]
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+    padding-top: 48px !important;
+  }
+}
+</style>

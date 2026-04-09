@@ -149,6 +149,10 @@ export default defineConfig({
             if (id.includes('/qrcode/')) return 'vendor-qrcode'
             // DOMPurify
             if (id.includes('/dompurify/')) return 'vendor-utils'
+            // Element Plus
+            if (id.includes('/element-plus/')) return 'vendor-element'
+            // Remaining node_modules into a shared vendor chunk
+            if (id.includes('/highlight.js/') || id.includes('/marked/')) return 'vendor-utils'
           }
         }
       }

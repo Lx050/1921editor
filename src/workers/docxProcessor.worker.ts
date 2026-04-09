@@ -258,4 +258,4 @@ self.onerror = (error: any) => {
   })
 }
 
-console.log('[DocxWorker] DOCX处理Worker已加载')
+console.debug('[DocxWorker] DOCX处理Worker已加载')

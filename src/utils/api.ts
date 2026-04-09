@@ -1,4 +1,5 @@
 import axios from 'axios'
+import toast from '../composables/useToast'
 import { tokenStorage } from './tokenStorage'
 
 // 创建 axios 实例
@@ -72,29 +73,19 @@ api.interceptors.response.use(
     // 🔒 统一错误处理
     if (error.response?.status === 401) {
       console.error('Unauthorized request')
-      if (typeof window !== 'undefined') {
-        tokenStorage.clearAuth()
-        if (window.ElMessage) {
-          window.ElMessage.warning('Unauthorized request')
-        }
-      }
+      tokenStorage.clearAuth()
+      toast.warning('Unauthorized request')
     } else if (error.response?.status === 403) {
       console.error('❌ 权限不足，拒绝访问')
-      if (typeof window !== 'undefined' && window.ElMessage) {
-        window.ElMessage.error('您没有权限访问该资源')
-      }
+      toast.error('您没有权限访问该资源')
     } else if (error.response?.status === 404) {
       console.error('❌ 请求的资源不存在')
     } else if (error.response?.status >= 500) {
       console.error('❌ 服务器错误，请稍后重试')
-      if (typeof window !== 'undefined' && window.ElMessage) {
-        window.ElMessage.error('服务器错误，请稍后重试')
-      }
+      toast.error('服务器错误，请稍后重试')
     } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
       console.error('⏱️ 请求超时，请检查网络连接')
-      if (typeof window !== 'undefined' && window.ElMessage) {
-        window.ElMessage.error('请求超时，请检查网络连接')
-      }
+      toast.error('请求超时，请检查网络连接')
     }
 
     return Promise.reject(error)
@@ -172,26 +163,6 @@ export const articleApi = {
   },
 }
 
-// Webhook API
-export const webhookApi = {
-  // 测试 Webhook
-  testWebhook: (type: string = 'ping') => {
-    return api.post('/webhook/test', { type })
-  },
-
-  // 推送内容
-  pushContent: (content: any, source?: string) => {
-    return api.post('/webhook/content', { content, source })
-  },
-}
-
-// 健康检查
-export const healthApi = {
-  checkHealth: () => {
-    return api.get('/health')
-  },
-}
-
 // 空间 API
 export const tenantApi = {
   getWechatConfig: (tenantId: string) => {
@@ -211,32 +182,3 @@ export const tenantApi = {
 
 // 导出默认实例
 export default api
-
-// 使用示例：
-/*
-import { contentApi } from '@/utils/api'
-
-// 获取内容列表
-const fetchContents = async () => {
-  try {
-    const response = await contentApi.getContents({
-      page: 1,
-      pageSize: 20,
-      category: '资讯'
-    })
-    console.log(response.data)
-  } catch (error) {
-    console.error('获取内容失败:', error)
-  }
-}
-
-// 创建内容
-const createContent = async (contentData) => {
-  try {
-    const response = await contentApi.createContent(contentData)
-    console.log('创建成功:', response.data)
-  } catch (error) {
-    console.error('创建失败:', error)
-  }
-}
-*/

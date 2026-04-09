@@ -1,8 +1,8 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-50">
+  <div class="flex items-center justify-center min-h-screen" style="background:var(--color-bg-page);">
     <div class="text-center">
       <h2 class="text-xl font-semibold mb-2">Login disabled</h2>
-      <p class="text-gray-500">Redirecting...</p>
+      <p style="color:rgba(0,0,0,0.45);">Redirecting...</p>
     </div>
   </div>
 </template>

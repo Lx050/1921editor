@@ -204,14 +204,14 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
+  background-color: var(--color-bg-warm);
 }
 
 .placeholder-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .placeholder-icon {

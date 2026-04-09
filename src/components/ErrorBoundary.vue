@@ -1,7 +1,7 @@
 <template>
   <div>
     <slot v-if="!error"></slot>
-    <div v-else class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div v-else class="min-h-screen flex items-center justify-center p-4" style="background:var(--color-bg-warm);">
       <div class="max-w-md w-full bg-white rounded-lg shadow-lg border border-red-200 p-6">
         <div class="flex items-center mb-4">
           <div class="flex-shrink-0">
@@ -11,8 +11,8 @@
             </svg>
           </div>
           <div class="ml-3">
-            <h3 class="text-lg font-medium text-gray-900">应用出现错误</h3>
-            <p class="text-sm text-gray-500 mt-1">我们很抱歉，但似乎出现了问题</p>
+            <h3 class="text-lg font-medium" style="color:rgba(0,0,0,0.85);">应用出现错误</h3>
+            <p class="text-sm mt-1" style="color:rgba(0,0,0,0.45);">我们很抱歉，但似乎出现了问题</p>
           </div>
         </div>
 
@@ -21,29 +21,37 @@
           <p class="text-sm text-red-700">{{ error.message }}</p>
         </div>
 
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4" v-if="error.stack && showDetails">
-          <h4 class="text-sm font-medium text-gray-800 mb-2">详细堆栈：</h4>
-          <pre class="text-xs text-gray-700 overflow-x-auto">{{ error.stack }}</pre>
+        <div class="rounded-lg p-4 mb-4" style="background:var(--color-bg-warm); border:1px solid rgba(0,0,0,0.08);" v-if="error.stack && showDetails">
+          <h4 class="text-sm font-medium mb-2" style="color:rgba(0,0,0,0.75);">详细堆栈：</h4>
+          <pre class="text-xs overflow-x-auto" style="color:rgba(0,0,0,0.65);">{{ error.stack }}</pre>
         </div>
 
         <div class="flex flex-col space-y-3">
           <button
             @click="showDetails = !showDetails"
-            class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+            class="text-sm font-medium transition-colors"
+            style="color: var(--color-accent-primary);"
+            onmouseover="this.style.color='var(--color-accent-hover)';"
+            onmouseout="this.style.color='var(--color-accent-primary)';"
           >
             {{ showDetails ? '隐藏详情' : '显示详情' }}
           </button>
 
           <button
             @click="retry"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+            class="w-full text-white font-medium px-4 py-2 rounded-lg transition-colors"
+            style="background: var(--color-accent-primary);"
+            onmouseover="this.style.background='var(--color-accent-hover)';"
+            onmouseout="this.style.background='var(--color-accent-primary)';"
           >
             重试
           </button>
 
           <button
             @click="goHome"
-            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg transition-colors"
+            class="w-full font-medium px-4 py-2 rounded-lg transition-colors"
+            style="background:rgba(0,0,0,0.08); color:rgba(0,0,0,0.65);"
+            onmouseover="this.style.background='rgba(0,0,0,0.12)'" onmouseout="this.style.background='rgba(0,0,0,0.08)'"
           >
             返回首页
           </button>

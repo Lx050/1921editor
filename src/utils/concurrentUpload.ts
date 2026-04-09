@@ -102,8 +102,6 @@ export class ConcurrentUploadManager {
     results: { original: string; newUrl: string }[]
     errors: { url: string; error: string }[]
   }> {
-    console.log(`[ConcurrentUpload] 开始处理 ${urls.length} 个图片，最大并发: ${this.config.maxConcurrent}`)
-
     this.stats.total = urls.length
     this.stats.completed = 0
     this.stats.failed = 0
@@ -128,8 +126,6 @@ export class ConcurrentUploadManager {
 
     this.stats.completed = successful.length
     this.stats.failed = failed.length
-
-    console.log(`[ConcurrentUpload] 完成 - 成功: ${successful.length}, 失败: ${failed.length}`)
 
     return {
       results: successful.map(r => r.value),
@@ -304,7 +300,6 @@ export class ConcurrentUploadManager {
       if (this.config.enableCompression && this.isImageFile(mimeType)) {
         try {
           finalFile = await this.compressImage(finalFile)
-          console.log(`[ConcurrentUpload] 图片压缩成功: ${this.formatBytes(blob.size)} -> ${this.formatBytes(finalFile.size)}`)
         } catch (compressError) {
           console.warn(`[ConcurrentUpload] 图片压缩失败，使用原图:`, compressError)
         }

@@ -1,57 +1,69 @@
 <template>
-  <div class="h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center px-4 overflow-hidden text-gray-900">
-    <div class="w-full max-w-md">
+  <div style="min-height:100vh; background:var(--color-bg-warm); display:flex; align-items:center; justify-content:center; padding:24px;">
+    <div style="width:100%; max-width:380px;">
+
+      <!-- 返回链接 -->
       <router-link
         to="/"
-        class="inline-flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors mb-4 group"
+        style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:500; color:var(--color-text-secondary); text-decoration:none; margin-bottom:24px; transition:color 150ms;"
+        onmouseover="this.style.color='rgba(0,0,0,0.9)'"
+        onmouseout="this.style.color=''"
       >
-        <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M9 11L5 7l4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="text-sm font-medium">返回首页</span>
+        返回首页
       </router-link>
 
-      <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100/50 p-6">
-        <div class="flex flex-col items-center mb-6">
-          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 mb-3">
-            <span class="text-white font-bold text-xl" style="font-family: var(--font-display)">B</span>
+      <div style="background:#fff; border:1px solid rgba(0,0,0,0.1); border-radius:12px; padding:32px; box-shadow:var(--shadow-content-card);">
+        <!-- 品牌 -->
+        <div style="text-align:center; margin-bottom:28px;">
+          <div style="width:40px; height:40px; background:var(--color-accent-primary); border-radius:8px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px;">
+            <span style="color:#fff; font-weight:700; font-size:20px; font-family:var(--font-display);">B</span>
           </div>
-          <h1 class="text-xl font-bold text-black mb-0.5">确认公众号密钥</h1>
-          <p class="text-gray-500 text-xs">个人排版助手</p>
+          <h1 style="font-size:20px; font-weight:700; color:rgba(0,0,0,0.95); margin:0 0 4px; letter-spacing:-0.3px;">确认公众号密钥</h1>
+          <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">排版助手 · 公众号设置</p>
         </div>
 
-        <div v-if="loading" class="text-center py-8">
-          <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600/30 border-t-blue-600 mb-4"></div>
-          <p class="text-gray-600 font-medium">正在确认...</p>
+        <!-- 加载中 -->
+        <div v-if="loading" style="text-align:center; padding:32px 0;">
+          <div style="display:inline-block; width:40px; height:40px; border:3px solid rgba(0,117,222,0.2); border-top-color:var(--color-accent-primary); border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:16px;"></div>
+          <p style="font-size:14px; font-weight:500; color:var(--color-text-secondary); margin:0;">正在确认...</p>
         </div>
 
-        <div v-else-if="success" class="text-center py-8">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        <!-- 成功 -->
+        <div v-else-if="success" style="text-align:center; padding:24px 0;">
+          <div style="width:64px; height:64px; background:var(--color-success-light); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px;">
+            <svg width="32" height="32" fill="none" stroke="var(--color-success)" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
           </div>
-          <h2 class="text-xl font-bold text-black mb-2">密钥更新成功</h2>
-          <p class="text-gray-600 mb-6">公众号密钥已更新，可以返回系统继续使用</p>
+          <h2 style="font-size:20px; font-weight:700; color:rgba(0,0,0,0.95); margin:0 0 8px; letter-spacing:-0.3px;">密钥更新成功</h2>
+          <p style="font-size:14px; color:var(--color-text-secondary); margin:0 0 24px;">公众号密钥已更新，可以返回系统继续使用</p>
           <router-link
             to="/settings/wechat"
-            class="inline-block px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+            style="display:inline-block; padding:10px 24px; background:var(--color-accent-primary); color:#fff; border-radius:4px; font-size:14px; font-weight:600; text-decoration:none; transition:background 150ms;"
+            onmouseover="this.style.background='var(--color-accent-hover)'"
+            onmouseout="this.style.background='var(--color-accent-primary)'"
           >
             回到公众号管理
           </router-link>
         </div>
 
-        <div v-else class="text-center py-8">
-          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        <!-- 失败 -->
+        <div v-else style="text-align:center; padding:24px 0;">
+          <div style="width:64px; height:64px; background:var(--color-error-light); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px;">
+            <svg width="32" height="32" fill="none" stroke="var(--color-error)" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </div>
-          <h2 class="text-xl font-bold text-black mb-2">确认失败</h2>
-          <p class="text-gray-600 mb-6">{{ errorMessage }}</p>
+          <h2 style="font-size:20px; font-weight:700; color:rgba(0,0,0,0.95); margin:0 0 8px; letter-spacing:-0.3px;">确认失败</h2>
+          <p style="font-size:14px; color:var(--color-text-secondary); margin:0 0 24px;">{{ errorMessage }}</p>
           <router-link
             to="/settings/wechat"
-            class="inline-block px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+            style="display:inline-block; padding:10px 24px; background:var(--color-accent-primary); color:#fff; border-radius:4px; font-size:14px; font-weight:600; text-decoration:none; transition:background 150ms;"
+            onmouseover="this.style.background='var(--color-accent-hover)'"
+            onmouseout="this.style.background='var(--color-accent-primary)'"
           >
             返回公众号管理
           </router-link>
@@ -60,6 +72,12 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'

@@ -105,13 +105,6 @@ export async function extractZip(file: File): Promise<ExtractResult> {
 
         await Promise.all(filePromises);
 
-        console.log(
-            '[ZIP Processor] 解压完成:',
-            result.docxFiles.length,
-            '个 Word 文档,',
-            result.imageFiles.length,
-            '个图片'
-        );
 
         return result;
     } catch (error) {

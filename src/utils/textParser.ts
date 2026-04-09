@@ -111,24 +111,6 @@ function isImageBlock(type: BlockType): boolean {
 }
 
 /**
- * 预处理引言/结尾块，将多行引言合并为一个块
- * @param text - 原始文本
- * @returns 处理后的文本
- */
-export function preprocessQuoteBlocks(text: string): string {
-  if (typeof text !== 'string') {
-    throw new Error('Invalid input: text must be a string')
-  }
-
-  // 匹配多行>开头的引用块
-  const quoteBlockPattern = /^(> .+(?:\n> .+)*)/gm
-  return text.replace(quoteBlockPattern, (match: string): string => {
-    // 移除每行的>标记，只保留内容
-    return match.split('\n').map((line: string): string => line.substring(2)).join('\n')
-  })
-}
-
-/**
  * 特殊标记映射
  */
 const SPECIAL_MARKS: Record<string, BlockType> = {
@@ -476,17 +458,3 @@ function tryRecognizeDoubleImage(blocks: string[], currentIndex: number, current
   return null
 }
 
-/**
- * 清理单个文本块内部的换行符
- * 将单个换行符转换为空格或<br>标签
- * @param text - 原始文本
- * @returns 清理后的文本
- */
-export function cleanBlockText(text: string): string {
-  if (typeof text !== 'string') {
-    throw new Error('Invalid input: text must be a string')
-  }
-
-  // 将单个换行符替换为空格
-  return text.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
-}

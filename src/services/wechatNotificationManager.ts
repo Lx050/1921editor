@@ -325,7 +325,7 @@ export class WechatNotificationManager {
 
     if (successRate < 0.5) {
       // 成功率低，调整策略
-      console.log('[通知管理] 通知成功率较低，调整策略');
+      console.debug('[通知管理] 通知成功率较低，调整策略');
 
       // 可以在这里实现自适应策略调整
       // 例如：尝试不同的通知渠道、调整时间间隔等

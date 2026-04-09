@@ -51,8 +51,6 @@ export class ThirdPartyWechatAuth {
       // 构造第三方平台授权URL
       const authUrl = `https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=${this.openPlatformAppId}&pre_auth_code=${preAuthCode}&redirect_uri=${encodeURIComponent(this.callbackUrl)}`;
 
-      console.log('请用户访问授权URL:', authUrl);
-
       return authUrl;
 
     } catch (error) {
@@ -200,8 +198,6 @@ export class ThirdPartyWechatAuth {
 
     // 提前5分钟刷新
     if (timeSinceAuth >= expiresIn - 5 * 60 * 1000) {
-      console.log('access_token即将过期，开始刷新...');
-
       const refreshedInfo = await this.refreshToken(authInfo);
 
       // 更新存储的授权信息
@@ -283,8 +279,6 @@ export class ThirdPartyWechatAuth {
         },
         body: JSON.stringify(authInfo),
       });
-
-      console.log('授权信息已保存');
 
     } catch (error) {
       console.error('保存授权信息失败:', error);
@@ -377,8 +371,6 @@ export class ThirdPartyWechatAuth {
           ...this.getAuthHeaders(),
         },
       });
-
-      console.log(`已移除公众号 ${appId} 的授权`);
 
     } catch (error) {
       console.error('移除授权失败:', error);

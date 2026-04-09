@@ -18,10 +18,10 @@ const currentVariant = computed(() => {
 })
 
 const variants = [
-  { value: 'default', label: '默认', color: 'bg-gray-300' },
-  { value: 'tip', label: '提示', color: 'bg-green-400' },
-  { value: 'warning', label: '警告', color: 'bg-amber-400' },
-  { value: 'quote', label: '引述', color: 'bg-blue-400' },
+  { value: 'default', label: '默认', color: '', dotStyle: 'background:rgba(0,0,0,0.25);' },
+  { value: 'tip', label: '提示', color: 'bg-green-400', dotStyle: '' },
+  { value: 'warning', label: '警告', color: 'bg-amber-400', dotStyle: '' },
+  { value: 'quote', label: '引述', color: 'bg-sky-400', dotStyle: '' },
 ]
 
 function setVariant(variant: string) {
@@ -38,23 +38,24 @@ function removeBlockquote() {
 <template>
   <div
     v-if="isInBlockquote"
-    class="flex items-center gap-0.5 px-2 py-1 bg-gray-50 border-b text-[11px]"
+    class="flex items-center gap-0.5 px-2 py-1 border-b text-[11px]"
+    style="background:var(--color-bg-warm);"
   >
-    <span class="text-gray-400 mr-1 select-none">Quote:</span>
+    <span class="mr-1 select-none" style="color:var(--color-text-muted);">Quote:</span>
 
     <button
       v-for="v in variants"
       :key="v.value"
       class="bq-btn flex items-center gap-1"
-      :class="currentVariant === v.value ? 'bg-gray-200 text-gray-900' : ''"
+      :style="currentVariant === v.value ? 'background:rgba(0,0,0,0.08); color:rgba(0,0,0,0.85);' : ''"
       @click="setVariant(v.value)"
       :title="v.label"
     >
-      <span class="w-2 h-2 rounded-full" :class="v.color" />
+      <span class="w-2 h-2 rounded-full" :class="v.dotStyle ? '' : v.color" :style="v.dotStyle" />
       {{ v.label }}
     </button>
 
-    <span class="w-px h-4 bg-gray-300 mx-1" />
+    <span class="w-px h-4 mx-1" style="background:rgba(0,0,0,0.25);" />
 
     <button
       class="bq-btn text-red-500 hover:bg-red-50"

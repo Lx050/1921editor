@@ -3,20 +3,32 @@
  * 混合存储方案：默认样式（代码） + 用户自定义样式（LocalStorage）
  */
 
-import { titleDecorations, bodyDecorations, introDecorations } from './styleTemplates'
-
 const STORAGE_KEY = 'custom_style_templates'
+
+// Module-level cache for the lazily loaded template arrays
+let _templates = null
+
+/**
+ * Lazily loads styleTemplates.js on first call, then returns the cached module.
+ */
+async function loadTemplates() {
+    if (!_templates) {
+        _templates = await import('./styleTemplates')
+    }
+    return _templates
+}
 
 /**
  * 获取所有样式（默认 + 自定义）
  */
-export function getAllStyles() {
+export async function getAllStyles() {
+    const templates = await loadTemplates()
     const customStyles = getCustomStyles()
 
     return {
-        title: [...titleDecorations, ...customStyles.title],
-        body: [...bodyDecorations, ...customStyles.body],
-        intro: [...introDecorations, ...customStyles.intro]
+        title: [...templates.titleDecorations, ...customStyles.title],
+        body: [...templates.bodyDecorations, ...customStyles.body],
+        intro: [...templates.introDecorations, ...customStyles.intro]
     }
 }
 

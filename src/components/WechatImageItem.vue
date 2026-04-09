@@ -2,14 +2,15 @@
   <div
     @click="$emit('select', image)"
     :class="[
-      'relative overflow-hidden cursor-pointer transition-all bg-gray-100',
+      'relative overflow-hidden cursor-pointer transition-all',
       mobileLayout ? 'flex-shrink-0 w-14 h-14 rounded' : 'rounded-lg',
       selectedPlaceholder
-        ? (mobileLayout 
-            ? 'ring-2 ring-blue-500 active:scale-95' 
-            : 'hover:ring-4 hover:ring-blue-400 hover:shadow-lg transform hover:scale-[1.02]')
+        ? (mobileLayout
+            ? 'active:scale-95'
+            : 'hover:shadow-lg transform hover:scale-[1.02]')
         : 'opacity-60 cursor-not-allowed'
     ]"
+    style="background:var(--color-bg-warm);"
   >
     <LazyImage
       :src="image.displayUrl"

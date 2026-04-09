@@ -35,7 +35,6 @@ export async function uploadImage(
             throw new Error(`上传图片失败: ${data.errmsg} (错误码: ${data.errcode})`);
         }
 
-        console.log('[WeChat API] 图片上传成功:', file.name, '-> media_id:', data.media_id);
         return data;
     } catch (error) {
         console.error('[WeChat API] 上传图片失败:', file.name, error);
@@ -102,8 +101,6 @@ export function resetTokenCache(): void {
  */
 export async function createDraft(article: DraftArticle): Promise<DraftCreateResponse> {
     try {
-        console.log('[WeChat API] 创建草稿, 标题:', article.title);
-
         const response = await api.post('/wechat/draft', article);
         const payload = response.data;
 
@@ -116,7 +113,6 @@ export async function createDraft(article: DraftArticle): Promise<DraftCreateRes
             throw new Error(`创建草稿失败: ${data.errmsg} (错误码: ${data.errcode})`);
         }
 
-        console.log('[WeChat API] 草稿创建成功, draft_id:', data.draft_id || data.media_id);
         return data;
     } catch (error) {
         console.error('[WeChat API] 创建草稿失败:', error);

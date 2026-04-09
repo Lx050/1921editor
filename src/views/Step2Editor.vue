@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
 import { storeToRefs } from 'pinia'
@@ -12,22 +12,24 @@ import { smartTextParser } from '../utils/textParser'
 import EditorToolbar from '../components/EditorToolbar.vue'
 import EditorSidebar from '../components/EditorSidebar.vue'
 import ImageSlotPopover from '../components/ImageSlotPopover.vue'
-import KeyboardShortcutHelp from '../components/KeyboardShortcutHelp.vue'
-import FindReplace from '../components/FindReplace.vue'
+const KeyboardShortcutHelp = defineAsyncComponent(() => import('../components/KeyboardShortcutHelp.vue'))
+const FindReplace = defineAsyncComponent(() => import('../components/FindReplace.vue'))
 import TableBubbleMenu from '../components/TableBubbleMenu.vue'
 import BlockquoteBubbleMenu from '../components/BlockquoteBubbleMenu.vue'
-import HtmlPreviewModal from '../components/HtmlPreviewModal.vue'
+const HtmlPreviewModal = defineAsyncComponent(() => import('../components/HtmlPreviewModal.vue'))
 import SelectionToolbar from '../components/SelectionToolbar.vue'
 import LinkEditPopover from '../components/LinkEditPopover.vue'
 import LinkHoverTooltip from '../components/LinkHoverTooltip.vue'
-import CommandPalette from '../components/CommandPalette.vue'
-import RecoveryDialog from '../components/RecoveryDialog.vue'
-import EmojiPicker from '../components/EmojiPicker.vue'
-import VersionSnapshots from '../components/VersionSnapshots.vue'
+const CommandPalette = defineAsyncComponent(() => import('../components/CommandPalette.vue'))
+const RecoveryDialog = defineAsyncComponent(() => import('../components/RecoveryDialog.vue'))
+const EmojiPicker = defineAsyncComponent(() => import('../components/EmojiPicker.vue'))
+const VersionSnapshots = defineAsyncComponent(() => import('../components/VersionSnapshots.vue'))
 import EditorToast from '../components/EditorToast.vue'
 import { generateAndUpload, buildPromptFromContext } from '../utils/aiImageService'
-import { getSvgTemplateById } from '../styles/svgTemplates'
-import { ElMessage } from 'element-plus'
+import toast from '../composables/useToast'
+import { useEditorPrefs } from '../composables/useEditorPrefs'
+import { useEditorStats } from '../composables/useEditorStats'
+import { useEditorKeyboardShortcuts } from '../composables/useEditorKeyboardShortcuts'
 import { serializeToWechatHtml } from '../editor/serializers/htmlSerializer'
 import { serializeToMarkdown } from '../editor/serializers/markdownSerializer'
 import { copyRichText, copyToClipboard } from '../utils/clipboard'
@@ -113,36 +115,8 @@ const previewHtml = ref('')
 const linkPopoverVisible = ref(false)
 const linkPopoverPosition = ref({ x: 0, y: 0 })
 const linkPopoverInitialUrl = ref('')
-const isFocusMode = ref(false)
-const wordCountGoal = ref(0) // 0 = no goal set
-const editorTheme = ref<'light' | 'sepia' | 'dark'>('light')
-const isTypewriter = ref(false)
-const zoomLevel = ref(100) // percentage: 80, 90, 100, 110, 120, 130, 150
+const { editorTheme, isFocusMode, isTypewriter, wordCountGoal, zoomLevel, savePrefs } = useEditorPrefs()
 const lastSavedAt = ref<string>('')
-
-// Restore editor preferences from localStorage
-try {
-  const prefs = JSON.parse(localStorage.getItem('manifold_editor_prefs') || '{}')
-  if (prefs.theme) editorTheme.value = prefs.theme
-  if (prefs.focusMode) isFocusMode.value = prefs.focusMode
-  if (prefs.typewriter) isTypewriter.value = prefs.typewriter
-  if (prefs.wordCountGoal) wordCountGoal.value = prefs.wordCountGoal
-  if (prefs.zoom) zoomLevel.value = prefs.zoom
-} catch { /* ignore */ }
-
-// Persist preferences on change
-function savePrefs() {
-  try {
-    localStorage.setItem('manifold_editor_prefs', JSON.stringify({
-      theme: editorTheme.value,
-      focusMode: isFocusMode.value,
-      typewriter: isTypewriter.value,
-      wordCountGoal: wordCountGoal.value,
-      zoom: zoomLevel.value,
-    }))
-  } catch { /* ignore */ }
-}
-watch([editorTheme, isFocusMode, isTypewriter, wordCountGoal, zoomLevel], savePrefs)
 
 const zoomLevels = [80, 90, 100, 110, 120, 130, 150]
 function cycleZoom(direction: 1 | -1) {
@@ -153,21 +127,21 @@ function cycleZoom(direction: 1 | -1) {
 
 let dragLeaveTimer: ReturnType<typeof setTimeout> | null = null
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null
-let autosaveFadeTimer: ReturnType<typeof setTimeout> | null = null
+const autosaveFadeTimerRef = { current: null as ReturnType<typeof setTimeout> | null }
 
 function handleEditorUpdate(json: EditorDocument) {
   appStore.editorJson = json
   autosaveStatus.value = 'saving'
   // Debounced autosave to localStorage
   if (autosaveTimer) clearTimeout(autosaveTimer)
-  if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
+  if (autosaveFadeTimerRef.current) clearTimeout(autosaveFadeTimerRef.current)
   autosaveTimer = setTimeout(() => {
     try {
       localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
       localStorage.setItem('manifold_editor_autosave_ts', String(Date.now()))
       autosaveStatus.value = 'saved'
       lastSavedAt.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-      autosaveFadeTimer = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
+      autosaveFadeTimerRef.current = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
     } catch { /* ignore quota errors */ }
   }, 2000)
 }
@@ -359,6 +333,8 @@ async function aiAutoFillSlots() {
   const doc = editor.value.state.doc
   const emptySlots: Array<{ nodePos: number; slotId: string; label: string; contextText: string }> = []
 
+  const { getSvgTemplateById } = await import('../styles/svgTemplates')
+
   doc.forEach((node, offset) => {
     if (node.type.name === 'manifoldSvgBlock') {
       const slots = node.attrs.imageSlots || {}
@@ -380,13 +356,15 @@ async function aiAutoFillSlots() {
   })
 
   if (emptySlots.length === 0) {
-    ElMessage.info('所有SVG图片槽位已填充')
+    toast.info('所有SVG图片槽位已填充')
     aiFilling.value = false
     return
   }
 
   aiFillProgress.value = { total: emptySlots.length, done: 0 }
-  ElMessage.info(`开始AI生图，共 ${emptySlots.length} 个槽位...`)
+  toast.info(`开始AI生图，共 ${emptySlots.length} 个槽位...`)
+
+  let failedCount = 0
 
   for (const slot of emptySlots) {
     try {
@@ -412,12 +390,17 @@ async function aiAutoFillSlots() {
       })
     } catch (err: any) {
       console.error(`AI fill failed for slot ${slot.slotId}:`, err)
+      failedCount++
     }
     aiFillProgress.value.done++
   }
 
   aiFilling.value = false
-  ElMessage.success(`AI已填充 ${aiFillProgress.value.done}/${aiFillProgress.value.total} 个图片槽位`)
+  if (failedCount > 0) {
+    toast.warning(`AI填充完成，${failedCount}个插槽失败`)
+  } else {
+    toast.success(`AI已填充 ${aiFillProgress.value.done}/${aiFillProgress.value.total} 个图片槽位`)
+  }
 }
 
 function handleOpenSvgPanel() {
@@ -483,29 +466,19 @@ onMounted(() => {
   let initialContent: EditorDocument
   let contentSource = 'empty' // Track where content came from for diagnostics
 
-  console.log('[Step2] onMounted — editorJson:', !!appStore.editorJson,
-    'contentBlocks:', contentBlocks.value.length,
-    'rawText len:', appStore.rawText?.length || 0,
-    'localStorage rawText:', !!localStorage.getItem('manifold_step1_rawText'),
-    'sessionStorage blocks:', !!sessionStorage.getItem('manifold_step1_blocks'),
-    'autosave:', !!localStorage.getItem('manifold_editor_autosave'))
-
   try {
     if (appStore.editorJson) {
       // Case 1: returning to editor (has saved JSON state)
-      console.log('[Step2] using editorJson, nodes:', (appStore.editorJson as any)?.content?.length)
       initialContent = appStore.editorJson as EditorDocument
       contentSource = 'editorJson'
 
     } else if (contentBlocks.value.length > 0) {
       // Case 2: freshly navigated from Step1 (blocks pre-parsed there)
-      console.log('[Step2] using pre-parsed contentBlocks:', contentBlocks.value.length)
       initialContent = contentBlocksToTiptap(contentBlocks.value)
       contentSource = 'contentBlocks'
 
     } else {
       // Case 3: fallback chain — try store rawText → localStorage rawText → sessionStorage blocks → autosave
-      console.log('[Step2] fallback chain triggered — no editorJson and no contentBlocks in store')
 
       // 3a. Try sessionStorage pre-parsed blocks (written by Step1.goToNextStep)
       let recovered = false
@@ -514,7 +487,6 @@ onMounted(() => {
         if (savedBlocks) {
           const blocks = JSON.parse(savedBlocks)
           if (Array.isArray(blocks) && blocks.length > 0) {
-            console.log('[Step2] recovered', blocks.length, 'blocks from sessionStorage')
             appStore.setContentBlocks(blocks)
             initialContent = contentBlocksToTiptap(blocks)
             contentSource = 'sessionStorage'
@@ -530,13 +502,12 @@ onMounted(() => {
           try {
             rawText = localStorage.getItem('manifold_step1_rawText') || ''
             if (rawText) {
-              console.log('[Step2] recovered rawText from localStorage, len:', rawText.length)
               appStore.setRawText(rawText)
             }
           } catch (e) { console.warn('[Step2] localStorage recovery failed:', e) }
         }
         if (rawText) {
-          console.log('[Step2] parsing rawText, len:', rawText.length)
+          console.debug('[Step2] parsing rawText, len:', rawText.length)
           const blocks = smartTextParser(rawText)
           appStore.setContentBlocks(blocks)
           initialContent = contentBlocksToTiptap(blocks)
@@ -558,7 +529,7 @@ onMounted(() => {
               recoveryData.value = parsed
               showRecoveryDialog.value = true
               contentSource = 'autosave-pending'
-              console.log('[Step2] autosave found, prompting recovery')
+              console.debug('[Step2] autosave found, prompting recovery')
             }
           }
         } catch (e) { console.warn('[Step2] autosave recovery failed:', e) }
@@ -581,7 +552,7 @@ onMounted(() => {
     }
   }
 
-  console.log('[Step2] Creating editor with content source:', contentSource,
+  console.debug('[Step2] Creating editor with content source:', contentSource,
     'nodes:', initialContent.content?.length)
 
   try {
@@ -590,7 +561,7 @@ onMounted(() => {
       onUpdate: handleEditorUpdate,
       isTypewriterEnabled: () => isTypewriter.value,
     })
-    console.log('[Step2] Editor created successfully, text length:', editor.value.getText().length)
+    console.debug('[Step2] Editor created successfully, text length:', editor.value.getText().length)
     editorError.value = ''
   } catch (e: any) {
     const errMsg = e?.message || String(e)
@@ -601,7 +572,7 @@ onMounted(() => {
         onUpdate: handleEditorUpdate,
         isTypewriterEnabled: () => isTypewriter.value,
       })
-      console.log('[Step2] Fallback editor created successfully')
+      console.debug('[Step2] Fallback editor created successfully')
       editorError.value = ''
     } catch (e2: any) {
       const errMsg2 = e2?.message || String(e2)
@@ -619,11 +590,7 @@ onMounted(() => {
 
     // Track current block index and offset within block
     const $from = e.state.selection.$from
-    let blockIdx = 0
-    e.state.doc.forEach((_node, _offset, idx) => {
-      if (_offset <= from) blockIdx = idx + 1
-    })
-    cursorBlock.value = blockIdx
+    cursorBlock.value = $from.index(0) + 1
     cursorOffset.value = $from.parentOffset
 
     // Track current node type for status bar
@@ -641,7 +608,6 @@ onMounted(() => {
   })
 
   window.addEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
-  window.addEventListener('keydown', handleGlobalKeydown)
 })
 
 const selectionLength = ref(0)
@@ -663,212 +629,48 @@ const currentHeading = computed(() => {
 })
 
 onBeforeUnmount(() => {
+  if (dragLeaveTimer) clearTimeout(dragLeaveTimer)
   if (autosaveTimer) clearTimeout(autosaveTimer)
-  if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
+  if (autosaveFadeTimerRef.current) clearTimeout(autosaveFadeTimerRef.current)
   editor.value?.destroy()
   window.removeEventListener('manifold:open-svg-panel', handleOpenSvgPanel)
-  window.removeEventListener('keydown', handleGlobalKeydown)
 })
 
 // Live editor stats
-const WECHAT_CHAR_LIMIT = 20000
+const {
+  WECHAT_CHAR_LIMIT,
+  wordCount,
+  isOverLimit,
+  readingTime,
+  sentenceCount,
+  avgSentenceLength,
+  detailedStats,
+  canUndo,
+  canRedo,
+  topKeywords,
+  readabilityScore,
+  goalProgress,
+} = useEditorStats(editor, wordCountGoal, statsVisible)
 
-const wordCount = computed(() => {
-  if (!editor.value) return 0
-  return editor.value.getText().length
+useEditorKeyboardShortcuts({
+  editor,
+  commandPaletteVisible,
+  findReplaceVisible,
+  shortcutHelpVisible,
+  statsVisible,
+  isFullscreen,
+  isFocusMode,
+  zoomLevel,
+  autosaveStatus,
+  lastSavedAt,
+  autosaveFadeTimerRef,
+  cycleZoom,
+  openLinkEditor,
+  copyAsWechatHtml,
+  exportMarkdown,
+  downloadAsHtml,
+  showToast,
 })
-
-const isOverLimit = computed(() => wordCount.value > WECHAT_CHAR_LIMIT)
-
-const nodeCount = computed(() => {
-  if (!editor.value) return 0
-  let count = 0
-  editor.value.state.doc.descendants(() => { count++ })
-  return count
-})
-
-const svgBlockCount = computed(() => {
-  if (!editor.value) return 0
-  let count = 0
-  editor.value.state.doc.descendants((node) => {
-    if (node.type.name === 'manifoldSvgBlock') count++
-  })
-  return count
-})
-
-/** Estimated reading time (Chinese: ~400 chars/min) */
-const readingTime = computed(() => {
-  if (wordCount.value === 0) return '0'
-  const mins = Math.ceil(wordCount.value / 400)
-  return mins < 1 ? '<1' : String(mins)
-})
-
-const sentenceCount = computed(() => {
-  if (!editor.value) return 0
-  const text = editor.value.getText()
-  // Chinese sentence endings + English sentence endings
-  const sentences = text.split(/[。！？!?.]+/).filter(s => s.trim().length > 0)
-  return sentences.length
-})
-
-const avgSentenceLength = computed(() => {
-  if (sentenceCount.value === 0) return 0
-  return Math.round(wordCount.value / sentenceCount.value)
-})
-
-const detailedStats = computed(() => {
-  if (!editor.value) return { paragraphs: 0, headings: 0, images: 0, svgs: 0, tables: 0, codeBlocks: 0, charCount: 0, charNoSpaces: 0 }
-  let paragraphs = 0, headings = 0, images = 0, svgs = 0, tables = 0, codeBlocks = 0
-  editor.value.state.doc.descendants((node) => {
-    if (node.type.name === 'paragraph') paragraphs++
-    else if (node.type.name === 'manifoldHeading') headings++
-    else if (node.type.name === 'manifoldImage') images++
-    else if (node.type.name === 'manifoldSvgBlock') svgs++
-    else if (node.type.name === 'table') tables++
-    else if (node.type.name === 'codeBlock') codeBlocks++
-  })
-  const fullText = editor.value.getText()
-  const charCount = fullText.length
-  const charNoSpaces = fullText.replace(/\s/g, '').length
-  return { paragraphs, headings, images, svgs, tables, codeBlocks, charCount, charNoSpaces }
-})
-
-const canUndo = computed(() => editor.value?.can().undo() ?? false)
-const canRedo = computed(() => editor.value?.can().redo() ?? false)
-
-/** Top keywords (Chinese bigrams + single chars, excluding common stop words) */
-const topKeywords = computed(() => {
-  if (!editor.value) return []
-  const text = editor.value.getText()
-  if (text.length < 20) return []
-  // Chinese stop words
-  const stops = new Set(['的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一', '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好', '自己', '这', '他', '她', '它', '们', '那', '被', '从', '把', '让', '用', '对', '中', '等', '能', '下', '过', '与', '而', '及', '所', '但', '如', '为', '以', '其', '可', '之', '更', '来', '这个', '那个', '还', '又', '做', '比', '已', '吗', '呢', '吧', '啊', '哦', '嗯'])
-  const freq = new Map<string, number>()
-  // Extract Chinese bigrams
-  const chinese = text.replace(/[^\u4e00-\u9fff]/g, '')
-  for (let i = 0; i < chinese.length - 1; i++) {
-    const bigram = chinese.slice(i, i + 2)
-    if (!stops.has(bigram[0]) && !stops.has(bigram[1]) && !stops.has(bigram)) {
-      freq.set(bigram, (freq.get(bigram) || 0) + 1)
-    }
-  }
-  return [...freq.entries()]
-    .filter(([, c]) => c >= 2)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([word, count]) => ({ word, count }))
-})
-
-const goalProgress = computed(() => {
-  if (wordCountGoal.value <= 0) return 0
-  return Math.min(100, Math.round((wordCount.value / wordCountGoal.value) * 100))
-})
-
-/** Chinese text readability score (0-100, higher = easier) */
-const readabilityScore = computed(() => {
-  if (!editor.value || wordCount.value < 20) return { score: 0, label: '--', color: 'text-gray-400' }
-  const text = editor.value.getText()
-  const sentences = text.split(/[。！？!?.]+/).filter(s => s.trim().length > 0)
-  if (sentences.length === 0) return { score: 0, label: '--', color: 'text-gray-400' }
-  const avgLen = wordCount.value / sentences.length
-  const longSentences = sentences.filter(s => s.trim().length > 40).length
-  const longRatio = longSentences / sentences.length
-  // Score formula: penalize long avg sentences and high long-sentence ratio
-  const score = Math.max(0, Math.min(100, Math.round(100 - avgLen * 1.5 - longRatio * 30)))
-  if (score >= 70) return { score, label: '易读', color: 'text-green-600' }
-  if (score >= 40) return { score, label: '适中', color: 'text-amber-600' }
-  return { score, label: '偏难', color: 'text-red-500' }
-})
-
-function handleGlobalKeydown(event: KeyboardEvent) {
-  const mod = event.ctrlKey || event.metaKey
-  // Ctrl+P opens command palette
-  if (mod && event.key === 'p') {
-    event.preventDefault()
-    commandPaletteVisible.value = !commandPaletteVisible.value
-    return
-  }
-  // Ctrl+F opens find & replace
-  if (mod && event.key === 'f') {
-    event.preventDefault()
-    findReplaceVisible.value = !findReplaceVisible.value
-    return
-  }
-  // Ctrl+S manual save
-  if (mod && event.key === 's') {
-    event.preventDefault()
-    if (editor.value) {
-      const json = editor.value.getJSON() as EditorDocument
-      try {
-        localStorage.setItem('manifold_editor_autosave', JSON.stringify(json))
-        localStorage.setItem('manifold_editor_autosave_ts', String(Date.now()))
-        autosaveStatus.value = 'saved'
-        lastSavedAt.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-        if (autosaveFadeTimer) clearTimeout(autosaveFadeTimer)
-        autosaveFadeTimer = setTimeout(() => { autosaveStatus.value = 'idle' }, 3000)
-        showToast('已保存', 'success')
-      } catch { /* ignore */ }
-    }
-    return
-  }
-  // Ctrl+K open link editor
-  if (mod && event.key === 'k') {
-    event.preventDefault()
-    openLinkEditor()
-    return
-  }
-  // Ctrl+Shift+F toggle focus mode
-  if (mod && event.shiftKey && event.key === 'F') {
-    event.preventDefault()
-    isFocusMode.value = !isFocusMode.value
-    return
-  }
-  // Ctrl+Shift+C copy as WeChat HTML
-  if (mod && event.shiftKey && event.key === 'C') {
-    event.preventDefault()
-    copyAsWechatHtml()
-    return
-  }
-  // Ctrl+Shift+M export Markdown
-  if (mod && event.shiftKey && event.key === 'M') {
-    event.preventDefault()
-    exportMarkdown()
-    return
-  }
-  // Ctrl+Shift+D download as HTML file
-  if (mod && event.shiftKey && event.key === 'D') {
-    event.preventDefault()
-    downloadAsHtml()
-    return
-  }
-  // Ctrl+= zoom in, Ctrl+- zoom out, Ctrl+0 reset zoom
-  if (mod && (event.key === '=' || event.key === '+')) {
-    event.preventDefault()
-    cycleZoom(1)
-    return
-  }
-  if (mod && event.key === '-') {
-    event.preventDefault()
-    cycleZoom(-1)
-    return
-  }
-  if (mod && event.key === '0') {
-    event.preventDefault()
-    zoomLevel.value = 100
-    return
-  }
-  // Escape exits fullscreen or closes find
-  if (event.key === 'Escape') {
-    if (findReplaceVisible.value) { findReplaceVisible.value = false; return }
-    if (statsVisible.value) { statsVisible.value = false; return }
-    if (isFullscreen.value) { isFullscreen.value = false; return }
-  }
-  // "?" key when not typing in editor (Shift+/ on most keyboards)
-  if (event.key === '?' && !editor.value?.isFocused) {
-    event.preventDefault()
-    shortcutHelpVisible.value = !shortcutHelpVisible.value
-  }
-}
 
 function insertEmoji(emoji: string) {
   if (!editor.value) return
@@ -896,7 +698,7 @@ function handleDiscardRecovery() {
 function retryEditorCreation() {
   editorRetryCount.value++
   editorError.value = ''
-  console.log('[Step2] Retrying editor creation, attempt:', editorRetryCount.value)
+  console.debug('[Step2] Retrying editor creation, attempt:', editorRetryCount.value)
 
   try {
     // Try with empty content
@@ -904,7 +706,7 @@ function retryEditorCreation() {
       onUpdate: handleEditorUpdate,
       isTypewriterEnabled: () => isTypewriter.value,
     })
-    console.log('[Step2] Retry succeeded!')
+    console.debug('[Step2] Retry succeeded!')
 
     // Re-attach selection handler
     editor.value.on('selectionUpdate', ({ editor: e }) => {
@@ -928,13 +730,14 @@ function goToPublish() {
 
 <template>
   <div
-    class="flex flex-col h-full w-full bg-gray-50 transition-all"
+    class="flex flex-col h-full w-full transition-all"
+    style="background:var(--color-bg-warm);"
     :class="isFullscreen ? 'fixed inset-0 z-[100]' : ''"
   >
     <EditorToolbar :editor="editor" :ai-filling="aiFilling" @open-svg-panel="handleOpenSvgPanel" @edit-link="openLinkEditor" @ai-fill-slots="aiAutoFillSlots" />
     <!-- Reading progress bar -->
-    <div v-if="scrollProgress > 0" class="h-0.5 bg-gray-100 relative">
-      <div class="h-full bg-blue-400 transition-all duration-150" :style="{ width: scrollProgress + '%' }" />
+    <div v-if="scrollProgress > 0" class="h-0.5 relative" style="background:var(--color-bg-warm);">
+      <div class="h-full transition-all duration-150" :style="{ width: scrollProgress + '%', backgroundColor: 'var(--color-accent-primary)' }" />
     </div>
     <TableBubbleMenu :editor="editor" />
     <BlockquoteBubbleMenu :editor="editor" />
@@ -970,7 +773,7 @@ function goToPublish() {
         <div
           class="max-w-[680px] mx-auto py-4 md:py-8 px-3 md:px-6 min-h-full shadow-sm my-1 md:my-4 rounded transition-all"
           :class="[
-            isDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : '',
+            isDragOver ? 'ring-2 ring-offset-2' : '',
             editorTheme === 'light' ? 'bg-white' : '',
             editorTheme === 'sepia' ? 'bg-[#f8f0e3]' : '',
             editorTheme === 'sepia' ? 'editor-sepia' : '',
@@ -978,17 +781,23 @@ function goToPublish() {
           ]"
         >
           <EditorContent v-if="editor" :editor="editor" class="manifold-editor-content" :class="{ 'focus-mode': isFocusMode }" :style="{ ...editorPresetStyle, ...(zoomLevel !== 100 ? { fontSize: (zoomLevel / 100) + 'em' } : {}) }" />
-          <div v-else class="flex items-center justify-center py-20 text-gray-400">
+          <div v-else class="flex items-center justify-center py-20" style="color:var(--color-text-muted);">
             <div v-if="editorError" class="text-center max-w-md">
               <div class="text-red-500 text-lg mb-2 font-medium">编辑器加载失败</div>
               <div class="text-red-400 text-sm mb-4 bg-red-50 rounded p-3 text-left font-mono break-all">{{ editorError }}</div>
               <div class="flex gap-3 justify-center">
                 <button
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm transition-colors"
+                  class="px-4 py-2 text-white rounded-lg text-sm transition-colors"
+                  style="background-color: var(--color-accent-primary);"
+                  @mouseover="($event.target as HTMLElement).style.backgroundColor = 'var(--color-accent-hover)'"
+                  @mouseout="($event.target as HTMLElement).style.backgroundColor = 'var(--color-accent-primary)'"
                   @click="retryEditorCreation"
                 >重试加载</button>
                 <button
-                  class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm transition-colors"
+                  class="px-4 py-2 rounded-lg text-sm transition-colors"
+                  style="background:rgba(0,0,0,0.08); color:rgba(0,0,0,0.65);"
+                  onmouseover="this.style.background='rgba(0,0,0,0.12)'"
+                  onmouseout="this.style.background='rgba(0,0,0,0.08)'"
                   @click="goBack"
                 >返回上一步</button>
               </div>
@@ -1004,22 +813,27 @@ function goToPublish() {
         <!-- Drag overlay hint -->
         <div
           v-if="isDragOver"
-          class="absolute inset-0 flex items-center justify-center bg-blue-50/60 pointer-events-none z-10"
+          class="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+          style="background-color: rgba(242, 249, 255, 0.6);"
         >
-          <span class="text-blue-600 text-sm font-medium bg-white px-4 py-2 rounded-lg shadow">松开以插入图片</span>
+          <span class="text-sm font-medium bg-white px-4 py-2 rounded-lg shadow" style="color: var(--color-accent-primary);">松开以插入图片</span>
         </div>
         <!-- Scroll to top -->
         <button
           v-if="showScrollTop"
-          class="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-gray-800/70 text-white flex items-center justify-center text-sm shadow-lg hover:bg-gray-800 transition-all z-20"
+          class="absolute bottom-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-lg transition-all z-20"
+          style="background:rgba(0,0,0,0.06); color:rgba(0,0,0,0.5); border:1px solid rgba(0,0,0,0.1);"
+          onmouseover="this.style.background='rgba(0,0,0,0.1)'"
+          onmouseout="this.style.background='rgba(0,0,0,0.06)'"
           @click="scrollToTop"
           title="回到顶部"
+          aria-label="回到顶部"
         >&#x2191;</button>
       </div>
     </div>
 
     <!-- Character limit bar -->
-    <div v-if="wordCount > WECHAT_CHAR_LIMIT * 0.7" class="flex-shrink-0 h-1 bg-gray-100 relative">
+    <div v-if="wordCount > WECHAT_CHAR_LIMIT * 0.7" class="flex-shrink-0 h-1 relative" style="background:var(--color-bg-warm);">
       <div
         class="h-full transition-all duration-300"
         :class="isOverLimit ? 'bg-red-500' : wordCount > WECHAT_CHAR_LIMIT * 0.9 ? 'bg-amber-400' : 'bg-green-400'"
@@ -1036,12 +850,16 @@ function goToPublish() {
       <!-- Mobile footer: single row with essentials only -->
       <div class="flex md:hidden items-center justify-between px-3 py-2 gap-2">
         <button
-          class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          class="flex items-center gap-1 text-sm transition-colors"
+          style="color:rgba(0,0,0,0.45);"
+          onmouseover="this.style.color='rgba(0,0,0,0.55)'"
+          onmouseout="this.style.color='rgba(0,0,0,0.45)'"
           @click="goBack"
         >&larr; 返回</button>
         <!-- Mobile sidebar toggle -->
         <button
-          class="flex items-center gap-1 px-2 py-1.5 border border-gray-200 text-gray-500 rounded-lg text-xs"
+          class="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs"
+          style="border:1px solid rgba(0,0,0,0.08); color:rgba(0,0,0,0.45);"
           @click="mobileSidebarOpen = !mobileSidebarOpen"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
@@ -1049,14 +867,19 @@ function goToPublish() {
         </button>
         <span
           class="text-xs transition-colors flex-shrink-0"
-          :class="isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'"
+          :class="isOverLimit ? 'text-red-500 font-medium' : ''"
+          :style="isOverLimit ? '' : 'color:var(--color-text-muted)'"
         >{{ wordCount }}字</span>
         <button
-          class="px-3 py-1.5 border border-gray-300 text-gray-600 rounded-lg text-xs"
+          class="px-3 py-1.5 rounded-lg text-xs"
+          style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);"
           @click="copyAsWechatHtml"
         >{{ copyStatus === 'copied' ? '已复制!' : '复制HTML' }}</button>
         <button
-          class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium"
+          class="px-4 py-1.5 text-white rounded-lg text-xs font-medium"
+          style="background-color: var(--color-accent-primary);"
+          @mouseover="($event.target as HTMLElement).style.backgroundColor = 'var(--color-accent-hover)'"
+          @mouseout="($event.target as HTMLElement).style.backgroundColor = 'var(--color-accent-primary)'"
           @click="goToPublish"
         >下一步</button>
       </div>
@@ -1064,124 +887,145 @@ function goToPublish() {
       <!-- Desktop footer: full controls -->
       <div class="hidden md:flex items-center justify-between px-6 py-3">
         <button
-          class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          class="text-sm transition-colors"
+          style="color:rgba(0,0,0,0.45);"
+          onmouseover="this.style.color='rgba(0,0,0,0.65)'"
+          onmouseout="this.style.color='rgba(0,0,0,0.45)'"
           @click="goBack"
         >
           &larr; 返回文本输入
         </button>
         <div class="flex items-center gap-2">
-          <span v-if="currentNodeType" class="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-medium">{{ currentNodeType }}</span>
-          <span v-if="cursorBlock > 0" class="text-[10px] text-gray-300 font-mono">B{{ cursorBlock }}:{{ cursorOffset }}</span>
-          <span v-if="currentHeading" class="text-xs text-gray-300 truncate max-w-[200px]" :title="currentHeading">{{ currentHeading }}</span>
+          <span v-if="currentNodeType" class="text-[10px] px-1.5 py-0.5 rounded font-medium" style="background:var(--color-bg-warm); color:rgba(0,0,0,0.45);">{{ currentNodeType }}</span>
+          <span v-if="cursorBlock > 0" class="text-[10px] font-mono" style="color:rgba(0,0,0,0.25);">B{{ cursorBlock }}:{{ cursorOffset }}</span>
+          <span v-if="currentHeading" class="text-xs truncate max-w-[200px]" style="color:rgba(0,0,0,0.25);" :title="currentHeading">{{ currentHeading }}</span>
         </div>
         <div class="flex items-center gap-4">
           <span v-if="autosaveStatus === 'saving'" class="text-xs text-amber-500">保存中...</span>
           <span v-else-if="autosaveStatus === 'saved'" class="text-xs text-green-500">已保存{{ lastSavedAt ? ` ${lastSavedAt}` : '' }}</span>
-          <span v-else-if="lastSavedAt" class="text-xs text-gray-300" :title="`上次保存: ${lastSavedAt}`">{{ lastSavedAt }}</span>
+          <span v-else-if="lastSavedAt" class="text-xs" style="color:rgba(0,0,0,0.25);" :title="`上次保存: ${lastSavedAt}`">{{ lastSavedAt }}</span>
           <div class="relative">
             <button
               class="text-xs transition-colors"
-              :class="isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400 hover:text-gray-600'"
+              :class="isOverLimit ? 'text-red-500 font-medium' : ''"
+              :style="isOverLimit ? '' : 'color:var(--color-text-muted);'"
+              onmouseover="if(!this.classList.contains('text-red-500')) this.style.color='rgba(0,0,0,0.55)'"
+              onmouseout="if(!this.classList.contains('text-red-500')) this.style.color='var(--color-text-muted)'"
               @click="statsVisible = !statsVisible"
               :title="isOverLimit ? `超出微信字数限制 (${WECHAT_CHAR_LIMIT} 字)` : '文档统计'"
             >{{ selectionLength > 0 ? `${selectionLength} / ` : '' }}{{ wordCount }} 字 / ~{{ readingTime }}min</button>
+            <Transition
+              enter-active-class="transition-all duration-150 ease-out"
+              leave-active-class="transition-all duration-100 ease-in"
+              enter-from-class="opacity-0 scale-95"
+              leave-to-class="opacity-0 scale-95"
+            >
             <div
               v-if="statsVisible"
               class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border rounded-lg shadow-lg p-3 z-50 w-48"
             >
-              <div class="text-xs font-medium text-gray-700 mb-2">文档统计</div>
-              <div class="space-y-1 text-xs text-gray-500">
-                <div class="flex justify-between"><span>字数</span><span class="text-gray-700 font-medium">{{ wordCount }}</span></div>
-                <div class="flex justify-between"><span>字符数</span><span class="text-gray-700">{{ detailedStats.charCount }} ({{ detailedStats.charNoSpaces }})</span></div>
-                <div class="flex justify-between"><span>阅读时间</span><span class="text-gray-700">~{{ readingTime }} 分钟</span></div>
-                <div class="flex justify-between"><span>标题</span><span class="text-gray-700">{{ detailedStats.headings }}</span></div>
-                <div class="flex justify-between"><span>段落</span><span class="text-gray-700">{{ detailedStats.paragraphs }}</span></div>
-                <div class="flex justify-between"><span>句子</span><span class="text-gray-700">{{ sentenceCount }}</span></div>
-                <div class="flex justify-between"><span>句均字数</span><span class="text-gray-700">{{ avgSentenceLength }}</span></div>
-                <div class="flex justify-between"><span>可读性</span><span :class="readabilityScore.color" class="font-medium">{{ readabilityScore.label }} ({{ readabilityScore.score }})</span></div>
-                <div class="flex justify-between"><span>图片</span><span class="text-gray-700">{{ detailedStats.images }}</span></div>
-                <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span class="text-gray-700">{{ detailedStats.svgs }}</span></div>
-                <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span class="text-gray-700">{{ detailedStats.tables }}</span></div>
-                <div v-if="detailedStats.codeBlocks > 0" class="flex justify-between"><span>代码块</span><span class="text-gray-700">{{ detailedStats.codeBlocks }}</span></div>
+              <div class="text-xs font-medium mb-2" style="color:rgba(0,0,0,0.65);">文档统计</div>
+              <div class="space-y-1 text-xs" style="color:rgba(0,0,0,0.45);">
+                <div class="flex justify-between"><span>字数</span><span class="font-medium" style="color:rgba(0,0,0,0.75);">{{ wordCount }}</span></div>
+                <div class="flex justify-between"><span>字符数</span><span style="color:rgba(0,0,0,0.75);">{{ detailedStats.charCount }} ({{ detailedStats.charNoSpaces }})</span></div>
+                <div class="flex justify-between"><span>阅读时间</span><span style="color:rgba(0,0,0,0.75);">~{{ readingTime }} 分钟</span></div>
+                <div class="flex justify-between"><span>标题</span><span style="color:rgba(0,0,0,0.75);">{{ detailedStats.headings }}</span></div>
+                <div class="flex justify-between"><span>段落</span><span style="color:rgba(0,0,0,0.75);">{{ detailedStats.paragraphs }}</span></div>
+                <div class="flex justify-between"><span>句子</span><span style="color:rgba(0,0,0,0.75);">{{ sentenceCount }}</span></div>
+                <div class="flex justify-between"><span>句均字数</span><span style="color:rgba(0,0,0,0.75);">{{ avgSentenceLength }}</span></div>
+                <div class="flex justify-between"><span>可读性</span><span :class="readabilityScore.colorClass" :style="readabilityScore.colorStyle" class="font-medium">{{ readabilityScore.label }} ({{ readabilityScore.score }})</span></div>
+                <div class="flex justify-between"><span>图片</span><span style="color:rgba(0,0,0,0.75);">{{ detailedStats.images }}</span></div>
+                <div v-if="detailedStats.svgs > 0" class="flex justify-between"><span>SVG</span><span style="color:rgba(0,0,0,0.75);">{{ detailedStats.svgs }}</span></div>
+                <div v-if="detailedStats.tables > 0" class="flex justify-between"><span>表格</span><span style="color:rgba(0,0,0,0.75);">{{ detailedStats.tables }}</span></div>
+                <div v-if="detailedStats.codeBlocks > 0" class="flex justify-between"><span>代码块</span><span style="color:rgba(0,0,0,0.75);">{{ detailedStats.codeBlocks }}</span></div>
                 <template v-if="topKeywords.length > 0">
                   <div class="border-t pt-1 mt-1">
-                    <span class="text-gray-400 text-[10px]">高频词</span>
+                    <span class="text-[10px]" style="color:var(--color-text-muted);">高频词</span>
                     <div class="flex flex-wrap gap-1 mt-0.5">
                       <span
                         v-for="kw in topKeywords"
                         :key="kw.word"
-                        class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px]"
-                      >{{ kw.word }}<span class="text-blue-300">{{ kw.count }}</span></span>
+                        class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px]"
+                        style="background-color: var(--color-badge-bg); color: var(--color-accent-primary);"
+                      >{{ kw.word }}<span style="color: var(--color-accent-primary); opacity: 0.5;">{{ kw.count }}</span></span>
                     </div>
                   </div>
                 </template>
-                <div class="border-t pt-1 mt-1 flex justify-between"><span>撤销/重做</span><span class="text-gray-700 font-mono text-[10px]">{{ canUndo ? '&#x21A9;' : '' }} {{ canRedo ? '&#x21AA;' : '' }}</span></div>
+                <div class="border-t pt-1 mt-1 flex justify-between"><span>撤销/重做</span><span class="font-mono text-[10px]" style="color:rgba(0,0,0,0.75);">{{ canUndo ? '&#x21A9;' : '' }} {{ canRedo ? '&#x21AA;' : '' }}</span></div>
                 <div class="border-t pt-2 mt-2">
                   <div class="flex items-center gap-1 mb-1">
-                    <span class="text-gray-500">字数目标</span>
+                    <span style="color:rgba(0,0,0,0.45);">字数目标</span>
                     <input
                       type="number"
                       :value="wordCountGoal || ''"
                       @change="wordCountGoal = parseInt(($event.target as HTMLInputElement).value) || 0"
                       placeholder="--"
-                      class="w-14 text-right text-gray-700 border border-gray-200 rounded px-1 py-0.5 text-[10px]"
+                      class="w-14 text-right rounded px-1 py-0.5 text-[10px]"
+                      style="color:rgba(0,0,0,0.75); border:1px solid rgba(0,0,0,0.08);"
                       min="0"
                       step="100"
                     />
                   </div>
                   <div v-if="wordCountGoal > 0" class="flex items-center gap-1">
-                    <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:rgba(0,0,0,0.08);">
                       <div
                         class="h-full rounded-full transition-all duration-500"
-                        :class="goalProgress >= 100 ? 'bg-green-500' : goalProgress >= 75 ? 'bg-blue-500' : 'bg-amber-500'"
-                        :style="{ width: goalProgress + '%' }"
+                        :class="goalProgress >= 100 ? 'bg-green-500' : goalProgress >= 75 ? '' : 'bg-amber-500'"
+                        :style="{ width: goalProgress + '%', backgroundColor: goalProgress >= 100 ? '' : goalProgress >= 75 ? 'var(--color-accent-primary)' : '' }"
                       />
                     </div>
-                    <span class="text-[10px] font-medium" :class="goalProgress >= 100 ? 'text-green-600' : 'text-gray-500'">{{ goalProgress }}%</span>
+                    <span class="text-[10px] font-medium" :class="goalProgress >= 100 ? 'text-green-600' : ''" :style="goalProgress >= 100 ? '' : 'color:rgba(0,0,0,0.45);'">{{ goalProgress }}%</span>
                   </div>
                 </div>
               </div>
             </div>
+            </Transition>
           </div>
           <div v-if="wordCountGoal > 0" class="flex items-center gap-1" :title="`目标: ${wordCountGoal} 字 (${goalProgress}%)`">
-            <div class="w-12 h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div class="w-12 h-1 rounded-full overflow-hidden" style="background:rgba(0,0,0,0.08);">
               <div
                 class="h-full rounded-full transition-all"
-                :class="goalProgress >= 100 ? 'bg-green-500' : 'bg-blue-400'"
-                :style="{ width: goalProgress + '%' }"
+                :class="goalProgress >= 100 ? 'bg-green-500' : ''"
+                :style="{ width: goalProgress + '%', backgroundColor: goalProgress >= 100 ? '' : 'var(--color-accent-primary)' }"
               />
             </div>
-            <span class="text-[10px]" :class="goalProgress >= 100 ? 'text-green-600' : 'text-gray-400'">{{ goalProgress }}%</span>
+            <span class="text-[10px]" :class="goalProgress >= 100 ? 'text-green-600' : ''" :style="goalProgress >= 100 ? '' : 'color:var(--color-text-muted);'">{{ goalProgress }}%</span>
           </div>
           <button
             class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
-            :class="isFocusMode ? 'bg-blue-100 text-blue-600 border-blue-300' : 'text-gray-400 hover:text-gray-600 border-gray-200'"
+            :style="isFocusMode ? { backgroundColor: 'var(--color-badge-bg)', color: 'var(--color-accent-primary)', borderColor: 'rgba(0,117,222,0.3)' } : { color: 'var(--color-text-muted)', borderColor: 'rgba(0,0,0,0.12)' }"
             @click="isFocusMode = !isFocusMode"
             title="专注模式 (Ctrl+Shift+F)"
+            aria-label="专注模式"
           >F</button>
           <button
             class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
-            :class="isTypewriter ? 'bg-green-100 text-green-600 border-green-300' : 'text-gray-400 hover:text-gray-600 border-gray-200'"
+            :class="isTypewriter ? 'bg-green-100 text-green-600 border-green-300' : ''"
+            :style="isTypewriter ? '' : 'color:var(--color-text-muted); border-color:rgba(0,0,0,0.08);'"
+            onmouseover="if(!this.classList.contains('text-green-600')) { this.style.color='rgba(0,0,0,0.55)' }"
+            onmouseout="if(!this.classList.contains('text-green-600')) { this.style.color='var(--color-text-muted)' }"
             @click="isTypewriter = !isTypewriter"
             title="打字机滚动模式"
+            aria-label="打字机滚动模式"
           >W</button>
           <button
             class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
             :class="{
-              'text-gray-400 hover:text-gray-600 border-gray-200': editorTheme === 'light',
               'bg-amber-100 text-amber-700 border-amber-300': editorTheme === 'sepia',
               'bg-gray-700 text-gray-200 border-gray-600': editorTheme === 'dark',
             }"
+            :style="editorTheme === 'light' ? 'color:var(--color-text-muted); border-color:rgba(0,0,0,0.08);' : ''"
             @click="editorTheme = editorTheme === 'light' ? 'sepia' : editorTheme === 'sepia' ? 'dark' : 'light'"
             title="切换主题 (明/暖/暗)"
+            aria-label="切换编辑主题"
           >T</button>
           <div class="flex items-center gap-0.5">
-            <button class="text-[10px] text-gray-400 hover:text-gray-600 w-4 h-5 flex items-center justify-center" @click="cycleZoom(-1)" :disabled="zoomLevel <= 80" :class="zoomLevel <= 80 ? 'opacity-30' : ''" title="缩小">-</button>
-            <span class="text-[10px] text-gray-400 w-7 text-center select-none" :title="`缩放 ${zoomLevel}%`">{{ zoomLevel }}%</span>
-            <button class="text-[10px] text-gray-400 hover:text-gray-600 w-4 h-5 flex items-center justify-center" @click="cycleZoom(1)" :disabled="zoomLevel >= 150" :class="zoomLevel >= 150 ? 'opacity-30' : ''" title="放大">+</button>
+            <button class="text-[10px] w-4 h-5 flex items-center justify-center" style="color:var(--color-text-muted);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="cycleZoom(-1)" :disabled="zoomLevel <= 80" :class="zoomLevel <= 80 ? 'opacity-30' : ''" title="缩小" aria-label="缩小字体">-</button>
+            <span class="text-[10px] w-7 text-center select-none" style="color:var(--color-text-muted);" :title="`缩放 ${zoomLevel}%`">{{ zoomLevel }}%</span>
+            <button class="text-[10px] w-4 h-5 flex items-center justify-center" style="color:var(--color-text-muted);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="cycleZoom(1)" :disabled="zoomLevel >= 150" :class="zoomLevel >= 150 ? 'opacity-30' : ''" title="放大" aria-label="放大字体">+</button>
           </div>
-          <button class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏 (Esc)' : '全屏编辑'">{{ isFullscreen ? '&#x2716;' : '&#x26F6;' }}</button>
-          <button class="text-xs text-gray-400 hover:text-gray-600 w-5 h-5 rounded border border-gray-200 flex items-center justify-center" @click="shortcutHelpVisible = true" title="键盘快捷键 (?)">?</button>
+          <button class="text-xs w-5 h-5 rounded border flex items-center justify-center" style="color:var(--color-text-muted); border-color:rgba(0,0,0,0.08);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏 (Esc)' : '全屏编辑'" :aria-label="isFullscreen ? '退出全屏' : '全屏编辑'">{{ isFullscreen ? '&#x2716;' : '&#x26F6;' }}</button>
+          <button class="text-xs w-5 h-5 rounded border flex items-center justify-center" style="color:var(--color-text-muted); border-color:rgba(0,0,0,0.08);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="shortcutHelpVisible = true" title="键盘快捷键 (?)" aria-label="键盘快捷键帮助">?</button>
           <span
             class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
             :class="{
@@ -1190,17 +1034,23 @@ function goToPublish() {
               'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
             }"
           >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
-          <span class="text-xs text-gray-300">Manifold v2</span>
+          <span class="text-xs" style="color:rgba(0,0,0,0.25);">Manifold v2</span>
         </div>
         <div class="flex items-center gap-2">
-          <button class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="emojiPickerVisible = true" title="插入表情">Emoji</button>
-          <button class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="snapshotsVisible = true" title="版本快照">Snap</button>
-          <button class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="exportMarkdown" title="Export as Markdown">MD</button>
-          <button class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="openPreview" title="Preview HTML output">Preview</button>
-          <button class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm" @click="copyAsWechatHtml">
+          <button class="px-3 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="emojiPickerVisible = true" title="插入表情">Emoji</button>
+          <button class="px-3 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="snapshotsVisible = true" title="版本快照">Snap</button>
+          <button class="px-3 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="exportMarkdown" title="Export as Markdown">MD</button>
+          <button class="px-3 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="openPreview" title="Preview HTML output">Preview</button>
+          <button class="px-4 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="copyAsWechatHtml">
             {{ copyStatus === 'copied' ? '已复制!' : '复制微信HTML' }}
           </button>
-          <button class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm" @click="goToPublish">
+          <button
+            class="px-6 py-2 text-white rounded-lg transition-colors text-sm"
+            style="background-color: var(--color-accent-primary);"
+            @mouseover="($event.target as HTMLElement).style.backgroundColor = 'var(--color-accent-hover)'"
+            @mouseout="($event.target as HTMLElement).style.backgroundColor = 'var(--color-accent-primary)'"
+            @click="goToPublish"
+          >
             下一步: 发布确认
           </button>
         </div>
@@ -1268,462 +1118,5 @@ function goToPublish() {
 </template>
 
 <style>
-.manifold-editor-content .ProseMirror {
-  outline: none;
-  min-height: 400px;
-}
-/* Block boundaries - every top-level block has visible edges */
-.manifold-editor-content .ProseMirror > * {
-  position: relative;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  padding: 6px 10px;
-  margin-bottom: 4px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.manifold-editor-content .ProseMirror > *:hover {
-  border-color: #e5e7eb;
-}
-.manifold-editor-content .ProseMirror > .focus-active {
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 1px rgba(59,130,246,0.08);
-}
-/* Drag-to-merge: target block "swallow" glow */
-.manifold-editor-content .ProseMirror > .merge-target-glow {
-  border-color: #8b5cf6 !important;
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 4px 12px rgba(139,92,246,0.15) !important;
-  transform: scale(1.01);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-/* ManifoldGroup - shared container with visible border */
-.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
-  border: 2px solid #c4b5fd;
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: rgba(139,92,246,0.03);
-  position: relative;
-}
-.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]:hover {
-  border-color: #a78bfa;
-  background: rgba(139,92,246,0.05);
-}
-.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"].focus-active {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 2px rgba(139,92,246,0.15);
-}
-/* Children inside group share the container - reduce their individual borders */
-.manifold-editor-content .ProseMirror [data-node-type="manifold-group"] > * {
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 4px 6px;
-  margin-bottom: 2px;
-  transition: border-color 0.15s;
-}
-.manifold-editor-content .ProseMirror [data-node-type="manifold-group"] > *:hover {
-  border-color: #ddd6fe;
-}
-/* Group label */
-.manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
-  content: '组合';
-  position: absolute;
-  top: -10px;
-  left: 12px;
-  font-size: 10px;
-  color: #8b5cf6;
-  background: white;
-  padding: 0 4px;
-  border-radius: 3px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-.manifold-editor-content .ProseMirror h1 {
-  font-family: var(--preset-title-font, inherit);
-  font-size: var(--preset-title-size, 1.5rem);
-  font-weight: var(--preset-title-bold, bold);
-  margin-bottom: 1rem;
-}
-.manifold-editor-content .ProseMirror h2 {
-  font-family: var(--preset-title-font, inherit);
-  font-size: var(--preset-title-size, 1.25rem);
-  font-weight: var(--preset-title-bold, bold);
-  margin-bottom: 0.75rem;
-}
-.manifold-editor-content .ProseMirror h3 {
-  font-family: var(--preset-title-font, inherit);
-  font-size: calc(var(--preset-title-size, 1.125rem) * 0.9);
-  font-weight: var(--preset-title-bold, 600);
-  margin-bottom: 0.5rem;
-}
-.manifold-editor-content .ProseMirror p {
-  font-family: var(--preset-body-font, inherit);
-  font-size: var(--preset-body-size, 14px);
-  line-height: var(--preset-body-lh, 1.625);
-  letter-spacing: var(--preset-body-ls, normal);
-  text-indent: var(--preset-body-indent, 0);
-  margin-bottom: 0.75rem;
-}
-.manifold-editor-content .ProseMirror hr {
-  border: none;
-  border-top: 1px solid #e5e7eb;
-  margin: 1.5rem 0;
-}
-.manifold-editor-content .ProseMirror .is-empty::before {
-  color: #d1d5db;
-  content: attr(data-placeholder);
-  float: left;
-  height: 0;
-  pointer-events: none;
-}
-/* BlockRole visual indicators */
-.manifold-editor-content .ProseMirror p[data-role="intro"] {
-  border-left: 3px solid #60a5fa;
-  padding-left: 12px;
-  color: #4b5563;
-  font-style: italic;
-  font-family: var(--preset-intro-font, inherit);
-  font-size: var(--preset-intro-size, 14px);
-  text-indent: 0;
-}
-.manifold-editor-content .ProseMirror p[data-role="outro"] {
-  border-left: 3px solid #a78bfa;
-  padding-left: 12px;
-  color: #4b5563;
-  font-style: italic;
-  font-family: var(--preset-intro-font, inherit);
-  font-size: var(--preset-intro-size, 14px);
-  text-indent: 0;
-}
-/* Blockquote */
-.manifold-editor-content .ProseMirror blockquote {
-  border-left: 3px solid #d1d5db;
-  padding-left: 12px;
-  margin: 1rem 0;
-  color: #6b7280;
-}
-.manifold-editor-content .ProseMirror blockquote p {
-  text-indent: 0;
-}
-.manifold-editor-content .ProseMirror blockquote[data-variant="tip"] {
-  border-left-color: #22c55e;
-  background: #f0fdf4;
-  padding: 8px 12px;
-  border-radius: 0 6px 6px 0;
-  color: #15803d;
-}
-.manifold-editor-content .ProseMirror blockquote[data-variant="warning"] {
-  border-left-color: #f59e0b;
-  background: #fffbeb;
-  padding: 8px 12px;
-  border-radius: 0 6px 6px 0;
-  color: #92400e;
-}
-.manifold-editor-content .ProseMirror blockquote[data-variant="quote"] {
-  border-left-color: #3b82f6;
-  background: #eff6ff;
-  padding: 8px 12px;
-  border-radius: 0 6px 6px 0;
-  color: #1e40af;
-  font-style: italic;
-}
-/* Image nodes (NodeView) */
-.manifold-editor-content .ProseMirror .manifold-image-block {
-  margin: 0.75rem 0;
-}
-.manifold-editor-content .ProseMirror [data-node-type="manifold-image"] {
-  margin: 1rem 0;
-  text-align: center;
-}
-.manifold-editor-content .ProseMirror [data-node-type="manifold-image"] img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 4px;
-}
-/* Inline images within paragraphs */
-.manifold-editor-content .ProseMirror img[data-inline-image] {
-  display: block;
-  margin: 8px auto;
-  max-width: 100%;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.manifold-editor-content .ProseMirror img[data-inline-image]:hover {
-  outline: 2px solid #93c5fd;
-  outline-offset: 2px;
-}
-.manifold-editor-content .ProseMirror img[data-inline-image].ProseMirror-selectednode {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-/* Table */
-.manifold-editor-content .ProseMirror table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-}
-.manifold-editor-content .ProseMirror th,
-.manifold-editor-content .ProseMirror td {
-  border: 1px solid #d1d5db;
-  padding: 6px 10px;
-  min-width: 80px;
-  vertical-align: top;
-}
-.manifold-editor-content .ProseMirror th {
-  background: #f3f4f6;
-  font-weight: 600;
-}
-.manifold-editor-content .ProseMirror .selectedCell {
-  background: #dbeafe !important;
-}
-/* Support cell background color attribute */
-.manifold-editor-content .ProseMirror td[style*="background"],
-.manifold-editor-content .ProseMirror th[style*="background"] {
-  transition: background-color 0.15s ease;
-}
-/* Inline code */
-.manifold-editor-content .ProseMirror code {
-  background: #f3f4f6;
-  padding: 2px 4px;
-  border-radius: 3px;
-  font-size: 0.9em;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  color: #ef4444;
-}
-/* Column resize handle */
-.manifold-editor-content .ProseMirror .column-resize-handle {
-  position: absolute;
-  right: -2px;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #3b82f6;
-  cursor: col-resize;
-}
-.manifold-editor-content .ProseMirror.resize-cursor {
-  cursor: col-resize;
-}
-/* Code block */
-.manifold-editor-content .ProseMirror pre {
-  background: #1e1e2e;
-  color: #cdd6f4;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  overflow-x: auto;
-  margin: 1rem 0;
-}
-.manifold-editor-content .ProseMirror pre code {
-  background: none;
-  color: inherit;
-  padding: 0;
-  border-radius: 0;
-  font-size: inherit;
-}
-/* Lists nested */
-.manifold-editor-content .ProseMirror ul {
-  list-style: disc;
-  padding-left: 1.5em;
-  margin: 0.5rem 0;
-}
-.manifold-editor-content .ProseMirror ol {
-  list-style: decimal;
-  padding-left: 1.5em;
-  margin: 0.5rem 0;
-}
-.manifold-editor-content .ProseMirror li {
-  margin: 0.25rem 0;
-}
-.manifold-editor-content .ProseMirror li > p {
-  margin-bottom: 0.25rem;
-  text-indent: 0;
-}
-/* Focus mode - softer dim for non-active blocks (was 0.25, now 0.55 for touch usability) */
-.manifold-editor-content.focus-mode .ProseMirror > * {
-  opacity: 0.55;
-  transition: opacity 0.2s ease;
-}
-.manifold-editor-content.focus-mode .ProseMirror > .focus-active {
-  opacity: 1;
-}
-.manifold-editor-content.focus-mode .ProseMirror > *:hover {
-  opacity: 0.8;
-}
-/* Dark theme - group */
-.editor-dark .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
-  border-color: #6d28d9;
-  background: rgba(139,92,246,0.08);
-}
-.editor-dark .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
-  color: #a78bfa;
-  background: #1e1e2e;
-}
-/* Sepia theme - group */
-.editor-sepia .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"] {
-  border-color: #a78bfa;
-  background: rgba(139,92,246,0.04);
-}
-.editor-sepia .manifold-editor-content .ProseMirror > [data-node-type="manifold-group"]::before {
-  color: #7c3aed;
-  background: #f8f0e3;
-}
-/* Dark theme */
-.editor-dark .manifold-editor-content .ProseMirror {
-  color: #cdd6f4;
-}
-.editor-dark .manifold-editor-content .ProseMirror h1,
-.editor-dark .manifold-editor-content .ProseMirror h2,
-.editor-dark .manifold-editor-content .ProseMirror h3 {
-  color: #e2e8f0;
-}
-.editor-dark .manifold-editor-content .ProseMirror .is-empty::before {
-  color: #585b70;
-}
-.editor-dark .manifold-editor-content .ProseMirror blockquote {
-  border-left-color: #585b70;
-  color: #a6adc8;
-}
-.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="tip"] {
-  border-left-color: #22c55e;
-  background: #052e16;
-  color: #86efac;
-}
-.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="warning"] {
-  border-left-color: #f59e0b;
-  background: #451a03;
-  color: #fcd34d;
-}
-.editor-dark .manifold-editor-content .ProseMirror blockquote[data-variant="quote"] {
-  border-left-color: #3b82f6;
-  background: #172554;
-  color: #93c5fd;
-}
-.editor-dark .manifold-editor-content .ProseMirror hr {
-  border-top-color: #313244;
-}
-.editor-dark .manifold-editor-content .ProseMirror code {
-  background: #313244;
-  color: #f38ba8;
-}
-.editor-dark .manifold-editor-content .ProseMirror th {
-  background: #313244;
-  color: #cdd6f4;
-}
-.editor-dark .manifold-editor-content .ProseMirror th,
-.editor-dark .manifold-editor-content .ProseMirror td {
-  border-color: #45475a;
-}
-.editor-dark .manifold-editor-content .ProseMirror .selectedCell {
-  background: #313244;
-}
-.editor-dark .manifold-editor-content .ProseMirror a {
-  color: #89b4fa;
-}
-.editor-dark .paragraph-number {
-  color: #585b70 !important;
-}
-/* Dark code block */
-.editor-dark .manifold-codeblock .rounded-lg {
-  border-color: #45475a;
-  background: #1e1e2e;
-}
-.editor-dark .manifold-codeblock .bg-gray-100 {
-  background: #181825;
-}
-.editor-dark .manifold-codeblock .border-gray-200 {
-  border-color: #45475a;
-}
-.editor-dark .manifold-codeblock .text-gray-500,
-.editor-dark .manifold-codeblock .text-gray-400 {
-  color: #6c7086;
-}
-.editor-dark .manifold-codeblock-content {
-  color: #cdd6f4;
-}
-/* Sepia theme */
-.editor-sepia .manifold-editor-content .ProseMirror {
-  color: #5c4b37;
-}
-.editor-sepia .manifold-editor-content .ProseMirror h1,
-.editor-sepia .manifold-editor-content .ProseMirror h2,
-.editor-sepia .manifold-editor-content .ProseMirror h3 {
-  color: #3e2f1e;
-}
-.editor-sepia .manifold-editor-content .ProseMirror .is-empty::before {
-  color: #c4a882;
-}
-.editor-sepia .manifold-editor-content .ProseMirror blockquote {
-  border-left-color: #c4a882;
-  color: #7a6450;
-}
-.editor-sepia .manifold-editor-content .ProseMirror hr {
-  border-top-color: #d4c4a8;
-}
-/* Sepia code block */
-.editor-sepia .manifold-codeblock .rounded-lg {
-  border-color: #d4c4a8;
-  background: #f5ebe0;
-}
-.editor-sepia .manifold-codeblock .bg-gray-100 {
-  background: #ede0d0;
-}
-.editor-sepia .manifold-codeblock-content {
-  color: #5c4b37;
-}
-/* Mobile / touch optimization */
-@media (max-width: 768px) {
-  .manifold-editor-content .ProseMirror > * {
-    padding: 4px 6px;
-    border-radius: 4px;
-  }
-  .manifold-editor-content .ProseMirror > *:hover {
-    border-color: #d1d5db;
-  }
-}
-/* Touch devices: always show block boundaries subtly */
-@media (pointer: coarse) {
-  .manifold-editor-content .ProseMirror > * {
-    border-color: rgba(0,0,0,0.04);
-  }
-  .manifold-editor-content .ProseMirror > *:hover {
-    border-color: #d1d5db;
-  }
-  /* Disable harsh focus mode on touch by default */
-  .manifold-editor-content.focus-mode .ProseMirror > * {
-    opacity: 0.7;
-  }
-}
-/* Print stylesheet */
-@media print {
-  .manifold-editor-content .ProseMirror {
-    color: #000 !important;
-    background: #fff !important;
-  }
-  .manifold-editor-content .ProseMirror h1,
-  .manifold-editor-content .ProseMirror h2,
-  .manifold-editor-content .ProseMirror h3 {
-    color: #000 !important;
-    page-break-after: avoid;
-  }
-  .manifold-editor-content .ProseMirror img {
-    max-width: 100% !important;
-    page-break-inside: avoid;
-  }
-  .manifold-editor-content .ProseMirror pre {
-    background: #f5f5f5 !important;
-    color: #333 !important;
-    border: 1px solid #ddd;
-    page-break-inside: avoid;
-  }
-  .manifold-editor-content .ProseMirror table {
-    page-break-inside: avoid;
-  }
-  .manifold-editor-content .ProseMirror blockquote {
-    color: #555 !important;
-    border-left-color: #999 !important;
-    background: none !important;
-  }
-  .paragraph-number { display: none !important; }
-  .focus-mode .ProseMirror > * { opacity: 1 !important; }
-}
+@import '../styles/editor-content.css';
 </style>

@@ -1,347 +1,417 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
-    <!-- 背景装饰 -->
-    <div class="fixed inset-0 -z-10 overflow-hidden">
-      <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-      <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
-    </div>
+  <div style="min-height: 100vh; background: var(--color-bg-page);">
 
-    <!-- 简化的顶部欢迎栏 -->
-    <div class="bg-white/70 backdrop-blur-lg border-b border-gray-100/60 sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div class="flex items-center justify-between">
-          <!-- 左侧：用户信息 -->
-          <div class="flex items-center space-x-3">
-            <div class="h-9 w-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm">
-              {{ userStore.userInfo?.displayName?.charAt(0) || userStore.userInfo?.name?.charAt(0) || 'U' }}
+    <!-- ===== 顶部导航栏 ===== -->
+    <nav style="
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    ">
+      <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 52px;">
+
+          <!-- 品牌 + 空间名 -->
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="
+              width: 32px; height: 32px;
+              background: var(--color-accent-primary);
+              border-radius: 6px;
+              display: flex; align-items: center; justify-content: center;
+              flex-shrink: 0;
+            ">
+              <span style="color:#fff; font-weight:700; font-size:16px; font-family:var(--font-display); letter-spacing:-0.5px;">B</span>
             </div>
-            <div>
-              <p class="text-xs text-gray-500">
-                {{ userStore.userInfo?.displayName || userStore.userInfo?.name || '创作者' }} · {{ userStore.currentTenant?.name || '个人空间' }}
-              </p>
-            </div>
+            <span style="font-size:15px; font-weight:600; color:rgba(0,0,0,0.95); font-family:var(--font-display); letter-spacing:-0.2px;" class="hidden sm:inline">
+              排版助手
+            </span>
+            <template v-if="userStore.currentTenant?.name">
+              <div style="width:1px; height:18px; background:rgba(0,0,0,0.12);" class="hidden sm:block"></div>
+              <span style="font-size:13px; color:var(--color-text-secondary);" class="hidden sm:inline">
+                {{ userStore.currentTenant.name }}
+              </span>
+            </template>
           </div>
 
-          <!-- 右侧：未登录显示登录/注册按钮，已登录显示菜单 -->
-          <div class="flex items-center space-x-3">
-            <!-- 样式装配按钮 -->
+          <!-- 右侧操作区 -->
+          <div style="display:flex; align-items:center; gap:8px;">
+
+            <!-- 样式装配 -->
             <router-link
               to="/style-config"
-              class="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#ff6b4a] to-[#ff8566] text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+              class="hidden md:flex"
+              style="
+                align-items: center; gap: 6px;
+                padding: 6px 14px;
+                background: var(--color-accent-primary);
+                color: #fff;
+                border-radius: 4px;
+                font-size: 13px;
+                font-weight: 600;
+                text-decoration: none;
+                transition: background 150ms;
+                border: 1px solid transparent;
+              "
+              onmouseover="this.style.background='var(--color-accent-hover)'"
+              onmouseout="this.style.background='var(--color-accent-primary)'"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
               </svg>
-              <span>样式装配</span>
+              样式装配
             </router-link>
 
-            <!-- 登录/注册按钮 -->
-            <div v-if="!userStore.isLoggedIn" class="flex items-center space-x-3">
+            <!-- 未登录 -->
+            <template v-if="!userStore.isLoggedIn">
               <router-link
                 to="/login"
-                class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                登录
-              </router-link>
+                style="padding:6px 12px; font-size:13px; font-weight:600; color:rgba(0,0,0,0.6); text-decoration:none; border-radius:4px; transition:color 150ms;"
+                onmouseover="this.style.color='rgba(0,0,0,0.95)'"
+                onmouseout="this.style.color='rgba(0,0,0,0.6)'"
+              >登录</router-link>
               <router-link
                 to="/register"
-                class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/25"
-              >
-                注册
-              </router-link>
-            </div>
+                style="
+                  padding:6px 14px;
+                  background:var(--color-accent-primary);
+                  color:#fff;
+                  border-radius:4px;
+                  font-size:13px;
+                  font-weight:600;
+                  text-decoration:none;
+                  transition:background 150ms;
+                "
+                onmouseover="this.style.background='var(--color-accent-hover)'"
+                onmouseout="this.style.background='var(--color-accent-primary)'"
+              >注册</router-link>
+            </template>
 
-            <!-- 统一设置下拉菜单（仅已登录） -->
-            <div v-else class="relative" @mouseenter="showSettings = true" @mouseleave="showSettings = false">
-              <button
-                class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                title="菜单"
-              >
-                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            <!-- 已登录 — 用户头像 + 下拉 -->
+            <div v-else style="position:relative;" @mouseenter="showSettings=true" @mouseleave="showSettings=false">
+              <button style="
+                display:flex; align-items:center; gap:8px;
+                padding:4px 8px;
+                border:1px solid rgba(0,0,0,0.1);
+                border-radius:6px;
+                background:#fff;
+                cursor:pointer;
+                transition:background 150ms;
+                font-size:13px;
+                color:rgba(0,0,0,0.7);
+                font-weight:500;
+              "
+              onmouseover="this.style.background='var(--color-bg-warm)'"
+              onmouseout="this.style.background='#fff'">
+                <div style="
+                  width:26px; height:26px;
+                  background:var(--color-accent-soft);
+                  border-radius:50%;
+                  display:flex; align-items:center; justify-content:center;
+                  font-size:12px; font-weight:700;
+                  color:var(--color-accent-primary);
+                ">
+                  {{ (userStore.userInfo?.displayName || userStore.userInfo?.name || 'U').charAt(0) }}
+                </div>
+                <span class="hidden sm:inline" style="max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  {{ userStore.userInfo?.displayName || userStore.userInfo?.name || '创作者' }}
+                </span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
               </button>
 
               <!-- 下拉菜单 -->
               <transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="transform opacity-0 scale-95"
-                enter-to-class="transform opacity-100 scale-100"
-                leave-active-class="transition ease-in duration-75"
-                leave-from-class="transform opacity-100 scale-100"
-                leave-to-class="transform opacity-0 scale-95"
+                enter-active-class="transition ease-out duration-150"
+                enter-from-class="opacity-0 translate-y-1"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition ease-in duration-100"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 translate-y-1"
               >
                 <div
                   v-if="showSettings"
-                  class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                  style="
+                    position:absolute; right:0; top:calc(100% + 4px);
+                    width:220px;
+                    background:#fff;
+                    border:1px solid rgba(0,0,0,0.1);
+                    border-radius:8px;
+                    box-shadow:var(--shadow-float);
+                    padding:6px 0;
+                    z-index:50;
+                  "
                 >
-                  <!-- 空间管理 -->
-                  <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    空间管理
-                  </div>
-                  <button
-                    @click="router.push('/tenant-select')"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center"
-                  >
-                    <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                    </svg>
+                  <div style="padding:6px 12px 4px; font-size:11px; font-weight:600; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:0.06em;">空间管理</div>
+                  <button @click="router.push('/tenant-select')" class="dropdown-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                     切换空间
                   </button>
-                  <button
-                    @click="router.push('/settings/tenant')"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center"
-                  >
-                    <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                    </svg>
+                  <button @click="router.push('/settings/tenant')" class="dropdown-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     空间设置
                   </button>
-
-                  <!-- 系统设置 -->
-                  <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">
-                    系统设置
-                  </div>
-                  <button
-                    @click="router.push('/settings/wechat')"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center"
-                  >
-                    <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
+                  <div style="height:1px; background:rgba(0,0,0,0.07); margin:6px 0;"></div>
+                  <div style="padding:4px 12px; font-size:11px; font-weight:600; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:0.06em;">系统设置</div>
+                  <button @click="router.push('/settings/wechat')" class="dropdown-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     公众号设置
                   </button>
-
-                  <!-- 账户操作 -->
-                  <div class="border-t border-gray-100 mt-2 pt-2">
-                    <button
-                      @click="handleLogout"
-                      class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center"
-                    >
-                      <svg class="w-4 h-4 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                      </svg>
-                      退出登录
-                    </button>
-                  </div>
+                  <div style="height:1px; background:rgba(0,0,0,0.07); margin:6px 0;"></div>
+                  <button @click="handleLogout" class="dropdown-item" style="color:var(--color-error);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    退出登录
+                  </button>
                 </div>
               </transition>
             </div>
           </div>
+
         </div>
       </div>
-    </div>
+    </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <!-- 🚀 新建排版 -->
-      <section class="mb-16">
-        <div class="text-center mb-10">
-          <h2 class="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-3">
-            开始创作
-          </h2>
-          <p class="text-gray-600 max-w-2xl mx-auto">
-            选择适合的创作模式，开启高效的图文排版体验
+    <!-- ===== 主内容 ===== -->
+    <main style="max-width:1200px; margin:0 auto; padding:48px 24px 80px;">
+
+      <!-- 开始创作 -->
+      <section style="margin-bottom:64px;">
+        <div style="margin-bottom:32px;">
+          <h1 style="
+            font-size:32px; font-weight:700;
+            color:rgba(0,0,0,0.95);
+            letter-spacing:-0.75px;
+            line-height:1.2;
+            margin:0 0 8px;
+            font-family:var(--font-display);
+          ">开始创作</h1>
+          <p style="font-size:15px; color:var(--color-text-secondary); margin:0; line-height:1.6;">
+            选择适合的创作模式，开启高效的公众号图文排版体验
           </p>
         </div>
 
-        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+
           <!-- 日常模式 -->
           <div
             @click="startWork('daily')"
-            class="group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100/50 p-8 cursor-pointer hover:shadow-2xl hover:border-orange-200 hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+            class="mode-card"
+            style="--hover-border: rgba(0,117,222,0.3); --hover-bg: rgba(0,117,222,0.02);"
           >
-            <!-- 背景装饰 -->
-            <div class="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="absolute -top-4 -right-4 w-20 h-20 bg-orange-100/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
-
-            <div class="relative">
-              <div class="flex items-center space-x-5 mb-6">
-                <div class="h-16 w-16 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-orange-500/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  📝
-                </div>
-                <div>
-                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">日常模式</h3>
-                  <span class="text-xs text-orange-600 font-medium">常用推荐</span>
-                </div>
+            <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:16px;">
+              <div style="
+                width:44px; height:44px; border-radius:10px;
+                background: #f0f7ff;
+                display:flex; align-items:center; justify-content:center;
+                flex-shrink:0;
+                font-size:22px;
+              ">📝</div>
+              <div>
+                <h3 style="font-size:16px; font-weight:700; color:rgba(0,0,0,0.95); margin:0 0 4px; letter-spacing:-0.2px;">日常模式</h3>
+                <span class="notion-badge">常用推荐</span>
               </div>
-              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                适用于日常公众号图文排版，支持标准格式和多图模式，提供灵活的创作体验。
-              </p>
-              <div class="flex items-center text-orange-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                <span>立即开始</span>
-                <svg class="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                </svg>
-              </div>
+            </div>
+            <p style="font-size:14px; color:var(--color-text-secondary); line-height:1.6; margin:0 0 20px;">
+              适用于日常公众号图文排版，支持标准格式和多图模式，提供灵活的创作体验。
+            </p>
+            <div style="display:flex; align-items:center; gap:4px; font-size:13px; font-weight:600; color:var(--color-accent-primary);">
+              立即开始
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
           </div>
 
           <!-- 三下乡模式 -->
           <div
             @click="startWork('three_rural')"
-            class="group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100/50 p-8 cursor-pointer hover:shadow-2xl hover:border-green-200 hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+            class="mode-card"
+            style="--hover-border: rgba(22,163,74,0.3); --hover-bg: rgba(22,163,74,0.02);"
           >
-            <!-- 背景装饰 -->
-            <div class="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="absolute -top-4 -right-4 w-20 h-20 bg-green-100/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
-
-            <div class="relative">
-              <div class="flex items-center space-x-5 mb-6">
-                <div class="h-16 w-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-green-500/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  🏡
-                </div>
-                <div>
-                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors">三下乡模式</h3>
-                  <span class="text-xs text-green-600 font-medium">专项模板</span>
-                </div>
+            <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:16px;">
+              <div style="
+                width:44px; height:44px; border-radius:10px;
+                background:var(--color-success-light);
+                display:flex; align-items:center; justify-content:center;
+                flex-shrink:0;
+                font-size:22px;
+              ">🏡</div>
+              <div>
+                <h3 style="font-size:16px; font-weight:700; color:rgba(0,0,0,0.95); margin:0 0 4px; letter-spacing:-0.2px;">三下乡模式</h3>
+                <span class="notion-badge" style="background:var(--color-success-light); color:var(--color-success);">专项模板</span>
               </div>
-              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                三下乡社会实践专项活动排版模板，符合特定规范，助力实践活动宣传。
-              </p>
-              <div class="flex items-center text-green-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                <span>立即开始</span>
-                <svg class="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                </svg>
-              </div>
+            </div>
+            <p style="font-size:14px; color:var(--color-text-secondary); line-height:1.6; margin:0 0 20px;">
+              三下乡社会实践专项活动排版模板，符合特定规范，助力实践活动宣传。
+            </p>
+            <div style="display:flex; align-items:center; gap:4px; font-size:13px; font-weight:600; color:var(--color-success);">
+              立即开始
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
           </div>
 
           <!-- 转载模式 -->
           <div
             @click="startWork('reprint')"
-            class="group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100/50 p-8 cursor-pointer hover:shadow-2xl hover:border-purple-200 hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+            class="mode-card"
+            style="--hover-border: rgba(124,58,237,0.25); --hover-bg: rgba(124,58,237,0.02);"
           >
-            <!-- 背景装饰 -->
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="absolute -top-4 -right-4 w-20 h-20 bg-purple-100/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
-
-            <div class="relative">
-              <div class="flex items-center space-x-5 mb-6">
-                <div class="h-16 w-16 bg-gradient-to-br from-purple-400 to-violet-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-purple-500/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  📋
-                </div>
-                <div>
-                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors">转载模式</h3>
-                  <span class="text-xs text-purple-600 font-medium">高效复用</span>
-                </div>
-              </div>
-              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                标准化转载文章排版，自动处理引用和格式转换，让内容复用更简单。
-              </p>
-              <div class="flex items-center text-purple-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                <span>立即开始</span>
-                <svg class="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                </svg>
+            <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:16px;">
+              <div style="
+                width:44px; height:44px; border-radius:10px;
+                background:#faf5ff;
+                display:flex; align-items:center; justify-content:center;
+                flex-shrink:0;
+                font-size:22px;
+              ">📋</div>
+              <div>
+                <h3 style="font-size:16px; font-weight:700; color:rgba(0,0,0,0.95); margin:0 0 4px; letter-spacing:-0.2px;">转载模式</h3>
+                <span class="notion-badge" style="background:#faf5ff; color:#7c3aed;">高效复用</span>
               </div>
             </div>
+            <p style="font-size:14px; color:var(--color-text-secondary); line-height:1.6; margin:0 0 20px;">
+              标准化转载文章排版，自动处理引用和格式转换，让内容复用更简单。
+            </p>
+            <div style="display:flex; align-items:center; gap:4px; font-size:13px; font-weight:600; color:#7c3aed;">
+              立即开始
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
           </div>
+
         </div>
       </section>
 
-      <!-- 📄 最近草稿 -->
-      <section class="relative">
-
-        <div class="flex items-center justify-between mb-8">
+      <!-- ===== 最近草稿 ===== -->
+      <section>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
           <div>
-            <h2 class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              最近草稿
-            </h2>
-            <p class="text-sm text-gray-600 mt-1">继续编辑您的创作内容</p>
-          </div>
-          <button class="group inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-            <span>查看全部</span>
-            <svg class="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-            </svg>
-          </button>
-        </div>
-
-        <div v-if="loading" class="text-center py-16">
-          <div class="inline-flex flex-col items-center">
-            <div class="relative">
-              <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-              <div class="absolute inset-0 w-12 h-12 border-4 border-transparent border-l-blue-400 rounded-full animate-spin" style="animation-delay: 0.15s; animation-direction: reverse;"></div>
-            </div>
-            <p class="mt-4 text-gray-600 font-medium">加载中...</p>
+            <h2 style="
+              font-size:22px; font-weight:700;
+              color:rgba(0,0,0,0.95);
+              letter-spacing:-0.4px;
+              margin:0 0 4px;
+              font-family:var(--font-display);
+            ">最近草稿</h2>
+            <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">继续编辑您的创作内容</p>
           </div>
         </div>
 
-        <div v-else-if="articles.length === 0" class="text-center py-16 bg-white/60 backdrop-blur-sm rounded-2xl border border-dashed border-gray-200">
-          <div class="inline-flex flex-col items-center">
-            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        <!-- 加载中 -->
+        <div v-if="loading" style="padding:48px 0; text-align:center;">
+          <div style="display:inline-flex; flex-direction:column; align-items:center; gap:12px;">
+            <div style="
+              width:32px; height:32px;
+              border:2px solid rgba(0,0,0,0.08);
+              border-top-color:var(--color-accent-primary);
+              border-radius:50%;
+              animation:spin 0.8s linear infinite;
+            "></div>
+            <span style="font-size:13px; color:var(--color-text-muted);">加载中...</span>
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div
+          v-else-if="articles.length === 0"
+          style="
+            padding:48px 24px;
+            text-align:center;
+            background:var(--color-bg-warm);
+            border:1px dashed rgba(0,0,0,0.15);
+            border-radius:12px;
+          "
+        >
+          <div style="display:inline-flex; flex-direction:column; align-items:center; gap:12px;">
+            <div style="
+              width:48px; height:48px;
+              background:rgba(0,0,0,0.05);
+              border-radius:50%;
+              display:flex; align-items:center; justify-content:center;
+            ">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
-            <p class="text-gray-600 font-medium">暂无草稿，快去创建第一篇排版吧！</p>
+            <p style="font-size:14px; color:var(--color-text-secondary); margin:0;">暂无草稿，快去创建第一篇排版吧！</p>
             <button
               @click="startWork('daily')"
-              class="mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              立即开始创作
-            </button>
+              style="
+                padding:8px 20px;
+                background:var(--color-accent-primary);
+                color:#fff;
+                border:none;
+                border-radius:4px;
+                font-size:13px;
+                font-weight:600;
+                cursor:pointer;
+                transition:background 150ms;
+              "
+              onmouseover="this.style.background='var(--color-accent-hover)'"
+              onmouseout="this.style.background='var(--color-accent-primary)'"
+            >立即开始创作</button>
           </div>
         </div>
 
-        <div v-else class="grid grid-cols-1 gap-4">
+        <!-- 文章列表 -->
+        <div v-else style="display:flex; flex-direction:column; gap:1px; background:rgba(0,0,0,0.07); border:1px solid rgba(0,0,0,0.1); border-radius:12px; overflow:hidden;">
           <div
             v-for="(article, index) in articles"
             :key="article.id"
-            class="group relative bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100/50 hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden animate-fade-in"
-            :style="{ animationDelay: `${index * 100}ms` }"
+            class="article-row"
+            @click="continueEdit(article.id)"
+            :style="{ animationDelay: `${index * 40}ms` }"
           >
-            <!-- 左侧装饰线 -->
-            <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300"></div>
-
-            <a
-              @click="continueEdit(article.id)"
-              class="block p-6 cursor-pointer"
-            >
-              <div class="flex items-start justify-between">
-                <div class="flex-1 min-w-0 mr-4">
-                  <div class="flex items-center mb-2">
-                    <h3 class="text-base font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors mr-3">
-                      {{ article.title || '无标题' }}
-                    </h3>
-                    <span
-                      class="px-3 py-1 inline-flex text-xs font-medium rounded-full backdrop-blur-sm border"
-                      :class="getStatusClass(article.status)"
-                    >
-                      {{ formatStatus(article.status) }}
-                    </span>
-                  </div>
-                  <div class="flex items-center text-sm text-gray-500">
-                    <svg class="flex-shrink-0 mr-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span>最后编辑: {{ formatDate(article.updatedAt) }}</span>
-                  </div>
-                </div>
-                <div class="flex-shrink-0 flex items-center space-x-2">
-                  <!-- 删除按钮 -->
-                  <button
-                    @click.stop="confirmDeleteArticle(article)"
-                    class="w-9 h-9 md:w-10 md:h-10 bg-gray-50 rounded-lg flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition-all"
-                    title="删除文章"
-                  >
-                    <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-400 hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                  </button>
-                  <!-- 编辑图标 -->
-                  <div class="w-9 h-9 md:w-10 md:h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
-                    <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
-                  </div>
-                </div>
+            <!-- 文章信息 -->
+            <div style="flex:1; min-width:0; margin-right:16px;">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                <h3 style="
+                  font-size:14px; font-weight:600;
+                  color:rgba(0,0,0,0.9);
+                  margin:0;
+                  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+                ">{{ article.title || '无标题' }}</h3>
+                <span
+                  :class="['notion-badge', getStatusBadgeClass(article.status)]"
+                  style="flex-shrink:0;"
+                >{{ formatStatus(article.status) }}</span>
               </div>
-            </a>
+              <div style="display:flex; align-items:center; gap:4px; font-size:12px; color:var(--color-text-muted);">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ formatDate(article.updatedAt) }}
+              </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+              <button
+                @click.stop="confirmDeleteArticle(article)"
+                class="icon-btn"
+                title="删除"
+                style="color:rgba(0,0,0,0.3);"
+                onmouseover="this.style.color='var(--color-error)'; this.style.background='var(--color-error-light)'"
+                onmouseout="this.style.color='rgba(0,0,0,0.3)'; this.style.background='transparent'"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+              <div class="icon-btn" style="color:var(--color-accent-primary); background:var(--color-badge-bg);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </div>
+            </div>
+
           </div>
         </div>
+
       </section>
     </main>
   </div>
@@ -350,6 +420,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onActivated, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { showConfirm } from '@/composables/useConfirm'
 import { useUserStore } from '../../stores/userStore'
 import { useConfigStore } from '../../stores/configStore'
 import { useAppStore } from '../../stores/appStore'
@@ -362,10 +433,8 @@ const userStore = useUserStore()
 const configStore = useConfigStore()
 const appStore = useAppStore()
 
-// 同步微信配置
 watch(() => userStore.currentTenant?.id, (newId) => {
   if (newId) {
-    console.log('[Dashboard] 同步空间微信配置:', newId)
     configStore.fetchBackendConfig(newId)
   }
 }, { immediate: true })
@@ -375,24 +444,16 @@ const loading = ref(true)
 const showSettings = ref(false)
 const isDeleting = ref(false)
 
-// 删除文章确认
 const confirmDeleteArticle = async (article: Article) => {
   if (isDeleting.value) return
-  
-  const confirmed = confirm(`确定要删除文章「${article.title || '无标题'}」吗？\n\n此操作不可恢复。`)
+  const confirmed = await showConfirm({ title: '确认删除', message: `确定要删除文章「${article.title || '无标题'}」吗？此操作不可恢复。`, type: 'danger', confirmText: '删除', cancelText: '取消' })
   if (!confirmed) return
-  
   isDeleting.value = true
-  
   try {
     await api.delete(`/articles/${article.id}`)
-    
-    // 从列表中移除
     articles.value = articles.value.filter(a => a.id !== article.id)
-    
     toast.success('文章已删除')
   } catch (error: any) {
-    console.error('删除文章失败:', error)
     toast.error(error.response?.data?.message || '删除失败，请重试')
   } finally {
     isDeleting.value = false
@@ -400,56 +461,28 @@ const confirmDeleteArticle = async (article: Article) => {
 }
 
 const startWork = (mode: 'daily' | 'three_rural' | 'reprint') => {
-  console.log('[Dashboard] 开始创作，模式:', mode)
-  console.log('[Dashboard] 当前用户信息:', userStore.userInfo)
-  
-  // 确保每次新建排版时都彻底清空旧数据
   appStore.resetApp()
-  // 自动填充登录用户的姓名到编辑字段
   appStore.initializeUserMetadata(userStore.userInfo)
-  
-  console.log('[Dashboard] 初始化后编辑字段:', appStore.editorInput)
-  
   configStore.setMode(mode)
   router.push('/step1')
 }
 
-const handleLogout = () => {
-  if (confirm('确定要退出登录吗？')) {
+const handleLogout = async () => {
+  const confirmed = await showConfirm({ message: '确定要退出登录吗？', type: 'warning' })
+  if (confirmed) {
     userStore.logout()
     router.push('/')
   }
 }
 
-// 继续编辑文章 - 直接恢复状态并跳转到正确的步骤
 const continueEdit = async (id: string) => {
   try {
     loading.value = true
-    console.log('=== [Dashboard] continueEdit 开始 ===')
-    console.log('[Dashboard] 文章ID:', id)
-    
-    // 🚀 重要：先重置所有状态，防止上一个文章的数据（如尾部元数据）残留
     appStore.resetApp()
-    
-    // 获取文章详情
     const article = await getArticle(id)
-    console.log('[Dashboard] 获取到的文章:', {
-      id: article.id,
-      title: article.title,
-      status: article.status,
-      hasConfig: !!article.config,
-      contentLength: article.content?.length || 0,
-      contentPreview: article.content?.substring(0, 100)
-    })
-    
-    // 1. 设置当前文章 ID
     appStore.setCurrentArticleId(article.id)
-    
-    // 2. 恢复样式配置与元数据
     if (article.config) {
       appStore.setStyleConfig(article.config)
-      
-      // 恢复元数据
       if (article.config.metadata) {
         const meta = article.config.metadata
         if (meta.editorInput !== undefined) appStore.editorInput = meta.editorInput
@@ -459,20 +492,11 @@ const continueEdit = async (id: string) => {
         if (meta.plannerNames) appStore.plannerNames = meta.plannerNames
         if (meta.editorNames) appStore.editorNames = meta.editorNames
       }
-      console.log('[Dashboard] 已恢复样式配置与元数据')
     }
-    
-    // 3. 解析保存的内容并恢复到 contentBlocks
     let hasContentBlocks = false
     if (article.content) {
-      console.log('[Dashboard] 尝试解析内容...')
       try {
         const savedBlocks = JSON.parse(article.content)
-        console.log('[Dashboard] 解析结果:', {
-          isArray: Array.isArray(savedBlocks),
-          length: savedBlocks?.length,
-          firstBlock: savedBlocks?.[0]
-        })
         if (Array.isArray(savedBlocks) && savedBlocks.length > 0) {
           const restoredBlocks = savedBlocks.map((block: any, index: number) => ({
             id: `restored_${index}_${Date.now()}`,
@@ -481,63 +505,41 @@ const continueEdit = async (id: string) => {
             source: 'restored',
             meta: block.aiImageUrl ? { aiImageUrl: block.aiImageUrl } : {}
           }))
-          
           appStore.setContentBlocks(restoredBlocks)
           hasContentBlocks = true
-          console.log('[Dashboard] ✅ 已恢复 contentBlocks:', restoredBlocks.length)
-          
-          // 同时重建 rawText，以便返回 Step1 时也能显示文本
           const rawText = savedBlocks.map((b: any) => b.text || '').join('\n\n')
           appStore.setRawText(rawText)
-          console.log('[Dashboard] ✅ 已重建 rawText:', rawText.length, '字符')
         }
-      } catch (parseError) {
-        // 如果不是 JSON，当作原始文本处理
-        console.log('[Dashboard] JSON解析失败，当作原始文本:', parseError)
+      } catch {
         appStore.setRawText(article.content)
       }
-    } else {
-      console.log('[Dashboard] ⚠️ 文章无内容')
     }
-    
-    // 4. 统一走 Step3（已编辑），状态不再作为跳转依据
-    const status = article.status
     const hasImages = Array.isArray(article.images) && article.images.length > 0
     const hasContent = Boolean(article.content) || hasContentBlocks || hasImages
-
-    console.log('[Dashboard] 决策参数:', { status, hasContentBlocks, hasImages, hasContent })
-
     if (hasContent) {
-      console.log('[Dashboard] → 跳转到 Step3')
       router.push('/step3/' + article.id)
     } else {
-      console.log('[Dashboard] → 跳转到 Step1')
       router.push('/step1')
     }
   } catch (error: any) {
-    console.error('加载文章失败:', error)
     toast.error('加载文章失败: ' + (error.message || '未知错误'))
   } finally {
     loading.value = false
   }
 }
 
-const getStatusClass = (status: string) => {
-  const edited = 'bg-blue-100/80 text-blue-700 border-blue-200'
+const getStatusBadgeClass = (status: string) => {
   const map: Record<string, string> = {
-    'DRAFT': edited,
-    'PARSED': edited,
-    'ADJUSTED': edited,
-    'PUBLISHED': 'bg-green-100/80 text-green-700 border-green-200'
+    'PUBLISHED': 'notion-badge-success'
   }
-  return map[status] || edited
+  return map[status] || ''
 }
 
 const formatStatus = (status: string) => {
   const map: Record<string, string> = {
-    'DRAFT': '已编辑',
+    'DRAFT': '草稿',
     'PARSED': '已编辑',
-    'ADJUSTED': '已编辑',
+    'ADJUSTED': '已调整',
     'PUBLISHED': '已发布'
   }
   return map[status] || '已编辑'
@@ -552,24 +554,19 @@ const formatDate = (dateStr: string) => {
   })
 }
 
-// 获取文章列表函数
 const fetchArticles = async () => {
   loading.value = true
   try {
     const res = await getArticles()
-    console.log(`📋 获取到 ${res.length} 篇文章`)
     articles.value = res
   } catch (error: any) {
-    console.error('❌ 获取文章列表失败:', error)
     toast.error('获取文章列表失败')
   } finally {
     loading.value = false
   }
 }
 
-// 首次加载
 onMounted(() => {
-  console.log('🏠 Dashboard组件已挂载')
   if (userStore.isLoggedIn) {
     fetchArticles()
   } else {
@@ -577,9 +574,7 @@ onMounted(() => {
   }
 })
 
-// 每次进入时刷新（处理 keep-alive 缓存情况）
 onActivated(() => {
-  console.log('🔄 Dashboard被激活，刷新文章列表')
   if (userStore.isLoggedIn) {
     fetchArticles()
   } else {
@@ -589,52 +584,72 @@ onActivated(() => {
 </script>
 
 <style scoped>
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* 模式卡片 */
+.mode-card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: border-color 200ms, box-shadow 200ms, transform 200ms;
+  box-shadow: var(--shadow-content-card);
+}
+.mode-card:hover {
+  border-color: var(--hover-border, rgba(0,117,222,0.3));
+  background: var(--hover-bg, rgba(0,117,222,0.02));
+  box-shadow: var(--shadow-content-hover);
+  transform: translateY(-2px);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* 文章行 */
+.article-row {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 150ms;
+  animation: fadeUp 0.3s ease-out both;
+}
+.article-row:hover {
+  background: var(--color-bg-warm);
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+/* 图标按钮 */
+.icon-btn {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  transition: background 150ms, color 150ms;
 }
 
-/* 平滑滚动 */
-html {
-  scroll-behavior: smooth;
+/* 下拉菜单项 */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 14px;
+  font-size: 13px;
+  color: rgba(0,0,0,0.75);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms;
+}
+.dropdown-item:hover {
+  background: var(--color-bg-warm);
 }
 
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 8px;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

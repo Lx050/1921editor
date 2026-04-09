@@ -6,13 +6,18 @@
       @click="$emit('update:modelValue', mode.value)"
       :class="[
         'border rounded-lg p-4 cursor-pointer flex items-center space-x-4 transition-all',
-        modelValue === mode.value ? 'border-blue-500 ring-2 ring-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+        modelValue === mode.value ? '' : ''
       ]"
+      :style="modelValue === mode.value
+        ? 'border-color: var(--color-accent-primary); box-shadow: 0 0 0 2px var(--color-accent-primary); background: var(--color-badge-bg);'
+        : 'border-color: rgba(0,0,0,0.08);'"
+      @mouseover="(e) => { if (modelValue !== mode.value) (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,117,222,0.4)'; }"
+      @mouseout="(e) => { if (modelValue !== mode.value) (e.currentTarget as HTMLElement).style.borderColor = ''; }"
     >
       <div class="text-2xl">{{ mode.icon }}</div>
       <div>
-        <h4 class="font-bold text-gray-900">{{ mode.label }}</h4>
-        <p class="text-sm text-gray-500">{{ mode.description }}</p>
+        <h4 class="font-bold" style="color:rgba(0,0,0,0.85);">{{ mode.label }}</h4>
+        <p class="text-sm" style="color:rgba(0,0,0,0.45);">{{ mode.description }}</p>
       </div>
     </div>
   </div>

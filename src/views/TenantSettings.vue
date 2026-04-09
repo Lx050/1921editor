@@ -59,9 +59,12 @@
              <div class="flex items-center space-x-2">
                <span class="truncate max-w-[300px]" :title="config.userTable.tableUrl">{{ config.userTable.tableUrl }}</span>
                <a 
-                 :href="config.userTable.tableUrl" 
+                 :href="config.userTable.tableUrl"
                  target="_blank"
-                 class="text-blue-600 hover:text-blue-800 flex items-center"
+                 class="flex items-center"
+                 style="color: var(--color-accent-primary);"
+                 @mouseover="$event.target.style.color='var(--color-accent-hover)'"
+                 @mouseout="$event.target.style.color='var(--color-accent-primary)'"
                >
                  <el-icon class="mr-1"><Link /></el-icon>
                  打开飞书表格
@@ -91,7 +94,7 @@
           <li><strong>最后更新</strong> - 日期</li>
           <li><strong>系统ID</strong> - 文本 (必填)</li>
         </ul>
-        <div class="mt-2 text-xs text-gray-400">
+        <div class="mt-2 text-xs" style="color:var(--color-text-muted);">
           <p>💡 <strong>1/N 权重实现：</strong>在飞书添加公式列，例如：</p>
           <code>IF(COUNTACCESS([文案撰稿])>0, ROUND(1/COUNTACCESS([文案撰稿]), 2), 0)</code>
         </div>
@@ -126,9 +129,12 @@
              <div class="flex items-center space-x-2">
                <span class="truncate max-w-[300px]" :title="config.articleTable.tableUrl">{{ config.articleTable.tableUrl }}</span>
                <a 
-                 :href="config.articleTable.tableUrl" 
+                 :href="config.articleTable.tableUrl"
                  target="_blank"
-                 class="text-blue-600 hover:text-blue-800 flex items-center"
+                 class="flex items-center"
+                 style="color: var(--color-accent-primary);"
+                 @mouseover="$event.target.style.color='var(--color-accent-hover)'"
+                 @mouseout="$event.target.style.color='var(--color-accent-primary)'"
                >
                  <el-icon class="mr-1"><Link /></el-icon>
                  打开飞书表格
@@ -306,7 +312,22 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import api from '../utils/api';
-import { ElMessage } from 'element-plus';
+import toast from '../composables/useToast';
+import 'element-plus/dist/index.css';
+import {
+  ElTabs,
+  ElTabPane,
+  ElInput,
+  ElButton,
+  ElTag,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElIcon,
+  ElRadioGroup,
+  ElRadioButton,
+  ElCollapse,
+  ElCollapseItem,
+} from 'element-plus';
 import { Link } from '@element-plus/icons-vue';
 import { useUserStore } from '../stores/userStore';
 import { DEFAULT_HEADERS, DEFAULT_FOOTERS } from '../stores/configStore';
@@ -343,7 +364,7 @@ function handleExportOrgConfig() {
   a.download = `org-template-config-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  ElMessage.success('配置已导出');
+  toast.success('配置已导出');
 }
 
 function handleImportOrgConfig() {
@@ -357,12 +378,12 @@ function handleImportOrgConfig() {
       const text = await file.text();
       const success = orgConfigStore.importConfig(text);
       if (success) {
-        ElMessage.success('配置导入成功');
+        toast.success('配置导入成功');
       } else {
-        ElMessage.error('配置文件格式错误');
+        toast.error('配置文件格式错误');
       }
     } catch {
-      ElMessage.error('读取文件失败');
+      toast.error('读取文件失败');
     }
   };
   input.click();
@@ -378,15 +399,12 @@ const config = ref<any>({
 
 // 加载当前配置
 onMounted(async () => {
-  console.log('[TenantSettings] 开始加载配置...');
   try {
     const res = await api.get('/tenant/config');
-    console.log('[TenantSettings] API响应:', res.data);
     
     if (res.data.success) {
       config.value = res.data.config;
-      console.log('[TenantSettings] 配置加载成功:', config.value);
-      
+
       // 如果已有配置，填充到输入框
       if (config.value.userTable?.tableUrl) {
         userTableUrl.value = config.value.userTable.tableUrl;
@@ -410,9 +428,9 @@ onMounted(async () => {
     });
     
     if (error.response?.status === 401) {
-      ElMessage.error('未登录或登录已过期，请重新登录');
+      toast.error('未登录或登录已过期，请重新登录');
     } else {
-      ElMessage.error('加载配置失败: ' + (error.response?.data?.message || error.message));
+      toast.error('加载配置失败: ' + (error.response?.data?.message || error.message));
     }
   }
 });
@@ -420,7 +438,7 @@ onMounted(async () => {
 // 配置人员管理表
 async function configureUserTable() {
   if (!userTableUrl.value) {
-    ElMessage.warning('请输入表格链接');
+    toast.warning('请输入表格链接');
     return;
   }
 
@@ -431,7 +449,7 @@ async function configureUserTable() {
     });
 
     if (res.data.success) {
-      ElMessage.success('人员管理表配置成功！');
+      toast.success('人员管理表配置成功！');
       config.value.userTable = {
         ...res.data.config,
         tableUrl: userTableUrl.value,
@@ -439,7 +457,7 @@ async function configureUserTable() {
     }
   } catch (error: any) {
     const message = error.response?.data?.message || '配置失败';
-    ElMessage.error(message);
+    toast.error(message);
   } finally {
     loading.value = false;
   }
@@ -448,7 +466,7 @@ async function configureUserTable() {
 // 配置文章管理表
 async function configureArticleTable() {
   if (!articleTableUrl.value) {
-    ElMessage.warning('请输入表格链接');
+    toast.warning('请输入表格链接');
     return;
   }
 
@@ -459,7 +477,7 @@ async function configureArticleTable() {
     });
 
     if (res.data.success) {
-      ElMessage.success('文章管理表配置成功！');
+      toast.success('文章管理表配置成功！');
       config.value.articleTable = {
         ...res.data.config,
         tableUrl: articleTableUrl.value,
@@ -467,7 +485,7 @@ async function configureArticleTable() {
     }
   } catch (error: any) {
     const message = error.response?.data?.message || '配置失败';
-    ElMessage.error(message);
+    toast.error(message);
   } finally {
     loading.value = false;
   }
@@ -477,17 +495,17 @@ async function configureArticleTable() {
 async function updateInviteCode() {
   const inviteCode = inviteCodeInput.value.trim();
   if (!inviteCode) {
-    ElMessage.warning('请输入邀请码');
+    toast.warning('请输入邀请码');
     return;
   }
 
   if (!userStore.isAdmin) {
-    ElMessage.error('仅管理员可修改加入码');
+    toast.error('仅管理员可修改加入码');
     return;
   }
 
   if (!userStore.tenantId) {
-    ElMessage.error('未获取到当前空间信息');
+    toast.error('未获取到当前空间信息');
     return;
   }
 
@@ -499,10 +517,10 @@ async function updateInviteCode() {
     config.value.inviteCode = res.data.inviteCode;
     config.value.inviteCodeExpires = res.data.inviteCodeExpires || null;
     inviteCodeInput.value = res.data.inviteCode;
-    ElMessage.success('加入码更新成功');
+    toast.success('加入码更新成功');
   } catch (error: any) {
     const message = error.response?.data?.message || '加入码更新失败';
-    ElMessage.error(message);
+    toast.error(message);
   } finally {
     inviteCodeLoading.value = false;
   }
@@ -519,18 +537,18 @@ async function updateInviteCode() {
 .settings-header {
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid rgba(0,0,0,0.12);
 }
 
 .settings-header h1 {
   margin: 0 0 10px 0;
   font-size: 28px;
-  color: #333;
+  color: rgba(0,0,0,0.85);
 }
 
 .subtitle {
   margin: 0;
-  color: #666;
+  color: rgba(0,0,0,0.55);
   font-size: 14px;
 }
 
@@ -539,7 +557,7 @@ async function updateInviteCode() {
   padding: 20px;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-content-card);
 }
 
 .section-header {
@@ -552,19 +570,19 @@ async function updateInviteCode() {
 .section-header h2 {
   margin: 0;
   font-size: 20px;
-  color: #333;
+  color: rgba(0,0,0,0.85);
 }
 
 .config-description {
   margin-bottom: 20px;
   padding: 15px;
-  background: #f5f7fa;
+  background: #f6f5f4;
   border-radius: 4px;
 }
 
 .config-description p {
   margin: 0 0 10px 0;
-  color: #666;
+  color: rgba(0,0,0,0.55);
 }
 
 .config-description ul {
@@ -574,7 +592,7 @@ async function updateInviteCode() {
 
 .config-description li {
   margin: 5px 0;
-  color: #666;
+  color: rgba(0,0,0,0.55);
 }
 
 .field-list {
@@ -585,7 +603,7 @@ async function updateInviteCode() {
 }
 
 .hint-text {
-  color: #409eff !important;
+  color: var(--color-accent-primary) !important;
   font-size: 14px;
 }
 
@@ -602,20 +620,20 @@ async function updateInviteCode() {
 .config-details {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid rgba(0,0,0,0.12);
 }
 
 .tenant-info {
   margin-bottom: 30px;
   padding: 20px;
-  background: #f9f9f9;
+  background: #f6f5f4;
   border-radius: 8px;
 }
 
 .tenant-info h3 {
   margin: 0 0 15px 0;
   font-size: 18px;
-  color: #333;
+  color: rgba(0,0,0,0.85);
 }
 
 .help-section {
@@ -623,14 +641,14 @@ async function updateInviteCode() {
 }
 
 .help-section pre {
-  background: #f5f5f5;
+  background: #f6f5f4;
   padding: 10px;
   border-radius: 4px;
   overflow-x: auto;
 }
 
 .help-section code {
-  background: #f5f5f5;
+  background: #f6f5f4;
   padding: 2px 6px;
   border-radius: 3px;
   font-family: monospace;

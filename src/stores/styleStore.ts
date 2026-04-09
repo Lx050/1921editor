@@ -48,7 +48,7 @@ export const useStyleStore = defineStore('style', () => {
         // 处理 API 样式结果
         if (apiResult.status === 'fulfilled') {
             apiStyles.value = apiResult.value;
-            console.log('[StyleStore] 从后端加载样式成功:', apiStyles.value.length, '个');
+            console.debug('[StyleStore] 从后端加载样式成功:', apiStyles.value.length, '个');
         } else {
             console.warn('[StyleStore] 后端 API 加载失败:', apiResult.reason);
             apiStyles.value = [];
@@ -57,7 +57,7 @@ export const useStyleStore = defineStore('style', () => {
         // 处理本地样式结果
         if (localResult.status === 'fulfilled') {
             localStyles.value = localResult.value;
-            console.log('[StyleStore] 加载本地样式:', localStyles.value.length, '个');
+            console.debug('[StyleStore] 加载本地样式:', localStyles.value.length, '个');
         } else {
             console.error('[StyleStore] 本地样式加载失败:', localResult.reason);
             localStyles.value = [];
@@ -74,7 +74,7 @@ export const useStyleStore = defineStore('style', () => {
 
     // 获取本地样式
     async function fetchLocalStyles(): Promise<StyleTemplateWithSource[]> {
-        const localStyles = getAllStyles();
+        const localStyles = await getAllStyles();
         return [
             ...localStyles.title.map((s: any) => ({ ...s, type: 'title' as const, source: 'local' as const })),
             ...localStyles.body.map((s: any) => ({ ...s, type: 'body' as const, source: 'local' as const })),

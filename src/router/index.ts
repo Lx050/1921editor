@@ -207,7 +207,7 @@ const router = createRouter({
 
 // 统一的错误记录函数
 const logRouteGuard = (to: string, passed: boolean, message: string): void => {
-  console.log(`[RouteGuard] ${passed ? '✅ 通过' : '⛔ 拦截'} | ${to}: ${message}`)
+  console.debug(`[RouteGuard] ${passed ? '✅ 通过' : '⛔ 拦截'} | ${to}: ${message}`)
 }
 
 // 导航守卫 - 确保正确的步骤流程

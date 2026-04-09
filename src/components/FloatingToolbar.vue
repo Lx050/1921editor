@@ -1,10 +1,17 @@
 <template>
+  <Transition
+    enter-active-class="transition-all duration-150 ease-out"
+    leave-active-class="transition-all duration-100 ease-in"
+    enter-from-class="opacity-0 scale-95"
+    leave-to-class="opacity-0 scale-95"
+  >
   <div
     v-if="visible"
-    class="absolute z-10 mt-2 bg-[#141419] border border-white/10 rounded-xl shadow-2xl p-2 backdrop-blur-xl"
+    class="absolute z-10 mt-2 rounded-xl p-2"
+    style="background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.1); border-radius:var(--radius-md); box-shadow:var(--shadow-float);"
     :style="{ left: position.x + 'px', top: position.y + 'px' }"
   >
-    <div class="text-xs text-[#606070] mb-2 px-2 uppercase tracking-wider">设置类型</div>
+    <div style="font-size:11px; font-weight:600; color:rgba(0,0,0,0.4); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; padding:0 8px;">设置类型</div>
     <div class="flex flex-col space-y-1">
       <button
         v-for="option in typeOptions"
@@ -13,20 +20,26 @@
         :class="[
           'px-3 py-2 text-left text-sm rounded-md transition-all duration-200 flex items-center justify-between',
           blockType === option.value
-            ? 'bg-[#ff6b4a]/20 text-[#ff6b4a] font-medium'
-            : 'hover:bg-[#252530] text-[#a0a0b0]'
+            ? 'font-medium'
+            : ''
         ]"
+        :style="blockType === option.value
+          ? 'background:var(--color-badge-bg); color:var(--color-accent-primary);'
+          : 'color:rgba(0,0,0,0.6);'"
+        @mouseover="blockType !== option.value && ($event.currentTarget.style.background = 'rgba(0,0,0,0.04)')"
+        @mouseout="blockType !== option.value && ($event.currentTarget.style.background = '')"
       >
         <span>{{ option.label }}</span>
         <span
           v-if="blockType === option.value"
-          class="text-[#ff6b4a]"
+          style="color:var(--color-accent-primary);"
         >
           ✓
         </span>
       </button>
     </div>
   </div>
+  </Transition>
 </template>
 
 <script setup>

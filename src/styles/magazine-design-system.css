@@ -1,66 +1,117 @@
-/* 版式装配引擎 设计系统 v2.0 — 连贯呼吸感 */
+/* 版式装配引擎 设计系统 v3.0 — Notion 暖极简风格 */
+/* 灵感来源: Notion / DESIGN.md warm editorial minimalism */
 :root {
-  /* 深色背景层级 */
-  --color-bg-primary: #0a0a0c;
-  --color-bg-secondary: #141419;
-  --color-bg-tertiary: #1a1a22;
-  --color-bg-elevated: #1f1f2a;
+  /* ===== 核心页面背景 ===== */
+  --color-bg-page: #ffffff;
+  --color-bg-warm: #f6f5f4;           /* 暖白色背景 — 节区分割 */
+  --color-bg-muted: #efeee9;          /* 更深的暖灰 */
+  --color-bg-card: #ffffff;
 
-  /* 内容区域 — 统一暖灰色系，去除生硬白色 */
-  --color-content-bg: #f4f3f0;
-  --color-content-bg-soft: #f9f8f6;
+  /* ===== 文字颜色体系 ===== */
+  --color-text-primary: rgba(0, 0, 0, 0.95);     /* 近黑 — 标题、正文 */
+  --color-text-secondary: #615d59;               /* 暖灰 500 — 副文本 */
+  --color-text-muted: #a39e98;                   /* 暖灰 300 — 占位/禁用 */
+  --color-text-inverse: #ffffff;
+
+  /* ===== 品牌蓝 ===== */
+  --color-accent-primary: #0075de;     /* Notion Blue — 唯一强调色 */
+  --color-accent-hover: #005bab;       /* 按压/悬停态 */
+  --color-accent-soft: rgba(0, 117, 222, 0.08);
+  --color-accent-focus: rgba(0, 117, 222, 0.15);
+  --color-badge-bg: #f2f9ff;
+  --color-badge-text: #097fe8;
+
+  /* ===== 内容区域（兼容旧变量名） ===== */
+  --color-content-bg: #f6f5f4;
+  --color-content-bg-soft: #fafaf9;
   --color-content-bg-muted: #efeee9;
   --color-content-card: #ffffff;
-  --color-content-border: transparent;
-  --color-content-border-subtle: rgba(0, 0, 0, 0.04);
-  --color-content-text: #1a1a1a;
-  --color-content-text-secondary: #6b6b6b;
-  --color-content-text-muted: #9a9a9a;
+  --color-content-border: rgba(0, 0, 0, 0.1);
+  --color-content-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-content-text: rgba(0, 0, 0, 0.95);
+  --color-content-text-secondary: #615d59;
+  --color-content-text-muted: #a39e98;
 
-  /* 文字颜色 */
-  --color-text-primary: #f5f5f5;
-  --color-text-secondary: #c5c5d4;
-  --color-text-muted: #8b8ba3;
+  /* ===== 深色区域（旧版兼容，用于部分组件） ===== */
+  --color-bg-primary: #1a1a1e;
+  --color-bg-secondary: #141418;
+  --color-bg-tertiary: #1f1f26;
+  --color-bg-elevated: #242430;
+  --color-border-default: rgba(0, 0, 0, 0.1);
 
-  /* 主题色 — 更柔和的橘棕体系 */
-  --color-accent-primary: #e8603c;
-  --color-accent-soft: rgba(232, 96, 60, 0.08);
-  --color-accent-hover: rgba(232, 96, 60, 0.12);
+  /* ===== 其他 accent（旧版兼容） ===== */
   --color-gold-primary: #c4956a;
-  --color-ai-primary: #7c5cfc;
-  --color-ai-soft: rgba(124, 92, 252, 0.06);
-  --color-ai-hover: rgba(124, 92, 252, 0.12);
+  --color-ai-primary: #0075de;
+  --color-ai-soft: rgba(0, 117, 222, 0.06);
+  --color-ai-hover: rgba(0, 117, 222, 0.12);
 
-  /* 边框和阴影 — 极轻、柔和 */
-  --color-border-default: rgba(255, 255, 255, 0.1);
-  --shadow-accent: 0 10px 30px rgba(232, 96, 60, 0.15);
-  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --shadow-content-card: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-content-hover: 0 4px 16px rgba(0, 0, 0, 0.06);
-  --shadow-content-selected: 0 0 0 2px rgba(232, 96, 60, 0.2);
-  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.08);
+  /* Semantic State Colors */
+  --color-success: #16a34a;
+  --color-success-light: #f0fdf4;
+  --color-success-border: #bbf7d0;
+  --color-error: #dc2626;
+  --color-error-light: #fef2f2;
+  --color-error-border: #fecaca;
+  --color-warning: #d97706;
+  --color-warning-light: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-danger: #e53e3e;
+  --color-danger-light: #fff1f2;
 
-  /* 圆角和间距 */
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 6px;
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
+  /* ===== 边框体系 ===== */
+  --border-whisper: 1px solid rgba(0, 0, 0, 0.1);
+  --border-subtle: 1px solid rgba(0, 0, 0, 0.07);
+  --border-input: 1px solid rgba(0, 0, 0, 0.15);
+
+  /* ===== 阴影体系 — 多层叠加，极低单层透明度 ===== */
+  --shadow-card: rgba(0,0,0,0.04) 0px 4px 18px,
+                 rgba(0,0,0,0.027) 0px 2px 7.85px,
+                 rgba(0,0,0,0.02) 0px 0.8px 2.93px,
+                 rgba(0,0,0,0.01) 0px 0.175px 1.04px;
+  --shadow-float: rgba(0,0,0,0.08) 0px 8px 32px,
+                  rgba(0,0,0,0.05) 0px 3px 12px,
+                  rgba(0,0,0,0.03) 0px 1px 4px;
+  --shadow-modal: rgba(0,0,0,0.12) 0px 20px 60px,
+                  rgba(0,0,0,0.08) 0px 8px 24px,
+                  rgba(0,0,0,0.04) 0px 2px 8px;
+  --shadow-content-card: rgba(0,0,0,0.04) 0px 2px 8px,
+                         rgba(0,0,0,0.02) 0px 1px 3px;
+  --shadow-content-hover: rgba(0,0,0,0.07) 0px 6px 20px,
+                          rgba(0,0,0,0.04) 0px 2px 8px;
+  --shadow-content-selected: 0 0 0 2px rgba(0, 117, 222, 0.25);
+  --shadow-accent: 0 4px 16px rgba(0, 117, 222, 0.2);
+  --shadow-md: var(--shadow-float);
+
+  /* ===== 圆角体系 ===== */
+  --radius-xs: 4px;    /* 按钮、输入框 */
+  --radius-sm: 6px;    /* 小型控件 */
+  --radius-md: 12px;   /* 标准卡片 */
+  --radius-lg: 16px;   /* 大型卡片、英雄区 */
+  --radius-pill: 9999px;
+
+  /* ===== 间距 ===== */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+  --space-2xl: 80px;
+
+  /* ===== 动画 ===== */
   --duration-fast: 150ms;
-  --duration-normal: 250ms;
+  --duration-normal: 220ms;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* 字体 */
-  --font-display: "Playfair Display", "Times New Roman", serif;
-  --font-body: -apple-system, "SF Pro Text", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-mono: "SF Mono", "Menlo", monospace;
+  /* ===== 字体 ===== */
+  --font-display: "Inter", -apple-system, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-body: "Inter", -apple-system, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Menlo", monospace;
 
-  /* 灰度色板 */
-  --gray-50: #f9fafb;
-  --gray-200: #e5e7eb;
-  --primary-color: #3b82f6;
+  /* ===== 灰度兼容 ===== */
+  --gray-50: #fafaf9;
+  --gray-200: rgba(0, 0, 0, 0.1);
+  --primary-color: #0075de;
 }
 
 .magazine-bg {
@@ -186,7 +237,7 @@
 .magazine-textarea:focus {
   outline: none;
   border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 2px rgba(255, 107, 74, 0.15);
+  box-shadow: 0 0 0 3px var(--color-accent-focus);
   background: white;
 }
 
@@ -242,7 +293,7 @@
 .content-textarea:focus {
   outline: none;
   border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.15);
+  box-shadow: 0 0 0 3px var(--color-accent-focus);
 }
 
 /* 预览容器 - 柔和的渐变背景 */

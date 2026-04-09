@@ -128,7 +128,10 @@ const widthDisplay = computed(() => {
   <NodeViewWrapper class="manifold-image-block my-3" data-drag-handle>
     <div
       class="relative group rounded-lg transition-all"
-      :class="[containerClass, selected ? 'ring-2 ring-blue-400' : 'hover:ring-1 hover:ring-gray-300']"
+      :class="containerClass"
+      :style="selected ? 'box-shadow:0 0 0 2px var(--color-accent-primary);' : ''"
+      @mouseover="(e) => { if (!selected) (e.currentTarget as HTMLElement).style.outline = '1px solid rgba(0,0,0,0.12)'; }"
+      @mouseout="(e) => { if (!selected) (e.currentTarget as HTMLElement).style.outline = ''; }"
     >
       <!-- Image with resize wrapper -->
       <div class="relative inline-block w-full">
@@ -136,13 +139,15 @@ const widthDisplay = computed(() => {
           v-if="src"
           ref="imgRef"
           :src="src"
+          :alt="caption || ''"
           draggable="false"
           class="block rounded"
           :style="imageStyle"
         />
         <div
           v-else
-          class="w-full h-32 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-sm"
+          class="w-full h-32 rounded flex items-center justify-center text-sm"
+          style="background:var(--color-bg-warm); color:var(--color-text-muted);"
         >
           No image
         </div>
@@ -153,7 +158,7 @@ const widthDisplay = computed(() => {
           class="absolute top-0 right-0 w-2 h-full cursor-ew-resize flex items-center justify-center group/handle"
           @mousedown="onResizeStart"
         >
-          <div class="w-1 h-8 rounded-full bg-blue-400 opacity-60 group-hover/handle:opacity-100 transition-opacity" />
+          <div class="w-1 h-8 rounded-full opacity-60 group-hover/handle:opacity-100 transition-opacity" style="background:var(--color-accent-primary);" />
         </div>
 
         <!-- Width indicator during resize or when custom width set -->
@@ -179,7 +184,8 @@ const widthDisplay = computed(() => {
         >
           <input
             v-model="captionInput"
-            class="text-xs text-gray-500 border-b border-blue-300 bg-transparent outline-none text-center px-1 py-0.5 w-full max-w-[300px]"
+            class="text-xs bg-transparent outline-none text-center px-1 py-0.5 w-full max-w-[300px]"
+            style="color:rgba(0,0,0,0.45); border-bottom:1px solid var(--color-accent-primary);"
             placeholder="Enter caption..."
             @keydown="handleCaptionKeydown"
             @blur="saveCaption"
@@ -188,14 +194,20 @@ const widthDisplay = computed(() => {
         </div>
         <div
           v-else-if="caption"
-          class="text-xs text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+          class="text-xs cursor-pointer transition-colors"
+          style="color:rgba(0,0,0,0.45);"
+          @mouseover="($event.target as HTMLElement).style.color='rgba(0,0,0,0.65)'"
+          @mouseout="($event.target as HTMLElement).style.color='rgba(0,0,0,0.45)'"
           @click="startEditCaption"
         >
           {{ caption }}
         </div>
         <div
           v-else
-          class="text-xs text-gray-300 cursor-pointer hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          class="text-xs cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+          style="color:rgba(0,0,0,0.25);"
+          @mouseover="($event.target as HTMLElement).style.color='rgba(0,0,0,0.45)'"
+          @mouseout="($event.target as HTMLElement).style.color='rgba(0,0,0,0.25)'"
           @click="startEditCaption"
         >
           + Add caption
@@ -205,7 +217,7 @@ const widthDisplay = computed(() => {
       <!-- Overlay controls -->
       <div class="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <!-- Layout switcher -->
-        <div class="flex bg-white/90 backdrop-blur rounded shadow-sm border border-gray-200 text-[10px]">
+        <div class="flex bg-white/90 backdrop-blur rounded shadow-sm text-[10px]" style="border:1px solid rgba(0,0,0,0.08);">
           <button
             v-for="l in [
               { value: 'full_width', label: '全宽', icon: '&#x2194;' },
@@ -214,8 +226,10 @@ const widthDisplay = computed(() => {
               { value: 'right', label: '右浮', icon: '&#x21E5;' },
             ]"
             :key="l.value"
-            class="px-1.5 py-1 hover:bg-gray-100 transition-colors"
-            :class="layout === l.value ? 'bg-blue-50 text-blue-600' : 'text-gray-600'"
+            class="px-1.5 py-1 transition-colors"
+            @mouseover="($event.target as HTMLElement).style.background='var(--color-bg-warm)'"
+            @mouseout="($event.target as HTMLElement).style.background=''"
+            :style="layout === l.value ? { backgroundColor: 'var(--color-badge-bg)', color: 'var(--color-accent-primary)' } : { color: 'rgba(0,0,0,0.55)' }"
             @click="setLayout(l.value)"
             :title="l.label"
             v-html="l.icon"
@@ -224,8 +238,11 @@ const widthDisplay = computed(() => {
 
         <!-- Link button -->
         <button
-          class="px-1.5 py-1 bg-white/90 backdrop-blur rounded shadow-sm border border-gray-200 text-[10px] hover:bg-gray-100 transition-colors"
-          :class="href ? 'text-blue-600' : 'text-gray-600'"
+          class="px-1.5 py-1 bg-white/90 backdrop-blur rounded shadow-sm text-[10px] transition-colors"
+          style="border:1px solid rgba(0,0,0,0.08);"
+          @mouseover="($event.target as HTMLElement).style.background='var(--color-bg-warm)'"
+          @mouseout="($event.target as HTMLElement).style.background='rgba(255,255,255,0.9)'"
+          :style="href ? { color: 'var(--color-accent-primary)' } : { color: 'rgba(0,0,0,0.55)' }"
           @click="startEditLink"
           title="设置链接"
         >&#x1F517;</button>
@@ -235,14 +252,16 @@ const widthDisplay = computed(() => {
           v-if="editor?.isEditable"
           class="w-5 h-5 bg-red-500 text-white rounded text-xs flex items-center justify-center hover:bg-red-600 shadow"
           @click="deleteNode"
-          title="Delete image"
+          title="删除图片"
+          aria-label="删除图片"
         >x</button>
       </div>
 
       <!-- Link indicator (when link is set) -->
       <div
         v-if="href && !isEditingLink"
-        class="absolute bottom-2 left-2 right-2 bg-blue-50 border border-blue-200 rounded px-2 py-1 text-[10px] text-blue-600 truncate opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+        class="absolute bottom-2 left-2 right-2 rounded px-2 py-1 text-[10px] truncate opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+        style="background-color: var(--color-badge-bg); border: 1px solid rgba(0,117,222,0.25); color: var(--color-accent-primary);"
         @click="startEditLink"
         :title="href"
       >
@@ -252,20 +271,27 @@ const widthDisplay = computed(() => {
       <!-- Link editor popup -->
       <div
         v-if="isEditingLink"
-        class="absolute bottom-2 left-2 right-2 bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-30"
+        class="absolute bottom-2 left-2 right-2 bg-white rounded-lg shadow-lg p-2 z-30"
+        style="border:1px solid rgba(0,0,0,0.12);"
         @click.stop
       >
-        <div class="text-[10px] text-gray-500 mb-1">图片链接</div>
+        <div class="text-[10px] mb-1" style="color:rgba(0,0,0,0.45);">图片链接</div>
         <div class="flex items-center gap-1">
           <input
             v-model="linkInput"
-            class="flex-1 text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400"
+            class="flex-1 text-xs rounded px-2 py-1 outline-none"
+            style="border:1px solid rgba(0,0,0,0.08); --focus-border:var(--color-accent-primary);"
+            onfocus="this.style.borderColor='var(--color-accent-primary)'"
+            onblur="this.style.borderColor=''"
             placeholder="https://..."
             @keydown="handleLinkKeydown"
             autofocus
           />
           <button
-            class="text-[10px] px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            class="text-[10px] px-2 py-1 text-white rounded"
+            style="background-color: var(--color-accent-primary);"
+            @mouseover="$event.target.style.backgroundColor='var(--color-accent-hover)'"
+            @mouseout="$event.target.style.backgroundColor='var(--color-accent-primary)'"
             @click="saveLink"
           >确定</button>
           <button

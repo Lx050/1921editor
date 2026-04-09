@@ -58,12 +58,22 @@ export async function uploadImage(arrayBuffer, contentType, filename) {
 /**
  * 批量上传图片
  * @param {Array<{arrayBuffer, contentType, filename}>} images - 图片数组
- * @returns {Promise<string[]>} URL 数组
+ * @returns {Promise<Array<{ok: boolean, url?: string, error?: string, index: number}>>}
+ *   每个元素对应一张图片的结果：
+ *   - ok: true  → url 为上传后的永久 URL
+ *   - ok: false → error 为错误信息，url 为 undefined
  */
 export async function batchUpload(images) {
-  return Promise.all(images.map(img =>
-    uploadImage(img.arrayBuffer, img.contentType, img.filename)
-  ))
+  const settled = await Promise.allSettled(
+    images.map(img => uploadImage(img.arrayBuffer, img.contentType, img.filename))
+  )
+  return settled.map((result, index) => {
+    if (result.status === 'fulfilled') {
+      return { ok: true, url: result.value, index }
+    } else {
+      return { ok: false, error: result.reason?.message || String(result.reason), index }
+    }
+  })
 }
 
 // ==================== 内置策略 ====================

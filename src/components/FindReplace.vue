@@ -170,14 +170,20 @@ function handleKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
+  <Transition
+    enter-active-class="transition-all duration-150 ease-out"
+    leave-active-class="transition-all duration-100 ease-in"
+    enter-from-class="opacity-0 scale-95"
+    leave-to-class="opacity-0 scale-95"
+  >
   <div
     v-if="visible"
     class="absolute top-0 right-4 z-30 bg-white border rounded-lg shadow-lg p-3 w-80"
     @keydown="handleKeydown"
   >
     <div class="flex items-center justify-between mb-2">
-      <span class="text-xs font-medium text-gray-700">查找与替换</span>
-      <button class="text-gray-400 hover:text-gray-600 text-sm" @click="emit('close')">&times;</button>
+      <span class="text-xs font-medium" style="color:rgba(0,0,0,0.65);">查找与替换</span>
+      <button class="text-sm" style="color:var(--color-text-muted);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="emit('close')" title="关闭" aria-label="关闭查找替换">&times;</button>
     </div>
 
     <div class="space-y-2">
@@ -185,11 +191,11 @@ function handleKeydown(e: KeyboardEvent) {
         <input
           ref="findInputRef"
           v-model="findText"
-          class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+          class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1" style="--tw-ring-color:var(--color-accent-primary);"
           :class="regexError ? 'border-red-400' : ''"
           placeholder="查找..."
         />
-        <span class="text-xs text-gray-400 w-12 text-center whitespace-nowrap">
+        <span class="text-xs w-12 text-center whitespace-nowrap" style="color:var(--color-text-muted);">
           {{ matchCount > 0 ? `${currentMatch}/${matchCount}` : '0' }}
         </span>
       </div>
@@ -198,20 +204,20 @@ function handleKeydown(e: KeyboardEvent) {
       <div class="flex items-center gap-1">
         <button
           class="text-[10px] px-1.5 py-0.5 rounded border transition-colors font-mono"
-          :class="caseSensitive ? 'bg-blue-100 text-blue-700 border-blue-300' : 'text-gray-400 border-gray-200 hover:text-gray-600'"
+          :style="caseSensitive ? 'background:var(--color-badge-bg); color:var(--color-accent-primary); border-color:rgba(0,117,222,0.3);' : 'color:rgba(0,0,0,0.35); border-color:rgba(0,0,0,0.12);'"
           @click="caseSensitive = !caseSensitive"
           title="区分大小写"
         >Aa</button>
         <button
           class="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
-          :class="wholeWord ? 'bg-blue-100 text-blue-700 border-blue-300' : 'text-gray-400 border-gray-200 hover:text-gray-600'"
+          :style="wholeWord ? 'background:var(--color-badge-bg); color:var(--color-accent-primary); border-color:rgba(0,117,222,0.3);' : 'color:rgba(0,0,0,0.35); border-color:rgba(0,0,0,0.12);'"
           @click="wholeWord = !wholeWord"
           :disabled="useRegex"
           title="全字匹配"
         >W</button>
         <button
           class="text-[10px] px-1.5 py-0.5 rounded border transition-colors font-mono"
-          :class="useRegex ? 'bg-blue-100 text-blue-700 border-blue-300' : 'text-gray-400 border-gray-200 hover:text-gray-600'"
+          :style="useRegex ? 'background:var(--color-badge-bg); color:var(--color-accent-primary); border-color:rgba(0,117,222,0.3);' : 'color:rgba(0,0,0,0.35); border-color:rgba(0,0,0,0.12);'"
           @click="useRegex = !useRegex"
           title="正则表达式"
         >.*</button>
@@ -221,31 +227,40 @@ function handleKeydown(e: KeyboardEvent) {
       <div class="flex items-center gap-1">
         <input
           v-model="replaceText"
-          class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+          class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1" style="--tw-ring-color:var(--color-accent-primary);"
           placeholder="替换..."
         />
       </div>
 
       <div class="flex items-center gap-1">
         <button
-          class="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 text-gray-600"
+          class="text-xs px-2 py-1 rounded border"
+          style="border-color:rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);"
+          onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
           @click="findPrev"
           title="上一个 (Shift+Enter)"
         >&#x2191;</button>
         <button
-          class="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 text-gray-600"
+          class="text-xs px-2 py-1 rounded border"
+          style="border-color:rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);"
+          onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
           @click="findNext"
           title="下一个 (Enter)"
         >&#x2193;</button>
         <button
-          class="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 text-gray-600"
+          class="text-xs px-2 py-1 rounded border"
+          style="border-color:rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);"
+          onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
           @click="replaceCurrent"
         >替换</button>
         <button
-          class="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 text-gray-600"
+          class="text-xs px-2 py-1 rounded border"
+          style="border-color:rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);"
+          onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
           @click="replaceAll"
         >全部替换</button>
       </div>
     </div>
   </div>
+  </Transition>
 </template>

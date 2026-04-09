@@ -1,12 +1,15 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="min-h-screen" style="background:var(--color-bg-page);">
     <!-- 预览头部 -->
-    <div class="bg-white shadow-sm border-b p-4 sticky top-0 z-10">
+    <div class="p-4 sticky top-0 z-10" style="background:#fff; border-bottom:var(--border-whisper); box-shadow:var(--shadow-content-card);">
       <div class="flex items-center justify-between">
-        <h1 class="text-lg font-semibold text-gray-900">草稿预览</h1>
+        <h1 class="text-lg font-semibold" style="color:rgba(0,0,0,0.85);">草稿预览</h1>
         <button
           @click="goBack"
-          class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+          class="px-3 py-1.5 text-sm rounded-md transition-colors"
+          style="background:var(--color-accent-primary); color:#fff;"
+          onmouseover="this.style.background='var(--color-accent-hover)'"
+          onmouseout="this.style.background='var(--color-accent-primary)'"
         >
           返回
         </button>
@@ -15,11 +18,11 @@
 
     <!-- 文章预览 -->
     <div class="max-w-2xl mx-auto p-4">
-      <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+      <div class="bg-white overflow-hidden" style="box-shadow:var(--shadow-content-card); border-radius:12px;">
         <!-- 文章标题 -->
-        <div v-if="article.title" class="p-6 border-b">
-          <h1 class="text-2xl font-bold text-gray-900 leading-tight">{{ article.title }}</h1>
-          <div v-if="article.author || article.digest" class="mt-3 text-sm text-gray-600">
+        <div v-if="article.title" class="p-6" style="border-bottom:var(--border-whisper);">
+          <h1 class="text-2xl font-bold leading-tight" style="color:rgba(0,0,0,0.85);">{{ article.title }}</h1>
+          <div v-if="article.author || article.digest" class="mt-3 text-sm" style="color:rgba(0,0,0,0.55);">
             <span v-if="article.author" class="mr-4">作者：{{ article.author }}</span>
             <span v-if="article.digest">{{ article.digest }}</span>
           </div>
@@ -28,17 +31,18 @@
         <!-- 文章内容 -->
         <div class="p-6">
           <div v-if="article.content" v-html="sanitizeHtml(article.content)" class="prose max-w-none"></div>
-          <div v-else class="text-center py-12">
-            <div class="text-gray-400 text-lg mb-2">无预览内容</div>
-            <p class="text-gray-500">草稿内容为空或已过期</p>
+          <div v-else class="text-center py-16">
+            <div class="text-2xl mb-3 opacity-20">&#x1F4DD;</div>
+            <div class="text-sm font-medium" style="color:var(--color-text-muted);">无预览内容</div>
+            <p class="text-xs mt-1" style="color:rgba(0,0,0,0.35);">草稿内容为空或已过期</p>
           </div>
         </div>
       </div>
 
       <!-- 提示信息 -->
-      <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 class="font-semibold text-blue-900 mb-2">💡 预览说明</h3>
-        <ul class="text-sm text-blue-800 space-y-1">
+      <div class="mt-6 rounded-lg p-4" style="background:var(--color-badge-bg); border:1px solid rgba(0,117,222,0.2);">
+        <h3 class="font-semibold mb-2" style="color:var(--color-accent-primary);">预览说明</h3>
+        <ul class="text-sm space-y-1" style="color:rgba(0,117,222,0.75);">
           <li>• 此预览为最终发布效果</li>
           <li>• 样式、排版、图片位置均与公众号显示一致</li>
           <li>• 如需修改，请返回编辑页面重新提交</li>
@@ -138,7 +142,7 @@ const loadArticle = (title, author, digest, content) => {
 // 显示无内容提示
 const showNoContent = () => {
   article.value.content = `
-    <div style="text-align: center; padding: 60px 20px; color: #999;">
+    <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
       <p>⚠️ 预览链接已失效</p>
       <p style="margin-top: 20px; font-size: 14px;">请在编辑页面重新提交草稿后预览</p>
     </div>
@@ -148,7 +152,7 @@ const showNoContent = () => {
 // 显示错误信息
 const showError = () => {
   article.value.content = `
-    <div style="text-align: center; padding: 60px 20px; color: #999;">
+    <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
       <p>❌ 加载预览失败</p>
       <p style="margin-top: 20px; font-size: 14px;">请检查网络连接后重试</p>
     </div>

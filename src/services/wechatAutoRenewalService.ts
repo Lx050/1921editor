@@ -52,7 +52,7 @@ export class WechatAutoRenewalService {
    * 启动自动续期服务
    */
   async startAutoRenewalService(): Promise<void> {
-    console.log('[WeChat自动续期] 启动服务...');
+    console.debug('[WeChat自动续期] 启动服务...');
 
     // 1. 启动健康监控
     this.startHealthMonitoring();
@@ -66,7 +66,7 @@ export class WechatAutoRenewalService {
     // 4. 注册应用生命周期监听
     this.registerAppLifecycleListeners();
 
-    console.log('[WeChat自动续期] 服务启动完成');
+    console.debug('[WeChat自动续期] 服务启动完成');
   }
 
   /**
@@ -182,7 +182,7 @@ export class WechatAutoRenewalService {
    */
   private async emergencyRenewal(health: AccountHealthStatus): Promise<void> {
     try {
-      console.log(`[WeChat自动续期] 紧急续期: ${health.nickname}`);
+      console.debug(`[WeChat自动续期] 紧急续期: ${health.nickname}`);
 
       const success = await this.backgroundRenewal.attemptRenewal(health.accountId, {
         priority: 'high',
@@ -215,7 +215,7 @@ export class WechatAutoRenewalService {
       const now = Date.now();
 
       if (now >= optimalTime) {
-        console.log(`[WeChat自动续期] 智能续期: ${health.nickname}`);
+        console.debug(`[WeChat自动续期] 智能续期: ${health.nickname}`);
 
         const success = await this.backgroundRenewal.attemptRenewal(health.accountId, {
           priority: 'normal',
@@ -319,7 +319,7 @@ export class WechatAutoRenewalService {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw-wechat-renewal.js')
         .then(registration => {
-          console.log('[WeChat自动续期] Service Worker注册成功');
+          console.debug('[WeChat自动续期] Service Worker注册成功');
           this.backgroundRenewal.setServiceWorkerRegistration(registration);
         })
         .catch(error => {
@@ -338,7 +338,7 @@ export class WechatAutoRenewalService {
     if ('Notification' in navigator) {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
-        console.log('[WeChat自动续期] 通知权限已获取');
+        console.debug('[WeChat自动续期] 通知权限已获取');
       }
     }
   }
@@ -378,7 +378,7 @@ export class WechatAutoRenewalService {
     }
 
     this.backgroundRenewal.stop();
-    console.log('[WeChat自动续期] 服务已停止');
+    console.debug('[WeChat自动续期] 服务已停止');
   }
 
   // ... 其他辅助方法

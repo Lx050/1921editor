@@ -26,9 +26,10 @@ const showBgPicker = ref(false)
 <template>
   <div
     v-if="isInTable"
-    class="flex items-center gap-0.5 px-2 py-1 bg-gray-50 border-b text-[11px]"
+    class="flex items-center gap-0.5 px-2 py-1 border-b text-[11px]"
+    style="background:var(--color-bg-warm);"
   >
-    <span class="text-gray-400 mr-1 select-none">Table:</span>
+    <span class="mr-1 select-none" style="color:var(--color-text-muted);">Table:</span>
 
     <button
       class="tbl-btn"
@@ -51,7 +52,7 @@ const showBgPicker = ref(false)
       title="Insert row below"
     >+Row&#x2193;</button>
 
-    <span class="w-px h-4 bg-gray-300 mx-1" />
+    <span class="w-px h-4 mx-1" style="background:rgba(0,0,0,0.12);" />
 
     <button
       class="tbl-btn text-red-500 hover:bg-red-50"
@@ -64,7 +65,7 @@ const showBgPicker = ref(false)
       title="Delete row"
     >-Row</button>
 
-    <span class="w-px h-4 bg-gray-300 mx-1" />
+    <span class="w-px h-4 mx-1" style="background:rgba(0,0,0,0.12);" />
 
     <button
       class="tbl-btn"
@@ -82,29 +83,29 @@ const showBgPicker = ref(false)
       title="Toggle header row"
     >Header</button>
 
-    <span class="w-px h-4 bg-gray-300 mx-1" />
+    <span class="w-px h-4 mx-1" style="background:rgba(0,0,0,0.12);" />
 
     <!-- Cell text alignment -->
     <button
       class="tbl-btn"
-      :class="{ 'text-blue-600 bg-blue-50': editor?.isActive({ textAlign: 'left' }) }"
+      :style="editor?.isActive({ textAlign: 'left' }) ? 'color: var(--color-accent-primary); background: var(--color-badge-bg);' : ''"
       @click="run(() => editor!.chain().focus().setTextAlign('left').run())"
       title="Align left"
     >&#x21E4;</button>
     <button
       class="tbl-btn"
-      :class="{ 'text-blue-600 bg-blue-50': editor?.isActive({ textAlign: 'center' }) }"
+      :style="editor?.isActive({ textAlign: 'center' }) ? 'color: var(--color-accent-primary); background: var(--color-badge-bg);' : ''"
       @click="run(() => editor!.chain().focus().setTextAlign('center').run())"
       title="Align center"
     >&#x2194;</button>
     <button
       class="tbl-btn"
-      :class="{ 'text-blue-600 bg-blue-50': editor?.isActive({ textAlign: 'right' }) }"
+      :style="editor?.isActive({ textAlign: 'right' }) ? 'color: var(--color-accent-primary); background: var(--color-badge-bg);' : ''"
       @click="run(() => editor!.chain().focus().setTextAlign('right').run())"
       title="Align right"
     >&#x21E5;</button>
 
-    <span class="w-px h-4 bg-gray-300 mx-1" />
+    <span class="w-px h-4 mx-1" style="background:rgba(0,0,0,0.12);" />
 
     <!-- Cell background color -->
     <div class="relative">
@@ -120,7 +121,8 @@ const showBgPicker = ref(false)
         <button
           v-for="c in cellBgColors"
           :key="c"
-          class="w-5 h-5 rounded border border-gray-200 hover:scale-110 transition-transform"
+          class="w-5 h-5 rounded hover:scale-110 transition-transform"
+          style="border:1px solid rgba(0,0,0,0.08);"
           :style="{ background: c === 'transparent' ? 'repeating-conic-gradient(#e5e7eb 0% 25%, white 0% 50%) 50% / 8px 8px' : c }"
           @mousedown.prevent="setCellBackground(c); showBgPicker = false"
           :title="c === 'transparent' ? 'No background' : c"
@@ -128,7 +130,7 @@ const showBgPicker = ref(false)
       </div>
     </div>
 
-    <span class="w-px h-4 bg-gray-300 mx-1" />
+    <span class="w-px h-4 mx-1" style="background:rgba(0,0,0,0.12);" />
 
     <button
       class="tbl-btn text-red-500 hover:bg-red-50"

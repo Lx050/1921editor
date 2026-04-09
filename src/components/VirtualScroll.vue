@@ -306,7 +306,7 @@ watch(() => props.items.length, () => {
 .loading-placeholder,
 .empty-placeholder {
   padding: 20px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
   font-size: 14px;
   text-align: center;
 }

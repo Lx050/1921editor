@@ -44,12 +44,15 @@ const displayLang = computed(() => {
 
 <template>
   <NodeViewWrapper class="manifold-codeblock relative my-3" data-drag-handle>
-    <div class="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+    <div class="rounded-lg overflow-hidden" style="border:1px solid rgba(0,0,0,0.08); background:var(--color-bg-warm);">
       <!-- Language bar -->
-      <div class="flex items-center justify-between px-3 py-1.5 bg-gray-100 border-b border-gray-200">
+      <div class="flex items-center justify-between px-3 py-1.5" style="background:var(--color-bg-warm); border-bottom:1px solid rgba(0,0,0,0.08);">
         <div class="relative">
           <button
-            class="text-[11px] text-gray-500 hover:text-gray-700 flex items-center gap-1 font-mono"
+            class="text-[11px] flex items-center gap-1 font-mono"
+            style="color:rgba(0,0,0,0.45);"
+            @mouseover="($event.target as HTMLElement).style.color='rgba(0,0,0,0.65)'"
+            @mouseout="($event.target as HTMLElement).style.color='rgba(0,0,0,0.45)'"
             @click="showPicker = !showPicker"
           >
             {{ displayLang }}
@@ -58,13 +61,16 @@ const displayLang = computed(() => {
           <!-- Language dropdown -->
           <div
             v-if="showPicker"
-            class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto w-36"
+            class="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto w-36"
+            style="border:1px solid rgba(0,0,0,0.08);"
           >
             <button
               v-for="lang in languages"
               :key="lang.value"
-              class="block w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 transition-colors"
-              :class="language === lang.value ? 'bg-blue-50 text-blue-600' : 'text-gray-700'"
+              class="block w-full text-left px-3 py-1.5 text-xs transition-colors"
+              @mouseover="(e) => { if (language !== lang.value) (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-warm)'; }"
+              @mouseout="(e) => { if (language !== lang.value) (e.currentTarget as HTMLElement).style.background = ''; }"
+              :style="language === lang.value ? { backgroundColor: 'var(--color-badge-bg)', color: 'var(--color-accent-primary)' } : { color: 'rgba(0,0,0,0.65)' }"
               @click="setLanguage(lang.value)"
             >
               {{ lang.label }}
@@ -73,7 +79,10 @@ const displayLang = computed(() => {
         </div>
         <!-- Copy button -->
         <button
-          class="text-[10px] text-gray-400 hover:text-gray-600 transition-colors"
+          class="text-[10px] transition-colors"
+          style="color:var(--color-text-muted);"
+          @mouseover="($event.target as HTMLElement).style.color='rgba(0,0,0,0.55)'"
+          @mouseout="($event.target as HTMLElement).style.color='var(--color-text-muted)'"
           @click="navigator.clipboard.writeText(node.textContent)"
           title="Copy code"
         >Copy</button>

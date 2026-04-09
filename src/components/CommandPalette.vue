@@ -116,40 +116,51 @@ function handleKeydown(e: KeyboardEvent) {
 
 <template>
   <Teleport to="body">
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
     <div
       v-if="visible"
       class="fixed inset-0 z-[200] flex items-start justify-center pt-[15vh] bg-black/30"
+      role="dialog"
+      aria-modal="true"
       @click.self="emit('close')"
     >
-      <div class="bg-white rounded-xl shadow-2xl w-[400px] max-h-[50vh] flex flex-col overflow-hidden" @keydown="handleKeydown">
+      <div class="rounded-xl w-[400px] max-w-[90vw] max-h-[50vh] flex flex-col overflow-hidden" style="background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.1); box-shadow:var(--shadow-content-card);" @keydown="handleKeydown">
         <div class="px-4 py-3 border-b">
           <input
             ref="inputRef"
             v-model="query"
-            class="w-full text-sm outline-none placeholder:text-gray-400"
+            class="w-full text-sm outline-none"
             placeholder="输入命令..."
           />
         </div>
         <div class="flex-1 overflow-y-auto py-1">
-          <div v-if="filteredCommands.length === 0" class="px-4 py-6 text-center text-sm text-gray-400">
+          <div v-if="filteredCommands.length === 0" class="px-4 py-6 text-center text-sm" style="color:var(--color-text-muted);">
             未找到匹配的命令
           </div>
           <div
             v-for="(cmd, i) in filteredCommands"
             :key="cmd.id"
             class="flex items-center justify-between px-4 py-2 cursor-pointer text-sm transition-colors"
-            :class="i === activeIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'"
+            :style="i === activeIndex ? 'background:var(--color-badge-bg); color:var(--color-accent-primary);' : 'color:rgba(0,0,0,0.7);'"
+            @mouseover="activeIndex !== i && ($event.currentTarget.style.background = 'rgba(0,0,0,0.03)')"
+            @mouseout="activeIndex !== i && ($event.currentTarget.style.background = '')"
             @click="execute(cmd)"
             @mouseenter="activeIndex = i"
           >
             <div class="flex items-center gap-2">
-              <span class="text-[10px] text-gray-400 w-8">{{ cmd.category }}</span>
+              <span class="text-[10px] w-8" style="color:var(--color-text-muted);">{{ cmd.category }}</span>
               <span>{{ cmd.label }}</span>
             </div>
-            <kbd v-if="cmd.shortcut" class="text-[10px] px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-gray-500">{{ cmd.shortcut }}</kbd>
+            <kbd v-if="cmd.shortcut" class="text-[10px] px-1.5 py-0.5 rounded font-mono" style="background:var(--color-bg-warm); border:1px solid rgba(0,0,0,0.08); color:rgba(0,0,0,0.45);">{{ cmd.shortcut }}</kbd>
           </div>
         </div>
       </div>
     </div>
+    </Transition>
   </Teleport>
 </template>

@@ -92,6 +92,12 @@ function handleAiGenerated(result: AiImageResult) {
 
 <template>
   <Teleport to="body">
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0 scale-95"
+      leave-to-class="opacity-0 scale-95"
+    >
     <div v-if="visible" class="fixed inset-0 z-50" @click.self="emit('close')">
       <div
         class="absolute bg-white rounded-lg shadow-xl border w-80"
@@ -99,29 +105,38 @@ function handleAiGenerated(result: AiImageResult) {
       >
         <!-- Header -->
         <div class="flex items-center justify-between px-3 pt-3 pb-2">
-          <span class="text-sm font-medium text-gray-700">填充图片</span>
-          <button class="text-gray-400 hover:text-gray-600 text-xs" @click="emit('close')">x</button>
+          <span class="text-sm font-medium" style="color:rgba(0,0,0,0.65);">填充图片</span>
+          <button class="text-xs" style="color:var(--color-text-muted);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="emit('close')" title="关闭" aria-label="关闭图片选择">x</button>
         </div>
 
         <!-- Tab buttons -->
         <div class="flex border-b mx-3 mb-2">
           <button
             class="flex-1 text-xs py-1.5 border-b-2 transition-colors"
-            :class="tabMode === 'upload' ? 'border-blue-500 text-blue-600 font-medium' : 'border-transparent text-gray-400 hover:text-gray-600'"
+            :class="tabMode === 'upload' ? 'font-medium' : 'border-transparent'"
+            :style="tabMode === 'upload' ? 'border-color: var(--color-accent-primary); color: var(--color-accent-primary);' : 'color:var(--color-text-muted);'"
+            onmouseover="if(!this.classList.contains('font-medium')) this.style.color='rgba(0,0,0,0.55)'"
+            onmouseout="if(!this.classList.contains('font-medium')) this.style.color='var(--color-text-muted)'"
             @click="tabMode = 'upload'"
           >
             上传
           </button>
           <button
             class="flex-1 text-xs py-1.5 border-b-2 transition-colors"
-            :class="tabMode === 'library' ? 'border-blue-500 text-blue-600 font-medium' : 'border-transparent text-gray-400 hover:text-gray-600'"
+            :class="tabMode === 'library' ? 'font-medium' : 'border-transparent'"
+            :style="tabMode === 'library' ? 'border-color: var(--color-accent-primary); color: var(--color-accent-primary);' : 'color:var(--color-text-muted);'"
+            onmouseover="if(!this.classList.contains('font-medium')) this.style.color='rgba(0,0,0,0.55)'"
+            onmouseout="if(!this.classList.contains('font-medium')) this.style.color='var(--color-text-muted)'"
             @click="tabMode = 'library'"
           >
             素材库 ({{ wechatImages.length }})
           </button>
           <button
             class="flex-1 text-xs py-1.5 border-b-2 transition-colors"
-            :class="tabMode === 'ai' ? 'border-purple-500 text-purple-600 font-medium' : 'border-transparent text-gray-400 hover:text-gray-600'"
+            :class="tabMode === 'ai' ? 'border-purple-500 text-purple-600 font-medium' : 'border-transparent'"
+            :style="tabMode !== 'ai' ? 'color:var(--color-text-muted);' : ''"
+            onmouseover="if(!this.classList.contains('font-medium')) this.style.color='rgba(0,0,0,0.55)'"
+            onmouseout="if(!this.classList.contains('font-medium')) this.style.color='var(--color-text-muted)'"
             @click="tabMode = 'ai'"
           >
             AI生图
@@ -131,7 +146,10 @@ function handleAiGenerated(result: AiImageResult) {
         <!-- Upload tab -->
         <div v-if="tabMode === 'upload'" class="px-3 pb-3">
           <button
-            class="w-full py-2 mb-2 border-2 border-dashed border-gray-300 rounded text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
+            class="w-full py-2 mb-2 border-2 border-dashed rounded text-sm transition-colors"
+            style="border-color:rgba(0,0,0,0.12); color:rgba(0,0,0,0.45);"
+            onmouseover="this.style.borderColor='var(--color-accent-primary)'; this.style.color='var(--color-accent-primary)';"
+            onmouseout="this.style.borderColor=''; this.style.color='';"
             :class="{ 'opacity-50 cursor-wait': uploading }"
             :disabled="uploading"
             @click="triggerUpload"
@@ -149,14 +167,16 @@ function handleAiGenerated(result: AiImageResult) {
               <div
                 v-for="img in wechatImages"
                 :key="img.id"
-                class="aspect-square rounded overflow-hidden cursor-pointer border hover:border-blue-400 transition-colors"
+                class="aspect-square rounded overflow-hidden cursor-pointer border transition-colors"
+                onmouseover="this.style.borderColor='var(--color-accent-primary)';"
+                onmouseout="this.style.borderColor='';"
                 @click="selectFromLibrary(img)"
               >
-                <img :src="img.proxyUrl || img.localPreviewUrl || img.url" class="w-full h-full object-cover" />
+                <img :src="img.proxyUrl || img.localPreviewUrl || img.url" :alt="img.name" loading="lazy" class="w-full h-full object-cover" />
               </div>
             </div>
           </div>
-          <div v-else class="text-center py-3 text-xs text-gray-400">
+          <div v-else class="text-center py-3 text-xs" style="color:var(--color-text-muted);">
             暂无素材库图片
           </div>
         </div>
@@ -171,5 +191,6 @@ function handleAiGenerated(result: AiImageResult) {
         </div>
       </div>
     </div>
+    </Transition>
   </Teleport>
 </template>

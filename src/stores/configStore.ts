@@ -493,7 +493,7 @@ export const useConfigStore = defineStore('config', () => {
 					savedAccounts.value.push(nextConfig)
 				}
 				localStorage.setItem('wechat_accounts', JSON.stringify(savedAccounts.value))
-				console.log('WeChat config updated from backend')
+				console.debug('WeChat config updated from backend')
 			}
 		} catch (e) {
 			console.error('Failed to fetch WeChat config', e)

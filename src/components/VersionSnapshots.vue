@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, nextTick, onMounted } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 import type { EditorDocument } from '@/types/editor'
 
@@ -26,6 +26,14 @@ const MAX_SNAPSHOTS = 10
 const snapshots = ref<Snapshot[]>([])
 const newLabel = ref('')
 const confirmRestore = ref<string | null>(null)
+const confirmDeleteId = ref<string | null>(null)
+const backdropRef = ref<HTMLElement | null>(null)
+
+watch(() => props.visible, (val) => {
+  if (val) {
+    nextTick(() => backdropRef.value?.focus())
+  }
+})
 
 function loadSnapshots() {
   try {
@@ -72,6 +80,7 @@ function restoreSnapshot(id: string) {
 
 function deleteSnapshot(id: string) {
   snapshots.value = snapshots.value.filter(s => s.id !== id)
+  confirmDeleteId.value = null
   saveSnapshots()
 }
 
@@ -85,46 +94,62 @@ onMounted(loadSnapshots)
 
 <template>
   <Teleport to="body">
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0 scale-95"
+      leave-to-class="opacity-0 scale-95"
+    >
     <div
       v-if="visible"
+      ref="backdropRef"
       class="fixed inset-0 z-[150] flex items-center justify-center bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
       @click.self="emit('close')"
+      @keydown.escape="emit('close')"
     >
-      <div class="bg-white rounded-xl shadow-2xl w-[420px] max-w-[90vw] max-h-[80vh] flex flex-col overflow-hidden">
+      <div class="bg-white rounded-xl w-[420px] max-w-[90vw] max-h-[80vh] flex flex-col overflow-hidden" style="box-shadow:var(--shadow-float);">
         <div class="px-5 pt-4 pb-3 border-b flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-800">版本快照</h3>
-          <button class="text-gray-400 hover:text-gray-600 text-lg" @click="emit('close')">x</button>
+          <h3 class="text-sm font-semibold" style="color:rgba(0,0,0,0.75);">版本快照</h3>
+          <button class="text-lg" style="color:var(--color-text-muted);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="emit('close')" title="关闭" aria-label="关闭版本快照">x</button>
         </div>
 
         <!-- Create snapshot -->
-        <div class="px-5 py-3 border-b bg-gray-50 flex items-center gap-2">
+        <div class="px-5 py-3 border-b flex items-center gap-2" style="background:var(--color-bg-warm);">
           <input
             v-model="newLabel"
             type="text"
             placeholder="快照名称 (可选)"
-            class="flex-1 px-2 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+            class="flex-1 px-2 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-1"
+            style="--tw-ring-color:var(--color-accent-primary);"
             @keydown.enter="createSnapshot"
           />
           <button
-            class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+            class="px-3 py-1.5 text-sm text-white rounded-lg transition-colors whitespace-nowrap"
+            style="background-color: var(--color-accent-primary);"
+            @mouseover="$event.target.style.backgroundColor='var(--color-accent-hover)'"
+            @mouseout="$event.target.style.backgroundColor='var(--color-accent-primary)'"
             @click="createSnapshot"
           >保存快照</button>
         </div>
 
         <!-- Snapshots list -->
         <div class="flex-1 overflow-y-auto">
-          <div v-if="snapshots.length === 0" class="py-10 text-center text-sm text-gray-400">
+          <div v-if="snapshots.length === 0" class="py-10 text-center text-sm" style="color:var(--color-text-muted);">
             暂无快照
           </div>
           <div
             v-for="snap in snapshots"
             :key="snap.id"
-            class="px-5 py-3 border-b hover:bg-gray-50 transition-colors group"
+            class="px-5 py-3 border-b transition-colors group"
+            onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
           >
             <div class="flex items-center justify-between">
               <div>
-                <span class="text-sm font-medium text-gray-700">{{ snap.label }}</span>
-                <div class="text-[11px] text-gray-400 mt-0.5">
+                <span class="text-sm font-medium" style="color:rgba(0,0,0,0.65);">{{ snap.label }}</span>
+                <div class="text-[11px] mt-0.5" style="color:var(--color-text-muted);">
                   {{ formatTime(snap.timestamp) }} / {{ snap.wordCount }} 字
                 </div>
               </div>
@@ -132,22 +157,46 @@ onMounted(loadSnapshots)
                 <template v-if="confirmRestore === snap.id">
                   <span class="text-[11px] text-amber-600 mr-1">确认恢复?</span>
                   <button
-                    class="px-2 py-1 text-[11px] bg-blue-600 text-white rounded hover:bg-blue-700"
+                    class="px-2 py-1 text-[11px] text-white rounded"
+                    style="background:var(--color-accent-primary);"
+                    @mouseover="$event.target.style.background='var(--color-accent-hover)'"
+                    @mouseout="$event.target.style.background='var(--color-accent-primary)'"
                     @click="restoreSnapshot(snap.id)"
                   >确认</button>
                   <button
-                    class="px-2 py-1 text-[11px] text-gray-500 hover:text-gray-700"
+                    class="px-2 py-1 text-[11px]"
+                    style="color:rgba(0,0,0,0.45);"
+                    onmouseover="this.style.color='rgba(0,0,0,0.65)'" onmouseout="this.style.color='rgba(0,0,0,0.45)'"
                     @click="confirmRestore = null"
+                  >取消</button>
+                </template>
+                <template v-else-if="confirmDeleteId === snap.id">
+                  <span class="text-[11px] text-red-600 mr-1">确认删除？</span>
+                  <button
+                    class="px-2 py-1 text-[11px] text-white rounded"
+                    style="background:var(--color-danger);"
+                    @mouseover="($event.target as HTMLElement).style.background='#b91c1c'"
+                    @mouseout="($event.target as HTMLElement).style.background='var(--color-danger)'"
+                    @click="deleteSnapshot(snap.id)"
+                  >确定</button>
+                  <button
+                    class="px-2 py-1 text-[11px]"
+                    style="color:rgba(0,0,0,0.45);"
+                    onmouseover="this.style.color='rgba(0,0,0,0.65)'" onmouseout="this.style.color='rgba(0,0,0,0.45)'"
+                    @click="confirmDeleteId = null"
                   >取消</button>
                 </template>
                 <template v-else>
                   <button
-                    class="px-2 py-1 text-[11px] text-blue-600 hover:bg-blue-50 rounded"
+                    class="px-2 py-1 text-[11px] rounded"
+                    style="color:var(--color-accent-primary);"
+                    @mouseover="($event.target as HTMLElement).style.background='var(--color-badge-bg)'"
+                    @mouseout="($event.target as HTMLElement).style.background='transparent'"
                     @click="confirmRestore = snap.id"
                   >恢复</button>
                   <button
                     class="px-2 py-1 text-[11px] text-red-500 hover:bg-red-50 rounded"
-                    @click="deleteSnapshot(snap.id)"
+                    @click="confirmDeleteId = snap.id"
                   >删除</button>
                 </template>
               </div>
@@ -155,10 +204,11 @@ onMounted(loadSnapshots)
           </div>
         </div>
 
-        <div class="px-5 py-2 border-t text-[10px] text-gray-400 text-center">
+        <div class="px-5 py-2 border-t text-[10px] text-center" style="color:var(--color-text-muted);">
           最多保存 {{ MAX_SNAPSHOTS }} 个快照 (存储在浏览器本地)
         </div>
       </div>
     </div>
+    </Transition>
   </Teleport>
 </template>

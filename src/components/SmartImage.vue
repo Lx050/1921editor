@@ -42,7 +42,8 @@
     >
       <svg
         v-if="showPlaceholderIcon"
-        class="w-8 h-8 text-gray-400"
+        class="w-8 h-8"
+        style="color:var(--color-text-muted);"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -181,7 +182,7 @@ const imgStyle = computed(() => ({
 const placeholderStyle = computed(() => ({
   width: props.width ? `${props.width}px` : '100%',
   height: props.height ? `${props.height}px` : 'auto',
-  backgroundColor: '#f3f4f6'
+  backgroundColor: 'var(--color-bg-warm)'
 }))
 
 // 处理图片加载
@@ -249,7 +250,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
+  background-color: var(--color-bg-warm);
   border-radius: 0.375rem;
 }
 </style>

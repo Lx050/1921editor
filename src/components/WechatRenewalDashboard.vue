@@ -11,6 +11,9 @@
 
     <!-- 账号健康状态卡片 -->
     <div class="accounts-grid">
+      <div v-if="accounts.length === 0" class="account-card" style="grid-column: 1 / -1; text-align:center; padding: 40px 20px; color:var(--color-text-muted);">
+        <p class="text-sm">暂无授权账号</p>
+      </div>
       <div
         v-for="account in accounts"
         :key="account.id"
@@ -20,7 +23,7 @@
         <!-- 账号基本信息 -->
         <div class="account-header">
           <div class="account-info">
-            <img :src="account.avatar || '/icons/default-avatar.png'" class="account-avatar" />
+            <img :src="account.avatar || '/icons/default-avatar.png'" alt="账号头像" class="account-avatar" />
             <div class="account-details">
               <h3 class="account-nickname">{{ account.nickname }}</h3>
               <p class="account-type" :class="account.type">
@@ -155,6 +158,9 @@
       <div class="renewal-history">
         <h4>最近续期记录</h4>
         <div class="history-list">
+          <div v-if="renewalHistory.length === 0" class="text-center py-8" style="color:var(--color-text-muted);">
+            <p class="text-sm">暂无续期记录</p>
+          </div>
           <div
             v-for="record in renewalHistory.slice(0, 10)"
             :key="record.id"
@@ -243,12 +249,19 @@
     </div>
 
     <!-- 重新授权模态框 -->
-    <ReauthModal
-      v-if="showReauthModal"
-      :account="selectedAccount"
-      @confirm="handleReauthConfirm"
-      @cancel="showReauthModal = false"
-    />
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
+      <ReauthModal
+        v-if="showReauthModal"
+        :account="selectedAccount"
+        @confirm="handleReauthConfirm"
+        @cancel="showReauthModal = false"
+      />
+    </Transition>
   </div>
 </template>
 
@@ -256,6 +269,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { WechatAutoRenewalService } from '@/services/wechatAutoRenewalService';
 import { WechatBackgroundRenewal } from '@/services/wechatBackgroundRenewal';
+import toast from '../composables/useToast';
 
 interface WechatAccount {
   id: string;
@@ -390,6 +404,7 @@ async function loadAccounts(): Promise<void> {
     }));
   } catch (error) {
     console.error('加载账号列表失败:', error);
+    toast.error('加载账号列表失败，请刷新页面重试');
   }
 }
 
@@ -524,6 +539,7 @@ async function toggleAutoRenewal(account: WechatAccount): Promise<void> {
     console.error('切换自动续期失败:', error);
     // 回滚状态
     account.autoRenewalEnabled = !account.autoRenewalEnabled;
+    toast.error('切换自动续期失败，请稍后重试');
   }
 }
 
@@ -606,7 +622,7 @@ function startRealTimeUpdates() {
   align-items: center;
   margin-bottom: 30px;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-accent-primary);
   border-radius: 12px;
   color: white;
 }
@@ -636,25 +652,25 @@ function startRealTimeUpdates() {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-content-card);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .account-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-content-hover);
 }
 
 .account-card.active {
-  border: 2px solid #4CAF50;
+  border: 2px solid var(--color-success);
 }
 
 .account-card.warning {
-  border: 2px solid #FF9800;
+  border: 2px solid #d97706;
 }
 
 .account-card.critical {
-  border: 2px solid #f44336;
+  border: 2px solid var(--color-error);
 }
 
 .add-account-card {
@@ -662,13 +678,13 @@ function startRealTimeUpdates() {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 2px dashed #ccc;
-  background: #f9f9f9;
+  border: 2px dashed rgba(0,0,0,0.12);
+  background: var(--color-bg-warm);
 }
 
 .add-account-card:hover {
-  border-color: #667eea;
-  background: #f0f4ff;
+  border-color: var(--color-accent-primary);
+  background: var(--color-badge-bg);
 }
 
 /* 账号头部 */
@@ -701,11 +717,11 @@ function startRealTimeUpdates() {
 .account-type {
   margin: 4px 0 0 0;
   font-size: 12px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 .account-type.primary {
-  color: #4CAF50;
+  color: var(--color-success);
 }
 
 .health-indicator {
@@ -719,7 +735,7 @@ function startRealTimeUpdates() {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 3px solid #e0e0e0;
+  border: 3px solid rgba(0,0,0,0.12);
   position: relative;
   transform: rotate(-90deg);
   transition: stroke 0.3s ease;
@@ -734,7 +750,7 @@ function startRealTimeUpdates() {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #f5f5f5;
+  background: var(--color-bg-warm);
 }
 
 .health-score {
@@ -757,23 +773,23 @@ function startRealTimeUpdates() {
 .progress-bar {
   flex: 1;
   height: 6px;
-  background: #e0e0e0;
+  background: rgba(0,0,0,0.12);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: #4CAF50;
+  background: var(--color-success);
   transition: width 0.3s ease;
 }
 
 .progress-fill.progress-warning {
-  background: #FF9800;
+  background: #d97706;
 }
 
 .progress-fill.progress-critical {
-  background: #f44336;
+  background: var(--color-error);
 }
 
 .expiry-text {
@@ -787,11 +803,11 @@ function startRealTimeUpdates() {
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 .last-renewal {
-  color: #4CAF50;
+  color: var(--color-success);
 }
 
 /* 自动续期设置 */
@@ -813,7 +829,7 @@ function startRealTimeUpdates() {
 .toggle-slider {
   width: 44px;
   height: 24px;
-  background: #ccc;
+  background: rgba(0,0,0,0.20);
   border-radius: 12px;
   position: relative;
   transition: background 0.3s;
@@ -832,7 +848,7 @@ function startRealTimeUpdates() {
 }
 
 .toggle-container input:checked + .toggle-slider {
-  background: #4CAF50;
+  background: var(--color-success);
 }
 
 .toggle-container input:checked + .toggle-slider::before {
@@ -845,7 +861,7 @@ function startRealTimeUpdates() {
   gap: 6px;
   margin-top: 8px;
   font-size: 12px;
-  color: #4CAF50;
+  color: var(--color-success);
 }
 
 /* 操作按钮 */
@@ -856,7 +872,7 @@ function startRealTimeUpdates() {
 }
 
 .btn-primary {
-  background: #4CAF50;
+  background: var(--color-success);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -866,7 +882,7 @@ function startRealTimeUpdates() {
 }
 
 .btn-secondary {
-  background: #2196F3;
+  background: var(--color-accent-primary);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -877,8 +893,8 @@ function startRealTimeUpdates() {
 
 .btn-outline {
   background: transparent;
-  color: #666;
-  border: 1px solid #ddd;
+  color: rgba(0,0,0,0.45);
+  border: 1px solid rgba(0,0,0,0.12);
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
@@ -886,7 +902,7 @@ function startRealTimeUpdates() {
 }
 
 .btn-danger {
-  background: #f44336;
+  background: var(--color-error);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -901,7 +917,7 @@ function startRealTimeUpdates() {
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-content-card);
 }
 
 .stats-grid {
@@ -914,20 +930,20 @@ function startRealTimeUpdates() {
 .stat-card {
   text-align: center;
   padding: 16px;
-  background: #f9f9f9;
+  background: var(--color-bg-warm);
   border-radius: 8px;
 }
 
 .stat-value {
   font-size: 24px;
   font-weight: 700;
-  color: #333;
+  color: rgba(0,0,0,0.85);
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 12px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 /* 设置部分 */
@@ -935,7 +951,7 @@ function startRealTimeUpdates() {
   background: white;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-content-card);
 }
 
 .setting-item {
@@ -946,13 +962,13 @@ function startRealTimeUpdates() {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: rgba(0,0,0,0.85);
 }
 
 .setting-select {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0,0,0,0.12);
   border-radius: 6px;
   font-size: 14px;
 }
@@ -979,7 +995,7 @@ function startRealTimeUpdates() {
 
 .quiet-hours-config input[type="time"] {
   padding: 4px 8px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0,0,0,0.12);
   border-radius: 4px;
 }
 

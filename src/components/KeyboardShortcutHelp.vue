@@ -50,37 +50,61 @@ const shortcuts = [
 
 <template>
   <Teleport to="body">
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
     <div
       v-if="visible"
       class="fixed inset-0 z-[200] flex items-center justify-center bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-label="键盘快捷键"
+      tabindex="-1"
       @click.self="emit('close')"
       @keydown.escape="emit('close')"
     >
-      <div class="bg-white rounded-xl shadow-2xl w-[420px] max-h-[80vh] overflow-y-auto">
+      <Transition
+        enter-active-class="transition-all duration-150 ease-out"
+        leave-active-class="transition-all duration-100 ease-in"
+        enter-from-class="opacity-0 scale-95"
+        leave-to-class="opacity-0 scale-95"
+        appear
+      >
+      <div class="bg-white rounded-xl w-[420px] max-h-[80vh] overflow-y-auto" style="box-shadow:var(--shadow-float);">
         <div class="flex items-center justify-between px-5 py-4 border-b">
-          <h2 class="text-base font-semibold text-gray-800">键盘快捷键</h2>
+          <h2 class="text-base font-semibold" style="color:rgba(0,0,0,0.75);">键盘快捷键</h2>
           <button
-            class="text-gray-400 hover:text-gray-600 text-lg leading-none"
+            class="text-lg leading-none"
+            style="color:var(--color-text-muted);"
+            title="关闭"
+            aria-label="关闭快捷键面板"
+            onmouseover="this.style.color='rgba(0,0,0,0.55)'"
+            onmouseout="this.style.color='var(--color-text-muted)'"
             @click="emit('close')"
           >&times;</button>
         </div>
 
         <div class="px-5 py-4 space-y-4">
           <div v-for="section in shortcuts" :key="section.section">
-            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{{ section.section }}</h3>
+            <h3 class="text-xs font-medium uppercase tracking-wide mb-2" style="color:rgba(0,0,0,0.45);">{{ section.section }}</h3>
             <div class="space-y-1">
               <div
                 v-for="item in section.items"
                 :key="item.keys"
                 class="flex items-center justify-between py-1"
               >
-                <span class="text-sm text-gray-700">{{ item.desc }}</span>
-                <kbd class="text-xs px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-gray-600 font-mono">{{ item.keys }}</kbd>
+                <span class="text-sm" style="color:rgba(0,0,0,0.65);">{{ item.desc }}</span>
+                <kbd class="text-xs px-2 py-0.5 rounded font-mono" style="background:var(--color-bg-warm); border:1px solid rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);">{{ item.keys }}</kbd>
               </div>
             </div>
           </div>
         </div>
       </div>
+      </Transition>
     </div>
+    </Transition>
   </Teleport>
 </template>

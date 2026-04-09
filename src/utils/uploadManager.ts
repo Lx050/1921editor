@@ -33,7 +33,6 @@ export class UploadManager {
     private onProgressCallback?: (progress: UploadProgress) => void;
     private onCompleteCallback?: (results: WechatImage[]) => void;
     private onImageUploadedCallback?: (image: WechatImage) => void;
-    private startTime: number = 0;  // V2: 添加上传开始时间
     private batchId: number = 0;
 
     /**
@@ -64,12 +63,6 @@ export class UploadManager {
      * 添加文件到上传队列
      */
     addFiles(files: File[]): void {
-        // V2: 记录上传开始时间
-        if (this.queue.length === 0) {
-            this.startTime = Date.now();
-            console.log('[Upload Manager] 开始批量上传', files.length, '个文件');
-        }
-
         for (const file of files) {
             const task: UploadTask = {
                 id: `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -81,7 +74,6 @@ export class UploadManager {
             this.queue.push(task);
         }
 
-        console.log('[Upload Manager] 添加', files.length, '个文件到队列');
         this.processQueue();
     }
 
@@ -98,15 +90,8 @@ export class UploadManager {
             this.activeUploads++;
             this.notifyProgress();
 
-            // V2: 记录开始时间
-            const startTime = Date.now();
-            console.log(`[Upload Manager] 开始上传: ${pendingTask.file.name} (并发: ${this.activeUploads}/${MAX_CONCURRENT_UPLOADS})`);
-
             // 异步处理上传
             this.uploadFile(pendingTask).then(() => {
-                const duration = Date.now() - startTime;
-                console.log(`[Upload Manager] 上传完成: ${pendingTask.file.name}, 耗时: ${duration}ms`);
-
                 this.activeUploads--;
                 this.processQueue();
                 this.checkComplete();
@@ -145,7 +130,6 @@ export class UploadManager {
                 status: 'success',
             };
 
-            console.log('[Upload Manager] 上传成功:', task.file.name);
             this.onImageUploadedCallback?.(task.result);
             this.notifyProgress();
         } catch (error) {
@@ -192,8 +176,6 @@ export class UploadManager {
 
                 // 指数退避延迟
                 const delay = RETRY_BASE_DELAY * Math.pow(2, task.retryCount - 1);
-                console.log(`[Upload Manager] ${task.file.name} 将在 ${delay}ms 后重试 (第 ${task.retryCount} 次)`);
-
                 await new Promise((resolve) => setTimeout(resolve, delay));
             } else {
                 task.status = 'failed';
@@ -230,21 +212,9 @@ export class UploadManager {
     private checkComplete(): void {
         const progress = this.getProgress();
         if (progress.uploading === 0 && progress.completed + progress.failed === progress.total && progress.total > 0) {
-            // V2: 记录完成时间和统计信息
-            const endTime = Date.now();
-            const totalDuration = endTime - this.startTime;
             const results = this.queue
                 .filter((t) => t.result)
                 .map((t) => t.result as WechatImage);
-
-            console.log(`[Upload Manager] 所有上传完成:`, {
-                totalFiles: progress.total,
-                completed: progress.completed,
-                failed: progress.failed,
-                totalDuration: `${totalDuration}ms`,
-                averageDuration: progress.completed > 0 ? `${Math.round(totalDuration / progress.completed)}ms` : 'N/A',
-                concurrency: MAX_CONCURRENT_UPLOADS,
-            });
 
             this.onCompleteCallback?.(results);
         }

@@ -1,16 +1,17 @@
 <template>
   <div class="bg-white rounded-lg shadow-lg p-6 max-w-2xl">
-    <h2 class="text-xl font-bold mb-4 text-gray-800">图片上传配置</h2>
+    <h2 class="text-xl font-bold mb-4" style="color:rgba(0,0,0,0.75);">图片上传配置</h2>
 
     <!-- 策略选择器 -->
     <div class="mb-6">
-      <label class="block text-sm font-medium text-gray-700 mb-2">
+      <label class="block text-sm font-medium mb-2" style="color:rgba(0,0,0,0.65);">
         上传策略
       </label>
       <select
         v-model="selectedStrategy"
         @change="onStrategyChange"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full px-3 py-2 border rounded-md focus:outline-none"
+        style="border-color:rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-focus);"
       >
         <option value="base64">Base64 内嵌（默认，离线可用）</option>
         <option value="wechat">微信公众号图床（推荐）</option>
@@ -18,14 +19,14 @@
         <option value="github">GitHub 仓库托管</option>
         <option value="custom">自定义服务器</option>
       </select>
-      <p class="mt-1 text-xs text-gray-500">
+      <p class="mt-1 text-xs" style="color:rgba(0,0,0,0.45);">
         {{ strategyDescriptions[selectedStrategy] }}
       </p>
     </div>
 
     <!-- Base64 策略说明 -->
-    <div v-if="selectedStrategy === 'base64'" class="mb-4 p-4 bg-blue-50 rounded-md">
-      <p class="text-sm text-gray-700">
+    <div v-if="selectedStrategy === 'base64'" class="mb-4 p-4 rounded-md" style="background: var(--color-badge-bg);">
+      <p class="text-sm" style="color:rgba(0,0,0,0.65);">
         Base64 策略将图片直接嵌入到 HTML 中，无需额外配置。<br>
         优点：离线可用、无需服务器<br>
         缺点：生成的 HTML 较大，不适合大量图片
@@ -43,26 +44,29 @@
           <button
             @click="checkWxStatus"
             :disabled="checkingWxStatus"
-            class="text-xs px-2 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+            class="text-xs px-2 py-1 bg-white border rounded disabled:opacity-50"
+            style="border-color:rgba(0,0,0,0.12);"
+            onmouseover="this.style.background='var(--color-bg-warm)'"
+            onmouseout="this.style.background='#fff'"
           >
             {{ checkingWxStatus ? '检查中...' : '检查状态' }}
           </button>
         </div>
         <div v-if="wechatStatus.authorized && wechatStatus.accounts.length > 0">
-          <p class="text-xs text-gray-600">已授权公众号：</p>
+          <p class="text-xs" style="color:rgba(0,0,0,0.55);">已授权公众号：</p>
           <ul class="mt-1 space-y-1">
-            <li v-for="acc in wechatStatus.accounts" :key="acc.authorizerAppId" class="text-xs text-gray-700">
+            <li v-for="acc in wechatStatus.accounts" :key="acc.authorizerAppId" class="text-xs" style="color:rgba(0,0,0,0.65);">
               {{ acc.nickName || acc.authorizerAppId }}
             </li>
           </ul>
         </div>
-        <p v-else class="text-xs text-gray-600">
+        <p v-else class="text-xs" style="color:rgba(0,0,0,0.55);">
           请先在 content-backend 中完成微信公众号授权，才能使用图片上传功能。
         </p>
       </div>
 
-      <div class="p-4 bg-blue-50 rounded-md">
-        <p class="text-sm text-gray-700">
+      <div class="p-4 rounded-md" style="background: var(--color-badge-bg);">
+        <p class="text-sm" style="color:rgba(0,0,0,0.65);">
           通过 content-backend 将图片上传到微信永久素材库。<br>
           优点：图片托管在微信 CDN，公众号文章内直接可用，无防盗链问题。<br>
           注意：需要已部署 content-backend 并完成微信公众号授权。
@@ -73,21 +77,23 @@
     <!-- SM.MS 配置 -->
     <div v-if="selectedStrategy === 'smms'" class="space-y-4 mb-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+        <label class="block text-sm font-medium mb-2" style="color:rgba(0,0,0,0.65);">
           SM.MS API Token
-          <a href="https://sm.ms/home/apitoken" target="_blank" class="text-blue-500 text-xs ml-2">
+          <a href="https://sm.ms/home/apitoken" target="_blank" class="text-xs ml-2" style="color: var(--color-accent-primary);">
             (获取 Token)
           </a>
         </label>
         <input
           v-model="config.smms.token"
           type="password"
+          autocomplete="off"
           placeholder="输入您的 SM.MS API Token"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none"
+          style="border-color:rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-focus);"
         />
       </div>
       <div class="p-4 bg-yellow-50 rounded-md">
-        <p class="text-sm text-gray-700">
+        <p class="text-sm" style="color:rgba(0,0,0,0.65);">
           SM.MS 是免费图床服务，每日限额 5GB 流量。<br>
           需要注册账号并生成 API Token。
         </p>
@@ -97,57 +103,62 @@
     <!-- GitHub 配置 -->
     <div v-if="selectedStrategy === 'github'" class="space-y-4 mb-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+        <label class="block text-sm font-medium mb-2" style="color:rgba(0,0,0,0.65);">
           GitHub Token
-          <a href="https://github.com/settings/tokens" target="_blank" class="text-blue-500 text-xs ml-2">
+          <a href="https://github.com/settings/tokens" target="_blank" class="text-xs ml-2" style="color: var(--color-accent-primary);">
             (生成 Token)
           </a>
         </label>
         <input
           v-model="config.github.token"
           type="password"
+          autocomplete="off"
           placeholder="ghp_xxxxxxxxxxxx"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none"
+          style="border-color:rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-focus);"
         />
-        <p class="mt-1 text-xs text-gray-500">需要 repo 权限</p>
+        <p class="mt-1 text-xs" style="color:rgba(0,0,0,0.45);">需要 repo 权限</p>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+        <label class="block text-sm font-medium mb-2" style="color:rgba(0,0,0,0.65);">
           仓库地址
         </label>
         <input
           v-model="config.github.repo"
           type="text"
           placeholder="username/repository"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none"
+          style="border-color:rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-focus);"
         />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label class="block text-sm font-medium mb-2" style="color:rgba(0,0,0,0.65);">
             分支
           </label>
           <input
             v-model="config.github.branch"
             type="text"
             placeholder="main"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border rounded-md focus:outline-none"
+            style="border-color:rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-focus);"
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label class="block text-sm font-medium mb-2" style="color:rgba(0,0,0,0.65);">
             存储路径
           </label>
           <input
             v-model="config.github.path"
             type="text"
             placeholder="images"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border rounded-md focus:outline-none"
+            style="border-color:rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-focus);"
           />
         </div>
       </div>
-      <div class="p-4 bg-blue-50 rounded-md">
-        <p class="text-sm text-gray-700">
+      <div class="p-4 rounded-md" style="background: var(--color-badge-bg);">
+        <p class="text-sm" style="color:rgba(0,0,0,0.65);">
           图片将上传到 GitHub 仓库，并通过 jsDelivr CDN 加速访问。<br>
           确保仓库是公开的，否则 CDN 无法访问。
         </p>
@@ -157,31 +168,34 @@
     <!-- 自定义服务器配置 -->
     <div v-if="selectedStrategy === 'custom'" class="space-y-4 mb-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+        <label class="block text-sm font-medium mb-2" style="color:rgba(0,0,0,0.65);">
           服务器地址
         </label>
         <input
           v-model="config.custom.server"
           type="url"
           placeholder="https://your-server.com/upload"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none"
+          style="border-color:rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-focus);"
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+        <label class="block text-sm font-medium mb-2" style="color:rgba(0,0,0,0.65);">
           授权 Token（可选）
         </label>
         <input
           v-model="config.custom.token"
           type="password"
+          autocomplete="off"
           placeholder="Bearer token"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none"
+          style="border-color:rgba(0,0,0,0.12); --tw-ring-color: var(--color-accent-focus);"
         />
       </div>
-      <div class="p-4 bg-gray-50 rounded-md">
-        <p class="text-sm text-gray-700">
+      <div class="p-4 rounded-md" style="background:var(--color-bg-warm);">
+        <p class="text-sm" style="color:rgba(0,0,0,0.65);">
           服务器需要接受 multipart/form-data 格式的 POST 请求，<br>
-          并返回 JSON: <code class="bg-gray-200 px-1">{"{ url: '...' }"}</code>
+          并返回 JSON: <code style="background:rgba(0,0,0,0.08); padding:0 4px;">{"{ url: '...' }"}</code>
         </p>
       </div>
     </div>
@@ -191,11 +205,13 @@
       <button
         @click="testUpload"
         :disabled="testing || selectedStrategy === 'base64'"
-        class="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+        class="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+        style="--disabled-bg:rgba(0,0,0,0.08);"
+        :style="(testing || selectedStrategy === 'base64') ? 'background:rgba(0,0,0,0.08); color:rgba(0,0,0,0.35); cursor:not-allowed;' : ''"
       >
         {{ testing ? '测试中...' : '测试上传' }}
       </button>
-      <p v-if="selectedStrategy === 'base64'" class="mt-1 text-xs text-gray-500 text-center">
+      <p v-if="selectedStrategy === 'base64'" class="mt-1 text-xs text-center" style="color:rgba(0,0,0,0.45);">
         Base64 策略无需测试
       </p>
       <p v-if="testResult" :class="testResult.success ? 'text-green-600' : 'text-red-600'" class="mt-2 text-sm">
@@ -207,13 +223,19 @@
     <div class="flex gap-3">
       <button
         @click="saveConfig"
-        class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+        class="flex-1 px-4 py-2 text-white rounded-md transition"
+        style="background: var(--color-accent-primary);"
+        onmouseover="this.style.background='var(--color-accent-hover)';"
+        onmouseout="this.style.background='var(--color-accent-primary)';"
       >
         保存配置
       </button>
       <button
         @click="$emit('close')"
-        class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+        class="flex-1 px-4 py-2 rounded-md transition"
+        style="background:rgba(0,0,0,0.08); color:rgba(0,0,0,0.65);"
+        onmouseover="this.style.background='rgba(0,0,0,0.13)'"
+        onmouseout="this.style.background='rgba(0,0,0,0.08)'"
       >
         取消
       </button>

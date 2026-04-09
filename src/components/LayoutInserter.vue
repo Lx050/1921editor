@@ -15,6 +15,12 @@
     </button>
 
     <!-- 下拉菜单 — 无硬边框，浮层毛玻璃 -->
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0 scale-95"
+      leave-to-class="opacity-0 scale-95"
+    >
     <div
       v-if="menuVisible"
       class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 rounded-xl p-3 z-20 min-w-[260px]"
@@ -79,13 +85,21 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- 遮罩 -->
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0 scale-95"
+      leave-to-class="opacity-0 scale-95"
+    >
     <div
       v-if="menuVisible"
       class="fixed inset-0 z-10"
       @click="closeMenu"
     ></div>
+    </Transition>
   </div>
 </template>
 

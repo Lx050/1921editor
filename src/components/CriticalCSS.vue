@@ -2,15 +2,15 @@
   <style>
     /* 关键 CSS - 内联以避免阻塞渲染 */
     :root {
-      --primary-color: #3b82f6;
+      --primary-color: var(--color-accent-primary);
       --success-color: #10b981;
-      --gray-50: #f9fafb;
-      --gray-100: #f3f4f6;
-      --gray-200: #e5e7eb;
-      --gray-300: #d1d5db;
-      --gray-500: #6b7280;
-      --gray-600: #4b5563;
-      --gray-900: #111827;
+      --gray-50: var(--color-bg-page, #f9fafb);
+      --gray-100: var(--color-bg-warm, #f3f4f6);
+      --gray-200: rgba(0,0,0,0.12);
+      --gray-300: rgba(0,0,0,0.2);
+      --gray-500: rgba(0,0,0,0.45);
+      --gray-600: rgba(0,0,0,0.55);
+      --gray-900: rgba(0,0,0,0.85);
     }
 
     /* 基础布局样式 - 立即渲染 */
@@ -33,7 +33,7 @@
 
     /* 骨架屏 - 快速显示页面结构 */
     .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background: linear-gradient(90deg, var(--color-bg-warm, #f0f0f0) 25%, rgba(0,0,0,0.08) 50%, var(--color-bg-warm, #f0f0f0) 75%);
       background-size: 200% 100%;
       animation: loading 1.5s infinite;
     }

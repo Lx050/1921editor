@@ -42,7 +42,7 @@ export class WechatTokenManager {
     // 保存到localStorage（安全起见，可以考虑加密）
     this.saveToStorage(openid, tokenData);
 
-    console.log(`[微信Token] 保存用户 ${openid} 的token，有效期至: ${new Date(tokenData.expires_at).toLocaleString()}`);
+    console.debug(`[微信Token] 保存用户 ${openid} 的token，有效期至: ${new Date(tokenData.expires_at).toLocaleString()}`);
 
     // 重新调度刷新
     this.scheduleRefresh();
@@ -60,7 +60,7 @@ export class WechatTokenManager {
 
     // 检查是否需要刷新
     if (this.needsRefresh(tokenData)) {
-      console.log(`[微信Token] 用户 ${openid} token即将过期，开始刷新...`);
+      console.debug(`[微信Token] 用户 ${openid} token即将过期，开始刷新...`);
       await this.refreshToken(openid);
     }
 
@@ -86,7 +86,7 @@ export class WechatTokenManager {
     }
 
     try {
-      console.log(`[微信Token] 开始刷新用户 ${openid} 的token...`);
+      console.debug(`[微信Token] 开始刷新用户 ${openid} 的token...`);
 
       // 调用微信API刷新token
       const response = await fetch('/api/wechat/token/refresh', {
@@ -122,7 +122,7 @@ export class WechatTokenManager {
 
       this.saveToken(openid, newTokenData);
 
-      console.log(`[微信Token] 用户 ${openid} token刷新成功`);
+      console.debug(`[微信Token] 用户 ${openid} token刷新成功`);
 
       // 通知前端token已更新
       this.notifyTokenUpdated(openid);
@@ -132,7 +132,7 @@ export class WechatTokenManager {
 
       // refresh_token也可能过期，需要用户重新授权
       if (this.isRefreshTokenExpired(error)) {
-        console.log(`[微信Token] 用户 ${openid} refresh_token已过期，需要重新授权`);
+        console.debug(`[微信Token] 用户 ${openid} refresh_token已过期，需要重新授权`);
         this.removeToken(openid);
         this.notifyReauthorizationRequired(openid);
       }
@@ -164,7 +164,7 @@ export class WechatTokenManager {
     if (earliestOpenid) {
       const delay = Math.max(0, earliestExpiry - Date.now());
 
-      console.log(`[微信Token] 调度 ${delay}ms 后刷新用户 ${earliestOpenid} 的token`);
+      console.debug(`[微信Token] 调度 ${delay}ms 后刷新用户 ${earliestOpenid} 的token`);
 
       this.refreshTimer = setTimeout(async () => {
         try {
@@ -184,7 +184,7 @@ export class WechatTokenManager {
    * 启动自动刷新
    */
   private startAutoRefresh(): void {
-    console.log('[微信Token] 启动自动刷新机制');
+    console.debug('[微信Token] 启动自动刷新机制');
     this.scheduleRefresh();
 
     // 每5分钟检查一次所有token状态
@@ -199,7 +199,7 @@ export class WechatTokenManager {
   private async checkAllTokens(): Promise<void> {
     for (const [openid, tokenData] of this.tokens.entries()) {
       if (this.needsRefresh(tokenData)) {
-        console.log(`[微信Token] 检测到用户 ${openid} token需要刷新`);
+        console.debug(`[微信Token] 检测到用户 ${openid} token需要刷新`);
         try {
           await this.refreshToken(openid);
         } catch (error) {
@@ -266,7 +266,7 @@ export class WechatTokenManager {
           // 检查数据是否仍然有效
           if (data.saved_at && (Date.now() - data.saved_at) < 35 * 24 * 60 * 60 * 1000) {
             this.tokens.set(openid, data);
-            console.log(`[微信Token] 从存储加载用户 ${openid} 的token`);
+            console.debug(`[微信Token] 从存储加载用户 ${openid} 的token`);
           } else {
             // 清理过期的token
             localStorage.removeItem(key);

@@ -8,9 +8,10 @@
     <!-- 占位符 -->
     <div
       v-if="!isLoaded && placeholder"
-      class="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center"
+      class="absolute inset-0 animate-pulse flex items-center justify-center"
+      style="background:rgba(0,0,0,0.08);"
     >
-      <div class="w-full h-full bg-gray-200" />
+      <div class="w-full h-full" style="background:rgba(0,0,0,0.08);" />
     </div>
 
     <!-- 图片 -->

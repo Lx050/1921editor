@@ -179,7 +179,7 @@ async function handlePasteReplace() {
 .editor-title {
 	font-size: 15px;
 	font-weight: 600;
-	color: #1e293b;
+	color: rgba(0,0,0,0.85);
 	margin: 0;
 }
 
@@ -190,7 +190,7 @@ async function handlePasteReplace() {
 
 .btn-save {
 	padding: 4px 16px;
-	background: #3b82f6;
+	background: var(--color-accent-primary);
 	color: white;
 	border: none;
 	border-radius: 4px;
@@ -199,26 +199,26 @@ async function handlePasteReplace() {
 }
 
 .btn-save:hover {
-	background: #2563eb;
+	background: var(--color-accent-hover);
 }
 
 .btn-reset {
 	padding: 4px 16px;
 	background: transparent;
-	color: #64748b;
-	border: 1px solid #cbd5e1;
+	color: rgba(0,0,0,0.55);
+	border: 1px solid rgba(0,0,0,0.12);
 	border-radius: 4px;
 	font-size: 13px;
 	cursor: pointer;
 }
 
 .btn-reset:hover {
-	background: #f1f5f9;
+	background: #f6f5f4;
 }
 
 .editor-hint {
-	background: #f8fafc;
-	border: 1px solid #e2e8f0;
+	background: #f6f5f4;
+	border: 1px solid rgba(0,0,0,0.1);
 	border-radius: 6px;
 	padding: 10px 14px;
 	margin-bottom: 12px;
@@ -227,7 +227,7 @@ async function handlePasteReplace() {
 .editor-hint p {
 	margin: 0;
 	font-size: 12px;
-	color: #64748b;
+	color: rgba(0,0,0,0.55);
 	line-height: 1.6;
 }
 
@@ -236,7 +236,7 @@ async function handlePasteReplace() {
 }
 
 .canvas-wrapper {
-	border: 1px solid #e2e8f0;
+	border: 1px solid rgba(0,0,0,0.1);
 	border-radius: 8px;
 	overflow: hidden;
 }
@@ -246,28 +246,28 @@ async function handlePasteReplace() {
 	align-items: center;
 	gap: 8px;
 	padding: 6px 12px;
-	background: #f8fafc;
-	border-bottom: 1px solid #e2e8f0;
+	background: #f6f5f4;
+	border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
 .mode-label {
 	font-size: 12px;
-	color: #94a3b8;
+	color: rgba(0,0,0,0.35);
 	margin-right: auto;
 }
 
 .toolbar-btn {
 	padding: 2px 10px;
 	background: white;
-	border: 1px solid #cbd5e1;
+	border: 1px solid rgba(0,0,0,0.12);
 	border-radius: 4px;
 	font-size: 12px;
-	color: #475569;
+	color: rgba(0,0,0,0.65);
 	cursor: pointer;
 }
 
 .toolbar-btn:hover {
-	background: #f1f5f9;
+	background: #f6f5f4;
 }
 
 .editor-canvas {
@@ -299,10 +299,10 @@ async function handlePasteReplace() {
 }
 
 .save-status.success {
-	color: #10b981;
+	color: var(--color-success);
 }
 
 .save-status.error {
-	color: #ef4444;
+	color: var(--color-error);
 }
 </style>

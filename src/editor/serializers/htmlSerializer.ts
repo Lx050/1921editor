@@ -1,5 +1,10 @@
 import DOMPurify from 'dompurify'
-import { getSvgTemplateById } from '@/styles/svgTemplates'
+// Lazy-loaded to defer the large svgTemplates chunk until first SVG block is serialized
+let _getSvgTemplateById: ((id: string) => any) | null = null
+import('@/styles/svgTemplates').then((m) => { _getSvgTemplateById = m.getSvgTemplateById })
+function getSvgTemplateById(id: string): any {
+  return _getSvgTemplateById ? _getSvgTemplateById(id) : null
+}
 import { useAppStore } from '@/stores/appStore'
 import { useConfigStore } from '@/stores/configStore'
 import type { EditorDocument, ImageSlotData } from '@/types/editor'

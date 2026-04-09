@@ -4,7 +4,7 @@
     <!-- 移动端侧边栏切换按钮 -->
     <button
       @click="showMobileSidebar = !showMobileSidebar"
-      class="md:hidden fixed right-4 bottom-32 z-50 bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+      style="position:fixed; right:16px; bottom:128px; z-index:50; background:var(--color-accent-primary); color:var(--color-text-inverse); padding:12px; border-radius:50%; box-shadow:var(--shadow-float); border:none; cursor:pointer; transition:all 150ms;"
       title="切换图片库"
     >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,48 +38,55 @@
       <!-- 右侧：工作区 (包含 Header, Body, BottomBar) -->
       <div class="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-white">
         <!-- 精简头部 -->
-        <div class="flex-shrink-0 w-full border-b p-2 md:p-4" style="background: var(--color-content-card); border-color: var(--color-content-border);">
-          <!-- Mobile: stacked layout -->
+        <div class="flex-shrink-0 w-full p-2 md:p-3" style="background:var(--color-bg-card); border-bottom:var(--border-whisper);">
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0 flex-1">
-              <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-medium whitespace-nowrap shrink-0">3/3</span>
-              <h2 class="text-sm md:text-lg font-bold truncate" style="color: var(--color-content-text);">预览</h2>
+              <span class="text-[10px] px-2.5 py-1 rounded-full font-medium" style="background: var(--color-accent-soft); color: var(--color-accent-primary);">3 / 3</span>
+              <h2 class="text-sm md:text-base font-bold truncate" style="color:rgba(0,0,0,0.9); letter-spacing:-0.2px;">预览</h2>
               <span
-                class="text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap shrink-0"
-                :class="{
-                  'bg-orange-100 text-orange-600': configStore.mode === 'daily',
-                  'bg-green-100 text-green-600': configStore.mode === 'three_rural',
-                  'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
+                style="font-size:10px; padding:2px 7px; border-radius:9999px; font-weight:600; white-space:nowrap;"
+                :style="{
+                  background: configStore.mode === 'daily' ? '#fff7ed' : configStore.mode === 'three_rural' ? '#f0fdf4' : '#faf5ff',
+                  color: configStore.mode === 'daily' ? '#c2410c' : configStore.mode === 'three_rural' ? '#15803d' : '#7e22ce'
                 }"
               >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
             </div>
 
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1.5">
               <!-- Preview/Code toggle -->
-              <div class="flex bg-gray-100 p-0.5 rounded-lg">
+              <div class="flex p-0.5 rounded" style="background:rgba(0,0,0,0.05);">
                 <button
                   @click="activeTab = 'preview'"
-                  :class="['px-2 md:px-4 py-1 text-[10px] md:text-xs font-bold rounded-md transition-all', activeTab === 'preview' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500']"
+                  class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-semibold rounded transition-all"
+                  :style="activeTab === 'preview' ? 'background:var(--color-bg-card); color:var(--color-accent-primary); box-shadow:var(--shadow-content-card);' : 'background:transparent; color:rgba(0,0,0,0.5);'"
                 >预览</button>
                 <button
                   @click="activeTab = 'code'"
-                  :class="['px-2 md:px-4 py-1 text-[10px] md:text-xs font-bold rounded-md transition-all', activeTab === 'code' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500']"
+                  class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-semibold rounded transition-all"
+                  :style="activeTab === 'code' ? 'background:var(--color-bg-card); color:var(--color-accent-primary); box-shadow:var(--shadow-content-card);' : 'background:transparent; color:rgba(0,0,0,0.5);'"
                 >代码</button>
               </div>
 
               <!-- Copy button -->
               <button
                 @click="copyHtml"
-                class="px-2 md:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[10px] md:text-xs font-bold rounded-md transition-all flex items-center gap-1 shadow-sm h-8"
+                class="flex items-center gap-1 text-[10px] md:text-xs font-semibold h-7 px-2 md:px-3 transition-all"
+                style="background:rgba(0,0,0,0.06); border:none; border-radius:var(--radius-xs); color:rgba(0,0,0,0.7); cursor:pointer;"
+                onmouseover="this.style.background='rgba(0,0,0,0.1)'"
+                onmouseout="this.style.background='rgba(0,0,0,0.06)'"
               >
-                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                <span class="hidden sm:inline">{{ copyButtonText.replace('HTML代码', '') }}</span>
+                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <span class="hidden sm:inline">{{ copyButtonText.replace('HTML代码', '') || '复制' }}</span>
               </button>
 
-              <!-- Share button - hidden on very small screens -->
+              <!-- Share button -->
               <button
                 @click="copyShareLink"
-                class="hidden sm:flex px-2 py-1.5 bg-white border border-blue-200 hover:border-blue-400 text-blue-600 text-[10px] font-bold rounded-md items-center gap-1 shadow-sm h-8"
+                :disabled="isSharing"
+                class="hidden sm:flex items-center gap-1 h-7 px-2 text-[10px] font-semibold transition-all"
+                :style="isSharing ? 'background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.12); border-radius:var(--radius-xs); color:rgba(0,0,0,0.35); cursor:not-allowed; opacity:0.6;' : 'background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.12); border-radius:var(--radius-xs); color:rgba(0,0,0,0.65); cursor:pointer;'"
+                onmouseover="if(!this.disabled){this.style.background='rgba(0,0,0,0.04)'}"
+                onmouseout="if(!this.disabled){this.style.background='var(--color-bg-card)'}"
                 title="分享"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
@@ -98,10 +105,10 @@
         />
 
         <!-- 主体区域 - 预览框居中，两侧留白 -->
-        <div class="flex-1 flex flex-col relative overflow-hidden bg-gray-100 pb-16 md:pb-0">
+        <div class="flex-1 flex flex-col relative overflow-hidden pb-16 md:pb-0" style="background:var(--color-bg-warm);">
           <!-- 预览模式: 手机框居中，两侧留空 -->
-          <div v-show="activeTab === 'preview'" class="flex-1 flex justify-center items-stretch overflow-hidden p-0 md:p-4 bg-gray-100">
-            <div class="w-full md:w-[390px] h-full flex flex-col overflow-hidden shrink-0 shadow-2xl bg-white md:rounded-2xl border-x md:border border-gray-200">
+          <div v-show="activeTab === 'preview'" class="flex-1 flex justify-center items-stretch overflow-hidden p-0 md:p-4" style="background:var(--color-bg-warm);">
+            <div class="w-full md:w-[390px] h-full flex flex-col overflow-hidden shrink-0 bg-white md:rounded-2xl border-x md:border" style="box-shadow:var(--shadow-content-card); border-color:rgba(0,0,0,0.08);">
               <template v-if="showMobileFrame">
                 <!-- 手机状态栏 -->
                 <div class="w-full h-11 flex justify-between px-6 items-center shrink-0" style="background: linear-gradient(180deg, #2a2a30 0%, #1a1a1f 100%);">
@@ -112,11 +119,11 @@
                   </div>
                 </div>
                 <!-- 微信导航栏 -->
-                <div class="h-11 bg-[#ededed] flex items-center justify-between px-4 border-b border-gray-300 shrink-0">
-                  <div class="flex items-center text-gray-800 font-medium text-[16px]"><span class="mr-1 text-2xl leading-none" style="margin-top: -2px;">‹</span> 公众号</div>
-                  <div class="text-gray-800 font-semibold text-[16px] tracking-wide truncate max-w-[150px]">{{ draftForm.title || '文章预览' }}</div>
+                <div class="h-11 flex items-center justify-between px-4 border-b shrink-0" style="background:var(--color-bg-warm); border-color:rgba(0,0,0,0.12);">
+                  <div class="flex items-center font-medium text-[16px]" style="color:rgba(0,0,0,0.75);"><span class="mr-1 text-2xl leading-none" style="margin-top: -2px;">‹</span> 公众号</div>
+                  <div class="font-semibold text-[16px] tracking-wide truncate max-w-[150px]" style="color:rgba(0,0,0,0.75);">{{ draftForm.title || '文章预览' }}</div>
                   <div class="w-12 flex justify-end">
-                     <div class="w-8 h-6 bg-white border border-gray-300 rounded-full flex justify-center items-center space-x-0.5">
+                     <div class="w-8 h-6 bg-white border rounded-full flex justify-center items-center space-x-0.5" style="border-color:rgba(0,0,0,0.12);">
                         <div class="w-0.5 h-0.5 bg-black rounded-full"></div>
                         <div class="w-1 h-0.5 bg-black rounded-full"></div>
                         <div class="w-0.5 h-0.5 bg-black rounded-full"></div>
@@ -124,93 +131,105 @@
                   </div>
                 </div>
               </template>
-              <div v-else class="h-10 bg-gray-50 border-b flex items-center justify-center text-[10px] text-gray-400 font-bold tracking-widest shrink-0 uppercase">WeChat Article Preview</div>
+              <div v-else class="h-10 border-b flex items-center justify-center text-[10px] font-bold tracking-widest shrink-0 uppercase" style="background:var(--color-bg-warm); color:var(--color-text-muted);">WeChat Article Preview</div>
               <!-- iframe 内容区 - 自动填充剩余高度 -->
               <div class="flex-1 bg-white relative overflow-hidden">
                 <iframe ref="previewFrame" :srcdoc="previewHtml" class="w-full h-full border-0 absolute inset-0" title="版式预览" @load="setupIframeClickHandler"></iframe>
               </div>
               
               <!-- 底部操作栏 - desktop only inside frame -->
-              <div class="hidden md:block flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3">
+              <div class="hidden md:block flex-shrink-0 bg-white border-t px-4 py-3" style="border-color:rgba(0,0,0,0.08);">
                 <div class="flex items-center justify-between gap-4">
                   <button
                     @click="goToPreviousStep"
-                    class="flex-1 h-11 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-black text-sm font-medium rounded-xl transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-1"
+                    class="flex-1 h-11 flex items-center justify-center gap-1 text-sm font-medium transition-all"
+                    style="background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.15); border-radius:var(--radius-sm); color:rgba(0,0,0,0.75);"
+                    onmouseover="this.style.background='rgba(0,0,0,0.04)'"
+                    onmouseout="this.style.background='var(--color-bg-card)'"
                   >
                     <span>←</span>
                     <span>上一步</span>
                   </button>
                   <button
                     @click="openDraftModal"
-                    class="flex-[2] h-11 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-[0.98]"
+                    :disabled="isSaving"
+                    class="flex-[2] h-11 flex items-center justify-center gap-2 text-sm font-bold transition-all"
+                    :style="isSaving ? 'background:var(--color-accent-primary); opacity:0.6; color:var(--color-text-inverse); border:none; border-radius:var(--radius-sm); cursor:not-allowed;' : 'background:var(--color-accent-primary); color:var(--color-text-inverse); border:none; border-radius:var(--radius-sm); cursor:pointer;'"
+                    onmouseover="if(!this.disabled){this.style.background='var(--color-accent-hover)'}"
+                    onmouseout="if(!this.disabled){this.style.background='var(--color-accent-primary)'}"
                   >
-                    <span>创建微信草稿</span>
-                    <span>→</span>
+                    <span>{{ isSaving ? '保存中...' : '创建微信草稿' }}</span>
+                    <span v-if="!isSaving">→</span>
                   </button>
                 </div>
               </div>
               
               <!-- 底部指示条（仅真机模式） -->
               <div v-if="showMobileFrame" class="h-6 w-full flex justify-center items-end pb-1.5 shrink-0 bg-white">
-                <div class="w-32 h-1 bg-gray-800 rounded-full opacity-20"></div>
+                <div class="w-32 h-1 rounded-full" style="background:rgba(0,0,0,0.15);"></div>
               </div>
             </div>
           </div>
 
           <!-- 代码预览 -->
-          <div v-show="activeTab === 'code'" class="flex-1 overflow-y-auto p-6 md:p-8 pb-24 bg-gray-50">
+          <div v-show="activeTab === 'code'" class="flex-1 overflow-y-auto p-6 md:p-8 pb-24" style="background:var(--color-bg-warm);">
             <div class="max-w-4xl mx-auto">
-              <div class="text-[10px] font-bold text-gray-400 mb-3 tracking-widest uppercase">HTML Output Source</div>
-              <div class="bg-gray-900 text-gray-100 rounded-2xl p-6 md:p-8 font-mono text-xs md:text-sm break-all leading-relaxed shadow-2xl border border-white/5 select-all">{{ finalHtml }}</div>
+              <div class="text-[10px] font-bold mb-3 tracking-widest uppercase" style="color:var(--color-text-muted);">HTML Output Source</div>
+              <div class="rounded-2xl p-6 md:p-8 font-mono text-xs md:text-sm break-all leading-relaxed select-all" style="background:#1e1e2e; color:rgba(255,255,255,0.85); border:1px solid rgba(0,0,0,0.1); box-shadow:var(--shadow-content-card);">{{ finalHtml }}</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Mobile fixed bottom bar - outside phone frame -->
-      <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 safe-area-bottom">
-        <div class="flex items-center gap-3">
+      <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 py-3 safe-area-bottom" style="background:var(--color-bg-card); border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="flex items-center gap-2">
           <button
             @click="goToPreviousStep"
-            class="flex-1 h-11 bg-white border border-gray-200 active:bg-gray-50 text-black text-sm font-medium rounded-xl shadow-sm flex items-center justify-center gap-1"
+            class="flex-1 h-10 flex items-center justify-center gap-1 text-sm font-medium"
+            style="background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.15); border-radius:var(--radius-sm); color:rgba(0,0,0,0.75); cursor:pointer;"
           >
             <span>← 上一步</span>
           </button>
           <button
             @click="copyShareLink"
-            class="h-11 px-4 bg-white border border-blue-200 active:border-blue-400 text-blue-600 text-sm font-medium rounded-xl shadow-sm flex items-center justify-center"
+            :disabled="isSharing"
+            class="h-10 px-3 flex items-center justify-center text-sm font-medium"
+            :style="isSharing ? 'background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.15); border-radius:var(--radius-sm); color:rgba(0,0,0,0.35); cursor:not-allowed; opacity:0.6;' : 'background:var(--color-bg-card); border:1px solid rgba(0,0,0,0.15); border-radius:var(--radius-sm); color:rgba(0,0,0,0.65); cursor:pointer;'"
           >
-            分享
+            {{ isSharing ? '分享中...' : '分享' }}
           </button>
           <button
             @click="openDraftModal"
-            class="flex-[2] h-11 bg-gradient-to-r from-blue-500 to-blue-600 active:from-blue-600 active:to-blue-700 text-white text-sm font-bold rounded-xl shadow-md flex items-center justify-center gap-1"
+            :disabled="isSaving"
+            class="flex-[2] h-10 flex items-center justify-center gap-1 text-sm font-semibold"
+            :style="isSaving ? 'background:var(--color-accent-primary); opacity:0.6; color:var(--color-text-inverse); border:none; border-radius:var(--radius-sm); cursor:not-allowed;' : 'background:var(--color-accent-primary); color:var(--color-text-inverse); border:none; border-radius:var(--radius-sm); cursor:pointer;'"
           >
-            创建草稿 →
+            {{ isSaving ? '保存中...' : '创建草稿 →' }}
           </button>
         </div>
       </div>
     </template>
 
     <template v-else>
-      <div class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gray-50 h-full">
+      <div class="flex-1 flex flex-col items-center justify-center p-8 text-center h-full" style="background:var(--color-bg-warm);">
         <div v-if="isGenerating">
-          <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600/30 border-t-blue-600 mb-4"></div>
-          <p class="text-gray-600 font-medium">正在生成版式，请稍候...</p>
+          <div class="inline-block animate-spin rounded-full h-10 w-10 mb-4" style="border:4px solid var(--color-accent-focus, rgba(0,117,222,0.15)); border-top-color:var(--color-accent-primary);"></div>
+          <p class="font-medium" style="color:rgba(0,0,0,0.55);">正在生成版式，请稍候...</p>
         </div>
         <div v-else-if="errorMessage" class="max-w-md mx-auto">
           <div class="text-red-400 text-4xl mb-4">⚠️</div>
           <h3 class="text-red-600 font-bold text-lg mb-2">生成失败</h3>
-          <p class="text-gray-600 mb-6">{{ errorMessage }}</p>
+          <p class="mb-6" style="color:rgba(0,0,0,0.55);">{{ errorMessage }}</p>
           <div class="flex gap-3 justify-center">
-            <button @click="regenerate" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-md">重试</button>
-            <button @click="goToPreviousStep" class="px-6 py-2 bg-white border border-gray-300 text-black rounded-lg font-medium">返回编辑</button>
+            <button @click="regenerate" class="px-6 py-2 rounded-lg font-medium shadow-md" style="background:var(--color-accent-primary); color:var(--color-text-inverse);">重试</button>
+            <button @click="goToPreviousStep" class="px-6 py-2 bg-white border text-black rounded-lg font-medium" style="border-color:rgba(0,0,0,0.12);">返回编辑</button>
           </div>
         </div>
         <div v-else>
-          <div class="text-gray-300 text-5xl mb-4">📄</div>
-          <p class="text-gray-500 mb-6">暂无可预览的内容</p>
-          <button @click="goToPreviousStep" class="px-8 py-2 bg-blue-600 text-white rounded-lg font-bold shadow-lg">去编辑内容</button>
+          <div class="text-5xl mb-4" style="color:rgba(0,0,0,0.25);">📄</div>
+          <p class="mb-6" style="color:rgba(0,0,0,0.45);">暂无可预览的内容</p>
+          <button @click="goToPreviousStep" class="px-8 py-2 rounded-lg font-bold shadow-lg" style="background:var(--color-accent-primary); color:var(--color-text-inverse);">去编辑内容</button>
         </div>
       </div>
     </template>
@@ -233,8 +252,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { showAlert } from '@/composables/useConfirm'
 import { useAppStore } from '../stores/appStore'
 import { useConfigStore } from '../stores/configStore'
 import { buildHtml } from '../utils/styleAssembler'
@@ -248,6 +268,7 @@ import toast from '../composables/useToast'
 import DOMPurify from 'dompurify'
 import type { DraftArticle, WechatImage, WechatUploadResponse } from '@/types'
 import { tokenStorage } from '../utils/tokenStorage'
+import { useArticleSaver } from '../composables/useArticleSaver'
 
 const router = useRouter()
 const route = useRoute()
@@ -261,17 +282,6 @@ const errorMessage = ref('')
 const activeTab = ref('preview')
 const copyButtonText = ref('复制HTML代码')
 const previewFrame = ref<HTMLIFrameElement | null>(null)
-
-const buildAuthHeaders = () => {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
-  }
-  const token = tokenStorage.getToken()
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
-  }
-  return headers
-}
 
 // V2: 图片替换相关状态
 const selectedPlaceholder = ref<string | null>(null)
@@ -287,7 +297,8 @@ watch(selectedPlaceholder, (newVal) => {
   }
 })
 
-// 监听元数据变化，实时更新预览
+// 监听元数据变化，实时更新预览（防抖 400ms，避免快速输入时频繁重生成）
+let regenerateTimer: ReturnType<typeof setTimeout> | null = null
 watch(
   [
     () => appStore.editorInput,
@@ -298,8 +309,8 @@ watch(
     () => appStore.editorNames
   ],
   () => {
-    console.log('[Step3] 检测到元数据变化，重新生成 HTML...')
-    regenerate()
+    if (regenerateTimer) clearTimeout(regenerateTimer)
+    regenerateTimer = setTimeout(() => { regenerate() }, 400)
   },
   { deep: true }
 )
@@ -329,7 +340,7 @@ const showMobileSidebar = ref(false)
 const draftError = ref('')
 const draftSuccess = ref('')
 const aiImageProgress = ref('') // 新增：AI 图片上传进度提示
-const isSaving = ref(false)
+const { isSaving, saveDraft } = useArticleSaver(appStore, configStore, tokenStorage, toast)
 const hasAutoSaved = ref(false)
 const draftForm = ref<DraftFormState>({
   title: '',
@@ -439,7 +450,7 @@ const resolveArticleId = (value: unknown): string | null =>
 const handleImageSelect = (image: WechatImage) => {
   const placeholderId = selectedPlaceholder.value
   if (!placeholderId) {
-    console.log('[Step3] 请先选择右侧预览中的占位符')
+    console.warn('[Step3] 请先选择右侧预览中的占位符')
     return
   }
   
@@ -452,8 +463,6 @@ const handleImageSelect = (image: WechatImage) => {
     previewUrl: previewUrl,
     wechatUrl: wechatUrl
   }
-  console.log('[Step3] 直接替换:', placeholderId, '->', previewUrl)
-  
   // 优化：直接修改 iframe 中的 DOM，避免 reload 导致的闪烁
   updateIframeImageDom(placeholderId, previewUrl)
   
@@ -469,7 +478,6 @@ watch(
     const prevId = resolveArticleId(oldId)
     // 只有当从一个文章切换到另一个文章时才清空 (避免 Step2 -> Step3 或 刷新页面时的误清空)
     if (nextId && prevId && nextId !== prevId) {
-      console.log('[Step3] 切换文章，清空图片 Store')
       appStore.setWechatImages([])
       isGenerating.value = true // 重置加载状态
     }
@@ -479,7 +487,6 @@ watch(
 // 自动保存图片逻辑 (增加 loading 检查，防止初始加载时覆盖为空)
 watch(wechatImages, async (newImages) => {
   if (isGenerating.value) {
-    console.log('[Step3] 正在加载中，跳过自动保存')
     return
   }
   
@@ -493,7 +500,6 @@ watch(wechatImages, async (newImages) => {
   )
 
   if (hasPendingUpload) {
-    console.log('[Step3] 检测到正在上传的图片 (Blob)，暂停自动保存，等待上传完成...')
     return // ⛔️ 终止保存，等待 upload 完成更新 URL 后再次触发 watch
   }
 
@@ -519,11 +525,11 @@ watch(wechatImages, async (newImages) => {
     console.warn('[Step3] 警告：部分图片未通过持久化检查，将不被保存', newImages.length, '->', persistentImages.length)
   }
 
-  console.log('[Step3] 自动保存图片到后端:', persistentImages.length)
   try {
     await articleApi.updateStep3(articleId, persistentImages)
   } catch (e) {
     console.error('保存图片失败', e)
+    toast.error('保存失败，请稍后重试')
   }
 }, { deep: true })
 
@@ -549,7 +555,6 @@ const updateIframeImageDom = (placeholderId: string, newUrl: string) => {
       img.style.boxShadow = 'none'
     })
 
-    console.log('[Step3] DOM 更新成功，已直接反映在 iframe 中')
   } catch (e) {
     console.warn('[Step3] DOM 更新失败:', e)
     // 如果 DOM 操作失败，回退到整体刷新 HTML
@@ -596,8 +601,6 @@ onMounted(async () => {
         appStore.setCurrentArticleId(article.id)
         draftForm.value.title = article.title
 
-        console.log('[Step3] 文章数据加载完成')
-
         if (article.config) {
           appStore.setStyleConfig(article.config)
           
@@ -610,7 +613,6 @@ onMounted(async () => {
             if (meta.copywriterNames) appStore.copywriterNames = meta.copywriterNames
             if (meta.plannerNames) appStore.plannerNames = meta.plannerNames
             if (meta.editorNames) appStore.editorNames = meta.editorNames
-            console.log('[Step3] 元数据恢复完成')
           }
         }
 
@@ -638,7 +640,6 @@ onMounted(async () => {
           }
         }
 
-        console.log('[Step3] 后端返回的图片数据:', JSON.stringify(article.images))
         const backendImages = (article.images || []) as WechatImage[]
         const validImages = backendImages.map((img) => {
           const rawUrl = img.url || img.proxyUrl || ''
@@ -657,7 +658,6 @@ onMounted(async () => {
           }
         }).filter(Boolean) as WechatImage[]
 
-        console.log('[Step3] 有效图片数量:', validImages.length, '张（已过滤 blob）')
         appStore.setWechatImages(validImages)
       }
     } catch (e) {
@@ -712,8 +712,7 @@ const setupIframeClickHandler = () => {
 
     // 查找并绑定所有占位符图片的点击事件
     const placeholderImages = iframeDoc.querySelectorAll<HTMLImageElement>('img[data-placeholder]')
-    console.log('[Step3] 找到占位符图片数量:', placeholderImages.length)
-    
+
     placeholderImages.forEach((img) => {
       img.style.cursor = 'pointer'
       
@@ -723,7 +722,7 @@ const setupIframeClickHandler = () => {
       
       img.addEventListener('mouseenter', () => {
         if (selectedPlaceholder.value !== img.dataset.placeholder) {
-          img.style.outline = '2px dashed #93c5fd'
+          img.style.outline = '2px dashed rgba(0,117,222,0.3)'
           img.style.outlineOffset = '2px'
         }
       })
@@ -747,11 +746,9 @@ const setupIframeClickHandler = () => {
         
         // 设置当前选中状态
         selectedPlaceholder.value = placeholderId
-        img.style.outline = '3px solid #3b82f6'
+        img.style.outline = '3px solid var(--color-accent-primary)'
         img.style.outlineOffset = '2px'
         img.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.4)'
-        
-        console.log('[Step3] 选中占位符:', placeholderId)
       })
     })
 
@@ -764,7 +761,7 @@ const setupIframeClickHandler = () => {
       
       // 聚焦时高亮
       editableFooter.addEventListener('focus', () => {
-        editableFooter.style.outline = '2px solid #3b82f6'
+        editableFooter.style.outline = '2px solid var(--color-accent-primary)'
       })
       
       // blur 时保存并移除高亮
@@ -773,10 +770,7 @@ const setupIframeClickHandler = () => {
         // 将编辑后的 footer 内容同步回 store
         const newFooterHtml = editableFooter.innerHTML
         configStore.setFooter(newFooterHtml)
-        console.log('[Step3] Footer 编辑已同步到 store')
       })
-      
-      console.log('[Step3] Footer 已设置为可编辑')
     }
 
   } catch (e) {
@@ -814,7 +808,6 @@ const generateHtml = async () => {
     }
 
     const styleConfig = appStore.styleConfig
-    console.log('[Step3] 生成HTML，样式配置:', styleConfig)
 
     // V2: 生成带占位符标记的 HTML
     finalHtml.value = buildHtml(contentBlocks.value, styleConfig, true)
@@ -882,7 +875,7 @@ const copyHtml = async () => {
       showCopySuccess()
     } else {
       console.error('Copy failed:', result.error)
-      alert('复制失败，请手动选择代码进行复制')
+      await showAlert('复制失败，请手动选择代码进行复制')
     }
   }
 }
@@ -924,7 +917,6 @@ const submitDraft = async () => {
     }
 
     if (externalImages.length > 0) {
-      console.log(`[Step3] 检测到 ${externalImages.length} 张外部AI图片，开始优化并发上传...`)
       aiImageProgress.value = `初始化上传管理器...`
 
       try {
@@ -946,8 +938,6 @@ const submitDraft = async () => {
           const overallProgress = Math.round((stats.completed / stats.total) * 100)
 
           aiImageProgress.value = `${progress.message} (${stats.completed}/${stats.total}) - ${overallProgress}%`
-
-          console.log(`[Step3] ${progress.taskId}: ${progress.message}`)
         })
 
         // 提取所有图片URL
@@ -985,7 +975,6 @@ const submitDraft = async () => {
           })
 
           aiImageProgress.value = `✓ AI图片处理完成: ${replacedCount}/${imageUrls.length} 张成功`
-          console.log(`[Step3] AI图片处理完成 - 成功: ${replacedCount}, 失败: ${errors.length}`)
         }
 
         // 处理错误（如果有部分失败）
@@ -1024,7 +1013,6 @@ const submitDraft = async () => {
       throw new Error('创建草稿失败: 缺少草稿 ID')
     }
     draftSuccess.value = draftId
-    console.log('[Step3] 草稿创建成功:', result)
 
     // 保存草稿数据到sessionStorage（用于预览页面）
     sessionStorage.setItem('wechat_draft_id', draftId)
@@ -1062,180 +1050,6 @@ const regenerate = async () => {
 
 
 
-// 保存草稿到后端 - 保存内容和样式配置
-const saveDraft = async () => {
-  if (isSaving.value) return
-  
-  isSaving.value = true
-  console.log('=== [Step3] 开始保存草稿 ===')
-  
-  try {
-    if (!tokenStorage.getToken()) {
-      toast.warning('请先登录后再保存')
-      return false
-    }
-
-    // 清理内容块，移除编辑器内部字段
-    const cleanedBlocks = contentBlocks.value.map(block => ({
-      type: block.type,
-      text: block.text || '',
-      ...(block.meta?.aiImageUrl ? { aiImageUrl: block.meta.aiImageUrl } : {})
-    }))
-    
-    const cleanContent = JSON.stringify(cleanedBlocks)
-    const articleId = appStore.currentArticleId
-    
-    console.log('[Step3] 当前文章ID:', articleId)
-    console.log('[Step3] 清理后的内容块数量:', cleanedBlocks.length)
-    console.log('[Step3] 内容预览:', cleanContent.substring(0, 200) + '...')
-    console.log('[Step3] 样式配置:', appStore.styleConfig)
-    
-    if (articleId) {
-      // 🚀 并行优化：内容、图片库、样式配置同时保存
-      console.log('[Step3] 正在并行保存内容、图片和配置...')
-      
-      const saveTasks = []
-
-      // 1. 保存内容 (使用 Step3 专用端点)
-      saveTasks.push(fetch(`/api/articles/${articleId}/step3-content`, {
-        method: 'PUT',
-        headers: buildAuthHeaders(),
-        body: JSON.stringify({ content: cleanContent })
-      }).then(async r => {
-        if (!r.ok) {
-          const err = await r.json().catch(() => ({ message: 'Unknown error' }))
-          throw new Error(`保存内容失败: ${r.status} ${err.message}`)
-        }
-        return 'content'
-      }))
-
-      // 2. 保存图片库
-      const imagesToSave = appStore.wechatImages
-        .filter(img => img.status === 'success' && img.mediaId)
-        .map(img => {
-          const normalizedUrl = restoreWechatUrl(img.url || img.proxyUrl || '')
-          const proxyUrl = normalizedUrl ? getWechatProxyUrl(normalizedUrl) : ''
-          return {
-            id: img.id,
-            mediaId: img.mediaId,
-            url: normalizedUrl || img.url,
-            proxyUrl: proxyUrl,
-            name: img.name,
-            status: img.status
-          }
-        })
-      
-      if (imagesToSave.length > 0) {
-        saveTasks.push(fetch(`/api/articles/${articleId}/images`, {
-          method: 'PUT',
-          headers: buildAuthHeaders(),
-          body: JSON.stringify({ images: imagesToSave })
-        }).then(r => {
-          if (!r.ok) throw new Error('保存图片库失败')
-          return 'images'
-        }))
-      }
-
-      // 3. 保存样式配置与元数据
-      const fullConfig = {
-        ...appStore.styleConfig,
-        metadata: {
-          editorInput: appStore.editorInput,
-          teamName: appStore.teamName,
-          sourceAccount: appStore.sourceAccount,
-          copywriterNames: appStore.copywriterNames,
-          plannerNames: appStore.plannerNames,
-          editorNames: appStore.editorNames
-        }
-      }
-
-      saveTasks.push(fetch(`/api/articles/${articleId}/config`, {
-        method: 'PUT',
-        headers: buildAuthHeaders(),
-        body: JSON.stringify({ config: fullConfig })
-      }).then(r => {
-        if (!r.ok) throw new Error('保存配置失败')
-        return 'config'
-      }))
-
-      // 等待所有任务完成
-      const results = await Promise.all(saveTasks)
-      console.log('[Step3] 并行保存完成:', results)
-      
-      toast.success('草稿已保存（内容、图片、样式同步完成）')
-    } else {
-      // 创建新文章 - 先创建，再更新内容
-      const title = contentBlocks.value.find(b => b.type === 'title')?.text || '未命名文章'
-      
-      // Step 1: 创建文章（只传 title 和 config）
-      const createResponse = await fetch('/api/articles', {
-        method: 'POST',
-        headers: buildAuthHeaders(),
-        body: JSON.stringify({ 
-          title,
-          config: appStore.styleConfig
-        })
-      })
-      
-      if (!createResponse.ok) {
-        const errorData = await createResponse.json().catch(() => ({}))
-        throw new Error(errorData.message || '创建文章失败')
-      }
-      
-      const data = await createResponse.json()
-      appStore.setCurrentArticleId(data.id)
-      
-      // Step 2: Step3 内容保存（设置状态为 ADJUSTED）
-      const updateResponse = await fetch(`/api/articles/${data.id}/step3-content`, {
-        method: 'PUT',
-        headers: buildAuthHeaders(),
-        body: JSON.stringify({ content: cleanContent })
-      })
-      
-      if (!updateResponse.ok) {
-        const errorData = await updateResponse.json().catch(() => ({}))
-        throw new Error(errorData.message || '保存Step3内容失败')
-      }
-
-      // V2: 创建后保存微信图片库 (使用代理 URL)
-      const newArticleImages = appStore.wechatImages
-        .filter(img => img.status === 'success' && img.mediaId)
-        .map(img => {
-          const normalizedUrl = restoreWechatUrl(img.url || img.proxyUrl || '')
-          const proxyUrl = normalizedUrl ? getWechatProxyUrl(normalizedUrl) : ''
-          return {
-            id: img.id,
-            mediaId: img.mediaId,
-            url: normalizedUrl || img.url,
-            proxyUrl: proxyUrl,
-            name: img.name,
-            status: img.status
-          }
-        })
-      
-      if (newArticleImages.length > 0) {
-        console.log('[Step3] 新文章保存图片:', newArticleImages.length, '张')
-        await fetch(`/api/articles/${data.id}/images`, {
-          method: 'PUT',
-          headers: buildAuthHeaders(),
-          body: JSON.stringify({ images: newArticleImages })
-        })
-      }
-      
-      toast.success('文章已创建并保存！')
-    }
-    
-    return true // 返回成功状态
-  } catch (error: unknown) {
-    console.error('保存失败:', error)
-    const message = error instanceof Error ? error.message : String(error)
-    toast.error('保存失败: ' + message)
-    return false
-  } finally {
-    isSaving.value = false
-  }
-}
-
 // 协作分享链接生成
 const copyShareLink = async () => {
   if (isSharing.value) return
@@ -1263,7 +1077,7 @@ const copyShareLink = async () => {
       toast.success('协作链接已复制到剪贴板！发送给他人即可同步编辑。', 5000)
     } else {
       console.warn('剪贴板 API 失败，尝试备选方案', result.error)
-      alert(`协作链接（请手动复制）:\n${shareUrl}`)
+      await showAlert(shareUrl, '协作链接')
     }
     
   } catch (err: unknown) {
@@ -1274,6 +1088,14 @@ const copyShareLink = async () => {
     isSharing.value = false
   }
 }
+
+// Cleanup timers on unmount
+onBeforeUnmount(() => {
+  if (regenerateTimer) {
+    clearTimeout(regenerateTimer)
+    regenerateTimer = null
+  }
+})
 
 </script>
 

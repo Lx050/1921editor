@@ -1,7 +1,12 @@
 // @ts-expect-error - templates.js 尚未迁移到 TypeScript，遵循最简原则忽略类型
 import { IMAGE_TEMPLATES } from '../styles/templates'
+// Lazy-loaded to defer the large svgTemplates chunk until first SVG block is rendered
+let _getSvgTemplateById: ((id: string) => any) | null = null
 // @ts-expect-error - svgTemplates.js 尚未迁移到 TypeScript
-import { getSvgTemplateById } from '../styles/svgTemplates'
+import('../styles/svgTemplates').then((m) => { _getSvgTemplateById = m.getSvgTemplateById })
+function getSvgTemplateById(id: string): any {
+	return _getSvgTemplateById ? _getSvgTemplateById(id) : null
+}
 import type { ContentBlock, StyleConfig, BlockType, StyleTemplate } from '@/types'
 import { useConfigStore } from '../stores/configStore'
 import { useAppStore } from '../stores/appStore'

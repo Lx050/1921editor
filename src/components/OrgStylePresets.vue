@@ -158,7 +158,7 @@ const introPreviewStyle = computed(() => ({
 	fontSize: localPreset.introFontSize + 'px',
 	margin: '0',
 	lineHeight: '1.75',
-	color: '#666'
+	color: 'rgba(0,0,0,0.45)'
 }))
 
 function emitUpdate() {
@@ -186,42 +186,42 @@ function handleResetAll() {
 .section-header h3 {
 	font-size: 15px;
 	font-weight: 600;
-	color: #1e293b;
+	color: rgba(0,0,0,0.85);
 	margin: 0;
 }
 
 .section-desc {
 	font-size: 12px;
-	color: #94a3b8;
+	color: rgba(0,0,0,0.35);
 	margin: 0 0 16px;
 }
 
 .btn-reset {
 	padding: 4px 12px;
 	background: transparent;
-	color: #64748b;
-	border: 1px solid #cbd5e1;
+	color: rgba(0,0,0,0.55);
+	border: 1px solid rgba(0,0,0,0.12);
 	border-radius: 4px;
 	font-size: 12px;
 	cursor: pointer;
 }
 
 .btn-reset:hover {
-	background: #f1f5f9;
+	background: #f6f5f4;
 }
 
 .preset-group {
 	margin-bottom: 16px;
 	padding: 12px;
-	background: #f8fafc;
-	border: 1px solid #e2e8f0;
+	background: #f6f5f4;
+	border: 1px solid rgba(0,0,0,0.1);
 	border-radius: 6px;
 }
 
 .group-label {
 	font-size: 13px;
 	font-weight: 600;
-	color: #475569;
+	color: rgba(0,0,0,0.65);
 	margin-bottom: 8px;
 }
 
@@ -244,13 +244,13 @@ function handleResetAll() {
 
 .preset-field label {
 	font-size: 12px;
-	color: #64748b;
+	color: rgba(0,0,0,0.55);
 	white-space: nowrap;
 }
 
 .preset-field select {
 	padding: 3px 6px;
-	border: 1px solid #cbd5e1;
+	border: 1px solid rgba(0,0,0,0.12);
 	border-radius: 4px;
 	font-size: 12px;
 	background: white;
@@ -264,17 +264,17 @@ function handleResetAll() {
 
 .preview-box {
 	margin-top: 16px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid rgba(0,0,0,0.1);
 	border-radius: 6px;
 	overflow: hidden;
 }
 
 .preview-label {
-	background: #f8fafc;
+	background: #f6f5f4;
 	padding: 6px 12px;
 	font-size: 12px;
-	color: #94a3b8;
-	border-bottom: 1px solid #e2e8f0;
+	color: rgba(0,0,0,0.35);
+	border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
 .preview-content {

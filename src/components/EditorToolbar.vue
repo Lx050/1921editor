@@ -171,7 +171,8 @@ function toggleLink() {
 
     <!-- Block type switcher (universal) -->
     <select
-      class="text-xs border rounded px-1.5 h-8 text-gray-700 bg-white font-medium min-w-[80px]"
+      class="text-xs rounded px-1.5 h-8 bg-white font-medium min-w-[80px]"
+      style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.7);"
       :value="currentBlockType"
       @change="setBlockType(($event.target as HTMLSelectElement).value as BlockType)"
       title="块类型"
@@ -179,7 +180,7 @@ function toggleLink() {
       <option v-for="opt in blockTypeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
     </select>
 
-    <span class="w-px h-5 bg-gray-300 mx-1" />
+    <span class="w-px h-5 mx-1" style="background:rgba(0,0,0,0.1);" />
 
     <!-- Text formatting: Bold, Italic, Underline -->
     <button
@@ -209,7 +210,7 @@ function toggleLink() {
       title="链接 (Ctrl+K)"
     >&#x1F517;</button>
 
-    <span class="w-px h-5 bg-gray-300 mx-1" />
+    <span class="w-px h-5 mx-1" style="background:rgba(0,0,0,0.1);" />
 
     <!-- Color picker -->
     <div class="relative group">
@@ -224,12 +225,16 @@ function toggleLink() {
         <button
           v-for="c in presetColors"
           :key="c"
-          class="w-5 h-5 rounded border border-gray-200 hover:scale-110 transition-transform"
+          class="w-5 h-5 rounded hover:scale-110 transition-transform"
+          style="border:1px solid rgba(0,0,0,0.08);"
           :style="{ background: c }"
           @mousedown.prevent="setColor(c)"
         />
         <button
-          class="w-5 h-5 rounded border border-gray-200 text-[10px] hover:bg-gray-100"
+          class="w-5 h-5 rounded text-[10px]"
+          style="border:1px solid rgba(0,0,0,0.08);"
+          onmouseover="this.style.background='var(--color-bg-warm)'"
+          onmouseout="this.style.background=''"
           @mousedown.prevent="colorInput?.click()"
           title="自定义颜色"
         >...</button>
@@ -238,7 +243,8 @@ function toggleLink() {
           <button
             v-for="c in recentColors"
             :key="'r-' + c"
-            class="w-5 h-5 rounded border border-gray-200 hover:scale-110 transition-transform"
+            class="w-5 h-5 rounded hover:scale-110 transition-transform"
+            style="border:1px solid rgba(0,0,0,0.08);"
             :style="{ background: c }"
             @mousedown.prevent="setColor(c)"
             :title="c"
@@ -261,19 +267,24 @@ function toggleLink() {
         <button
           v-for="c in highlightColors"
           :key="c"
-          class="w-5 h-5 rounded border border-gray-200 hover:scale-110 transition-transform"
+          class="w-5 h-5 rounded hover:scale-110 transition-transform"
+          style="border:1px solid rgba(0,0,0,0.08);"
           :style="{ background: c }"
           @mousedown.prevent="setHighlight(c)"
         />
         <button
-          class="w-5 h-5 rounded border border-gray-200 text-[10px] hover:bg-gray-100"
+          class="w-5 h-5 rounded text-[10px]"
+          style="border:1px solid rgba(0,0,0,0.08);"
+          onmouseover="this.style.background='var(--color-bg-warm)'"
+          onmouseout="this.style.background=''"
           @mousedown.prevent="run(() => editor!.chain().focus().unsetHighlight().run())"
           title="清除高亮"
+          aria-label="清除高亮"
         >x</button>
       </div>
     </div>
 
-    <span class="w-px h-5 bg-gray-300 mx-1" />
+    <span class="w-px h-5 mx-1" style="background:rgba(0,0,0,0.1);" />
 
     <!-- Lists -->
     <button
@@ -289,7 +300,7 @@ function toggleLink() {
       title="有序列表"
     >OL</button>
 
-    <span class="w-px h-5 bg-gray-300 mx-1" />
+    <span class="w-px h-5 mx-1" style="background:rgba(0,0,0,0.1);" />
 
     <!-- Alignment -->
     <button
@@ -317,7 +328,7 @@ function toggleLink() {
       title="两端对齐"
     >&#x2630;</button>
 
-    <span class="w-px h-5 bg-gray-300 mx-1" />
+    <span class="w-px h-5 mx-1" style="background:rgba(0,0,0,0.1);" />
 
     <!-- Insert: HR, Image (block + inline), SVG -->
     <HrStylePicker :editor="editor" />
@@ -325,11 +336,17 @@ function toggleLink() {
       <button class="toolbar-btn text-xs" title="插入图片">IMG</button>
       <div class="hidden group-hover:flex absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg p-1 z-50 flex-col w-[120px]">
         <button
-          class="text-left text-xs px-2 py-1.5 rounded hover:bg-gray-100 text-gray-700 whitespace-nowrap"
+          class="text-left text-xs px-2 py-1.5 rounded whitespace-nowrap"
+          style="color:rgba(0,0,0,0.65);"
+          onmouseover="this.style.background='var(--color-bg-warm)'"
+          onmouseout="this.style.background=''"
           @mousedown.prevent="triggerImageUpload"
         >图片块</button>
         <button
-          class="text-left text-xs px-2 py-1.5 rounded hover:bg-gray-100 text-gray-700 whitespace-nowrap"
+          class="text-left text-xs px-2 py-1.5 rounded whitespace-nowrap"
+          style="color:rgba(0,0,0,0.65);"
+          onmouseover="this.style.background='var(--color-bg-warm)'"
+          onmouseout="this.style.background=''"
           @mousedown.prevent="triggerInlineImageUpload"
         >段内图片</button>
       </div>
@@ -338,32 +355,38 @@ function toggleLink() {
     <input ref="imageInput" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
     <input ref="inlineImageInput" type="file" accept="image/*" class="hidden" @change="handleInlineImageUpload" />
 
-    <span class="w-px h-5 bg-gray-300 mx-1" />
+    <span class="w-px h-5 mx-1" style="background:rgba(0,0,0,0.1);" />
 
     <!-- AI Image Generation -->
     <button
       class="toolbar-btn text-xs font-medium"
-      :class="aiFilling ? 'bg-purple-100 text-purple-600 animate-pulse' : 'text-purple-500 hover:bg-purple-50'"
+      :class="aiFilling ? 'animate-pulse' : ''"
+      :style="aiFilling ? 'background:var(--color-badge-bg); color:var(--color-accent-primary);' : 'color:var(--color-accent-primary);'"
       @click="emit('ai-fill-slots')"
       :title="aiFilling ? 'AI生图中...' : 'AI自动填充SVG图片槽位'"
     >AI</button>
 
-    <span class="w-px h-5 bg-gray-300 mx-1" />
+    <span class="w-px h-5 mx-1" style="background:rgba(0,0,0,0.1);" />
 
     <!-- Undo/Redo -->
     <button class="toolbar-btn" :class="{ 'opacity-30': !canUndo }" @click="run(() => editor!.chain().focus().undo().run())" title="撤销 (Ctrl+Z)">&#x21A9;</button>
     <button class="toolbar-btn" :class="{ 'opacity-30': !canRedo }" @click="run(() => editor!.chain().focus().redo().run())" title="重做 (Ctrl+Shift+Z)">&#x21AA;</button>
-    <button class="toolbar-btn text-xs text-gray-400" @click="clearFormatting" title="清除格式">Tx</button>
+    <button class="toolbar-btn text-xs" @click="clearFormatting" title="清除格式">Tx</button>
   </div>
 </template>
 
 <style scoped>
 .toolbar-btn {
-  @apply w-8 h-8 rounded flex items-center justify-center text-sm text-gray-600
-         hover:bg-gray-100 transition-colors cursor-pointer select-none flex-shrink-0;
+  @apply w-8 h-8 rounded flex items-center justify-center text-sm transition-colors cursor-pointer select-none flex-shrink-0;
+  color: rgba(0,0,0,0.55);
+}
+.toolbar-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: rgba(0,0,0,0.85);
 }
 .toolbar-btn.active {
-  @apply bg-blue-100 text-blue-700;
+  background: var(--color-badge-bg);
+  color: var(--color-accent-primary);
 }
 /* Mobile: larger touch targets */
 @media (max-width: 768px) {
@@ -380,7 +403,7 @@ function toggleLink() {
   height: 2px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: rgba(0,0,0,0.12);
   border-radius: 1px;
 }
 </style>

@@ -46,10 +46,11 @@ async function handleGenerate() {
 <template>
   <div class="ai-image-gen">
     <div class="mb-2">
-      <label class="text-xs text-gray-500 mb-1 block">图片描述</label>
+      <label class="text-xs mb-1 block" style="color:rgba(0,0,0,0.45);">图片描述</label>
       <textarea
         v-model="prompt"
-        class="w-full border rounded-lg p-2 text-sm resize-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none"
+        class="w-full border rounded-lg p-2 text-sm resize-none outline-none"
+        style="--tw-ring-color: var(--color-accent-focus);"
         rows="3"
         placeholder="描述你想要生成的图片..."
       />
@@ -58,23 +59,26 @@ async function handleGenerate() {
     <div class="flex items-center gap-2 mb-2">
       <select
         v-model="selectedModel"
-        class="text-xs border rounded px-2 h-7 text-gray-600 bg-white flex-1"
+        class="text-xs border rounded px-2 h-7 bg-white flex-1"
+        style="color:rgba(0,0,0,0.55);"
       >
         <option v-for="m in IMAGE_MODELS" :key="m.id" :value="m.id">{{ m.name }}</option>
       </select>
 
       <button
         class="px-3 h-7 rounded-lg text-xs text-white font-medium transition-colors"
-        :class="canGenerate ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-300 cursor-not-allowed'"
+        :style="canGenerate ? 'background: var(--color-accent-primary);' : 'background: rgba(0,0,0,0.25); cursor: not-allowed;'"
         :disabled="!canGenerate"
         @click="handleGenerate"
+        @mouseover="(e) => { if (canGenerate) (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-hover)'; }"
+        @mouseout="(e) => { if (canGenerate) (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-primary)'; }"
       >
         {{ generating ? '生成中...' : 'AI 生成' }}
       </button>
     </div>
 
-    <div v-if="generating" class="flex items-center gap-2 text-sm text-blue-600 py-2">
-      <span class="inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+    <div v-if="generating" class="flex items-center gap-2 text-sm py-2" style="color: var(--color-accent-primary);">
+      <span class="inline-block w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style="border-color: var(--color-accent-primary); border-top-color: transparent;" />
       AI正在生成图片，请稍候...
     </div>
 

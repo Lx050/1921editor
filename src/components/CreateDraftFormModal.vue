@@ -1,152 +1,208 @@
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 flex items-center justify-center z-50 p-4"
+    style="background:rgba(0,0,0,0.4);"
     @click.self="$emit('close')"
   >
-    <div class="bg-[#141419] rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-white/10">
+    <div style="
+      background:var(--color-bg-card);
+      border:1px solid rgba(0,0,0,0.1);
+      border-radius:var(--radius-md);
+      box-shadow:var(--shadow-content-card);
+      width:100%; max-width:480px;
+      overflow:hidden;
+    ">
       <!-- 弹窗头部 -->
-      <div class="relative px-5 py-4 md:px-6 md:py-5 border-b border-white/10">
-        <!-- 装饰性渐变 -->
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#ff6b4a] via-[#d4a574] to-[#ff6b4a]"></div>
-
-        <h3 class="text-lg md:text-xl font-bold text-[#f5f5f5] tracking-tight">创建公众号草稿</h3>
-        <p class="text-[10px] md:text-sm text-[#a0a0b0] mt-0.5 md:mt-1">填写文章信息，上传到微信草稿箱</p>
+      <div style="padding:20px 24px 16px; border-bottom:1px solid rgba(0,0,0,0.08);">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <h3 style="font-size:16px; font-weight:700; color:rgba(0,0,0,0.95); letter-spacing:-0.3px; margin:0 0 2px;">创建公众号草稿</h3>
+            <p style="font-size:12px; color:var(--color-text-secondary); margin:0;">填写文章信息，上传到微信草稿箱</p>
+          </div>
+          <button
+            @click="$emit('close')"
+            style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.05); border:none; border-radius:6px; cursor:pointer; color:rgba(0,0,0,0.5); transition:all 150ms;"
+            onmouseover="this.style.background='rgba(0,0,0,0.09)'"
+            onmouseout="this.style.background='rgba(0,0,0,0.05)'"
+            title="关闭"
+            aria-label="关闭创建草稿"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M11 3L3 11M3 3l8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- 弹窗内容 -->
-      <div class="p-5 md:p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+      <div style="padding:20px 24px; display:flex; flex-direction:column; gap:16px; max-height:60vh; overflow-y:auto;">
+
         <!-- 标题 -->
         <div>
-          <label class="block text-xs font-bold text-[#a0a0b0] mb-2 uppercase tracking-wider">文章标题 *</label>
+          <label style="display:block; font-size:11px; font-weight:600; color:rgba(0,0,0,0.55); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">文章标题 *</label>
           <input
             v-model="form.title"
             type="text"
-            class="magazine-input magazine-input-dark"
+            class="notion-input"
             placeholder="请输入文章标题"
+            style="font-size:14px; padding:9px 12px;"
           />
         </div>
 
         <!-- 封面图 -->
         <div>
-          <label class="block text-xs font-bold text-[#a0a0b0] mb-2 uppercase tracking-wider">封面图 *</label>
-          <div class="flex flex-col sm:flex-row items-stretch gap-2">
+          <label style="display:block; font-size:11px; font-weight:600; color:rgba(0,0,0,0.55); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">封面图 *</label>
+          <div style="display:flex; gap:8px; align-items:stretch;">
             <select
               v-model="form.coverImageId"
-              class="magazine-input magazine-input-dark flex-1"
+              class="notion-input"
+              style="flex:1; font-size:13px; padding:8px 12px; cursor:pointer;"
             >
               <option value="">请选择封面图</option>
               <option
                 v-for="img in availableImages"
                 :key="img.id"
                 :value="img.mediaId"
-              >
-                {{ img.name }}
-              </option>
+              >{{ img.name }}</option>
             </select>
 
-            <!-- 封面上传按钮 -->
-            <div class="relative">
+            <div style="position:relative; flex-shrink:0;">
               <input
                 type="file"
                 accept="image/*"
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer;"
                 @change="handleCoverUpload"
                 :disabled="isUploadingCover"
               />
               <button
                 type="button"
-                class="w-full px-3 py-2 bg-[#252530] hover:bg-[#2dd4a6]/20 text-[#a0a0b0] hover:text-[#2dd4a6] text-sm font-bold rounded-lg transition-colors whitespace-nowrap flex items-center justify-center border border-white/10"
-                :class="{'opacity-50': isUploadingCover}"
+                style="
+                  padding:8px 14px;
+                  background:rgba(0,0,0,0.04);
+                  border:1px solid rgba(0,0,0,0.12);
+                  border-radius:6px;
+                  font-size:12px;
+                  font-weight:600;
+                  color:rgba(0,0,0,0.65);
+                  cursor:pointer;
+                  display:flex;
+                  align-items:center;
+                  gap:4px;
+                  white-space:nowrap;
+                  height:100%;
+                "
+                :style="{ opacity: isUploadingCover ? 0.5 : 1 }"
               >
-                <svg v-if="!isUploadingCover" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                <svg v-if="!isUploadingCover" width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                 </svg>
-                <div v-else class="w-4 h-4 mr-1 border-2 border-[#2dd4a6] border-t-transparent rounded-full animate-spin"></div>
+                <div v-else style="width:12px; height:12px; border:2px solid rgba(0,0,0,0.3); border-top-color:var(--color-accent-primary); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
                 {{ isUploadingCover ? '上传中...' : '上传封面' }}
               </button>
             </div>
           </div>
-          <p v-if="availableImages.length === 0" class="text-[10px] text-[#d4a574] mt-2">
-            * 纯文字排版也需要一张封面图，请上传
-          </p>
+          <p v-if="availableImages.length === 0" style="font-size:11px; color:var(--color-text-muted); margin:4px 0 0;">纯文字排版也需要一张封面图，请上传</p>
         </div>
 
         <!-- 作者 -->
         <div>
-          <label class="block text-xs font-bold text-[#a0a0b0] mb-2 uppercase tracking-wider">作者（选填）</label>
+          <label style="display:block; font-size:11px; font-weight:600; color:rgba(0,0,0,0.55); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">作者（选填）</label>
           <input
             v-model="form.author"
             type="text"
-            class="magazine-input magazine-input-dark"
+            class="notion-input"
             placeholder="如：小编"
+            style="font-size:13px; padding:8px 12px;"
           />
         </div>
 
         <!-- 摘要 -->
         <div>
-          <label class="block text-xs font-bold text-[#a0a0b0] mb-2 uppercase tracking-wider">摘要（选填）</label>
+          <label style="display:block; font-size:11px; font-weight:600; color:rgba(0,0,0,0.55); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">摘要（选填）</label>
           <textarea
             v-model="form.digest"
             rows="2"
-            class="magazine-textarea magazine-input-dark"
+            class="notion-input"
             placeholder="文章摘要，不填则默认截取正文前54字"
+            style="font-size:13px; padding:8px 12px; resize:none; line-height:1.5;"
           ></textarea>
         </div>
 
         <!-- 显示封面 -->
-        <div class="flex items-center">
+        <div style="display:flex; align-items:center; gap:8px;">
           <input
             v-model="form.showCover"
             type="checkbox"
             id="showCover"
-            class="w-4 h-4 bg-[#252530] border-white/20 rounded focus:ring-[#ff6b4a] focus:ring-offset-0"
+            style="width:14px; height:14px; accent-color:var(--color-accent-primary); cursor:pointer;"
           />
-          <label for="showCover" class="ml-2 text-xs font-bold text-[#a0a0b0] uppercase tracking-wider">在文章内显示封面图</label>
+          <label for="showCover" style="font-size:13px; color:rgba(0,0,0,0.7); cursor:pointer;">在文章内显示封面图</label>
         </div>
 
         <!-- 错误提示 -->
-        <div v-if="error" class="bg-[#f87171]/10 border border-[#f87171]/30 text-[#f87171] px-4 py-3 rounded-lg text-xs font-bold">
+        <div v-if="error" style="padding:10px 12px; background:var(--color-error-light); border:1px solid var(--color-error-border); border-radius:6px; font-size:13px; color:var(--color-error);">
           {{ error }}
         </div>
 
         <!-- 成功提示 -->
-        <div v-if="success" class="bg-[#2dd4a6]/10 border border-[#2dd4a6]/30 text-[#2dd4a6] px-4 py-3 rounded-lg text-xs font-bold">
-          <div class="flex items-start space-x-2">
-            <div class="text-lg">✓</div>
-            <div class="flex-1">
-              <div class="font-bold mb-1">草稿创建成功！</div>
-              <div class="text-[10px] text-[#2dd4a6]/80 font-normal">文章已保存到公众号草稿箱</div>
-            </div>
+        <div v-if="success" style="padding:10px 12px; background:var(--color-success-light); border:1px solid var(--color-success-border); border-radius:6px; font-size:13px; color:var(--color-success); display:flex; align-items:flex-start; gap:8px;">
+          <span style="font-size:16px; line-height:1;">✓</span>
+          <div>
+            <div style="font-weight:600; margin-bottom:2px;">草稿创建成功！</div>
+            <div style="font-size:11px; color:#15803d;">文章已保存到公众号草稿箱</div>
           </div>
         </div>
 
-        <!-- AI 图片上传进度提示 -->
-        <div v-if="aiProgress" class="bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa] px-4 py-3 rounded-lg text-xs font-bold">
-          <div class="flex items-center space-x-2">
-            <div v-if="!aiProgress.includes('✓')" class="w-4 h-4 border-2 border-[#60a5fa] border-t-transparent rounded-full animate-spin"></div>
-            <div v-else class="text-lg">✓</div>
-            <div class="flex-1">{{ aiProgress }}</div>
-          </div>
+        <!-- AI 图片上传进度 -->
+        <div v-if="aiProgress" style="padding:10px 12px; background:var(--color-badge-bg); border:1px solid rgba(0,117,222,0.15); border-radius:6px; font-size:13px; color:var(--color-badge-text); display:flex; align-items:center; gap:8px;">
+          <div v-if="!aiProgress.includes('✓')" style="width:14px; height:14px; border:2px solid var(--color-badge-text); border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; flex-shrink:0;"></div>
+          <span v-else style="font-size:16px; line-height:1; flex-shrink:0;">✓</span>
+          <span>{{ aiProgress }}</span>
         </div>
       </div>
 
       <!-- 弹窗底部 -->
-      <div class="bg-[#0a0a0c] px-5 py-4 md:px-6 md:py-4 flex justify-end gap-3 border-t border-white/10">
+      <div style="padding:16px 24px; border-top:1px solid rgba(0,0,0,0.08); display:flex; justify-content:flex-end; gap:8px; background:var(--color-bg-warm);">
         <button
           @click="$emit('close')"
-          class="flex-1 md:flex-none px-4 py-2 text-sm font-bold text-[#a0a0b0] hover:text-white transition-colors"
-        >
-          取消
-        </button>
+          style="
+            padding:8px 16px;
+            background:transparent;
+            border:none;
+            border-radius:var(--radius-xs);
+            font-size:13px;
+            font-weight:600;
+            color:rgba(0,0,0,0.5);
+            cursor:pointer;
+            transition:color 150ms;
+          "
+          onmouseover="this.style.color='rgba(0,0,0,0.85)'"
+          onmouseout="this.style.color='rgba(0,0,0,0.5)'"
+        >取消</button>
         <button
           @click="$emit('submit')"
           :disabled="isSubmitting || !form.title || !form.coverImageId"
-          class="flex-1 md:flex-none px-6 py-2 bg-gradient-to-r from-[#ff6b4a] to-[#ff8566] text-white text-sm font-bold rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          style="
+            padding:8px 20px;
+            background:var(--color-accent-primary);
+            color:var(--color-text-inverse);
+            border:none;
+            border-radius:var(--radius-xs);
+            font-size:13px;
+            font-weight:600;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            gap:6px;
+            transition:background 150ms, opacity 150ms;
+          "
+          :style="{ opacity: (isSubmitting || !form.title || !form.coverImageId) ? 0.5 : 1, cursor: (isSubmitting || !form.title || !form.coverImageId) ? 'not-allowed' : 'pointer' }"
+          onmouseover="if(!this.disabled) this.style.background='var(--color-accent-hover)'"
+          onmouseout="this.style.background='var(--color-accent-primary)'"
         >
-          <span v-if="isSubmitting">创建中...</span>
-          <span v-else>创建草稿</span>
-          <div v-if="isSubmitting" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <div v-if="isSubmitting" style="width:12px; height:12px; border:2px solid rgba(255,255,255,0.4); border-top-color:var(--color-text-inverse); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+          <span>{{ isSubmitting ? '创建中...' : '创建草稿' }}</span>
         </button>
       </div>
     </div>
@@ -215,7 +271,13 @@ const handleCoverUpload = (event: Event) => {
   const file = target.files?.[0]
   if (file) {
     emit('upload-cover', file)
-    target.value = '' // 清空input
+    target.value = ''
   }
 }
 </script>
+
+<style scoped>
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>

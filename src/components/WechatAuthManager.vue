@@ -1,5 +1,11 @@
 <template>
   <div class="wechat-auth-manager">
+    <!-- 初始化错误横幅 -->
+    <div v-if="initError" class="init-error-banner" role="alert">
+      <i class="icon-warning"></i>
+      <span>{{ initError }}</span>
+    </div>
+
     <div class="manager-header">
       <h3>微信公众号授权管理</h3>
       <p class="subtitle">管理已授权的公众号，用于发布内容</p>
@@ -23,7 +29,7 @@
       <button
         class="btn-primary"
         @click="startAuthorization"
-        :disabled="isLoading"
+        :disabled="isLoading || !!initError"
       >
         <i class="icon-plus"></i>
         添加新公众号授权
@@ -32,7 +38,7 @@
       <button
         class="btn-secondary"
         @click="refreshAccountList"
-        :disabled="isLoading"
+        :disabled="isLoading || !!initError"
       >
         <i class="icon-refresh"></i>
         刷新列表
@@ -123,11 +129,17 @@
     </div>
 
     <!-- 授权弹窗 -->
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
     <div v-if="showAuthModal" class="modal-overlay" @click="closeAuthModal">
       <div class="auth-modal" @click.stop>
         <div class="modal-header">
           <h4>添加公众号授权</h4>
-          <button class="close-btn" @click="closeAuthModal">✕</button>
+          <button class="close-btn" @click="closeAuthModal" title="关闭" aria-label="关闭授权弹窗">✕</button>
         </div>
 
         <div class="modal-body">
@@ -200,13 +212,20 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- 确认删除弹窗 -->
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      leave-active-class="transition-all duration-100 ease-in"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
     <div v-if="showRemoveModal" class="modal-overlay" @click="closeRemoveModal">
       <div class="confirm-modal" @click.stop>
         <div class="modal-header">
           <h4>确认移除授权</h4>
-          <button class="close-btn" @click="closeRemoveModal">✕</button>
+          <button class="close-btn" @click="closeRemoveModal" title="关闭" aria-label="关闭确认弹窗">✕</button>
         </div>
 
         <div class="modal-body">
@@ -227,6 +246,7 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- 加载状态 -->
     <div v-if="isLoading" class="loading-overlay">
@@ -240,7 +260,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import toast from '../composables/useToast';
 import api from '../utils/api';
 import { copyToClipboard } from '../utils/clipboard';
 import { ThirdPartyWechatAuth } from '../services/ThirdPartyWechatAuth';
@@ -269,6 +289,7 @@ const removingAccount = ref<WechatAuthInfo | null>(null);
 const authUrl = ref('');
 const showQrCode = ref(false);
 const currentStep = ref(1);
+const initError = ref('');
 
 // 计算属性
 const authStatus = computed(() => {
@@ -320,6 +341,9 @@ const initializeAuth = async () => {
     });
   } catch (error) {
     console.error('初始化微信授权服务失败:', error);
+    const message = (error as Error).message || '未知错误';
+    initError.value = `微信授权服务初始化失败：${message}，部分功能不可用。`;
+    toast.error(`微信授权服务初始化失败：${message}`);
   }
 };
 
@@ -344,6 +368,7 @@ const loadAccounts = async () => {
     accounts.value = mergedAccounts;
   } catch (error) {
     console.error('加载授权账号失败:', error);
+    toast.error('加载授权账号失败：' + ((error as Error).message || '未知错误'));
   }
 };
 
@@ -370,7 +395,7 @@ const generateAuthUrl = async () => {
     setLoading('授权链接已生成，等待用户授权...', false);
   } catch (error) {
     console.error('生成授权链接失败:', error);
-    ElMessage.error('生成授权链接失败，请重试');
+    toast.error('生成授权链接失败，请重试');
   }
 };
 
@@ -392,13 +417,13 @@ const handleAuthCallback = async (event: MessageEvent) => {
 
       // 显示成功消息
       setTimeout(() => {
-        ElMessage.success(`公众号 ${result.nick_name} 授权成功`);
+        toast.success(`公众号 ${result.nick_name} 授权成功`);
         closeAuthModal();
       }, 1000);
 
     } catch (error) {
       console.error('处理授权回调失败:', error);
-      ElMessage.error('授权失败: ' + (error as Error).message);
+      toast.error('授权失败: ' + (error as Error).message);
     } finally {
       setLoading('', false);
     }
@@ -409,9 +434,9 @@ const handleAuthCallback = async (event: MessageEvent) => {
 const copyAuthUrl = async () => {
   const result = await copyToClipboard(authUrl.value);
   if (result.ok) {
-    ElMessage.success('授权链接已复制到剪贴板');
+    toast.success('授权链接已复制到剪贴板');
   } else {
-    ElMessage.warning('复制失败，请手动选择链接复制');
+    toast.warning('复制失败，请手动选择链接复制');
   }
 };
 
@@ -444,15 +469,15 @@ const testAccount = async (account: WechatAuthInfo) => {
     });
 
     if (data.success) {
-      ElMessage.success('连接测试成功');
+      toast.success('连接测试成功');
       account.lastUsed = Date.now();
       await saveAccounts();
     } else {
-      ElMessage.error('连接测试失败: ' + data.error);
+      toast.error('连接测试失败: ' + data.error);
     }
   } catch (error) {
     console.error('测试连接失败:', error);
-    ElMessage.error('连接测试失败: ' + (error as Error).message);
+    toast.error('连接测试失败: ' + (error as Error).message);
   } finally {
     setLoading('', false);
   }
@@ -472,10 +497,10 @@ const refreshAccount = async (account: WechatAuthInfo) => {
     }
 
     await saveAccounts();
-    ElMessage.success('Token刷新成功');
+    toast.success('Token刷新成功');
   } catch (error) {
     console.error('刷新Token失败:', error);
-    ElMessage.error('刷新Token失败: ' + (error as Error).message);
+    toast.error('刷新Token失败: ' + (error as Error).message);
   } finally {
     setLoading('', false);
   }
@@ -506,10 +531,10 @@ const removeAccount = async () => {
 
     await saveAccounts();
     closeRemoveModal();
-    ElMessage.success('授权已移除');
+    toast.success('授权已移除');
   } catch (error: any) {
     console.error('移除授权失败:', error);
-    ElMessage.error('移除授权失败: ' + error.message);
+    toast.error('移除授权失败: ' + error.message);
   } finally {
     setLoading('', false);
   }
@@ -590,6 +615,25 @@ const setLoading = (message: string, show = true) => {
   padding: 20px;
 }
 
+.init-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: var(--color-error-light);
+  border: 1px solid #fca5a5;
+  border-left: 4px solid var(--color-error);
+  border-radius: 6px;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.init-error-banner .icon-warning {
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
 .manager-header {
   margin-bottom: 30px;
 }
@@ -597,12 +641,12 @@ const setLoading = (message: string, show = true) => {
 .manager-header h3 {
   margin: 0 0 8px 0;
   font-size: 24px;
-  color: #333;
+  color: rgba(0,0,0,0.85);
 }
 
 .subtitle {
   margin: 0;
-  color: #666;
+  color: rgba(0,0,0,0.45);
   font-size: 14px;
 }
 
@@ -616,7 +660,7 @@ const setLoading = (message: string, show = true) => {
   padding: 20px;
   background: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #007bff;
+  border-left: 4px solid var(--color-accent-primary);
 }
 
 .status-icon {
@@ -625,7 +669,7 @@ const setLoading = (message: string, show = true) => {
 }
 
 .status-icon i {
-  color: #007bff;
+  color: var(--color-accent-primary);
 }
 
 .status-info h4 {
@@ -635,7 +679,7 @@ const setLoading = (message: string, show = true) => {
 
 .status-info p {
   margin: 0;
-  color: #666;
+  color: rgba(0,0,0,0.45);
   font-size: 14px;
 }
 
@@ -660,30 +704,30 @@ const setLoading = (message: string, show = true) => {
 }
 
 .btn-primary {
-  background: #007bff;
+  background: var(--color-accent-primary);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #0056b3;
+  background: var(--color-accent-hover);
 }
 
 .btn-secondary {
-  background: #6c757d;
+  background: rgba(0,0,0,0.45);
   color: white;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #545b62;
+  background: rgba(0,0,0,0.58);
 }
 
 .btn-danger {
-  background: #dc3545;
+  background: var(--color-error);
   color: white;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #c82333;
+  background: #b91c1c;
 }
 
 button:disabled {
@@ -694,7 +738,7 @@ button:disabled {
 .accounts-section h4 {
   margin: 0 0 20px 0;
   font-size: 18px;
-  color: #333;
+  color: rgba(0,0,0,0.85);
 }
 
 .accounts-grid {
@@ -708,18 +752,18 @@ button:disabled {
   flex-direction: column;
   padding: 20px;
   background: white;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0,0,0,0.12);
   border-radius: 8px;
   transition: all 0.2s;
 }
 
 .account-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-content-hover);
 }
 
 .account-card.expired {
-  border-color: #dc3545;
-  background: #fff5f5;
+  border-color: var(--color-error);
+  background: var(--color-error-light);
 }
 
 .account-avatar {
@@ -750,17 +794,17 @@ button:disabled {
 }
 
 .status-badge.valid {
-  background: #28a745;
+  background: var(--color-success);
   color: white;
 }
 
 .status-badge.expired {
-  background: #ffc107;
-  color: #333;
+  background: #d97706;
+  color: white;
 }
 
 .status-badge.invalid {
-  background: #dc3545;
+  background: var(--color-error);
   color: white;
 }
 
@@ -773,13 +817,13 @@ button:disabled {
   margin: 0 0 8px 0;
   font-size: 16px;
   text-align: center;
-  color: #333;
+  color: rgba(0,0,0,0.85);
 }
 
 .account-id {
   margin: 0 0 12px 0;
   font-size: 12px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
   text-align: center;
 }
 
@@ -796,7 +840,7 @@ button:disabled {
 }
 
 .detail-item .label {
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 .detail-item .value {
@@ -804,15 +848,15 @@ button:disabled {
 }
 
 .detail-item .value.valid {
-  color: #28a745;
+  color: var(--color-success);
 }
 
 .detail-item .value.expired {
-  color: #ffc107;
+  color: #d97706;
 }
 
 .detail-item .value.invalid {
-  color: #dc3545;
+  color: var(--color-error);
 }
 
 .account-actions {
@@ -834,42 +878,42 @@ button:disabled {
 }
 
 .test-btn {
-  background: #007bff;
+  background: var(--color-accent-primary);
   color: white;
 }
 
 .test-btn:hover:not(:disabled) {
-  background: #0056b3;
+  background: var(--color-accent-hover);
 }
 
 .refresh-btn {
-  background: #28a745;
+  background: var(--color-success);
   color: white;
 }
 
 .refresh-btn:hover {
-  background: #1e7e34;
+  background: #15803d;
 }
 
 .remove-btn {
-  background: #dc3545;
+  background: var(--color-error);
   color: white;
 }
 
 .remove-btn:hover {
-  background: #c82333;
+  background: #b91c1c;
 }
 
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 .empty-icon {
   font-size: 48px;
   margin-bottom: 16px;
-  color: #ddd;
+  color: rgba(0,0,0,0.12);
 }
 
 .empty-state h4 {
@@ -911,7 +955,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
 }
 
 .modal-header h4 {
@@ -924,7 +968,7 @@ button:disabled {
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 .modal-body {
@@ -945,7 +989,7 @@ button:disabled {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #ddd;
+  background: rgba(0,0,0,0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -955,11 +999,11 @@ button:disabled {
 }
 
 .step.active .step-number {
-  background: #007bff;
+  background: var(--color-accent-primary);
 }
 
 .step.completed .step-number {
-  background: #28a745;
+  background: var(--color-success);
 }
 
 .step-info h5 {
@@ -970,7 +1014,7 @@ button:disabled {
 .step-info p {
   margin: 0;
   font-size: 12px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 .auth-url-section {
@@ -991,14 +1035,14 @@ button:disabled {
 .url-input input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0,0,0,0.12);
   border-radius: 4px;
   font-size: 14px;
 }
 
 .copy-btn {
   padding: 8px 16px;
-  background: #007bff;
+  background: var(--color-accent-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -1008,7 +1052,7 @@ button:disabled {
 .url-tip {
   margin: 8px 0 0 0;
   font-size: 12px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
 }
 
 .qr-section {
@@ -1023,7 +1067,7 @@ button:disabled {
   display: inline-block;
   padding: 20px;
   background: white;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0,0,0,0.12);
   border-radius: 8px;
 }
 
@@ -1031,12 +1075,12 @@ button:disabled {
   display: flex;
   gap: 12px;
   padding: 20px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid rgba(0,0,0,0.12);
 }
 
 .warning-message {
   text-align: center;
-  color: #dc3545;
+  color: var(--color-error);
 }
 
 .warning-message i {
@@ -1076,7 +1120,7 @@ button:disabled {
   width: 32px;
   height: 32px;
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #007bff;
+  border-top-color: var(--color-accent-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -1088,7 +1132,7 @@ button:disabled {
 
 .loading-spinner p {
   margin-top: 16px;
-  color: #666;
+  color: rgba(0,0,0,0.45);
   font-size: 14px;
 }
 

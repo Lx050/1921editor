@@ -40,10 +40,17 @@ onBeforeUnmount(() => {
 })
 
 const typeStyles = {
-  info: 'bg-gray-800 text-white',
-  success: 'bg-green-600 text-white',
-  warning: 'bg-amber-500 text-white',
-  error: 'bg-red-600 text-white',
+  info: '',
+  success: '',
+  warning: '',
+  error: '',
+}
+
+const typeInlineStyles: Record<string, string> = {
+  info: 'background:var(--color-bg-card); border:1px solid rgba(0,117,222,0.2); color:#0075de; box-shadow:var(--shadow-float);',
+  success: 'background:var(--color-bg-card); border:1px solid var(--color-success-border); color:var(--color-success); box-shadow:var(--shadow-float);',
+  warning: 'background:var(--color-bg-card); border:1px solid var(--color-warning-border); color:var(--color-warning); box-shadow:var(--shadow-float);',
+  error: 'background:var(--color-bg-card); border:1px solid var(--color-error-border); color:var(--color-error); box-shadow:var(--shadow-float);',
 }
 
 defineExpose({ addToast })
@@ -55,8 +62,8 @@ defineExpose({ addToast })
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        class="pointer-events-auto px-4 py-2 rounded-lg shadow-lg text-sm font-medium max-w-[300px] cursor-pointer transition-all"
-        :class="typeStyles[toast.type]"
+        class="pointer-events-auto px-4 py-2 rounded-lg text-sm font-medium max-w-[300px] cursor-pointer transition-all"
+        :style="typeInlineStyles[toast.type]"
         @click="removeToast(toast.id)"
       >
         {{ toast.message }}
