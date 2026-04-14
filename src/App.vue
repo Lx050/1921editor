@@ -180,7 +180,7 @@
       "
     >
       <a
-        href="https://beian.miit.gov.cn/"
+        href="http://beian.miit.gov.cn/"
         target="_blank"
         rel="noopener"
         style="color: inherit; text-decoration: none; transition: color 150ms;"
