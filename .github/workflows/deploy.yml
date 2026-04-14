@@ -60,32 +60,70 @@ jobs:
             # 1. 重建 .env 环境变量文件
             echo "${{ secrets.ENV_FILE }}" > /opt/1921editor/.env
 
-            # 2. 安装 certbot（如果尚未安装）
+            # 2. 确保前端文件权限正确
+            chown -R www-data:www-data /var/www/1921editor 2>/dev/null || chmod -R 755 /var/www/1921editor
+
+            # 3. 安装 certbot（如果尚未安装）
             if ! command -v certbot &> /dev/null; then
               apt-get update -qq && apt-get install -y -qq certbot python3-certbot-nginx
             fi
 
-            # 3. 申请/更新 SSL 证书（仅在证书不存在时申请）
+            # 4. 申请 SSL 证书（仅在证书不存在时）
             mkdir -p /var/www/certbot
             if [ ! -f /etc/letsencrypt/live/paiban.lx05.art/fullchain.pem ]; then
-              # 先用 HTTP-only 配置启动 nginx 以完成 ACME challenge
-              echo 'server { listen 80; server_name paiban.lx05.art; root /var/www/certbot; location /.well-known/acme-challenge/ { root /var/www/certbot; } }' > /etc/nginx/conf.d/1921editor.conf
+              # 先加载 HTTP-only 配置完成 ACME challenge
+              cat > /etc/nginx/conf.d/1921editor.conf << 'NGINXEOF'
+            server {
+                listen 80;
+                server_name paiban.lx05.art;
+                root /var/www/1921editor;
+                index index.html;
+                location /.well-known/acme-challenge/ { root /var/www/certbot; }
+                location / { try_files $uri $uri/ /index.html; }
+                location /api/ {
+                    proxy_pass http://127.0.0.1:3001/api/;
+                    proxy_set_header Host $host;
+                }
+            }
+            NGINXEOF
               nginx -t && systemctl reload nginx
-              certbot certonly --webroot -w /var/www/certbot -d paiban.lx05.art --non-interactive --agree-tos -m lx.0506@outlook.com
+              certbot certonly --webroot -w /var/www/certbot -d paiban.lx05.art --non-interactive --agree-tos -m lx.0506@outlook.com || echo "certbot failed, staying on HTTP"
             fi
 
-            # 4. 设置完整 Nginx 配置（含 HTTPS）
-            cp /opt/1921editor/scripts/nginx.conf /etc/nginx/conf.d/1921editor.conf
+            # 5. 根据证书是否存在决定用 HTTPS 还是 HTTP 配置
+            if [ -f /etc/letsencrypt/live/paiban.lx05.art/fullchain.pem ]; then
+              echo "证书存在，启用 HTTPS 配置"
+              cp /opt/1921editor/scripts/nginx.conf /etc/nginx/conf.d/1921editor.conf
+            else
+              echo "证书不存在，使用 HTTP 配置"
+              cat > /etc/nginx/conf.d/1921editor.conf << 'NGINXEOF'
+            server {
+                listen 80;
+                server_name paiban.lx05.art;
+                root /var/www/1921editor;
+                index index.html;
+                location /.well-known/acme-challenge/ { root /var/www/certbot; }
+                location / { try_files $uri $uri/ /index.html; }
+                location /api/ {
+                    proxy_pass http://127.0.0.1:3001/api/;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                }
+                gzip_static on;
+            }
+            NGINXEOF
+            fi
             nginx -t && systemctl reload nginx
 
-            # 5. 确保上传目录权限
+            # 6. 确保上传目录权限
             mkdir -p /opt/1921editor/content-backend/uploads
             chmod -R 777 /opt/1921editor/content-backend/uploads
 
-            # 6. 重启 Docker 服务
+            # 7. 重启 Docker 服务
             cd /opt/1921editor
             docker compose down backend || true
             docker compose up -d --build backend
 
-            # 7. 设置证书自动续期
+            # 8. 设置证书自动续期
             (crontab -l 2>/dev/null | grep -q 'certbot renew') || (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet && systemctl reload nginx") | crontab -
