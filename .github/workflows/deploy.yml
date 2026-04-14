@@ -59,16 +59,33 @@ jobs:
           script: |
             # 1. 重建 .env 环境变量文件
             echo "${{ secrets.ENV_FILE }}" > /opt/1921editor/.env
-            
-            # 2. 设置 Nginx 配置
+
+            # 2. 安装 certbot（如果尚未安装）
+            if ! command -v certbot &> /dev/null; then
+              apt-get update -qq && apt-get install -y -qq certbot python3-certbot-nginx
+            fi
+
+            # 3. 申请/更新 SSL 证书（仅在证书不存在时申请）
+            mkdir -p /var/www/certbot
+            if [ ! -f /etc/letsencrypt/live/paiban.lx05.art/fullchain.pem ]; then
+              # 先用 HTTP-only 配置启动 nginx 以完成 ACME challenge
+              echo 'server { listen 80; server_name paiban.lx05.art; root /var/www/certbot; location /.well-known/acme-challenge/ { root /var/www/certbot; } }' > /etc/nginx/conf.d/1921editor.conf
+              nginx -t && systemctl reload nginx
+              certbot certonly --webroot -w /var/www/certbot -d paiban.lx05.art --non-interactive --agree-tos -m lx.0506@outlook.com
+            fi
+
+            # 4. 设置完整 Nginx 配置（含 HTTPS）
             cp /opt/1921editor/scripts/nginx.conf /etc/nginx/conf.d/1921editor.conf
             nginx -t && systemctl reload nginx
-            
-            # 3. 确保上传目录权限
+
+            # 5. 确保上传目录权限
             mkdir -p /opt/1921editor/content-backend/uploads
             chmod -R 777 /opt/1921editor/content-backend/uploads
-            
-            # 4. 重启 Docker 服务 (使用项目名 paiban 以关联旧数据)
+
+            # 6. 重启 Docker 服务
             cd /opt/1921editor
             docker compose down backend || true
             docker compose up -d --build backend
+
+            # 7. 设置证书自动续期
+            (crontab -l 2>/dev/null | grep -q 'certbot renew') || (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet && systemctl reload nginx") | crontab -
