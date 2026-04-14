@@ -63,6 +63,14 @@ jobs:
             # 2. 确保前端文件权限正确
             chown -R www-data:www-data /var/www/1921editor 2>/dev/null || chmod -R 755 /var/www/1921editor
 
+            # 2b. 确保服务器防火墙放行 443 端口
+            if command -v firewall-cmd &> /dev/null; then
+              firewall-cmd --permanent --add-port=443/tcp 2>/dev/null || true
+              firewall-cmd --reload 2>/dev/null || true
+            fi
+            iptables -I INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null || true
+            iptables -I INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null || true
+
             # 3. 安装 certbot（如果尚未安装）
             if ! command -v certbot &> /dev/null; then
               apt-get update -qq && apt-get install -y -qq certbot python3-certbot-nginx
